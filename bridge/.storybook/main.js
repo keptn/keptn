@@ -7,6 +7,7 @@ module.exports = {
   },
   staticDirs: [
     { from: '../node_modules/@dynatrace/barista-icons', to: '/assets/icons' },
+    { from: '../node_modules/@dynatrace/barista-fonts/fonts', to: '/%5E./assets/fonts' },
     { from: '../client/assets', to: '/assets' },
   ],
 };

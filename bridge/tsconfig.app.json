@@ -6,11 +6,5 @@
   },
   "files": ["client/main.ts", "client/polyfills.ts"],
   "include": ["client/**/*.d.ts"],
-  "exclude": [
-    "client/test.ts",
-    "client/**/*.spec.ts",
-    "client/**/*.mock.ts",
-    "client/app/_utils/test.utils.ts",
-    "**/*.stories.*"
-  ]
+  "exclude": []
 }
