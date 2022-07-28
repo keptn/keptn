@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -15,6 +16,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -53,16 +55,70 @@ func TestMain(m *testing.M) {
 	m.Run()
 }
 
-func setupTestProject(t *testing.T, projectName string, serviceName string) (*testNatsClient, func(), error) {
+func Test_SLIWrongFinishedPayloadSend(t *testing.T) {
+	keptnContext := "context"
+	projectName := "quality-gates-invalid-finish"
+	serviceName := "my-service"
+	stageName := "dev"
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
 	natsClient, err := newTestNatsClient(natsURL, t)
 	require.Nil(t, err)
 
-	tearDown := func() {
-		natsClient.Close()
+	c := http.Client{
+		Timeout: 2 * time.Second,
 	}
-	return natsClient, tearDown, err
+
+	payload := apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.EvaluationTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+			},
+			Test: keptnv2.Test{},
+			Evaluation: keptnv2.Evaluation{
+				End:       "2022-01-26T10:10:53.931Z",
+				Start:     "2022-01-26T10:05:53.931Z",
+				Timeframe: "",
+			},
+			Deployment: keptnv2.Deployment{},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+	}
+
+	marshal, err := json.Marshal(payload)
+	require.Nil(t, err)
+
+	t.Log("sent evaluation.triggered event")
+	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/event", bytes.NewBuffer(marshal))
+	require.Nil(t, err)
+
+	resp, err := c.Do(req)
+	require.Nil(t, err)
+	bodyBytes, err := io.ReadAll(resp.Body)
+	fmt.Println(string(bodyBytes))
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	//expect get-sli.triggered
+	//expect evaluation.started event
+	//send get-sli.started eventTriggerEvaluation
+	//send invalid get-sli.finished event
+	//expect fail evaluation.finished event
+
+	go func() {
+		natsClient.Close()
+	}()
 }
 
 type testNatsClient struct {
