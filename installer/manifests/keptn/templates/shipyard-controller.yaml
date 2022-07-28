@@ -11,7 +11,7 @@ spec:
   {{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
   {{- else }}
-  replicas : 1
+  replicas: 1
   {{- end }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
@@ -90,9 +90,9 @@ spec:
             - name: DISABLE_LEADER_ELECTION
               {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
               value: {{ true | quote }}
-              {{else }}
-              value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
-              {{- end}}
+              {{ else }}
+              value: {{ .Values.shipyardController.config.leaderElection.enabled | default true | quote }}
+              {{- end }}
             - name: PROJECT_NAME_MAX_SIZE
               value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
             - name: SERVICE_NAME_MAX_SIZE
