@@ -88,10 +88,10 @@ spec:
             - name: AUTOMATIC_PROVISIONING_URL
               value: {{ ((.Values.features).automaticProvisioning).serviceURL | default "" | quote }}
             - name: DISABLE_LEADER_ELECTION
-              {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
+              {{- if lt .Capabilities.KubeVersion.Minor "14" }}
               value: {{ true | quote }}
               {{ else }}
-              value: {{ .Values.shipyardController.config.leaderElection.enabled | default true | quote }}
+              value: {{ not ((.Values.shipyardController.config).leaderElection).enabled | quote }}
               {{- end }}
             - name: PROJECT_NAME_MAX_SIZE
               value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
