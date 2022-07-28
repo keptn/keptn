@@ -289,7 +289,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		Handler: engine,
 	}
 
-	srv_debug := &http.Server{
+	srvDebug := &http.Server{
 		Addr:    ":9090",
 		Handler: debugEngine,
 	}
@@ -307,7 +307,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	}()
 
 	go func() {
-		if err := srv_debug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srvDebug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.WithError(err).Error("could not start debug server")
 		}
 	}()
