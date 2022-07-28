@@ -289,7 +289,8 @@ shipyardController:
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
-    disableLeaderElection: true
+    leaderElection:
+      enabled: false
     replicas: 1
     validation:
       # On Database level, Keptn creates collections that are named like <PROJECTNAME>-<suffix>
