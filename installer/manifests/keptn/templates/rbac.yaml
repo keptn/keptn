@@ -198,7 +198,6 @@ rules:
       - update
       - create
 
-
 ---
 {{- if .Values.lighthouseService.enabled }}
 apiVersion: rbac.authorization.k8s.io/v1

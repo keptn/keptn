@@ -54,3 +54,10 @@ func SetConflictErrorResponse(c *gin.Context, msg string) {
 		Message: &msg,
 	})
 }
+
+func SetUnprocessableEntityResponse(c *gin.Context, msg string) {
+	c.JSON(http.StatusUnprocessableEntity, models.Error{
+		Code:    http.StatusUnprocessableEntity,
+		Message: &msg,
+	})
+}

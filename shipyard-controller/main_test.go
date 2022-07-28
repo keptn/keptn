@@ -1574,6 +1574,13 @@ func createProject(t *testing.T, c http.Client, projectName string, shipyardCont
 	createProjectObj := models.CreateProjectParams{
 		Name:     &projectName,
 		Shipyard: &encodedShipyardContent,
+		GitCredentials: &apimodels.GitAuthCredentials{
+			RemoteURL: "http://some.url",
+			User:      "user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "token",
+			},
+		},
 	}
 
 	marshal, err := json.Marshal(createProjectObj)
