@@ -57,6 +57,7 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
     if (!this.gitUpstreamRequired && this.isCreateMode) {
       this.selectedForm = GitFormType.NO_UPSTREAM;
       this.dataChanged(this.selectedForm, this.gitData);
+      return;
     }
 
     if (!this.gitInputData) {
