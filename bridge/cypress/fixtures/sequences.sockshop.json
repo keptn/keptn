@@ -13,8 +13,8 @@
           "image": "docker.io/keptnexamples/carts:0.13.1",
           "state": "succeeded",
           "latestEvaluation": {
-            "result": "pass",
-            "score": 0
+            "result": "warning",
+            "score": 50
           },
           "latestEvent": {
             "type": "sh.keptn.event.dev.delivery.finished",

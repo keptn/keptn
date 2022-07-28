@@ -57,7 +57,6 @@ export class DataService {
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   private _evaluationResults = new Subject<EvaluationHistory>();
-
   public isTriggerSequenceOpen = false;
 
   constructor(private apiService: ApiService) {}

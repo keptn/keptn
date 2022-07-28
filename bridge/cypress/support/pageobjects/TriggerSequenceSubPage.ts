@@ -96,13 +96,48 @@ export class TriggerSequenceSubPage {
       cy.get('.dt-calendar-header-button-prev-month').click();
     }
     cy.get('.dt-calendar-table-cell').eq(calElement).click();
-    cy.byTestId('keptn-datetime-picker-submit').should('be.enabled');
+    this.clearCalendarHours()
+      .clearCalendarMinutes()
+      .clearCalendarSeconds()
+      .typeCalendarHours(hours)
+      .typeCalendarMinutes(minutes)
+      .typeCalendarSeconds(seconds);
+    cy.byTestId('keptn-datetime-picker-submit').click();
+    return this;
+  }
+
+  public assertIsCalenderSubmitButtonEnabled(status: boolean): this {
+    cy.byTestId('keptn-datetime-picker-submit').should(status ? 'be.enabled' : 'be.disabled');
+    return this;
+  }
+
+  public typeCalendarHours(hours: string): this {
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-hours').type(hours);
-    cy.byTestId('keptn-datetime-picker-submit').should('be.disabled');
+    return this;
+  }
+
+  public typeCalendarMinutes(minutes: string): this {
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-minutes').type(minutes);
-    cy.byTestId('keptn-datetime-picker-submit').should('be.disabled');
+    return this;
+  }
+
+  public typeCalendarSeconds(seconds: string): this {
     cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-seconds').type(seconds);
-    cy.byTestId('keptn-datetime-picker-submit').should('be.enabled').click();
+    return this;
+  }
+
+  public clearCalendarHours(): this {
+    cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-hours').clear();
+    return this;
+  }
+
+  public clearCalendarMinutes(): this {
+    cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-minutes').clear();
+    return this;
+  }
+
+  public clearCalendarSeconds(): this {
+    cy.byTestId('keptn-datetime-picker-time').byTestId('keptn-time-input-seconds').clear();
     return this;
   }
 
@@ -131,7 +166,7 @@ export class TriggerSequenceSubPage {
     return this;
   }
 
-  private clickStartTime(): this {
+  public clickStartTime(): this {
     cy.byTestId('keptn-trigger-button-starttime').click();
     return this;
   }

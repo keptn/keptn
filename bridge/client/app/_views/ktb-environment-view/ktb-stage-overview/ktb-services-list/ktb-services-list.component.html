@@ -83,7 +83,9 @@
           <ng-container *ngIf="row | toType: ServiceClass as service">
             <div *ngIf="service.latestSequence">
               <ktb-evaluation-info
-                [evaluation]="service.latestSequence.getEvaluationTrace(service.stage)"
+                *ngIf="{ value: service.latestSequence.getEvaluationTrace(service.stage) } as evaluation"
+                [evaluation]="evaluation.value"
+                [fillState]="evaluation.value ? EvaluationBadgeVariant.FILL : EvaluationBadgeVariant.NONE"
               ></ktb-evaluation-info>
             </div>
             <p class="m-0" *ngIf="!service.latestSequence">-</p>

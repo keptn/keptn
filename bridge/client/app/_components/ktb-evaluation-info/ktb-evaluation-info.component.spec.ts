@@ -4,7 +4,6 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { KeptnService } from '../../../../shared/models/keptn-service';
 import { Trace } from '../../_models/trace';
-import { ResultTypes } from '../../../../shared/models/result-types';
 import { KtbEvaluationInfoModule } from './ktb-evaluation-info.module';
 
 const evaluationTrace = Trace.fromJSON({
@@ -78,7 +77,6 @@ describe('KtbEvaluationDetailsComponent', () => {
     expect(component.evaluationsLoaded).toBe(true);
     expect(component.evaluation?.data.evaluationHistory?.length).toBe(1);
     expect(component.evaluationHistory).toEqual([evaluationTrace]);
-    component.ngOnDestroy();
   }));
 
   it('should should load history if enabled and trace is not provided', fakeAsync(() => {
@@ -107,7 +105,6 @@ describe('KtbEvaluationDetailsComponent', () => {
       });
     expect(component.evaluationsLoaded).toBe(true);
     expect(component.evaluationHistory).toEqual([evaluationTrace]);
-    component.ngOnDestroy();
   }));
 
   it('should should show current evaluation in history', fakeAsync(() => {
@@ -151,36 +148,5 @@ describe('KtbEvaluationDetailsComponent', () => {
       });
     expect(component.evaluationsLoaded).toBe(true);
     expect(component.evaluationHistory).toEqual([]);
-    component.ngOnDestroy();
   }));
-
-  it('should correctly set warning status with evaluationResult', () => {
-    component.evaluationResult = {
-      result: ResultTypes.WARNING,
-      score: 0,
-    };
-    expect(component.isError).toBe(false);
-    expect(component.isWarning).toBe(true);
-    expect(component.isSuccess).toBe(false);
-  });
-
-  it('should correctly set error status with evaluationResult', () => {
-    component.evaluationResult = {
-      result: ResultTypes.FAILED,
-      score: 0,
-    };
-    expect(component.isError).toBe(true);
-    expect(component.isWarning).toBe(false);
-    expect(component.isSuccess).toBe(false);
-  });
-
-  it('should correctly set success status with evaluationResult', () => {
-    component.evaluationResult = {
-      result: ResultTypes.PASSED,
-      score: 0,
-    };
-    expect(component.isError).toBe(false);
-    expect(component.isWarning).toBe(false);
-    expect(component.isSuccess).toBe(true);
-  });
 });

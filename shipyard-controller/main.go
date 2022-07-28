@@ -168,7 +168,10 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner)
+	denyListProvider := common.NewFileReader()
+	remoteURLValidator := handler.NewRemoteURLValidator(denyListProvider)
+
+	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner, remoteURLValidator)
 
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)

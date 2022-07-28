@@ -37,7 +37,7 @@
               class="mr-2 item"
               placeholder="Choose your task"
               aria-label="Choose your task"
-              (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
+              (selectionChange)="selectedTaskChanged(data.projectName, data.subscription)"
             >
               <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
             </dt-select>
@@ -49,7 +49,7 @@
               class="mr-2 item"
               placeholder="Choose your task suffix"
               aria-label="Choose your task suffix"
-              (selectionChange)="selectedTaskChanged(data.project.projectName, data.subscription)"
+              (selectionChange)="selectedTaskChanged(data.projectName, data.subscription)"
             >
               <dt-option
                 *ngFor="let suffix of suffixes"
@@ -67,8 +67,8 @@
               data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)
             "
             (filterChanges)="
-              data.subscription.filterChanged($event, data.project.projectName);
-              subscriptionFilterChanged(data.subscription, data.project.projectName)
+              data.subscription.filterChanged($event, data.projectName);
+              subscriptionFilterChanged(data.subscription, data.projectName)
             "
             aria-label="Filter by stage and service"
             clearAllLabel="Clear all"
@@ -81,7 +81,7 @@
         <ktb-payload-viewer
           [buttonTitle]="'Show example payload'"
           [type]="getSelectedTask()"
-          [project]="data.project.projectName"
+          [project]="data.projectName"
           [stage]="data.subscription.getFirstStage()"
           [service]="data.subscription.getFirstService()"
         ></ktb-payload-viewer>
@@ -98,7 +98,7 @@
             class="mr-2"
             uitestid="updateSubscriptionButton"
             [disabled]="!isFormValid(data.subscription)"
-            (click)="updateSubscription(data.project.projectName, data.integrationId, data.subscription, data.webhook)"
+            (click)="updateSubscription(data.projectName, data.integrationId, data.subscription, data.webhook)"
             dt-button
           >
             <ktb-loading-spinner
