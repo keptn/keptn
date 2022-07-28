@@ -335,6 +335,7 @@ subjects:
     name: keptn-secret-service
 
 ---
+{{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -348,3 +349,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-shipyard-controller
+{{- end }}

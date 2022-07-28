@@ -8,10 +8,10 @@ spec:
   selector:
     matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/name: shipyard-controller
-  {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
-  replicas : 1
-  {{- else }}
+  {{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
   replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
+  {{- else }}
+  replicas : 1
   {{- end }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
