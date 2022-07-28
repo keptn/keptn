@@ -74,5 +74,6 @@ patch: {}
 exclude:
   global:
     - '**/*.spec.ts'
+    - '**/*.mock.ts'
     - '**/*_test.go'
     - 'test/**'
