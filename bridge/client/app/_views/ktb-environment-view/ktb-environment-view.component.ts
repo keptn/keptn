@@ -26,7 +26,7 @@ export class KtbEnvironmentViewComponent implements OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public selectedStageInfo?: ISelectedStageInfo;
   public isQualityGatesOnly$: Observable<boolean>;
-  public isTriggerSequenceOpen$: Observable<boolean>;
+  public isTriggerSequenceOpen: boolean;
 
   constructor(
     private dataService: DataService,
@@ -36,8 +36,8 @@ export class KtbEnvironmentViewComponent implements OnDestroy {
     @Inject(POLLING_INTERVAL_MILLIS) private initialDelayMillis: number
   ) {
     this.isQualityGatesOnly$ = this.dataService.isQualityGatesOnly;
-    this.isTriggerSequenceOpen$ = this.dataService.isTriggerSequenceOpen;
-    this.dataService.setIsTriggerSequenceOpen(false);
+    this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
+    this.dataService.isTriggerSequenceOpen = false;
     const selectedStageName$ = this.route.paramMap.pipe(
       map((params) => params.get('stageName')),
       takeUntil(this.unsubscribe$)

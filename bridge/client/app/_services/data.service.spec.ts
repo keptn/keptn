@@ -149,27 +149,6 @@ describe('DataService', () => {
     expect(loadLogSpy).not.toHaveBeenCalled();
   });
 
-  it('should correctly set isTriggerSequenceOpen', async () => {
-    // given, when
-    let value = await firstValueFrom(dataService.isTriggerSequenceOpen);
-    // then
-    expect(value).toBe(false);
-
-    // when
-    dataService.setIsTriggerSequenceOpen(true);
-
-    // then
-    value = await firstValueFrom(dataService.isTriggerSequenceOpen);
-    expect(value).toBe(true);
-
-    // when
-    dataService.setIsTriggerSequenceOpen(false);
-    value = await firstValueFrom(dataService.isTriggerSequenceOpen);
-
-    // then
-    expect(value).toBe(false);
-  });
-
   function setGetTracesResponse(traces: Trace[]): void {
     const response = new HttpResponse({ body: { events: traces, totalCount: 0, pageSize: 1, nextPageKey: 1 } });
     jest.spyOn(apiService, 'getTraces').mockReturnValue(of(response));
