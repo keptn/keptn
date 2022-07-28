@@ -58,6 +58,18 @@ describe('KtbProjectSettingsGitExtendedComponent', () => {
     expect(component.selectedForm).toBe(GitFormType.NO_UPSTREAM);
   });
 
+  it('should not select NO_UPSTREAM if git upstream is not required but page is not in create mode', () => {
+    // given
+    component.gitUpstreamRequired = false;
+    component.isCreateMode = false;
+
+    // when
+    fixture.detectChanges();
+
+    // then
+    expect(component.selectedForm).toBe(GitFormType.HTTPS);
+  });
+
   it('should select HTTPS form on init with https data given', () => {
     // given
     component.gitInputData = getDefaultHttpsData();
