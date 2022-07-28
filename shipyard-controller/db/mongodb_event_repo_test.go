@@ -279,3 +279,110 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 
 	return result
 }
+
+/*
+func TestMongoDBEventsRepo_InsertAndGetEventByID(t *testing.T) {
+	projectName := "my-project"
+	stageName := "my-stage"
+	serviceName := "my-service"
+
+	numberOfTraces := 10
+	numberOfTasksPerTrace := 3
+	repo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+
+	// first, delete all collections
+	err := repo.DeleteEventCollections(projectName)
+
+	require.Nil(t, err)
+
+	rootEvents := GenerateRootEvents(projectName, stageName, serviceName, numberOfTraces)
+
+	for _, event := range rootEvents {
+		// insert the event into the root events collection
+		err = repo.InsertEvent(projectName, event, common.RootEvent)
+		require.Nil(t, err)
+
+		// insert the event into the general events collection
+		err = repo.InsertEvent(projectName, event, "")
+		require.Nil(t, err)
+
+		eventTrace := GenerateTraceForRootEvent(projectName, stageName, serviceName, event, numberOfTasksPerTrace)
+		for _, event := range eventTrace {
+			err = repo.InsertEvent(projectName, event, "")
+			require.Nil(t, err)
+		}
+	}
+
+	// test if root events are returned correctly
+
+	// first, without pagination
+	eventsResult, err := repo.GetRootEvents(models.GetRootEventParams{
+		Project: projectName,
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(numberOfTraces), eventsResult.TotalCount)
+	require.Len(t, eventsResult.Events, numberOfTraces)
+
+	// now, check if pagination works
+	eventsResult, err = repo.GetRootEvents(models.GetRootEventParams{
+		Project:  projectName,
+		PageSize: int64(2),
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(numberOfTraces), eventsResult.TotalCount)
+	require.Len(t, eventsResult.Events, 2)
+	require.Equal(t, int64(2), eventsResult.NextPageKey)
+
+	eventsResult, err = repo.GetRootEvents(models.GetRootEventParams{
+		Project:     projectName,
+		PageSize:    int64(2),
+		NextPageKey: int64(2),
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, int64(numberOfTraces), eventsResult.TotalCount)
+	require.Len(t, eventsResult.Events, 2)
+	require.Equal(t, int64(4), eventsResult.NextPageKey)
+
+	// check if NextPageKey is set to 0 if we have reached the end of the collection
+	eventsResult, err = repo.GetRootEvents(models.GetRootEventParams{
+		Project:     projectName,
+		PageSize:    int64(8),
+		NextPageKey: int64(2),
+	})
+
+	require.Nil(t, err)
+	require.Len(t, eventsResult.Events, 8)
+	require.Equal(t, int64(0), eventsResult.NextPageKey)
+
+	// check if event traces work
+	eventTraceResult, err := repo.GetEvents(projectName, common.EventFilter{
+		KeptnContext: common.Stringp("my-keptn-context-1"),
+	})
+
+	require.Nil(t, err)
+	require.Len(t, eventTraceResult, 3*numberOfTasksPerTrace+2) // 1 triggered/started/finished event per task + sequence.triggered + sequence.finished
+	for _, event := range eventTraceResult {
+		require.Equal(t, "my-keptn-context-1", event.Shkeptncontext)
+	}
+
+	// test event deletion
+	events, err := repo.GetEvents(projectName, common.EventFilter{
+		ID: common.Stringp("my-root-event-id-1"),
+	})
+	require.Nil(t, err)
+	require.Len(t, events, 1)
+
+	err = repo.DeleteEvent(projectName, "my-root-event-id-1", common.RootEvent)
+
+	require.Nil(t, err)
+
+	events, err = repo.GetEvents(projectName, common.EventFilter{
+		ID: common.Stringp("my-root-event-id-1"),
+	}, common.RootEvent)
+	require.Equal(t, db.ErrNoEventFound, err)
+	require.Empty(t, events)
+}
+*/

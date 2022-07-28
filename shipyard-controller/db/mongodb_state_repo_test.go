@@ -3,6 +3,10 @@ package db_test
 import (
 	"context"
 	"fmt"
+	"os"
+	"testing"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -11,9 +15,6 @@ import (
 	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"os"
-	"testing"
-	"time"
 )
 
 var mongoDbVersion = "4.4.9"
@@ -325,4 +326,56 @@ func TestMongoDBStateRepo_StateRepoInsertInvalidStates(t *testing.T) {
 
 	err = mdbrepo.UpdateSequenceState(invalidState)
 	require.NotNil(t, err)
+}
+
+func TestMongoDBStateRepo_GetSequenceStateByID(t *testing.T) {
+	fmt.Println(timeutils.GetKeptnTimeStamp(time.Now()))
+
+	mdbrepo := db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance())
+
+	state := apimodels.SequenceState{
+		Name:           "test2my-sequence",
+		Service:        "test2my-service",
+		Project:        "test2my-project",
+		Time:           "test22021-05-10T10:15:00.000Z",
+		Shkeptncontext: "test2my-context",
+		State:          "test2triggered",
+	}
+
+	state2 := apimodels.SequenceState{
+		Name:           "test2my-sequence2",
+		Service:        "test2my-service",
+		Project:        "test2my-project",
+		Time:           "test22021-05-10T10:00:00.000Z",
+		Shkeptncontext: "test2my-context2",
+		State:          "test2finished",
+	}
+
+	err := mdbrepo.CreateSequenceState(state)
+	require.Nil(t, err)
+
+	err = mdbrepo.CreateSequenceState(state2)
+	require.Nil(t, err)
+
+	// Find by keptn context
+	state3, err := mdbrepo.GetSequenceStateByID(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
+			Project:      "test2my-project",
+			KeptnContext: "test2my-context",
+		},
+	})
+
+	require.Nil(t, err)
+	require.Equal(t, state, *state3)
+
+	// Find invalid
+	state4, err := mdbrepo.GetSequenceStateByID(apimodels.StateFilter{
+		GetSequenceStateParams: apimodels.GetSequenceStateParams{
+			Project:      "test2my-project",
+			KeptnContext: "test2my-notfound",
+		},
+	})
+
+	require.Equal(t, err, mongo.ErrNoDocuments)
+	require.Nil(t, state4)
 }
