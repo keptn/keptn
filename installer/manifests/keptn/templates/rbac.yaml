@@ -15,13 +15,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: keptn-configuration-service
-  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: resource-service
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
   name: keptn-shipyard-controller
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
@@ -260,21 +253,6 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-resource-service
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: keptn-configuration-service-get-secrets
-  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: resource-service
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-get-secrets
-subjects:
-  - kind: ServiceAccount
-    name: keptn-configuration-service
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1

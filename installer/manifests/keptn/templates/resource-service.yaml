@@ -32,7 +32,7 @@ spec:
         app.kubernetes.io/name: resource-service
     spec:
       securityContext:
-        fsGroup: {{ .Values.configurationService.fsGroup | default 1001 }}
+        fsGroup: {{ .Values.resourceService.fsGroup | default 1001 }}
         {{- if ge .Capabilities.KubeVersion.Minor "21" }}
         seccompProfile:
           type: RuntimeDefault
@@ -76,7 +76,7 @@ spec:
               name: resource-volume
           securityContext:
             runAsNonRoot: true
-            runAsUser: {{ .Values.configurationService.fsGroup | default 1001 }}
+            runAsUser: {{ .Values.resourceService.fsGroup | default 1001 }}
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
             privileged: false

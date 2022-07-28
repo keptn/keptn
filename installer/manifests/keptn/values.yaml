@@ -344,6 +344,7 @@ resourceService:
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
   gracePeriod: 60
+  fsGroup: 1001
   preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []
