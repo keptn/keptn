@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/keptn/keptn/shipyard-controller/leaderelection"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,6 +10,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/keptn/keptn/shipyard-controller/leaderelection"
 
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
@@ -165,7 +166,10 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner)
+	denyListProvider := common.NewFileReader()
+	remoteURLValidator := handler.NewRemoteURLValidator(denyListProvider)
+
+	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner, remoteURLValidator)
 
 	projectController := controller.NewProjectController(projectService)
 	projectController.Inject(apiV1)
