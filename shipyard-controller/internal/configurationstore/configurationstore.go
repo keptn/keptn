@@ -34,7 +34,7 @@ type GitConfigurationStore struct {
 	resourceAPI *keptnapi.ResourceHandler
 }
 
-func NewGitConfigurationStore(configurationServiceEndpoint string) *GitConfigurationStore {
+func New(configurationServiceEndpoint string) *GitConfigurationStore {
 	return &GitConfigurationStore{
 		projectAPI:  keptnapi.NewProjectHandler(configurationServiceEndpoint),
 		stagesAPI:   keptnapi.NewStageHandler(configurationServiceEndpoint),

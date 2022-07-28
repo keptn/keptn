@@ -26,7 +26,7 @@ func (f fileOpener) Open(name string) (fs.File, error) {
 
 const RemoteURLDenyListPath = "/keptn-git-config/git-remote-url-denylist"
 
-func NewFileReader() *fileReader {
+func New() *fileReader {
 	return &fileReader{
 		FileSystem: fileOpener{},
 	}

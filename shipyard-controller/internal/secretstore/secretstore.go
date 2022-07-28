@@ -29,8 +29,7 @@ type K8sSecretStore struct {
 	client kubernetes.Interface
 }
 
-// NewK8sSecretStore
-func NewK8sSecretStore(kubeAPI kubernetes.Interface) *K8sSecretStore {
+func New(kubeAPI kubernetes.Interface) *K8sSecretStore {
 	return &K8sSecretStore{client: kubeAPI}
 }
 

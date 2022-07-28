@@ -16,7 +16,7 @@ func TestConfigurationStore(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateProject(apimodels.Project{})
 		assert.Nil(t, err)
 	})
@@ -27,7 +27,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateProject(apimodels.Project{})
 		assert.NotNil(t, err)
 	})
@@ -36,7 +36,7 @@ func TestConfigurationStore(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.UpdateProject(apimodels.Project{})
 		assert.Nil(t, err)
 	})
@@ -47,7 +47,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.UpdateProject(apimodels.Project{})
 		assert.NotNil(t, err)
 	})
@@ -58,7 +58,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.UpdateProject(apimodels.Project{})
 		assert.NotNil(t, err)
 	})
@@ -67,7 +67,7 @@ func TestConfigurationStore(t *testing.T) {
 		ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.DeleteProject("my-project")
 		assert.Nil(t, err)
 	})
@@ -78,7 +78,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.DeleteProject("my-project")
 		assert.NotNil(t, err)
 	})
@@ -88,7 +88,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateStage("my-project", "my-stage")
 		assert.Nil(t, err)
 	})
@@ -99,7 +99,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateStage("my-project", "my-stage")
 		assert.NotNil(t, err)
 	})
@@ -109,7 +109,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateService("my-project", "my-stage", "my-service")
 		assert.Nil(t, err)
 	})
@@ -120,7 +120,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateService("my-project", "my-stage", "my-service")
 		assert.NotNil(t, err)
 	})
@@ -130,7 +130,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.DeleteService("my-project", "my-stage", "my-service")
 		assert.Nil(t, err)
 	})
@@ -141,7 +141,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.DeleteService("my-project", "my-stage", "my-service")
 		assert.NotNil(t, err)
 	})
@@ -152,7 +152,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateProjectShipyard("my-project", nil)
 		assert.Nil(t, err)
 	})
@@ -162,7 +162,7 @@ func TestConfigurationStore(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 		defer ts.Close()
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		err := instance.CreateProjectShipyard("my-project", nil)
 		assert.NotNil(t, err)
 	})
@@ -173,7 +173,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		resourceUri := "uri"
 		err := instance.UpdateProjectResource("my-project", &apimodels.Resource{
 			ResourceContent: "",
@@ -187,7 +187,7 @@ func TestConfigurationStore(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 		defer ts.Close()
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		resourceUri := "uri"
 		err := instance.UpdateProjectResource("my-project", &apimodels.Resource{
 			ResourceContent: "",
@@ -203,7 +203,7 @@ func TestConfigurationStore(t *testing.T) {
 		}))
 		defer ts.Close()
 
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		resource, err := instance.GetProjectResource("my-project", "uri")
 		assert.Nil(t, err)
 		assert.Equal(t, *resource, apimodels.Resource{})
@@ -214,7 +214,7 @@ func TestConfigurationStore(t *testing.T) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}))
 		defer ts.Close()
-		instance := NewGitConfigurationStore(ts.URL)
+		instance := New(ts.URL)
 		resource, err := instance.GetProjectResource("my-project", "uri")
 		assert.NotNil(t, err)
 		assert.Nil(t, resource)

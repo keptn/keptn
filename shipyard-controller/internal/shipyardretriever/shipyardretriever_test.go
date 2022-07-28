@@ -189,7 +189,7 @@ func TestShipyardRetriever_GetShipyard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sr := NewShipyardRetriever(tt.fields.configurationStore, tt.fields.projectRepo)
+			sr := New(tt.fields.configurationStore, tt.fields.projectRepo)
 			got, err := sr.GetShipyard(tt.args.projectName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetCachedShipyard() error = %v, wantErr %v", err, tt.wantErr)
@@ -273,7 +273,7 @@ func TestShipyardRetriever_GetCachedShipyard(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sr := NewShipyardRetriever(tt.fields.configurationStore, tt.fields.projectRepo)
+			sr := New(tt.fields.configurationStore, tt.fields.projectRepo)
 			got, err := sr.GetCachedShipyard(tt.args.projectName)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("GetShipyard() error = %v, wantErr %v", err, tt.wantErr)

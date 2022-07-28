@@ -113,7 +113,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
-		configurationstore.NewGitConfigurationStore(csEndpoint.String()),
+		configurationstore.New(csEndpoint.String()),
 		secretStore,
 		projectMVRepo,
 		sequenceExecutionRepo,
@@ -121,7 +121,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
 
-	repositoryProvisioner := provisioner.NewRepositoryProvisioner(env.AutomaticProvisioningURL, &http.Client{})
+	repositoryProvisioner := provisioner.New(env.AutomaticProvisioningURL, &http.Client{})
 
 	uniformRepo := createUniformRepo()
 	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(env.UniformIntegrationTTL, envVarUniformTTLDefault))
@@ -131,7 +131,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	serviceManager := handler.NewServiceManager(
 		projectMVRepo,
-		configurationstore.NewGitConfigurationStore(csEndpoint.String()),
+		configurationstore.New(csEndpoint.String()),
 		uniformRepo,
 	)
 
@@ -149,8 +149,8 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	sequenceTimeoutChannel := make(chan apimodels.SequenceTimeout)
 
-	shipyardRetriever := shipyardretriever.NewShipyardRetriever(
-		configurationstore.NewGitConfigurationStore(csEndpoint.String()),
+	shipyardRetriever := shipyardretriever.New(
+		configurationstore.New(csEndpoint.String()),
 		projectMVRepo,
 	)
 	shipyardController := controller.GetShipyardControllerInstance(
@@ -170,7 +170,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	denyListProvider := filereader.NewFileReader()
+	denyListProvider := filereader.New()
 	remoteURLValidator := provisioner.NewRemoteURLValidator(denyListProvider)
 
 	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner, remoteURLValidator)
@@ -386,7 +386,7 @@ func createEventQueueRepo() *db.MongoDBEventQueueRepo {
 }
 
 func createSecretStore(kubeAPI kubernetes.Interface) *secretstore.K8sSecretStore {
-	return secretstore.NewK8sSecretStore(kubeAPI)
+	return secretstore.New(kubeAPI)
 }
 
 func createLogRepo() *db.MongoDBLogRepo {

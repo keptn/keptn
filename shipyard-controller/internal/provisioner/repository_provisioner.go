@@ -25,7 +25,7 @@ type RepositoryProvisioner struct {
 	client          oauthutils.HTTPClient
 }
 
-func NewRepositoryProvisioner(provisioningURL string, client oauthutils.HTTPClient) *RepositoryProvisioner {
+func New(provisioningURL string, client oauthutils.HTTPClient) *RepositoryProvisioner {
 	return &RepositoryProvisioner{
 		provisioningURL: provisioningURL,
 		client:          client,

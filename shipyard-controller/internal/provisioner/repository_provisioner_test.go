@@ -26,7 +26,7 @@ func TestProvideRepository(t *testing.T) {
 	}
 
 	client := &testutils.HTTPClientMock{}
-	provisioner := NewRepositoryProvisioner("som-url", client)
+	provisioner := New("som-url", client)
 	tt := []struct {
 		args          args
 		Body          string
@@ -105,7 +105,7 @@ func TestProvideRepository(t *testing.T) {
 
 func TestDeleteRepository(t *testing.T) {
 	client := &testutils.HTTPClientMock{}
-	provisioner := NewRepositoryProvisioner("http://som-url.com", client)
+	provisioner := New("http://som-url.com", client)
 	tt := []struct {
 		Body       string
 		StatusCode int

@@ -23,7 +23,7 @@ type ShipyardRetriever struct {
 	projectRepo        db.ProjectMVRepo
 }
 
-func NewShipyardRetriever(configurationStore configurationstore.ConfigurationStore, projectRepo db.ProjectMVRepo) *ShipyardRetriever {
+func New(configurationStore configurationstore.ConfigurationStore, projectRepo db.ProjectMVRepo) *ShipyardRetriever {
 	return &ShipyardRetriever{
 		configurationStore: configurationStore,
 		projectRepo:        projectRepo,
