@@ -298,7 +298,9 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		}
 	}()
 
-	debugEngine.Run("localhost:9090")
+	go func() {
+		debugEngine.Run("localhost:9090")
+	}()
 
 	if env.DisableLeaderElection {
 		// single shipyard
