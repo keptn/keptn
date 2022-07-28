@@ -405,6 +405,11 @@ class ProjectSettingsPage {
     return this;
   }
 
+  public assertHttpsSelected(status: boolean): this {
+    cy.byTestId('ktb-https-form-button').should(status ? 'have.class' : 'not.have.class', 'dt-radio-checked');
+    return this;
+  }
+
   public selectHttpsForm(): this {
     cy.byTestId('ktb-https-form-button').click();
     return this;
