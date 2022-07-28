@@ -286,6 +286,11 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		Handler: engine,
 	}
 
+	srv_debug := &http.Server{
+		Addr:    ":9090",
+		Handler: debugEngine,
+	}
+
 	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}, nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent)); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
@@ -299,7 +304,9 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	}()
 
 	go func() {
-		debugEngine.Run("localhost:9090")
+		if err := srv_debug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.WithError(err).Error("could not start debug server")
+		}
 	}()
 
 	if env.DisableLeaderElection {
