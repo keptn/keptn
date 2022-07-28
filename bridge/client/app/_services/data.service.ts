@@ -57,7 +57,7 @@ export class DataService {
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   private _evaluationResults = new Subject<EvaluationHistory>();
-  private _isTriggerSequenceOpen = new BehaviorSubject<boolean>(false);
+  public isTriggerSequenceOpen = false;
 
   constructor(private apiService: ApiService) {}
 
@@ -83,14 +83,6 @@ export class DataService {
 
   get isQualityGatesOnly(): Observable<boolean> {
     return this._isQualityGatesOnly.asObservable();
-  }
-
-  get isTriggerSequenceOpen(): Observable<boolean> {
-    return this._isTriggerSequenceOpen.asObservable();
-  }
-
-  public setIsTriggerSequenceOpen(status: boolean): void {
-    this._isTriggerSequenceOpen.next(status);
   }
 
   get projectName(): Observable<string> {

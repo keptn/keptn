@@ -6,7 +6,7 @@
       [selectedStageInfo]="selectedStageInfo"
       (selectedStageInfoChange)="setSelectedStageInfo(project.projectName, $event)"
       (filteredServicesChange)="stageDetails.filteredServices = $event"
-      [isTriggerSequenceOpen]="!!(isTriggerSequenceOpen$ | async)"
+      [isTriggerSequenceOpen]="isTriggerSequenceOpen"
     ></ktb-stage-overview>
     <ktb-stage-details
       fxFlex="30"
