@@ -61,6 +61,7 @@ export class KtbAppHeaderComponent implements OnInit, OnDestroy, OnChanges {
   ngOnInit(): void {
     this.titleService.setTitle(this.appTitle);
     this.setAppFavicon(this.logoInvertedUrl);
+    this.setProject();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
