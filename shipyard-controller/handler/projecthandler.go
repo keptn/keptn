@@ -301,7 +301,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
-	if ph.Env.AutomaticProvisioningURL != "" && params.GitCredentials == nil {
+	if provideProvisionedRepository(ph.Env.AutomaticProvisioningURL, params) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
 			log.Errorf(err.Error())
@@ -319,11 +319,9 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			},
 			User: provisioningData.GitUser,
 		}
-	} else {
-		if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
-			SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
-			return
-		}
+	} else if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+		return
 	}
 
 	common.LockProject(*params.Name)
@@ -541,4 +539,11 @@ func (ph *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, proje
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
 	return ph.EventSender.SendEvent(ce)
+}
+
+func provideProvisionedRepository(provisionURL string, params *models.CreateProjectParams) bool {
+	if provisionURL != "" && params.GitCredentials == nil {
+		return true
+	}
+	return false
 }
