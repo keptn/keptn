@@ -12,7 +12,12 @@ export default {
   title: 'Components/App Header',
   decorators: [
     moduleMetadata({
-      imports: [KtbAppHeaderModule, HttpClientModule, RouterTestingModule, BrowserAnimationsModule],
+      imports: [
+        KtbAppHeaderModule,
+        HttpClientModule,
+        RouterTestingModule.withRoutes([{ path: '**', redirectTo: '/' }]),
+        BrowserAnimationsModule,
+      ],
     }),
   ],
   parameters: {
