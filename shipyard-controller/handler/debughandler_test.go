@@ -2,7 +2,6 @@ package handler_test
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -84,16 +83,6 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 		w := performRequest(router, tt.request)
 
 		require.Equal(t, tt.wantStatus, w.Code)
-		//w.Result().Body.Read()
-		fmt.Println(w.Body.Bytes())
-		fmt.Println(w.Body.Bytes())
-		fmt.Println(w.Body.Bytes())
-		fmt.Println(w.Body.Bytes())
-		fmt.Println(w.Body.Bytes())
-		fmt.Println(w.Body.Bytes())
-		fmt.Println(w.Body.Bytes())
-		fmt.Println("heeeeeeeeeeeeeeeeeeeeeeerrrrreeeeeeee")
-		fmt.Println(string(w.Body.Bytes()))
 
 		if tt.wantStatus == http.StatusOK {
 			var object []models.SequenceExecution
@@ -411,7 +400,6 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		require.Equal(t, tt.wantStatus, w.Code)
 
 		if tt.wantStatus == http.StatusOK {
-			fmt.Println(string(w.Body.Bytes()))
 			var object apimodels.Events
 			err := json.Unmarshal(w.Body.Bytes(), &object)
 			require.Nil(t, err)
