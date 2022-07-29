@@ -39,6 +39,19 @@ func TestConfigureMonitoringCmdForDatadog(t *testing.T) {
 	}
 }
 
+func TestConfigureMonitoringCmdForSumologic(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*params.Project = ""
+	*params.Service = ""
+	cmd := fmt.Sprintf("configure monitoring sumologic --project=%s --service=%s --mock", "sockshop", "carts")
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
 func TestConfigureMonitoringCmdForPrometheusWithWrongArgs(t *testing.T) {
 
 	credentialmanager.MockAuthCreds = true
@@ -79,6 +92,27 @@ func TestConfigureMonitoringCmdForDatadogWithWrongArgs(t *testing.T) {
 	*params.Project = ""
 	*params.Service = ""
 	cmd = fmt.Sprintf("configure monitoring datadog --service=%s --mock", "carts")
+	_, err = executeActionCommandC(cmd)
+	if err.Error() != "Please specify a project" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+func TestConfigureMonitoringCmdForSumologicWithWrongArgs(t *testing.T) {
+
+	credentialmanager.MockAuthCreds = true
+
+	*params.Project = ""
+	*params.Service = ""
+	cmd := fmt.Sprintf("configure monitoring sumologic --project=%s --mock", "sockshop")
+	_, err := executeActionCommandC(cmd)
+	if err.Error() != "Please specify a service" {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+
+	*params.Project = ""
+	*params.Service = ""
+	cmd = fmt.Sprintf("configure monitoring sumologic --service=%s --mock", "carts")
 	_, err = executeActionCommandC(cmd)
 	if err.Error() != "Please specify a project" {
 		t.Errorf(unexpectedErrMsg, err)
