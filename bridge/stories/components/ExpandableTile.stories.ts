@@ -17,7 +17,7 @@ export default {
 
 const template: Story = (args) => ({
   props: args,
-  template: `<ktb-expandable-tile alignment="${args.alignment}" [expanded]="${args.expanded}">
+  template: `<ktb-expandable-tile [alignment]="alignment" [expanded]="expanded">
         <span ktb-expandable-tile-header>Expandable tile header</span>
         This is the content of the tile
     </ktb-expandable-tile>`,
