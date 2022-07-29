@@ -565,7 +565,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	commitID := storeWithCommit(t, projectName, "hardening", serviceName, "invalid-content", resourceUri)
 
 	t.Logf("Checking resource with commit ID")
-	resp, err := ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+resourceUri+"?gitCommitID="+commitID, 3)
+	resp, err := ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+resourceUri+"?gitCommitID="+commitID, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -577,7 +577,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	require.Equal(t, resourceContent, resource.ResourceContent)
 
 	t.Logf("Checking resource without commit ID")
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+resourceUri, 3)
+	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+resourceUri, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -589,7 +589,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	require.Equal(t, resourceContent, resource.ResourceContent)
 
 	t.Logf("Checking all resources without commit ID")
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource", 3)
+	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource", 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -604,7 +604,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	commitID2 := storeWithCommit(t, projectName, "hardening", serviceName, "new-invalid-content", newResourceUri)
 
 	t.Logf("Checking second resource with commit ID")
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID2, 3)
+	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID2, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -616,7 +616,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	require.Equal(t, newResourceContent, resource.ResourceContent)
 
 	t.Logf("Checking second resource without commit ID")
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri, 3)
+	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri, 3)
 	require.Nil(t, err)
 	require.Equal(t, 200, resp.Response().StatusCode)
 
@@ -628,7 +628,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	require.Equal(t, newResourceContent, resource.ResourceContent)
 
 	t.Logf("Checking second resource with old commit ID")
-	resp, err = ApiGETRequest("/configuration-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID, 3)
+	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID, 3)
 	require.Nil(t, err)
 	require.Equal(t, 404, resp.Response().StatusCode)
 }
