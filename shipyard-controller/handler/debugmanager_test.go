@@ -277,7 +277,7 @@ func TestDebugManager_GetAllEvents(t *testing.T) {
 				},
 			},
 			expectedErrorResult:    db.ErrNoEventFound,
-			expectedProjectsResult: []*apimodels.KeptnContextExtendedCE{},
+			expectedProjectsResult: nil,
 		},
 		{
 			name: "GET eventByID err",
@@ -293,7 +293,7 @@ func TestDebugManager_GetAllEvents(t *testing.T) {
 				},
 			},
 			expectedErrorResult:    errors.New("error"),
-			expectedProjectsResult: []*apimodels.KeptnContextExtendedCE{},
+			expectedProjectsResult: nil,
 		},
 	}
 

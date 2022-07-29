@@ -1,6 +1,8 @@
 package handler_test
 
 import (
+	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -20,11 +22,12 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 	}
 
 	tests := []struct {
-		name        string
-		fields      fields
-		request     *http.Request
-		wantStatus  int
-		projectName string
+		name         string
+		fields       fields
+		request      *http.Request
+		wantStatus   int
+		projectName  string
+		wantResponse []models.SequenceExecution
 	}{
 		{
 			name: "get all sequences ok",
@@ -35,10 +38,10 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname", nil),
-			wantStatus: http.StatusOK,
-
-			projectName: "projectname",
+			request:      httptest.NewRequest("GET", "/sequences/project/projectname", nil),
+			wantStatus:   http.StatusOK,
+			wantResponse: []models.SequenceExecution{},
+			projectName:  "projectname",
 		},
 		{
 			name: "get all sequences project not found",
@@ -49,10 +52,10 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname", nil),
-			wantStatus: http.StatusNotFound,
-
-			projectName: "projectname",
+			request:      httptest.NewRequest("GET", "/sequences/project/projectname", nil),
+			wantStatus:   http.StatusNotFound,
+			wantResponse: nil,
+			projectName:  "projectname",
 		},
 		{
 			name: "get all sequences internal error",
@@ -63,10 +66,10 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname", nil),
-			wantStatus: http.StatusInternalServerError,
-
-			projectName: "projectname",
+			request:      httptest.NewRequest("GET", "/sequences/project/projectname", nil),
+			wantStatus:   http.StatusInternalServerError,
+			wantResponse: nil,
+			projectName:  "projectname",
 		},
 	}
 
@@ -81,6 +84,23 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 		w := performRequest(router, tt.request)
 
 		require.Equal(t, tt.wantStatus, w.Code)
+		//w.Result().Body.Read()
+		fmt.Println(w.Body.Bytes())
+		fmt.Println(w.Body.Bytes())
+		fmt.Println(w.Body.Bytes())
+		fmt.Println(w.Body.Bytes())
+		fmt.Println(w.Body.Bytes())
+		fmt.Println(w.Body.Bytes())
+		fmt.Println(w.Body.Bytes())
+		fmt.Println("heeeeeeeeeeeeeeeeeeeeeeerrrrreeeeeeee")
+		fmt.Println(string(w.Body.Bytes()))
+
+		if tt.wantStatus == http.StatusOK {
+			var object []models.SequenceExecution
+			err := json.Unmarshal(w.Body.Bytes(), &object)
+			require.Nil(t, err)
+			require.Equal(t, object, tt.wantResponse)
+		}
 
 		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetAllSequencesForProjectCalls()[0].ProjectName)
 	}
@@ -98,6 +118,7 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 		wantStatus     int
 		projectName    string
 		shkeptncontext string
+		wantResponse   *apimodels.SequenceState
 	}{
 		{
 			name: "get sequence by id ok",
@@ -108,9 +129,9 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
-			wantStatus: http.StatusOK,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
+			wantStatus:     http.StatusOK,
+			wantResponse:   &apimodels.SequenceState{},
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -123,9 +144,9 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
-			wantStatus: http.StatusNotFound,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
+			wantStatus:     http.StatusNotFound,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -138,9 +159,9 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
-			wantStatus: http.StatusNotFound,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
+			wantStatus:     http.StatusNotFound,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -153,9 +174,9 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
-			wantStatus: http.StatusInternalServerError,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context", nil),
+			wantStatus:     http.StatusInternalServerError,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -172,6 +193,14 @@ func TestDebughandlerGetSequenceByID(t *testing.T) {
 		w := performRequest(router, tt.request)
 
 		require.Equal(t, tt.wantStatus, w.Code)
+
+		if tt.wantStatus == http.StatusOK {
+			var object apimodels.SequenceState
+			err := json.Unmarshal(w.Body.Bytes(), &object)
+			require.Nil(t, err)
+
+			require.Equal(t, object, *tt.wantResponse)
+		}
 
 		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetSequenceByIDCalls()[0].ProjectName)
 		require.Equal(t, tt.shkeptncontext, tt.fields.DebugManager.GetSequenceByIDCalls()[0].Shkeptncontext)
@@ -192,9 +221,10 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 		projectName    string
 		shkeptncontext string
 		eventId        string
+		wantResponse   *apimodels.KeptnContextExtendedCE
 	}{
 		{
-			name: "get all events ok",
+			name: "get event by id ok",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName, shkeptncontext, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
@@ -202,15 +232,15 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
-			wantStatus: http.StatusOK,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
+			wantStatus:     http.StatusOK,
+			wantResponse:   &apimodels.KeptnContextExtendedCE{},
 			projectName:    "projectname",
 			shkeptncontext: "context",
 			eventId:        "eventid",
 		},
 		{
-			name: "get all events project not found",
+			name: "get event by id project not found",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName, shkeptncontext, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
@@ -218,15 +248,15 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
-			wantStatus: http.StatusNotFound,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
+			wantStatus:     http.StatusNotFound,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 			eventId:        "eventid",
 		},
 		{
-			name: "get all events sequence not found",
+			name: "get event by id sequence not found",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName, shkeptncontext, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
@@ -234,15 +264,15 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
-			wantStatus: http.StatusNotFound,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
+			wantStatus:     http.StatusNotFound,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 			eventId:        "eventid",
 		},
 		{
-			name: "get all events internal error",
+			name: "get event by id internal error",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetEventByIDFunc: func(projectName, shkeptncontext, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
@@ -250,9 +280,9 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
-			wantStatus: http.StatusInternalServerError,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event/eventid", nil),
+			wantStatus:     http.StatusInternalServerError,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 			eventId:        "eventid",
@@ -271,6 +301,13 @@ func TestDebughandlerGetEventByID(t *testing.T) {
 
 		require.Equal(t, tt.wantStatus, w.Code)
 
+		if tt.wantStatus == http.StatusOK {
+			var object apimodels.KeptnContextExtendedCE
+			err := json.Unmarshal(w.Body.Bytes(), &object)
+			require.Nil(t, err)
+			require.Equal(t, &object, tt.wantResponse)
+		}
+
 		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetEventByIDCalls()[0].ProjectName)
 		require.Equal(t, tt.shkeptncontext, tt.fields.DebugManager.GetEventByIDCalls()[0].Shkeptncontext)
 		require.Equal(t, tt.eventId, tt.fields.DebugManager.GetEventByIDCalls()[0].EventId)
@@ -283,6 +320,13 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		DebugManager *fake.IDebugManagerMock
 	}
 
+	var expected = &apimodels.Events{
+		PageSize:    0,
+		NextPageKey: "0",
+		TotalCount:  0,
+		Events:      []*apimodels.KeptnContextExtendedCE{},
+	}
+
 	tests := []struct {
 		name           string
 		fields         fields
@@ -290,6 +334,7 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		wantStatus     int
 		projectName    string
 		shkeptncontext string
+		wantResponse   *apimodels.Events
 	}{
 		{
 			name: "get all events ok",
@@ -300,9 +345,9 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
-			wantStatus: http.StatusOK,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
+			wantStatus:     http.StatusOK,
+			wantResponse:   expected,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -315,9 +360,9 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
-			wantStatus: http.StatusNotFound,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
+			wantStatus:     http.StatusNotFound,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -330,9 +375,9 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
-			wantStatus: http.StatusNotFound,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
+			wantStatus:     http.StatusNotFound,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -345,9 +390,9 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 					},
 				},
 			},
-			request:    httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
-			wantStatus: http.StatusInternalServerError,
-
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/event", nil),
+			wantStatus:     http.StatusInternalServerError,
+			wantResponse:   nil,
 			projectName:    "projectname",
 			shkeptncontext: "context",
 		},
@@ -364,6 +409,14 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		w := performRequest(router, tt.request)
 
 		require.Equal(t, tt.wantStatus, w.Code)
+
+		if tt.wantStatus == http.StatusOK {
+			fmt.Println(string(w.Body.Bytes()))
+			var object apimodels.Events
+			err := json.Unmarshal(w.Body.Bytes(), &object)
+			require.Nil(t, err)
+			require.Equal(t, object, *tt.wantResponse)
+		}
 
 		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetAllEventsCalls()[0].ProjectName)
 		require.Equal(t, tt.shkeptncontext, tt.fields.DebugManager.GetAllEventsCalls()[0].Shkeptncontext)
