@@ -1,7 +1,7 @@
 import { Trace } from '../../_models/trace';
 import {
   createDataPoints,
-  evaluationToDataPoint,
+  evaluationToScoreDataPoint,
   filterUnparsedEvaluations,
   getScoreInfo,
   getScoreState,
@@ -37,7 +37,7 @@ describe('KtbEvaluationDetailsUtils', () => {
     const scoreValue = evaluation.data.evaluation?.score ?? 0;
 
     // when
-    const dataPoint = evaluationToDataPoint(evaluation, scoreValue);
+    const dataPoint = evaluationToScoreDataPoint(evaluation, scoreValue);
 
     // then
     expect(dataPoint.xElement).toBe('2020-11-10 12:12');
@@ -206,6 +206,22 @@ describe('KtbEvaluationDetailsUtils', () => {
     expect(failedScoreInfo).toBe(' < 75');
     expect(warningScoreInfo).toBe(' >= 75');
     expect(passedScoreInfo).toBe(' >= 90');
+  });
+
+  describe('Line chart utils', () => {
+    it('should correctly map evaluation to chartPoints', () => {});
+
+    it('should correctly set score to failed color', () => {});
+
+    it('should correctly set score to warning color', () => {});
+
+    it('should correctly set score to success color', () => {});
+
+    it('should correctly return unique labels', () => {});
+
+    it('should not change labels if they are already unique', () => {});
+
+    it('should correctly return tooltip labels', () => {});
   });
 
   function getTraceWithSloContent(

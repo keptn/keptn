@@ -27,9 +27,19 @@ import { ResultTypes } from '../../../../shared/models/result-types';
 import { EvaluationHistory } from '../../_interfaces/evaluation-history';
 import { AppUtils } from '../../_utils/app.utils';
 import { IDataPoint } from '../../_interfaces/heatmap';
-import { createDataPoints, getSliResultInfo, parseSloOfEvaluations, SliInfo } from './ktb-evaluation-details-utils';
+import {
+  createChartPoints,
+  createChartTooltipLabels,
+  createChartXLabels,
+  createDataPoints,
+  getSliResultInfo,
+  parseSloOfEvaluations,
+  SliInfo,
+} from './ktb-evaluation-details-utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
+import { ChartItem } from '../../_interfaces/chart';
+import { DateFormatPipe } from 'ngx-moment';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
@@ -110,6 +120,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public HeatmapPointClass = HeatmapPoint;
   public comparedIndicatorResults: IndicatorResult[][] = [];
+  public chartPoints?: ChartItem[];
+  public chartXLabels: Record<number, string> = {};
+  public chartTooltipLabels: Record<number, string> = {};
   @Input() public showChart = true;
   @Input() public isInvalidated = false;
 
@@ -327,7 +340,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     private clipboard: ClipboardService,
     public dateUtil: DateUtil,
     private zone: NgZone,
-    private featureFlagService: FeatureFlagsService
+    private featureFlagService: FeatureFlagsService,
+    private dateFormatPipe: DateFormatPipe
   ) {}
 
   public ngOnInit(): void {
@@ -404,6 +418,15 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     }
 
     if (this.showChart) {
+      // D3 data
+      this.dataPoints = createDataPoints(evaluationHistory);
+      this.chartPoints = createChartPoints(evaluationHistory);
+      this.chartXLabels = createChartXLabels(evaluationHistory);
+      this.chartTooltipLabels = createChartTooltipLabels(evaluationHistory, (time: string) =>
+        this.dateFormatPipe.transform(time, this.dateUtil.getDateTimeFormat())
+      );
+      // D3 data
+
       const chartSeries = this.getChartSeries(evaluationHistory);
       this.sortChartSeries(chartSeries);
       this.updateHeatmapOptions(chartSeries);
@@ -426,7 +449,6 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         this._heatmapSeries = this._heatmapSeriesFull;
       }
 
-      this.dataPoints = createDataPoints(evaluationHistory);
       this._evaluationDatas = evaluationHistory;
     }
 
