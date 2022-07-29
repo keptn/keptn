@@ -4,6 +4,7 @@
     "types": ["node"],
     "allowSyntheticDefaultImports": true
   },
-  "exclude": ["../client/**/*.spec.ts"],
+  "exclude": [],
+  "include": [],
   "files": ["./typings.d.ts"]
 }
