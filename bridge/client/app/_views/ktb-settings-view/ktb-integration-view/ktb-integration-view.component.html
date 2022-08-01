@@ -77,7 +77,7 @@
             <dt-row
               *dtRowDef="let row; columns: ['name', 'version', 'host', 'namespace', 'location', 'subscription']"
               class="pointer"
-              [class.active]="selectedUniformRegistrationId === toUniformRegistration(row).id"
+              [class.active]="selectedUniformRegistrationId.id === toUniformRegistration(row).id"
               [attr.disabled]="!toUniformRegistration(row).hasSubscriptions(params.projectName)"
               [dtOverlay]="getOverlay(row, params.projectName, noRegistration)"
               (click)="setSelectedUniformRegistration(row, params.projectName)"

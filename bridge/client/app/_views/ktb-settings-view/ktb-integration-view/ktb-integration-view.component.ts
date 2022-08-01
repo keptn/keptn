@@ -1,22 +1,21 @@
 import { Component, TemplateRef } from '@angular/core';
 import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
-import { combineLatestWith, merge, Observable, shareReplay, Subject, switchMap } from 'rxjs';
+import { EMPTY, merge, mergeMap, Observable, of, shareReplay, Subject, switchMap } from 'rxjs';
 import { DataService } from '../../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { distinctUntilChanged, filter, finalize, map, tap } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, tap } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../../../../shared/interfaces/uniform-registration-log';
 import { UniformRegistration } from '../../../_models/uniform-registration';
 import { Location } from '@angular/common';
 
 export type Params = { projectName: string; integrationId?: string };
+export type SelectedId = { id?: string };
 
 const sortConfig: Record<string, (u: UniformRegistration) => string> = {
   host: (u) => u.metadata.hostname,
   namespace: (u) => u.metadata.kubernetesmetadata.namespace,
   location: (u) => u.metadata.location,
 };
-
-const empty = '--EMPTY--';
 
 @Component({
   selector: 'ktb-keptn-services-list',
@@ -30,12 +29,12 @@ export class KtbIntegrationViewComponent {
   public lastSeen?: Date;
   private uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
 
-  public params$: Observable<Params> = this.route.paramMap.pipe(
-    filter((paramMap) => !!paramMap.get('projectName')),
-    map((paramMap) => ({
-      projectName: paramMap.get('projectName') ?? empty,
-      integrationId: paramMap.get('integrationId') ?? undefined,
-    }))
+  public params$ = this.route.paramMap.pipe(
+    mergeMap((paramMap) => {
+      const projectName = paramMap.get('projectName');
+      const integrationId = paramMap.get('integrationId');
+      return projectName ? of({ projectName, integrationId: integrationId ?? undefined } as Params) : EMPTY;
+    })
   );
 
   private registrations$ = this.dataService
@@ -49,17 +48,21 @@ export class KtbIntegrationViewComponent {
     })
   );
 
-  public selectedUniformRegistrationId$ = merge(
-    this.params$.pipe(map((params) => params.integrationId ?? empty)),
+  private _selectedUniformRegistrationId$ = merge(
+    this.params$.pipe(map((params) => params.integrationId)),
     this.selectUniformRegistrationId$.asObservable()
   ).pipe(distinctUntilChanged(), shareReplay(1));
 
-  public selectedUniformRegistration$ = this.selectedUniformRegistrationId$.pipe(
-    combineLatestWith(this.registrations$),
-    map(([regId, registrations]) => (regId ? registrations.find((r) => r.id === regId) : undefined))
+  public selectedUniformRegistrationId$ = this._selectedUniformRegistrationId$.pipe(
+    map((id) => ({ id } as SelectedId))
   );
 
-  public uniformRegistrationLogs$ = this.selectedUniformRegistrationId$.pipe(
+  public selectedUniformRegistration$ = this._selectedUniformRegistrationId$.pipe(
+    map((regId) => (regId ? this.uniformRegistrations.data.find((r) => r.id === regId) : undefined))
+  );
+
+  public uniformRegistrationLogs$ = this._selectedUniformRegistrationId$.pipe(
+    tap(() => (this.isLoadingLogs = true)),
     switchMap((uniformRegistrationId) => this.loadLogs(uniformRegistrationId)),
     map((logs) => sortLogs(logs))
   );
@@ -72,7 +75,6 @@ export class KtbIntegrationViewComponent {
   ) {}
 
   public setSelectedUniformRegistration(uniformRegistration: UniformRegistration, projectName: string): void {
-    this.isLoadingLogs = true;
     const routeUrl = this.router.createUrlTree([
       '/project',
       projectName,
@@ -119,11 +121,13 @@ export class KtbIntegrationViewComponent {
     return <UniformRegistration>item;
   }
 
-  private loadLogs(uniformRegistrationId: string): Observable<UniformRegistrationLog[]> {
-    return this.dataService.getUniformRegistrationLogs(uniformRegistrationId).pipe(
-      tap((logs) => this.setUniformDate(uniformRegistrationId, logs)),
-      finalize(() => (this.isLoadingLogs = false))
-    );
+  private loadLogs(uniformRegistrationId?: string): Observable<UniformRegistrationLog[]> {
+    const load$ = !uniformRegistrationId
+      ? of([])
+      : this.dataService
+          .getUniformRegistrationLogs(uniformRegistrationId)
+          .pipe(tap((logs) => this.setUniformDate(uniformRegistrationId, logs)));
+    return load$.pipe(finalize(() => (this.isLoadingLogs = false)));
   }
 
   private setUniformDate(uniformRegistrationId: string, logs: UniformRegistrationLog[]): void {
@@ -145,12 +149,9 @@ export function sortRegistrations(
 
 export function sortLogs(logs: UniformRegistrationLog[]): UniformRegistrationLog[] {
   return logs.sort((a, b) => {
-    if (a.time.valueOf() > b.time.valueOf()) {
-      return -1;
-    } else if (a.time.valueOf() < b.time.valueOf()) {
-      return 1;
-    }
-    return 0;
+    const dateA = new Date(a.time);
+    const dateB = new Date(b.time);
+    return dateA.getTime() - dateB.getTime();
   });
 }
 

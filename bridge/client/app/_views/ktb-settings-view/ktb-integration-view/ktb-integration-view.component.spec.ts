@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { compare, KtbIntegrationViewComponent, sortRegistrations } from './ktb-integration-view.component';
+import { compare, KtbIntegrationViewComponent, sortLogs, sortRegistrations } from './ktb-integration-view.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
@@ -103,7 +103,7 @@ describe(KtbIntegrationViewComponent.name, () => {
     const actual = await firstValueFrom(component.selectedUniformRegistrationId$);
 
     // then
-    expect(actual).toBe('abcdef');
+    expect(actual).toEqual({ id: 'abcdef' });
   });
 
   it('should load uniform registrations and build the data source', async () => {
@@ -123,7 +123,7 @@ describe(KtbIntegrationViewComponent.name, () => {
     u.id = id;
     component.selectedUniformRegistrationId$.subscribe((actual) => {
       // then
-      expect(actual).toBe(id);
+      expect(actual).toEqual({ id });
       done();
     });
 
@@ -140,6 +140,7 @@ describe(KtbIntegrationViewComponent.name, () => {
         integrationId,
       })
     );
+    component.uniformRegistrations$.subscribe();
 
     // when
     const actual = await firstValueFrom(component.selectedUniformRegistration$);
@@ -205,7 +206,7 @@ describe(KtbIntegrationViewComponent.name, () => {
     expect(actual).toEqual(templateRef);
   });
 
-  describe(KtbIntegrationViewComponent.name + 'HelperFunctions', () => {
+  describe(KtbIntegrationViewComponent.name + '_HelperFunctions', () => {
     it('should compare', () => {
       expect(compare('a', 'b', true)).toBe(-1);
       expect(compare('a', 'b', false)).toBe(1);
@@ -269,6 +270,38 @@ describe(KtbIntegrationViewComponent.name, () => {
       const idSortOrder = (r: UniformRegistration): string => r.id;
       expect(actualAsc.map(idSortOrder)).toEqual(['2', '3', '1']);
       expect(actualDesc.map(idSortOrder)).toEqual(['1', '3', '2']);
+    });
+
+    it('should sort logs by time', () => {
+      // given
+      const logs = [
+        {
+          integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
+          message: '2',
+          time: '2021-05-11T08:04:05.000Z',
+        },
+        {
+          integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
+          message: '3',
+          time: '2021-05-11T08:04:10.000Z',
+        },
+        {
+          integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
+          message: '1',
+          time: '2021-05-10T09:04:05.000Z',
+        },
+        {
+          integrationid: '6d3190bed8866ebd90ec3d12875e890802d08d47',
+          message: '4',
+          time: '2021-10-10T03:04:05.000Z',
+        },
+      ];
+
+      // when
+      const actual = sortLogs(logs);
+
+      // then
+      expect(actual.map((l) => l.message)).toEqual(['1', '2', '3', '4']);
     });
 
     function getUniform(id: string, name: string, host: string, loc: string, namespace: string): UniformRegistration {
