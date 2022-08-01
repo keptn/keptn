@@ -178,7 +178,7 @@ describe('KtbWebhookSettingsComponent', () => {
 
     for (let i = 0; i < component.headerControls.length; ++i) {
       expect(WebhookConfigMock.header[i]).toEqual({
-        key: component.headerControls[i].get('name')?.value,
+        key: component.headerControls[i].get('key')?.value,
         value: component.headerControls[i].get('value')?.value,
       });
     }
@@ -294,7 +294,7 @@ describe('KtbWebhookSettingsComponent', () => {
     component.getFormControl('method').setValue(component.webhookMethods[0]);
     component.getFormControl('url').setValue('https://example.com');
     component.addHeader();
-    component.headerControls[0].get('name')?.setValue('x-token');
+    component.headerControls[0].get('key')?.setValue('x-token');
     component.headerControls[0].get('value')?.setValue('token-value');
     component.getFormControl('payload').setValue('payload');
     component.getFormControl('proxy').setValue('https://proxy.com');
@@ -305,7 +305,7 @@ describe('KtbWebhookSettingsComponent', () => {
     // then
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({
-      header: [{ name: 'x-token', value: 'token-value' }],
+      header: [{ key: 'x-token', value: 'token-value' }],
       method: 'GET',
       payload: 'payload',
       proxy: 'https://proxy.com',
