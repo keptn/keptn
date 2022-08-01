@@ -116,5 +116,6 @@
     "minimist": "1.2.6",
     "css-what": "~6.1.0",
     "glob-parent": "~6.0.0"
-  }
+  },
+  "version": "0.0.0"
 }
