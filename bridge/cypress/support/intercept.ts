@@ -449,3 +449,24 @@ export function interceptHeatmapWithKeySLI(): void {
     fixture: 'get.sockshop.service.carts.evaluations.keysli.mock.json',
   }).as('heatmapEvaluations');
 }
+
+export function interceptSubscription(
+  integrationID: string,
+  subscriptionID: string,
+  projectName?: string,
+  service?: string,
+  stage?: string,
+  event = 'sh.keptn.event.test.finished'
+): void {
+  cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
+    body: {
+      event: event,
+      filter: {
+        projects: [projectName],
+        services: [service],
+        stages: [stage],
+      },
+      id: subscriptionID,
+    },
+  });
+}

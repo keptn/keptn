@@ -238,13 +238,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.SUBSCRIPTION) {
-        console.log('Deleting subscription');
         this.deleteSubscription();
       }
     });
   }
 
-  private deleteSubscription(): void {
+  public deleteSubscription(): void {
     this.data$.subscribe((data) => {
       if (data.subscription.id)
         this.dataService.deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService).subscribe(
@@ -256,7 +255,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
             this.router.navigate([
               '/',
               'project',
-              data.project.projectName,
+              data.projectName,
               'settings',
               'uniform',
               'integrations',
@@ -264,6 +263,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
             ]);
           },
           (err) => {
+            console.log('test2');
             const deletionError = 'Subscription could not be deleted: ' + err.message;
             this.eventService.deletionProgressEvent.next({
               error: deletionError,

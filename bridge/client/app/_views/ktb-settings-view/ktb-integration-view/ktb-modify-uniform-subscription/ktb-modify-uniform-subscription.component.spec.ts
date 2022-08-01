@@ -17,6 +17,8 @@ import { KtbIntegrationViewComponent } from '../ktb-integration-view.component';
 import { IWebhookConfigClient } from '../../../../../../shared/interfaces/webhook-config';
 import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { EventService } from '../../../../_services/event.service';
+import { DeleteResult, DeleteType } from '../../../../_interfaces/delete';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -38,6 +40,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
         RouterTestingModule.withRoutes([
           {
             path: 'project/:projectName/settings/uniform/integrations/:integrationId',
+            component: KtbIntegrationViewComponent,
+          },
+          {
+            path: 'project/:projectName/settings/uniform/integrations/',
             component: KtbIntegrationViewComponent,
           },
         ]),
@@ -386,6 +392,77 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const notification = document.getElementsByTagName('dt-confirmation-dialog-state')[0];
     // It still exists in the dom but is hidden - so we test for aria-hidden
     expect(notification.getAttribute('aria-hidden')).toEqual('true');
+  });
+
+  it('should call deleteSubscription if deletionTriggeredEvent is called with SUBSCRIPTION type', () => {
+    // given
+    const eventService = TestBed.inject(EventService);
+    const deleteSpy = jest.spyOn(component, 'deleteSubscription');
+    fixture.detectChanges();
+
+    // when
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.SUBSCRIPTION, name: '' });
+
+    // then
+    expect(deleteSpy).toHaveBeenCalled();
+  });
+
+  it('should not call deleteSubscription if deletionTriggeredEvent is called with other type', () => {
+    // given
+    const eventService = TestBed.inject(EventService);
+    const deleteSpy = jest.spyOn(component, 'deleteSubscription');
+    fixture.detectChanges();
+
+    // when, then
+    for (const type of [DeleteType.PROJECT, DeleteType.SERVICE]) {
+      eventService.deletionTriggeredEvent.next({ type: type, name: '' });
+
+      // then
+      expect(deleteSpy).not.toHaveBeenCalled();
+    }
+  });
+
+  it('should delete a project and navigate to integration page', () => {
+    // given
+    setSubscription(2, 0);
+    const eventService = TestBed.inject(EventService);
+    const router = TestBed.inject(Router);
+    const routeSpy = jest.spyOn(router, 'navigate');
+    fixture.detectChanges();
+
+    // when
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.SUBSCRIPTION, name: '' });
+
+    // then
+    expect(routeSpy).toHaveBeenCalledWith([
+      '/',
+      'project',
+      'sockshop',
+      'settings',
+      'uniform',
+      'integrations',
+      'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+    ]);
+  });
+
+  it('should try to delete a project and throw an error', () => {
+    // given
+    setSubscription(2, 0);
+    const dataService = TestBed.inject(DataService);
+    const eventService = TestBed.inject(EventService);
+    const progressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
+    jest.spyOn(dataService, 'deleteSubscription').mockReturnValue(throwError(() => new Error('my error')));
+    fixture.detectChanges();
+
+    // when
+    eventService.deletionTriggeredEvent.next({ type: DeleteType.SUBSCRIPTION, name: '' });
+
+    // then
+    expect(progressSpy).toHaveBeenCalledWith({
+      error: 'Subscription could not be deleted: my error',
+      isInProgress: false,
+      result: DeleteResult.ERROR,
+    });
   });
 
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {

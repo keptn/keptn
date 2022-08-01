@@ -62,6 +62,17 @@ class UniformPage {
     return this;
   }
 
+  public openDeletionDialog(): this {
+    cy.byTestId('ktb-danger-subscription-button').click();
+    return this;
+  }
+
+  public deleteSubscriptionFromEditPage(): this {
+    this.openDeletionDialog();
+    cy.get('button').contains('I understand the consequences, delete this subscription').click();
+    return this;
+  }
+
   public assertIsUpdateButtonEnabled(isEnabled: boolean): this {
     cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'be.enabled' : 'be.disabled');
     return this;
