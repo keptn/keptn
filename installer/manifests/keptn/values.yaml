@@ -60,10 +60,14 @@ features:
     enabled: false
     prefix: "keptn:"
 
+git:
+  remoteURLDenyList: ""
+
 nats:
   nameOverride: keptn-nats
   fullnameOverride: keptn-nats
   cluster:
+    enabled: false
     replicas: 3
     name: nats
   securityContext:
@@ -71,6 +75,7 @@ nats:
     runAsUser: 10001
     fsGroup: 10001
   nats:
+    automountServiceAccountToken: false
     resources:
       requests:
         cpu: 200m
@@ -96,7 +101,9 @@ nats:
     securityContext:
       readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
+      privileged: false
       runAsNonRoot: true
+      runAsUser: 65532
       capabilities:
         drop:
           - ALL
@@ -232,7 +239,7 @@ bridge:
     userIdentifier: ""
     mongoConnectionString: ""
   authMsg: ""
-  d3heatmap:
+  d3:
     enabled: false
   nodeSelector: {}
   sidecars: []
@@ -282,7 +289,8 @@ shipyardController:
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
-    disableLeaderElection: true
+    leaderElection:
+      enabled: false
     replicas: 1
     validation:
       # On Database level, Keptn creates collections that are named like <PROJECTNAME>-<suffix>
@@ -328,33 +336,6 @@ secretService:
       memory: "64Mi"
       cpu: "200m"
 
-configurationService:
-  image:
-    registry: ""                             # Container Registry
-    repository: "configuration-service"      # Container Image Name
-    tag: ""                                  # Container Tag
-  # storage and storageClass are the settings for the PVC used by the configuration-storage
-  storage: 100Mi
-  storageClass: null
-  fsGroup: 1001
-  initContainer: true
-  env:
-    GIT_KEPTN_USER: "keptn"
-    GIT_KEPTN_EMAIL: "keptn@keptn.sh"
-  nodeSelector: {}
-  gracePeriod: 60
-  preStopHookTime: 20
-  sidecars: []
-  extraVolumeMounts: []
-  extraVolumes: []
-  resources:
-    requests:
-      memory: "32Mi"
-      cpu: "25m"
-    limits:
-      memory: "256Mi"
-      cpu: "100m"
-
 resourceService:
   replicas: 1
   image:
@@ -367,6 +348,7 @@ resourceService:
     DIRECTORY_STAGE_STRUCTURE: "false"
   nodeSelector: {}
   gracePeriod: 60
+  fsGroup: 1001
   preStopHookTime: 20
   sidecars: []
   extraVolumeMounts: []

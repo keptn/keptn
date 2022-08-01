@@ -1,5 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import 'cypress-file-upload';
+import { EvaluationBadgeVariant } from '../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 /* eslint-enable import/no-extraneous-dependencies */
 
 declare global {
@@ -33,6 +34,13 @@ declare global {
       ): Cypress.Chainable<JQuery<E>>;
       clearDtFilter<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
       clickOutside<E extends Node = HTMLElement>(): Cypress.Chainable<JQuery<E>>;
+      assertDtIcon<E extends Node = HTMLElement>(icon: string): Cypress.Chainable<JQuery<E>>;
+      assertEvaluationBadge<E extends Node = HTMLElement>(
+        type: 'error' | 'warning' | 'success' | undefined,
+        score: number | '-',
+        borderType: EvaluationBadgeVariant,
+        index?: number
+      ): Cypress.Chainable<JQuery<E>>;
     }
   }
 }
@@ -105,6 +113,32 @@ Cypress.Commands.add('clearDtFilter', { prevSubject: 'element' }, (subject: JQue
   subject.find('.dt-filter-field-clear-all-button').trigger('click');
   cy.wrap(subject).find('.dt-filter-field-input').trigger('click').type('{esc}');
 });
+
+Cypress.Commands.add('assertDtIcon', { prevSubject: 'element' }, (subject: JQuery, icon: string) => {
+  cy.wrap(subject).find('dt-icon').should('have.attr', 'uitestid', `dt-icon-${icon}`);
+});
+
+Cypress.Commands.add(
+  'assertEvaluationBadge',
+  { prevSubject: 'element' },
+  (
+    subject: JQuery,
+    type: 'error' | 'warning' | 'success' | undefined,
+    score: number | '-',
+    borderType: EvaluationBadgeVariant,
+    index = 0
+  ) => {
+    const element = cy.wrap(subject).find('ktb-evaluation-badge .badge').eq(index).should('have.text', score);
+    if (type) {
+      element.and('have.class', type);
+    }
+    if (borderType === EvaluationBadgeVariant.NONE) {
+      element.and('not.have.class', 'fill').and('not.have.class', 'border');
+    } else {
+      element.and('have.class', borderType === EvaluationBadgeVariant.FILL ? 'fill' : 'border');
+    }
+  }
+);
 
 function getDtFilterGroup(subject: JQuery, filterName: string): Cypress.Chainable<JQuery> {
   return cy.wrap(subject).find('.dt-quick-filter-group .dt-quick-filter-group-headline').contains(filterName).parent();

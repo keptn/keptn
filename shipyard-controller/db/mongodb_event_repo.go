@@ -124,10 +124,12 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	}
 
 	result := &models.GetEventsResult{
-		Events:      []apimodels.KeptnContextExtendedCE{},
-		NextPageKey: 0,
-		PageSize:    0,
-		TotalCount:  totalCount,
+		Events: []apimodels.KeptnContextExtendedCE{},
+		PaginationResult: models.PaginationResult{
+			NextPageKey: 0,
+			PageSize:    0,
+			TotalCount:  totalCount,
+		},
 	}
 	events := []apimodels.KeptnContextExtendedCE{}
 

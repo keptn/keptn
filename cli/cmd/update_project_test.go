@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
@@ -69,6 +70,16 @@ func TestUpdateProjectCmdTokenAndKey(t *testing.T) {
 	if !errorContains(err, "Access token and private key cannot be set together") {
 		t.Errorf("missing expected error, but got %v", err)
 	}
+}
+
+func errorContains(out error, want string) bool {
+	if out == nil {
+		return want == ""
+	}
+	if want == "" {
+		return false
+	}
+	return strings.Contains(out.Error(), want)
 }
 
 // IMPORTANT NOTE: tests below are disabled due to broken cli, which is unrepairable adn needs to be rewritten

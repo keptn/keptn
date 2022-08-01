@@ -44,7 +44,8 @@ func TestRenderContent(t *testing.T) {
 		t.Run(
 			tt.name, func(t *testing.T) {
 				readCloser := io.NopCloser(strings.NewReader(tt.inputs.template))
-				r, err := RenderContent(readCloser, tt.inputs.context)
+				sut := templateRenderer{}
+				r, err := sut.RenderContent(readCloser, tt.inputs.context)
 				// Assert that whatever RenderContent returns implements io.ReadCloser (
 				// it has to be substituted to the raw content io.ReadCloser passed down to the executors)
 				assert.Implements(t, (*io.ReadCloser)(nil), r)
@@ -118,7 +119,8 @@ func TestErrorRenderContent(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				r, err := RenderContent(tt.inputs.template, tt.inputs.context)
+				sut := templateRenderer{}
+				r, err := sut.RenderContent(tt.inputs.template, tt.inputs.context)
 				assert.Nil(t, r)
 				assert.Error(t, err)
 				if tt.expectations.err != nil {

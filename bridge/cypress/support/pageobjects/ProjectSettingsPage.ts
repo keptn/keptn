@@ -56,7 +56,7 @@ class ProjectSettingsPage {
   }
 
   public visitSettings(project: string): this {
-    cy.visit(`/project/${project}/settings/project`).wait('@metadata').wait('@project');
+    cy.visit(`/project/${project}/settings/project`).wait('@metadata').wait('@projectPlain');
     return this;
   }
 
@@ -402,6 +402,11 @@ class ProjectSettingsPage {
 
   public assertNoUpstreamSelected(status: boolean): this {
     cy.byTestId('ktb-no-upstream-form-button').should(status ? 'have.class' : 'not.have.class', 'dt-radio-checked');
+    return this;
+  }
+
+  public assertHttpsSelected(status: boolean): this {
+    cy.byTestId('ktb-https-form-button').should(status ? 'have.class' : 'not.have.class', 'dt-radio-checked');
     return this;
   }
 

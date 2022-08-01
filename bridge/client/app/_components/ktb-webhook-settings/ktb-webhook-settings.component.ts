@@ -150,7 +150,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   public addHeader(name?: string, value?: string): void {
     this.header.push(
       new FormGroup({
-        name: new FormControl(name || '', [Validators.required]),
+        key: new FormControl(name || '', [Validators.required]),
         value: new FormControl(value || '', [Validators.required]),
       })
     );

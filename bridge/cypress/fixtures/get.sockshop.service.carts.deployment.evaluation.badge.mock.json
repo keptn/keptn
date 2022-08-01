@@ -1,0 +1,245 @@
+{
+  "state": "finished",
+  "keptnContext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+  "service": "carts",
+  "stages": [
+    {
+      "name": "evaluation-success",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "indicatorResults": [],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "pass",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      }
+    },
+    {
+      "name": "evaluation-warning",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "indicatorResults": [],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "warning",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      }
+    },
+    {
+      "name": "evaluation-error",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "indicatorResults": [],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "fail",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      }
+    },
+    {
+      "name": "evaluation-none",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:31:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": false
+    },
+    {
+      "name": "evaluation-success-deployed",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "indicatorResults": [],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "pass",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      },
+      "deploymentURL": "http://carts.sockshop-production.35.233.122.229.nip.io:80"
+    },
+    {
+      "name": "evaluation-warning-deployed",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "indicatorResults": [],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "warning",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      },
+      "deploymentURL": "http://carts.sockshop-production.35.233.122.229.nip.io:80"
+    },
+    {
+      "name": "evaluation-error-deployed",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:30:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": true,
+      "latestEvaluation": {
+        "traces": [],
+        "data": {
+          "evaluation": {
+            "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+            "indicatorResults": [],
+            "result": "fail",
+            "score": 33.33333333333333,
+            "sloFileContent": "",
+            "timeEnd": "2022-02-09T09:29:47.625Z",
+            "timeStart": "2022-02-09T09:28:55.866Z"
+          },
+          "message": "Evaluation failed since the calculated score of 33.33333333333333 is below the warning value of 75",
+          "project": "sockshop",
+          "result": "fail",
+          "service": "carts",
+          "stage": "staging",
+          "status": "succeeded"
+        },
+        "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+        "source": "lighthouse-service",
+        "specversion": "1.0",
+        "time": "2022-02-09T09:30:07.865Z",
+        "type": "sh.keptn.event.evaluation.finished",
+        "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+        "shkeptnspecversion": "0.2.3",
+        "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+      },
+      "deploymentURL": "http://carts.sockshop-production.35.233.122.229.nip.io:80"
+    },
+    {
+      "name": "evaluation-none-deployed",
+      "state": "succeeded",
+      "lastTimeUpdated": "2022-02-09T09:31:08.057Z",
+      "openRemediations": [],
+      "subSequences": [],
+      "hasEvaluation": false,
+      "deploymentURL": "http://carts.sockshop-production.35.233.122.229.nip.io:80"
+    }
+  ],
+  "labels": {},
+  "image": "carts:v0.1.2"
+}

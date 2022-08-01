@@ -13,8 +13,8 @@
           "image": "docker.io/keptnexamples/carts:0.13.1",
           "state": "succeeded",
           "latestEvaluation": {
-            "result": "pass",
-            "score": 0
+            "result": "warning",
+            "score": 50
           },
           "latestEvent": {
             "type": "sh.keptn.event.dev.delivery.finished",
@@ -154,6 +154,24 @@
             "type": "sh.keptn.event.staging.delivery.finished",
             "id": "5789771a-9bcb-4eff-be5d-4cdcef0f2573",
             "time": "2022-01-10T15:20:57.485Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "delivery",
+      "service": "carts",
+      "project": "sockshop",
+      "time": "2021-07-15T11:58:51.729Z",
+      "shkeptncontext": "e28592c6-d857-44fe-aea6-e65de02929bf",
+      "state": "paused",
+      "stages": [
+        {
+          "name": "dev",
+          "image": "docker.io/keptnexamples/carts:0.12.3",
+          "latestEvaluation": {
+            "result": "pass",
+            "score": 0
           }
         }
       ]

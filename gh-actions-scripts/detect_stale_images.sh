@@ -36,7 +36,6 @@ fi
 IMAGES=(
   "api"
   "bridge2"
-  "configuration-service"
   "resource-service"
   "distributor"
   "approval-service"

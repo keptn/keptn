@@ -64,8 +64,8 @@ export interface TraceData {
     token: string;
   };
   configurationChange?: {
-    values: {
-      image: unknown;
+    values?: {
+      image?: unknown;
     };
   };
 
@@ -128,7 +128,7 @@ export class Trace {
   }
 
   public getConfigurationChangeImage(): string | undefined {
-    return typeof this.data.configurationChange?.values.image === 'string'
+    return typeof this.data.configurationChange?.values?.image === 'string'
       ? this.data.configurationChange.values.image.split('/').pop()
       : undefined;
   }

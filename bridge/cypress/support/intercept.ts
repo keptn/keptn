@@ -21,6 +21,7 @@ export function interceptEmptyEnvironmentScreen(): void {
 export function interceptEnvironmentScreen(): void {
   const project = 'sockshop';
   interceptProjectBoard();
+  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/project/sockshop/customSequences', { fixture: 'custom-sequences.mock' }).as('customSequences');
   cy.intercept('POST', '/api/v1/event', { body: { keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' } });
   cy.intercept('POST', '/api/controlPlane/v1/project/sockshop/stage/dev/service/carts/evaluation', {
@@ -46,30 +47,20 @@ export function interceptEnvironmentScreen(): void {
     },
   }).as('triggeredSequenceEvents');
 
-  for (const url of getEvaluationUrls(project, 'carts')) {
-    cy.intercept('GET', url, { body: { events: [] } });
-  }
-
-  for (const url of getEvaluationUrls(project, 'carts-db')) {
-    cy.intercept('GET', url, { body: { events: [] } });
-  }
+  setEvaluationUrls(project, 'carts');
+  setEvaluationUrls(project, 'carts-db');
 }
 
-function getEvaluationUrls(project: string, service: string): string[] {
-  return [
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:dev%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:dev AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:dev AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:dev%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:staging%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:staging AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:staging%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:staging AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:production AND source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:production%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=5`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project} AND data.service:${service} AND data.stage:production AND source:lighthouse-service&excludeInvalidated=true&limit=6`,
-    `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:production%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=6`,
-  ];
+function setEvaluationUrls(project: string, service: string): void {
+  for (const stage of ['dev', 'staging', 'production']) {
+    for (const limit of [5, 6]) {
+      cy.intercept(
+        'GET',
+        `/api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${project}%20AND%20data.service:${service}%20AND%20data.stage:${stage}%20AND%20source:lighthouse-service&excludeInvalidated=true&limit=${limit}`,
+        { body: { events: [] } }
+      ).as(`evaluationHistory-${service}-${stage}-${limit}`);
+    }
+  }
 }
 
 export function interceptMainResourceEnabled(): void {
@@ -129,7 +120,6 @@ export function interceptDashboard(): void {
 
 export function interceptProjectBoard(): void {
   interceptMain();
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
 }
 
@@ -247,12 +237,7 @@ export function interceptSequencesPageWithSequenceThatIsNotLoaded(): void {
 }
 
 export function interceptIntegrations(): void {
-  interceptMain();
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
-  cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
-    'projects'
-  );
+  interceptProjectBoard();
   cy.intercept('/api/uniform/registration', { fixture: 'registration.mock' });
   // jmeter-service
   cy.intercept('/api/controlPlane/v1/log?integrationId=355311a7bec3f35bf3abc2484ab09bcba8e2b297&pageSize=100', {
@@ -281,12 +266,13 @@ export function interceptIntegrations(): void {
       ],
     },
   });
+  // jmeter-service uniform-info
   cy.intercept('/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/info', {
     body: {
       isControlPlane: true,
       isWebhookService: false,
     },
-  });
+  }).as('jmeterUniformInfo');
   cy.intercept('/api/uniform/registration/0f2d35875bbaa72b972157260a7bd4af4f2826df/info', {
     body: {
       isControlPlane: true,
@@ -322,6 +308,8 @@ export function interceptIntegrations(): void {
     '/api/uniform/registration/355311a7bec3f35bf3abc2484ab09bcba8e2b297/subscription/0e021b71-1533-4cfe-875a-b756aa6107ba',
     { body: {} }
   );
+
+  cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
 }
 
 export function interceptNoWebhookSecrets(): void {
@@ -331,15 +319,7 @@ export function interceptNoWebhookSecrets(): void {
 }
 
 export function interceptSecrets(): void {
-  cy.fixture('get.project.json').as('initProjectJSON');
-  cy.fixture('metadata.json').as('initmetadata');
-
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
-  cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
-  cy.intercept('GET', 'api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', {
-    fixture: 'get.project.json',
-  }).as('initProjects');
-  cy.intercept('GET', 'api/controlPlane/v1/sequence/dynatrace?pageSize=5', { fixture: 'project.sequences.json' });
+  interceptProjectBoard();
 
   cy.intercept('POST', 'api/secrets/v1/secret', {
     statusCode: 200,
@@ -357,11 +337,7 @@ export function interceptSecrets(): void {
     },
   }).as('getSecrets');
 
-  cy.intercept('GET', 'api/project/dynatrace?approval=true&remediation=true', {
-    statusCode: 200,
-  }).as('getApproval');
-
-  cy.intercept('GET', 'api/project/dynatrace', {
+  cy.intercept('GET', 'api/project/sockshop', {
     statusCode: 200,
     fixture: 'get.approval.json',
   });
@@ -434,7 +410,6 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
 export function interceptHeatmapComponent(): void {
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
-  cy.intercept('/api/project/sockshop?approval=true&remediation=true', { fixture: 'project.mock' }).as('project');
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {

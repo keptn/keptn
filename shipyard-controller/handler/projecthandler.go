@@ -23,7 +23,8 @@ import (
 )
 
 type ProjectValidator struct {
-	ProjectNameMaxSize int
+	ProjectNameMaxSize       int
+	AutomaticProvisioningURL string
 }
 
 func (p ProjectValidator) Validate(params interface{}) error {
@@ -68,8 +69,12 @@ func (p ProjectValidator) validateCreateProjectParams(createProjectParams *model
 		return fmt.Errorf("provided shipyard file is not valid: %s", err.Error())
 	}
 
-	if createProjectParams.GitCredentials == nil {
+	if p.AutomaticProvisioningURL != "" && createProjectParams.GitCredentials == nil {
 		return nil
+	}
+
+	if createProjectParams.GitCredentials == nil {
+		return fmt.Errorf("gitCredentials cannot be empty")
 	}
 
 	if err := common.ValidateGitRemoteURL(createProjectParams.GitCredentials.RemoteURL); err != nil {
@@ -126,8 +131,12 @@ func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *model
 		}
 	}
 
-	if updateProjectParams.GitCredentials == nil {
+	if p.AutomaticProvisioningURL != "" && updateProjectParams.GitCredentials == nil {
 		return nil
+	}
+
+	if updateProjectParams.GitCredentials == nil {
+		return fmt.Errorf("gitCredentials cannot be empty")
 	}
 
 	if err := common.ValidateGitRemoteURL(updateProjectParams.GitCredentials.RemoteURL); err != nil {
@@ -168,14 +177,16 @@ type ProjectHandler struct {
 	EventSender           common.EventSender
 	Env                   config.EnvConfig
 	RepositoryProvisioner IRepositoryProvisioner
+	RemoteURLValidator    RemoteURLValidator
 }
 
-func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner) *ProjectHandler {
+func NewProjectHandler(projectManager IProjectManager, eventSender common.EventSender, env config.EnvConfig, repositoryProvisioner IRepositoryProvisioner, remoteURLValidator RemoteURLValidator) *ProjectHandler {
 	return &ProjectHandler{
 		ProjectManager:        projectManager,
 		EventSender:           eventSender,
 		Env:                   env,
 		RepositoryProvisioner: repositoryProvisioner,
+		RemoteURLValidator:    remoteURLValidator,
 	}
 }
 
@@ -197,7 +208,7 @@ func NewProjectHandler(projectManager IProjectManager, eventSender common.EventS
 func (ph *ProjectHandler) GetAllProjects(c *gin.Context) {
 	params := &models.GetProjectParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
@@ -247,8 +258,8 @@ func (ph *ProjectHandler) GetProjectByName(c *gin.Context) {
 
 	project, err := ph.ProjectManager.GetByName(projectName)
 	if err != nil {
-		if project == nil && errors.Is(err, ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(ProjectNotFoundMsg, projectName))
+		if project == nil && errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
 			return
 		}
 
@@ -280,16 +291,21 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	params := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
-	automaticProvisioningURL := ph.Env.AutomaticProvisioningURL
-	if automaticProvisioningURL != "" && params.GitCredentials == nil {
+	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize, AutomaticProvisioningURL: ph.Env.AutomaticProvisioningURL}
+	if err := projectValidator.Validate(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
+		return
+	}
+
+	if provideProvisionedRepository(ph.Env.AutomaticProvisioningURL, params) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
 			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, UnableProvisionInstanceGeneric)
+			SetFailedDependencyErrorResponse(c, common.UnableProvisionInstanceGeneric)
 			return
 		}
 
@@ -303,11 +319,8 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			},
 			User: provisioningData.GitUser,
 		}
-	}
-
-	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
-	if err := projectValidator.Validate(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
+	} else if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 		return
 	}
 
@@ -325,7 +338,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 
 		rollback()
-		if errors.Is(err, ErrProjectAlreadyExists) {
+		if errors.Is(err, common.ErrProjectAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
@@ -363,12 +376,17 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	// validate the input
 	params := &models.UpdateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidRequestFormatMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
-	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize}
+	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize, AutomaticProvisioningURL: ph.Env.AutomaticProvisioningURL}
 	if err := projectValidator.Validate(params); err != nil {
-		SetBadRequestErrorResponse(c, fmt.Sprintf(InvalidPayloadMsg, err.Error()))
+		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
+		return
+	}
+
+	if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 		return
 	}
 
@@ -386,15 +404,15 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, ErrProjectNotFound) {
+		if errors.Is(err, common.ErrProjectNotFound) {
 			SetNotFoundErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, ErrInvalidStageChange) {
+		if errors.Is(err, common.ErrInvalidStageChange) {
 			SetBadRequestErrorResponse(c, err.Error())
 			return
 		}
-		SetInternalServerErrorResponse(c, ErrInternalError.Error())
+		SetInternalServerErrorResponse(c, common.ErrInternalError.Error())
 		return
 	}
 	c.Status(http.StatusCreated)
@@ -521,4 +539,11 @@ func (ph *ProjectHandler) sendProjectDeleteFailFinishedEvent(keptnContext, proje
 
 	ce := common.CreateEventWithPayload(keptnContext, "", keptnv2.GetFinishedEventType(keptnv2.ProjectDeleteTaskName), eventPayload)
 	return ph.EventSender.SendEvent(ce)
+}
+
+func provideProvisionedRepository(provisionURL string, params *models.CreateProjectParams) bool {
+	if provisionURL != "" && params.GitCredentials == nil {
+		return true
+	}
+	return false
 }

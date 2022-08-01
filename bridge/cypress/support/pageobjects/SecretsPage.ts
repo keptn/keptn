@@ -1,5 +1,7 @@
 /// <reference types="cypress" />
 
+import { interceptSecrets } from '../intercept';
+
 class SecretsPage {
   private readonly REMOVE_SECRET_KEY_VALUE_PAIR_ID = 'keptn-secret-remove-pair-button';
   private readonly SECRET_NAME_ID = 'keptn-secret-name-input';
@@ -9,6 +11,11 @@ class SecretsPage {
   private readonly SECRET_KEY_ID = 'keptn-secret-key-input';
   private readonly SECRET_VALUE_ID = 'keptn-secret-value-input';
   private readonly ADD_KEY_VALUE_PAIR_ID = 'keptn-secret-add-pair-button';
+
+  public intercept(): this {
+    interceptSecrets();
+    return this;
+  }
 
   public visit(projectName: string): this {
     cy.visit(`/project/${projectName}/settings/uniform/secrets`);

@@ -1,36 +1,6 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
-.border {
-  background-color: $gray-200 !important;
-  color: black !important;
-
-  &.success {
-    border: 1px solid $cta-color !important;
-  }
-
-  &.warning {
-    border: 1px solid $warning-color !important;
-  }
-
-  &.error {
-    border: 1px solid $error-color !important;
-  }
-}
-
-.fill {
-  background-color: $cta-color-active !important;
-  color: white;
-}
-
-ktb-loading-spinner {
-  height: 20px;
-  width: 20px;
-  vertical-align: bottom;
-}
-
-/* fix incorrect height and width of the overlay */
-::ng-deep .cdk-overlay-connected-position-bounding-box {
-  height: 100% !important;
-  width: 100% !important;
+.current-evaluation {
+  margin-left: 10px;
 }

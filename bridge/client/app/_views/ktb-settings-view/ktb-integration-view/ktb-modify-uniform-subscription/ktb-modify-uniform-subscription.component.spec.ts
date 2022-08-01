@@ -12,7 +12,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AbstractControl } from '@angular/forms';
 import { ApiService } from '../../../../_services/api.service';
 import { ApiServiceMock } from '../../../../_services/api.service.mock';
-import { ProjectsMock } from '../../../../_services/_mockData/projects.mock';
 import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewComponent } from '../ktb-integration-view.component';
 import { IWebhookConfigClient } from '../../../../../../shared/interfaces/webhook-config';
@@ -247,7 +246,9 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     const dataService = TestBed.inject(DataService);
 
     // when
-    jest.spyOn(dataService, 'getProject').mockReturnValue(of(ProjectsMock[2]));
+    jest
+      .spyOn(dataService, 'getSequenceFilter')
+      .mockReturnValue(of({ stages: ['dev', 'staging', 'production'], services: ['carts-db'] }));
     component.data$.subscribe();
 
     // then
@@ -283,12 +284,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
   it('should add new service to datasource', () => {
     // given
     const dataService = TestBed.inject(DataService);
-    jest.spyOn(dataService, 'getProject').mockReturnValue(of(ProjectsMock[2]));
+    jest
+      .spyOn(dataService, 'getSequenceFilter')
+      .mockReturnValue(of({ stages: ['dev', 'staging', 'production'], services: ['carts-db'] }));
 
     setSubscription(2, 0);
 
     // when
-    jest.spyOn(dataService, 'getProject').mockReturnValue(of(ProjectsMock[0]));
+    jest
+      .spyOn(dataService, 'getSequenceFilter')
+      .mockReturnValue(of({ stages: ['dev', 'staging', 'production'], services: ['carts-db', 'carts'] }));
     component.data$.subscribe();
 
     // then

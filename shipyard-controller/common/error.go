@@ -1,9 +1,17 @@
-package handler
+package common
 
 import (
 	"errors"
 	"fmt"
 )
+
+var ErrConfigStoreInvalidToken = errors.New("invalid git token")
+
+var ErrConfigStoreUpstreamNotFound = errors.New("upstream repository not found")
+
+var ErrSequenceWithTriggeredIDAlreadyExists = errors.New("sequence with the same triggeredID already exists")
+
+var ErrOpenRemediationNotFound = errors.New("open remediation not found")
 
 var ErrProjectAlreadyExists = errors.New("project already exists")
 
@@ -45,9 +53,13 @@ var NoServiceNameMsg = "Must provide a service name"
 
 var UnableQueryStateMsg = "Unable to query sequence state repository: %s"
 
+var UnableQuerySequenceExecutionMsg = "Unable to query sequence execution repository: %s"
+
 var UnableControleSequenceMsg = "Unable to control sequence: %s"
 
 var UnableFindSequenceMsg = "Unable to control sequence: %s"
+
+var InvalidRemoteURLMsg = "Invalid RemoteURL: %s"
 
 var UnableQueryIntegrationsMsg = "Unable to query uniform integrations repository: %s"
 

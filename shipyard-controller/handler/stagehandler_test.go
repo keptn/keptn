@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/gin-gonic/gin"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/handler/fake"
-	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
+	"github.com/keptn/keptn/shipyard-controller/handler/fake"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGetStage(t *testing.T) {
@@ -30,7 +32,7 @@ func TestGetStage(t *testing.T) {
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
 					GetStageFunc: func(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
@@ -41,7 +43,7 @@ func TestGetStage(t *testing.T) {
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
 					GetStageFunc: func(projectName string, stageName string) (*apimodels.ExpandedStage, error) {
-						return nil, ErrStageNotFound
+						return nil, common.ErrStageNotFound
 					},
 				},
 			},
@@ -106,7 +108,7 @@ func TestGetStages(t *testing.T) {
 			fields: fields{
 				StageManager: &fake.IStageManagerMock{
 					GetAllStagesFunc: func(projectName string) ([]*apimodels.ExpandedStage, error) {
-						return nil, ErrProjectNotFound
+						return nil, common.ErrProjectNotFound
 					},
 				},
 			},
