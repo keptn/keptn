@@ -208,8 +208,8 @@ func TestDebugManager_GetAllEvents(t *testing.T) {
 		DebugManager IDebugManager
 	}
 
-	eventSource := ""
-	eventType := ""
+	eventSource := "eventsource"
+	eventType := "eventtype"
 	event := apimodels.KeptnContextExtendedCE{
 		Contenttype:        "contenttype",
 		Data:               "data",
