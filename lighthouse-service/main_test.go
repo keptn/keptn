@@ -3,11 +3,14 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -57,53 +60,17 @@ func setupNatsServer(port int, storeDir string) *server.Server {
 func TestMain(m *testing.M) {
 	test := testing.T{}
 
-	//callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 	natsServer := setupNatsServer(natsTestPort, test.TempDir())
+	defer startFakeConfigurationService()()
 	defer natsServer.Shutdown()
 
 	log := logrus.New()
 	log.SetLevel(logrus.DebugLevel)
 
-	// eventSource := gofake.EventSourceMock{
-	// 	StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error, wg *sync.WaitGroup) error {
-	// 		mtx.Lock()
-	// 		defer mtx.Unlock()
-	// 		EventChan = ces
-	// 		go func() {
-	// 			<-ctx.Done()
-	// 			wg.Done()
-	// 		}()
-	// 		return nil
-	// 	},
-	// 	OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
-	// 	SenderFn:               func() types.EventSender { return callBackSender },
-	// 	StopFn: func() error {
-	// 		return nil
-	// 	},
-	// 	CleanupFn: func() error {
-	// 		return nil
-	// 	},
-	// }
-
-	// apiSet, err := api.New("http://localhost")
-	// if err != nil {
-	// 	fmt.Errorf("err: %s", err.Error())
-	// 	return
-	// }
-
-	// server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-	// 	reqBody, _ := ioutil.ReadAll(req.Body)
-	// 	data := models.Integration{}
-	// 	data.FromJSON(reqBody)
-	// 	rw.Write([]byte(``))
-	// }))
-	// defer server.Close()
-
 	natsConnector := gonats.New(fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort))
 	gonats.WithLogger(log)(natsConnector)
 	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
 
-	//subscriptionSource := subscriptionsource.New(api.NewUniformHandler(server.URL), subscriptionsource.WithLogger(log))
 	subscriptionSource := subscriptionsource.NewFixedSubscriptionSource(
 		subscriptionsource.WithFixedSubscriptions(
 			models.EventSubscription{Event: "sh.keptn.event.evaluation.triggered"},
@@ -112,31 +79,30 @@ func TestMain(m *testing.M) {
 		),
 	)
 
-	// subscriptionSource := gofake.SubscriptionSourceMock{
-	// 	StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
-	// 		mtx.Lock()
-	// 		defer mtx.Unlock()
-	// 		go func() {
-	// 			<-ctx.Done()
-	// 			wg.Done()
-	// 		}()
-	// 		return nil
-	// 	},
-	// 	RegisterFn: func(integration models.Integration) (string, error) {
-	// 		return "some-id", nil
-	// 	},
-	// 	StopFn: func() error {
-	// 		return nil
-	// 	},
-	// }
-
 	logHandler := &gofake.LogAPIMock{}
 	logForwarder := logforwarder.New(logHandler)
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
-	go _main(controlPlane, log, envConfig{})
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+	fmt.Println(configurationService.URL)
+	os.Setenv("RESOURCE_SERVICE", configurationService.URL)
+	defer os.Unsetenv("RESOURCE_SERVICE")
+	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
+
+	go _main(controlPlane, log, envConfig{ConfigurationServiceURL: configurationService.URL, LogLevel: logrus.DebugLevel.String()})
+	time.Sleep(5 * time.Second)
 	m.Run()
+}
+
+func startFakeConfigurationService() func() {
+	configurationService = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{}`))
+	}))
+
+	return configurationService.Close
 }
 
 func Test_SLIWrongFinishedPayloadSend(t *testing.T) {
@@ -144,6 +110,8 @@ func Test_SLIWrongFinishedPayloadSend(t *testing.T) {
 	projectName := "quality-gates-invalid-finish"
 	serviceName := "my-service"
 	stageName := "dev"
+
+	setupFakeConfigurationService()
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
 	natsClient, err := newTestNatsClient(natsURL, t)
@@ -184,43 +152,54 @@ func Test_SLIWrongFinishedPayloadSend(t *testing.T) {
 	err = natsClient.Publish(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), marshal)
 	require.Nil(t, err)
 
-	//EventChan <- types.EventUpdate{KeptnEvent: payload, MetaData: types.EventUpdateMetaData{Subject: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)}}
-
-	//expect get-sli.triggered
-	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	//expect evaluation.started event
+	var evaluationStartedEvent *models.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
-		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName))
 		if event != nil {
-			getSLITriggeredEvent = event
+			evaluationStartedEvent = event
 			return true
 		}
 		return false
 	}, 10*time.Second, 100*time.Millisecond)
 
-	t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+	t.Log("got evaluation.started event: ", evaluationStartedEvent)
 
-	t.Log("validating get-sli.triggered event")
-	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
-	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
-	require.Nil(t, err)
-	require.Equal(t, keptnContext, getSLITriggeredEvent.Shkeptncontext)
-	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
-	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
-	require.NotEmpty(t, getSLIPayload.GetSLI.End)
-	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
-	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
-	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
-	require.Equal(t, projectName, getSLIPayload.EventData.Project)
-	require.Equal(t, "hardening", getSLIPayload.EventData.Stage)
-	require.Equal(t, serviceName, getSLIPayload.EventData.Service)
-	require.Equal(t, keptnv2.StatusType(""), getSLIPayload.EventData.Status)
-	require.Equal(t, keptnv2.ResultType(""), getSLIPayload.EventData.Result)
-	require.Empty(t, getSLIPayload.EventData.Message)
+	//expect get-sli.triggered
+	// var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	// require.Eventually(t, func() bool {
+	// 	event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+	// 	if event != nil {
+	// 		getSLITriggeredEvent = event
+	// 		return true
+	// 	}
+	// 	return false
+	// }, 10*time.Second, 100*time.Millisecond)
 
-	//expect evaluation.started event
+	// t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+
+	// t.Log("validating get-sli.triggered event")
+	// getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
+	// err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
+	// require.Nil(t, err)
+	// require.Equal(t, keptnContext, getSLITriggeredEvent.Shkeptncontext)
+
 	//send get-sli.started eventTriggerEvaluation
 	//send invalid get-sli.finished event
 	//expect fail evaluation.finished event
+
+	//expect evaluation.started event
+	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if event != nil {
+			evaluationFinishedEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("got evaluation.finished event: ", evaluationFinishedEvent)
 
 	go func() {
 		natsClient.Close()
@@ -409,3 +388,66 @@ func controlSequence(t *testing.T, projectName, keptnContextID string, cmd apimo
 	_, err := c.Post(fmt.Sprintf("http://localhost:8080/v1/sequence/%s/%s/control", projectName, keptnContextID), "application/json", bytes.NewBuffer(mCmd))
 	require.Nil(t, err)
 }
+
+func setupFakeConfigurationService() {
+	configurationService.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+
+		if strings.Contains(r.RequestURI, "/metadata.yaml") {
+			res := apimodels.Resource{
+				Metadata: &apimodels.Version{
+					Version: "my-commit-id",
+				},
+			}
+
+			marshal, _ := json.Marshal(res)
+			w.Write(marshal)
+
+			return
+		} else if strings.Contains(r.RequestURI, "/slo.yaml") {
+			w.WriteHeader(200)
+			encodedSLO := base64.StdEncoding.EncodeToString([]byte(qualityGatesShortSLOFileContent))
+			res := apimodels.Resource{
+				ResourceContent: encodedSLO,
+			}
+
+			marshal, _ := json.Marshal(res)
+			w.Write(marshal)
+
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{}`))
+	})
+}
+
+const qualityGatesShortSLOFileContent = `---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "<800"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
+      - criteria:
+          - "<=1000"
+          - "<=+100%"
+    weight: 1
+  - sli: "throughput"
+    pass:
+      - criteria:
+          - "<=+100%"
+          - ">=-80%"
+  - sli: "error_rate"
+total_score:
+  pass: "100%"
+  warning: "65%"`
