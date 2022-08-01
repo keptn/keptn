@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.18.1](https://github.com/keptn/keptn/compare/0.18.0...0.18.1) (2022-08-01)
+
+
+### Bug Fixes
+
+* **bridge:** Fix invalid header property for webhook ([#8543](https://github.com/keptn/keptn/issues/8543)) ([#8547](https://github.com/keptn/keptn/issues/8547)) ([8540ae1](https://github.com/keptn/keptn/commit/8540ae16fdbc8df1ebba7ebc5e0a2f0bb97027c8))
+
 ## [0.18.0](https://github.com/keptn/keptn/compare/0.17.0...0.18.0) (2022-07-28)
 
 
