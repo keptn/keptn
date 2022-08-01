@@ -53,8 +53,8 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 			name: "get all sequences ok",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
-					GetAllSequencesForProjectFunc: func(projectName string) ([]models.SequenceExecution, error) {
-						return sequences, nil
+					GetAllSequencesForProjectFunc: func(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+						return sequences, &models.PaginationResult{}, nil
 					},
 				},
 			},
@@ -67,8 +67,8 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 			name: "get all sequences project not found",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
-					GetAllSequencesForProjectFunc: func(projectName string) ([]models.SequenceExecution, error) {
-						return nil, common.ErrProjectNotFound
+					GetAllSequencesForProjectFunc: func(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+						return nil, nil, common.ErrProjectNotFound
 					},
 				},
 			},
@@ -81,8 +81,8 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 			name: "get all sequences internal error",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
-					GetAllSequencesForProjectFunc: func(projectName string) ([]models.SequenceExecution, error) {
-						return nil, common.ErrInternalError
+					GetAllSequencesForProjectFunc: func(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+						return nil, nil, common.ErrInternalError
 					},
 				},
 			},

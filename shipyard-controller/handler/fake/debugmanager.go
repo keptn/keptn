@@ -25,7 +25,7 @@ import (
 // 			GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetAllProjects method")
 // 			},
-// 			GetAllSequencesForProjectFunc: func(projectName string) ([]scmodels.SequenceExecution, error) {
+// 			GetAllSequencesForProjectFunc: func(projectName string, paginationParams scmodels.PaginationParams) ([]scmodels.SequenceExecution, *scmodels.PaginationResult, error) {
 // 				panic("mock out the GetAllSequencesForProject method")
 // 			},
 // 			GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
@@ -48,7 +48,7 @@ type IDebugManagerMock struct {
 	GetAllProjectsFunc func() ([]*apimodels.ExpandedProject, error)
 
 	// GetAllSequencesForProjectFunc mocks the GetAllSequencesForProject method.
-	GetAllSequencesForProjectFunc func(projectName string) ([]scmodels.SequenceExecution, error)
+	GetAllSequencesForProjectFunc func(projectName string, paginationParams scmodels.PaginationParams) ([]scmodels.SequenceExecution, *scmodels.PaginationResult, error)
 
 	// GetEventByIDFunc mocks the GetEventByID method.
 	GetEventByIDFunc func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
@@ -72,6 +72,8 @@ type IDebugManagerMock struct {
 		GetAllSequencesForProject []struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
+			// PaginationParams is the paginationParams argument value.
+			PaginationParams scmodels.PaginationParams
 		}
 		// GetEventByID holds details about calls to the GetEventByID method.
 		GetEventByID []struct {
@@ -159,29 +161,33 @@ func (mock *IDebugManagerMock) GetAllProjectsCalls() []struct {
 }
 
 // GetAllSequencesForProject calls GetAllSequencesForProjectFunc.
-func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string) ([]scmodels.SequenceExecution, error) {
+func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string, paginationParams scmodels.PaginationParams) ([]scmodels.SequenceExecution, *scmodels.PaginationResult, error) {
 	if mock.GetAllSequencesForProjectFunc == nil {
 		panic("IDebugManagerMock.GetAllSequencesForProjectFunc: method is nil but IDebugManager.GetAllSequencesForProject was just called")
 	}
 	callInfo := struct {
-		ProjectName string
+		ProjectName      string
+		PaginationParams scmodels.PaginationParams
 	}{
-		ProjectName: projectName,
+		ProjectName:      projectName,
+		PaginationParams: paginationParams,
 	}
 	mock.lockGetAllSequencesForProject.Lock()
 	mock.calls.GetAllSequencesForProject = append(mock.calls.GetAllSequencesForProject, callInfo)
 	mock.lockGetAllSequencesForProject.Unlock()
-	return mock.GetAllSequencesForProjectFunc(projectName)
+	return mock.GetAllSequencesForProjectFunc(projectName, paginationParams)
 }
 
 // GetAllSequencesForProjectCalls gets all the calls that were made to GetAllSequencesForProject.
 // Check the length with:
 //     len(mockedIDebugManager.GetAllSequencesForProjectCalls())
 func (mock *IDebugManagerMock) GetAllSequencesForProjectCalls() []struct {
-	ProjectName string
+	ProjectName      string
+	PaginationParams scmodels.PaginationParams
 } {
 	var calls []struct {
-		ProjectName string
+		ProjectName      string
+		PaginationParams scmodels.PaginationParams
 	}
 	mock.lockGetAllSequencesForProject.RLock()
 	calls = mock.calls.GetAllSequencesForProject

@@ -391,7 +391,7 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p, err := tt.fields.DebugManager.GetAllSequencesForProject("")
+			p, _, err := tt.fields.DebugManager.GetAllSequencesForProject("", models.PaginationParams{})
 
 			assert.Equal(t, tt.expectedProjectsResult, p)
 			assert.Equal(t, tt.expectedErrorResult, err)

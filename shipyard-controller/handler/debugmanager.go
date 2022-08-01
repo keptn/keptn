@@ -14,7 +14,7 @@ import (
 type IDebugManager interface {
 	GetAllProjects() ([]*apimodels.ExpandedProject, error)
 	GetSequenceByID(projectName string, shkeptncontext string) (*apimodels.SequenceState, error)
-	GetAllSequencesForProject(projectName string) ([]models.SequenceExecution, error)
+	GetAllSequencesForProject(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
 }
@@ -45,24 +45,24 @@ func (dm *DebugManager) GetSequenceByID(projectName string, shkeptncontext strin
 		})
 }
 
-func (dm *DebugManager) GetAllSequencesForProject(projectName string) ([]models.SequenceExecution, error) {
-	sequences, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+func (dm *DebugManager) GetAllSequencesForProject(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+	sequences, paginationInfo, err := dm.sequenceExecutionRepo.GetPaginated(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: projectName,
 			},
 		},
-	})
+	}, paginationParams)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	sort.SliceStable(sequences, func(i, j int) bool {
 		return sequences[i].TriggeredAt.After(sequences[j].TriggeredAt)
 	})
 
-	return sequences, err
+	return sequences, paginationInfo, err
 }
 
 func (dm *DebugManager) GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {

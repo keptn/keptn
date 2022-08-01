@@ -14,20 +14,10 @@
       </li>
 
       <li class="header">
-        Blocked:
+        Triggered:
         <input
           onChange="fetchSequences()"
-          id="checkboxBlocked"
-          type="checkbox"
-          checked
-        />
-      </li>
-
-      <li class="header">
-        Active:
-        <input
-          onChange="fetchSequences()"
-          id="checkboxActive"
+          id="checkboxTriggered"
           type="checkbox"
           checked
         />
@@ -44,10 +34,10 @@
       </li>
 
       <li class="header">
-        Aborted:
+        TimedOut:
         <input
           onChange="fetchSequences()"
-          id="checkboxAborted"
+          id="checkboxTimedOut"
           type="checkbox"
           checked
         />
@@ -61,7 +51,9 @@
     </ul>
 
     <table id="prodTable">
-      <caption> Sequences table </caption>
+      <caption>
+        Sequences table
+      </caption>
       <tr>
         <th>Fetching Sequences</th>
       </tr>

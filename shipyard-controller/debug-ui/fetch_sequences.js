@@ -11,42 +11,77 @@ function fetchSequences() {
       let table = document.getElementById("prodTable");
 
       const show_finished = document.getElementById("checkboxFinished").checked;
-      const show_aborted = document.getElementById("checkboxAborted").checked;
-      const show_active = document.getElementById("checkboxActive").checked;
-      const show_blocked = document.getElementById("checkboxBlocked").checked;
+      const show_triggered =
+        document.getElementById("checkboxTriggered").checked;
+      const show_timedOut = document.getElementById("checkboxTimedOut").checked;
 
       table.innerHTML =
-        "<tr><th>shkeptncontext</th><th>SequenceName</th><th>Projectname</th><th>service</th></tr>";
+        "<tr><th>shkeptncontext</th><th>Service</th><th>Project</th><th>Stage</th><th>Service</th><th>view events</ht><th>getblocking</th></tr>";
 
-      response.states.forEach((object) => {
+      response.sequenceExecutions.forEach((object) => {
         if (
-          (object.state == "finished" && show_finished) ||
-          (object.state == "active" && show_active) ||
-          (object.state == "blocked" && show_blocked) ||
-          (object.state == "aborted" && show_aborted)
+          (object.status.state == "triggered" && show_triggered) ||
+          (object.status.state == "finished" && show_finished) ||
+          (object.status.state == "timedOut" && show_timedOut)
         ) {
           let tr = document.createElement("tr");
-          tr.className = object.state;
+          let td_blocking = document.createElement("td");
+
+          if (object.status.state == "triggered") {
+            td_blocking.innerHTML =
+              "<button onclick=\"getBlocking('" +
+              object.scope.keptnContext +
+              "', '" +
+              object.scope.project +
+              "')\">" +
+              "get blocking sequences" +
+              "</button>";
+          }
+
+          tr.className = object.status.state;
           tr.innerHTML =
             "<td>" +
-            object.shkeptncontext +
+            object.scope.keptnContext +
             "</td>" +
             "<td>" +
-            object.name +
+            object.scope.service +
             "</td>" +
             "<td>" +
-            object.project +
+            object.scope.project +
             "</td>" +
             "<td>" +
-            object.service +
+            object.scope.stage +
             "</td>" +
-            "<td><a href=\"viewevents.html?shkeptncontext=" +
-            object.shkeptncontext +
+            "<td>" +
+            object.scope.service +
+            "</td>" +
+            '<td><a href="viewevents.html?shkeptncontext=' +
+            object.scope.keptnContext +
             "&projectname=" +
             project +
-            "\"><button>View Events</button></a></td>"
+            '"><button>View Events</button></a></td>';
+          tr.appendChild(td_blocking);
           table.appendChild(tr);
         }
       });
+    });
+}
+
+function getBlocking(context, project) {
+  fetch(
+    "/sequence/project/" + project + "/shkeptncontext/" + context + "/blocking",
+    {
+      method: "get",
+    }
+  )
+    .then((res) => {
+      return res.json();
+    })
+    .then((response) => {
+      out = "";
+      response.forEach((object) => {
+        out += object.scope.keptnContext + "\n";
+      });
+      alert(out);
     });
 }
