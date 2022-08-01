@@ -31,6 +31,9 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
 	}
 
 	stageRetriever := &fake.MockStageRetriever{}
@@ -69,6 +72,9 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -116,6 +122,9 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -173,6 +182,9 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -323,6 +335,9 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 			}
 
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -694,6 +709,9 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
 						return nil, nil
 					},
+					ActionSupportedFunc: func(actionName string) bool {
+						return true
+					},
 				}
 
 				stageRetriever := &fake.MockStageRetriever{}
@@ -1021,7 +1039,11 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 					},
 				}
 
-				taskExecutor := &fake.TaskExecutorMock{}
+				taskExecutor := &fake.TaskExecutorMock{
+					ActionSupportedFunc: func(actionName string) bool {
+						return true
+					},
+				}
 				stageRetriever := &fake.MockStageRetriever{}
 				sut := newImportPackageProcessor(parserMock, taskExecutor, stageRetriever, renderer)
 
@@ -1175,6 +1197,9 @@ func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 
 						return nil, nil
 					},
+					ActionSupportedFunc: func(actionName string) bool {
+						return true
+					},
 				}
 
 				stageRetriever := &fake.MockStageRetriever{}
@@ -1229,6 +1254,9 @@ func TestPackageValidationEmptyId(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -1307,6 +1335,9 @@ func TestPackageValidationIdAlphaNumeric(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -1391,6 +1422,9 @@ func TestPackageValidationInvalidType(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 

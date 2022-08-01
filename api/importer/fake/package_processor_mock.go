@@ -216,6 +216,9 @@ type TaskExecutorMock struct {
 	// PushResourceFunc mocks the PushResource method.
 	PushResourceFunc func(rp model.ResourcePush) (any, error)
 
+	// ActionSupportedFunc mocks the ActionSupported method.
+	ActionSupportedFunc func(actionName string) bool
+
 	// calls tracks calls to the methods.
 	calls struct {
 		// ExecuteAPI holds details about calls to the ExecuteAPI method.
@@ -227,6 +230,11 @@ type TaskExecutorMock struct {
 		PushResource []struct {
 			// Rp is the rp argument value.
 			Rp model.ResourcePush
+		}
+		// ActionSupported holds details about calls to the ActionSupported method.
+		ActionSupported []struct {
+			// ActionName is the action argument value.
+			ActionName string
 		}
 	}
 	lockExecuteAPI   sync.RWMutex
@@ -291,6 +299,37 @@ func (mock *TaskExecutorMock) PushResourceCalls() []struct {
 	}
 	mock.lockPushResource.RLock()
 	calls = mock.calls.PushResource
+	mock.lockPushResource.RUnlock()
+	return calls
+}
+
+// PushResource calls PushResourceFunc.
+func (mock *TaskExecutorMock) ActionSupported(actionName string) bool {
+	if mock.ActionSupportedFunc == nil {
+		panic("TaskExecutorMock.ActionSupportedFunc: method is nil but TaskExecutor.ActionSupported was just called")
+	}
+	callInfo := struct {
+		ActionName string
+	}{
+		ActionName: actionName,
+	}
+	mock.lockPushResource.Lock()
+	mock.calls.ActionSupported = append(mock.calls.ActionSupported, callInfo)
+	mock.lockPushResource.Unlock()
+	return mock.ActionSupportedFunc(actionName)
+}
+
+// PushResourceCalls gets all the calls that were made to PushResource.
+// Check the length with:
+//     len(mockedTaskExecutor.PushResourceCalls())
+func (mock *TaskExecutorMock) ActionSupportedCalls() []struct {
+	ActionName string
+} {
+	var calls []struct {
+		ActionName string
+	}
+	mock.lockPushResource.RLock()
+	calls = mock.calls.ActionSupported
 	mock.lockPushResource.RUnlock()
 	return calls
 }
