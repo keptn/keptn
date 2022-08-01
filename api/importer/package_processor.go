@@ -3,7 +3,6 @@ package importer
 import (
 	"fmt"
 	"io"
-	"k8s.io/utils/strings/slices"
 	"regexp"
 
 	"github.com/keptn/keptn/api/importer/model"
@@ -31,6 +30,7 @@ type ManifestParser interface {
 type TaskExecutor interface {
 	ExecuteAPI(ate model.APITaskExecution) (any, error)
 	PushResource(rp model.ResourcePush) (any, error)
+	ActionSupported(actionName string) bool
 }
 
 type ProjectStageRetriever interface {
@@ -130,7 +130,7 @@ func (ipp *ImportPackageProcessor) validateManifest(
 
 			if task.APITask != nil {
 				// Check if the action type is supported
-				if !slices.Contains(model.AllActions, task.APITask.Action) {
+				if supported := ipp.executor.ActionSupported(task.APITask.Action); !supported {
 					return fmt.Errorf("unsupported action type: %s", task.APITask.Action)
 				}
 

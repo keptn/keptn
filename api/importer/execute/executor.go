@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"k8s.io/utils/strings/slices"
 	"net/http"
 
 	"github.com/keptn/keptn/api/importer/model"
@@ -103,4 +104,12 @@ func (kae *KeptnAPIExecutor) PushResource(rp model.ResourcePush) (any, error) {
 		return kae.resourcePusher.PushToStage(rp.Context.Project, rp.Stage, rp.Content, rp.ResourceURI)
 	}
 	return kae.resourcePusher.PushToService(rp.Context.Project, rp.Stage, rp.Service, rp.Content, rp.ResourceURI)
+}
+
+func (kae *KeptnAPIExecutor) ActionSupported(actionName string) bool {
+	if !slices.Contains(model.AllActions, actionName) {
+		return false
+	}
+
+	return true
 }
