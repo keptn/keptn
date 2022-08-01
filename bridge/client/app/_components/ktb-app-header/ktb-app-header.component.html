@@ -24,7 +24,7 @@
         [value]="selectedProject"
       >
         <dt-option
-          *ngFor="let project of projects | async"
+          *ngFor="let project of projects"
           [value]="project.projectName"
           [textContent]="project.projectName"
         ></dt-option>
@@ -47,7 +47,7 @@
   <h3 class="m-0">Get started</h3>
   <div
     class="mt-1"
-    *ngIf="keptnInfo?.bridgeInfo?.showApiToken && keptnInfo?.bridgeInfo?.apiUrl as apiUrl"
+    *ngIf="info?.bridgeInfo?.showApiToken && info?.bridgeInfo?.apiUrl as apiUrl"
     uitestid="keptn-nav-showApiLink"
   >
     <a uitestid="keptn-nav-openKeptnApi" class="mt-1 mb-2" [href]="apiUrl" rel="noopener noreferrer" target="_blank"
@@ -58,7 +58,7 @@
     class="mt-1"
     fxLayout="row"
     fxLayoutAlign="flex-start center"
-    *ngIf="keptnInfo?.bridgeInfo?.cliDownloadLink as downloadLink"
+    *ngIf="info?.bridgeInfo?.cliDownloadLink as downloadLink"
     uitestid="keptn-nav-showDownloadLink"
   >
     <div fxFlex>
@@ -69,11 +69,7 @@
       </p>
     </div>
   </div>
-  <div
-    class="mt-2 mb-2"
-    *ngIf="keptnInfo?.bridgeInfo?.showApiToken && keptnInfo as keptnInfo"
-    uitestid="keptn-nav-showApiToken"
-  >
+  <div class="mt-2 mb-2" *ngIf="info?.bridgeInfo?.showApiToken && info as keptnInfo" uitestid="keptn-nav-showApiToken">
     <div class="mt-1" uitestid="keptn-nav-copyKeptnApiToken" *ngIf="keptnInfo.bridgeInfo.apiToken">
       <ktb-copy-to-clipboard
         [value]="keptnInfo.bridgeInfo.apiToken"
@@ -93,7 +89,7 @@
     class="mt-2 mb-3"
     fxLayout="row"
     fxLayoutAlign="flex-start center"
-    *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && keptnInfo?.versionCheckEnabled === false"
+    *ngIf="info?.bridgeInfo?.enableVersionCheckFeature && info?.versionCheckEnabled === false"
   >
     <dt-icon class="error" [name]="'criticalevent'"></dt-icon>
     <p class="small m-0">Automatic version and security check disabled</p>
@@ -101,17 +97,14 @@
   <div class="mt-3 mb-2" fxLayout="column" fxLayoutAlign="flex-end end" uitestid="keptn-nav-versionInfo">
     <p class="small m-0">
       Keptn version: <span [textContent]="metadata?.keptnversion ?? 'N/A'"></span
-      ><span *ngIf="keptnInfo?.keptnVersionInvalid">*</span>
+      ><span *ngIf="info?.keptnVersionInvalid">*</span>
     </p>
     <p class="small m-0">
-      Bridge version: <span [textContent]="keptnInfo?.bridgeInfo?.bridgeVersion"></span
-      ><span *ngIf="keptnInfo?.bridgeVersionInvalid">*</span>
+      Bridge version: <span [textContent]="info?.bridgeInfo?.bridgeVersion"></span
+      ><span *ngIf="info?.bridgeVersionInvalid">*</span>
     </p>
   </div>
-  <div
-    *ngIf="keptnInfo?.bridgeInfo?.enableVersionCheckFeature && keptnInfo as keptnInfo"
-    uitestid="keptn-nav-versionCheck"
-  >
+  <div *ngIf="info?.bridgeInfo?.enableVersionCheckFeature && info as keptnInfo" uitestid="keptn-nav-versionCheck">
     <div
       class="mt-3"
       fxLayout="row"
@@ -146,8 +139,8 @@
   </div>
   <ktb-user
     uitestid="keptn-nav-oauthUserInfo"
-    *ngIf="keptnInfo?.bridgeInfo?.authType === 'OAUTH'"
-    [user]="keptnInfo?.bridgeInfo?.user"
+    *ngIf="info?.bridgeInfo?.authType === 'OAUTH'"
+    [user]="info?.bridgeInfo?.user"
   ></ktb-user>
 </dt-context-dialog>
 

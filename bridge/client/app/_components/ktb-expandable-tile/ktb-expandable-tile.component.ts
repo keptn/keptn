@@ -1,6 +1,5 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
   Directive,
   EventEmitter,
@@ -27,103 +26,41 @@ export class KtbExpandableTileHeaderDirective {}
 })
 export class KtbExpandableTileComponent {
   @HostBinding('class') cls = 'ktb-expandable-tile';
-  private _error = false;
-  private _success = false;
-  private _expanded = false;
-  private _disabled = false;
-  private _warning = false;
-  private _highlight = false;
-  private _alignment: alignmentType = 'right';
 
   @Output()
   public expandedChange = new EventEmitter<boolean>();
 
   @Input()
-  get alignment(): alignmentType {
-    return this._alignment;
-  }
-  set alignment(alignment: alignmentType) {
-    this._alignment = alignment;
-  }
+  alignment: alignmentType = 'right';
 
   @Input()
   @HostBinding('attr.aria-error')
   @HostBinding('class.ktb-tile-error')
-  get error(): boolean {
-    return this._error;
-  }
-  set error(value: boolean) {
-    if (this._error !== value) {
-      this._error = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
+  error = false;
 
   @Input()
   @HostBinding('attr.aria-success')
   @HostBinding('class.ktb-tile-success')
-  get success(): boolean {
-    return this._success;
-  }
-  set success(value: boolean) {
-    if (this._success !== value) {
-      this._success = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
+  success = false;
 
   @Input()
-  get expanded(): boolean {
-    return this._expanded;
-  }
-  set expanded(value: boolean) {
-    if (this._expanded !== value) {
-      this._expanded = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
+  expanded = false;
 
   /** Whether the tile is disabled. */
   @Input()
   @HostBinding('attr.aria-disabled')
   @HostBinding('class.ktb-tile-disabled')
-  get disabled(): boolean {
-    return this._disabled;
-  }
-  set disabled(value: boolean) {
-    if (this._disabled !== value) {
-      this._disabled = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
+  disabled = false;
 
   @Input()
   @HostBinding('attr.aria-warning')
   @HostBinding('class.ktb-tile-warning')
-  get warning(): boolean {
-    return this._warning;
-  }
-  set warning(value: boolean) {
-    if (this._warning !== value) {
-      this._warning = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
+  warning = false;
 
   @Input()
   @HostBinding('attr.aria-highlight')
   @HostBinding('class.ktb-tile-highlight')
-  get highlight(): boolean {
-    return this._highlight;
-  }
-  set highlight(value: boolean) {
-    if (this._highlight !== value) {
-      this._highlight = value;
-      this._changeDetectorRef.markForCheck();
-    }
-  }
-
-  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
+  highlight = false;
 
   toggle(): void {
     this.expanded = !this.expanded;
