@@ -54,13 +54,14 @@ export class KtbProjectSettingsGitExtendedComponent implements OnInit {
   }
 
   public ngOnInit(): void {
-    if (!this.gitUpstreamRequired || !this.gitInputData) {
-      this.selectedForm = this.gitUpstreamRequired ? GitFormType.HTTPS : GitFormType.NO_UPSTREAM;
+    if (!this.gitUpstreamRequired && this.isCreateMode) {
+      this.selectedForm = GitFormType.NO_UPSTREAM;
+      this.dataChanged(this.selectedForm, this.gitData);
+      return;
+    }
 
-      if (this.selectedForm === GitFormType.NO_UPSTREAM) {
-        this.dataChanged(this.selectedForm, this.gitData);
-      }
-
+    if (!this.gitInputData) {
+      this.selectedForm = GitFormType.HTTPS;
       return;
     }
 
