@@ -325,6 +325,12 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 		},
 	}
 
+	paginationResult := models.PaginationResult{
+		NextPageKey: 0,
+		PageSize:    10,
+		TotalCount:  1,
+	}
+
 	tests := []struct {
 		name                   string
 		fields                 fields
@@ -336,8 +342,8 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			fields: fields{
 				DebugManager: &DebugManager{
 					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
-						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-							return sequences, nil
+						GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+							return sequences, &paginationResult, nil
 						},
 					},
 				},
@@ -350,8 +356,8 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			fields: fields{
 				DebugManager: &DebugManager{
 					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
-						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-							return []models.SequenceExecution{}, nil
+						GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+							return []models.SequenceExecution{}, &paginationResult, nil
 						},
 					},
 				},
@@ -364,8 +370,8 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			fields: fields{
 				DebugManager: &DebugManager{
 					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
-						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-							return nil, errors.New("error")
+						GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+							return nil, nil, errors.New("error")
 						},
 					},
 				},
@@ -378,8 +384,8 @@ func TestDebugManager_GetAllSequencesForProject(t *testing.T) {
 			fields: fields{
 				DebugManager: &DebugManager{
 					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
-						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-							return nil, errors.New("project must be set")
+						GetPaginatedFunc: func(filter models.SequenceExecutionFilter, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
+							return nil, nil, errors.New("project must be set")
 						},
 					},
 				},

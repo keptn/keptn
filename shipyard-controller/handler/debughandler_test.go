@@ -13,6 +13,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/handler"
 	"github.com/keptn/keptn/shipyard-controller/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models/api"
 	"github.com/stretchr/testify/require"
 )
 
@@ -41,26 +42,37 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 		},
 	}
 
+	paginationResult := models.PaginationResult{
+		NextPageKey: 0,
+		PageSize:    10,
+		TotalCount:  1,
+	}
+
+	sequenceExecutionResponse := api.GetSequenceExecutionResponse{
+		PaginationResult:   paginationResult,
+		SequenceExecutions: sequences,
+	}
+
 	tests := []struct {
 		name         string
 		fields       fields
 		request      *http.Request
 		wantStatus   int
 		projectName  string
-		wantResponse []models.SequenceExecution
+		wantResponse *api.GetSequenceExecutionResponse
 	}{
 		{
 			name: "get all sequences ok",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllSequencesForProjectFunc: func(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
-						return sequences, &models.PaginationResult{}, nil
+						return sequences, &paginationResult, nil
 					},
 				},
 			},
 			request:      httptest.NewRequest("GET", "/sequences/project/projectname", nil),
 			wantStatus:   http.StatusOK,
-			wantResponse: sequences,
+			wantResponse: &sequenceExecutionResponse,
 			projectName:  "projectname",
 		},
 		{
@@ -106,10 +118,10 @@ func TestDebughandlerGetAllSequencesForProject(t *testing.T) {
 		require.Equal(t, tt.wantStatus, w.Code)
 
 		if tt.wantStatus == http.StatusOK {
-			var object []models.SequenceExecution
+			var object api.GetSequenceExecutionResponse
 			err := json.Unmarshal(w.Body.Bytes(), &object)
 			require.Nil(t, err)
-			require.Equal(t, object, tt.wantResponse)
+			require.Equal(t, &object, tt.wantResponse)
 		}
 
 		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetAllSequencesForProjectCalls()[0].ProjectName)
@@ -345,15 +357,10 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		DebugManager *fake.IDebugManagerMock
 	}
 
-	var expected = &apimodels.Events{
-		PageSize:    0,
-		NextPageKey: "0",
-		TotalCount:  1,
-		Events: []*apimodels.KeptnContextExtendedCE{
-			{
-				Data: map[string]interface{}{
-					"project": "my-project",
-				},
+	var expected = []*apimodels.KeptnContextExtendedCE{
+		{
+			Data: map[string]interface{}{
+				"project": "my-project",
 			},
 		},
 	}
@@ -365,14 +372,14 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		wantStatus     int
 		projectName    string
 		shkeptncontext string
-		wantResponse   *apimodels.Events
+		wantResponse   []*apimodels.KeptnContextExtendedCE
 	}{
 		{
 			name: "get all events ok",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{
 					GetAllEventsFunc: func(projectName, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error) {
-						return expected.Events, nil
+						return expected, nil
 					},
 				},
 			},
@@ -442,10 +449,10 @@ func TestDebughandlerGetAllEvents(t *testing.T) {
 		require.Equal(t, tt.wantStatus, w.Code)
 
 		if tt.wantStatus == http.StatusOK {
-			var object apimodels.Events
+			var object []*apimodels.KeptnContextExtendedCE
 			err := json.Unmarshal(w.Body.Bytes(), &object)
 			require.Nil(t, err)
-			require.Equal(t, object, *tt.wantResponse)
+			require.Equal(t, object, tt.wantResponse)
 		}
 
 		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetAllEventsCalls()[0].ProjectName)
