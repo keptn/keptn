@@ -140,7 +140,6 @@ describe(KtbIntegrationViewComponent.name, () => {
         integrationId,
       })
     );
-    component.uniformRegistrations$.subscribe();
 
     // when
     const actual = await firstValueFrom(component.selectedUniformRegistration$);
