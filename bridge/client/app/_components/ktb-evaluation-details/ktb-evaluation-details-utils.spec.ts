@@ -28,8 +28,9 @@ describe('KtbEvaluationDetailsUtils', () => {
     const totalScores = traces.map((t) => getTotalScore(t));
 
     // then
-    expect(totalScores).toStrictEqual([7, 0.5, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1]);
+    expect(totalScores).toStrictEqual([7, 0.5, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1]);
   });
+
   it('should transform an evaluation score to a data point', () => {
     // given
     const traces = EvaluationsMock.data.evaluationHistory as Trace[];
@@ -88,7 +89,7 @@ describe('KtbEvaluationDetailsUtils', () => {
     const dataPoints: IDataPoint[] = createDataPoints(traces);
 
     // then
-    expect(dataPoints.length).toBe(26);
+    expect(dataPoints.length).toBe(28);
 
     // Scores are before the SLIs
     // and sorting of them is NOT changed
@@ -206,22 +207,6 @@ describe('KtbEvaluationDetailsUtils', () => {
     expect(failedScoreInfo).toBe(' < 75');
     expect(warningScoreInfo).toBe(' >= 75');
     expect(passedScoreInfo).toBe(' >= 90');
-  });
-
-  describe('Line chart utils', () => {
-    it('should correctly map evaluation to chartPoints', () => {});
-
-    it('should correctly set score to failed color', () => {});
-
-    it('should correctly set score to warning color', () => {});
-
-    it('should correctly set score to success color', () => {});
-
-    it('should correctly return unique labels', () => {});
-
-    it('should not change labels if they are already unique', () => {});
-
-    it('should correctly return tooltip labels', () => {});
   });
 
   function getTraceWithSloContent(

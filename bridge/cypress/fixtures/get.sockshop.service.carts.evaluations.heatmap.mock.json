@@ -52,7 +52,7 @@
                 "comparedValue": 0,
                 "metric": "request_throughput",
                 "success": true,
-                "value": 18.42
+                "value": 10000
               },
               "warningTargets": null
             },
@@ -873,7 +873,8 @@
           "timeStart": "2022-02-08T11:43:51.456Z"
         },
         "labels": {
-          "DtCreds": "dynatrace"
+          "DtCreds": "dynatrace",
+          "buildId": "myBuildId"
         },
         "message": "no evaluation performed by lighthouse because no SLO file configured for project sockshop",
         "project": "sockshop",

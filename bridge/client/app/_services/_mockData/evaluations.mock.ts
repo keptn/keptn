@@ -1337,6 +1337,74 @@ const evaluationData = {
         },
         heatmapLabel: '2021-04-08 17:47',
       },
+      {
+        traces: [],
+        data: {
+          evaluation: {
+            indicatorResults: [
+              {
+                displayName: 'Response time P95',
+                keySli: false,
+                passTargets: [
+                  {
+                    criteria: '<=+10%',
+                    targetValue: 392.5944454106811,
+                    violated: false,
+                  },
+                  {
+                    criteria: '<600',
+                    targetValue: 600,
+                    violated: false,
+                  },
+                ],
+                score: 1,
+                status: 'pass',
+                value: {
+                  metric: 'response_time_p95',
+                  success: true,
+                  value: 315.8696785366614,
+                },
+                warningTargets: [
+                  {
+                    criteria: '<=800',
+                    targetValue: 800,
+                    violated: false,
+                  },
+                ],
+              },
+            ],
+            result: 'pass',
+            score: 70,
+            sloFileContent:
+              'LS0tCnNwZWNfdmVyc2lvbjogIjEuMCIKY29tcGFyaXNvbjoKICBhZ2dyZWdhdGVfZnVuY3Rpb246ICJhdmciCiAgY29tcGFyZV93aXRoOiAic2luZ2xlX3Jlc3VsdCIKICBpbmNsdWRlX3Jlc3VsdF93aXRoX3Njb3JlOiAicGFzcyIKICBudW1iZXJfb2ZfY29tcGFyaXNvbl9yZXN1bHRzOiAxCmZpbHRlcjoKb2JqZWN0aXZlczoKICAtIHNsaTogInJlc3BvbnNlX3RpbWVfcDk1IgogICAga2V5X3NsaTogZmFsc2UKICAgIHBhc3M6ICAgICAgICAgICAgICMgcGFzcyBpZiAocmVsYXRpdmUgY2hhbmdlIDw9IDEwJSBBTkQgYWJzb2x1dGUgdmFsdWUgaXMgPCA2MDBtcykKICAgICAgLSBjcml0ZXJpYToKICAgICAgICAgIC0gIjw9KzEwJSIgICMgcmVsYXRpdmUgdmFsdWVzIHJlcXVpcmUgYSBwcmVmaXhlZCBzaWduIChwbHVzIG9yIG1pbnVzKQogICAgICAgICAgLSAiPDYwMCIgICAgIyBhYnNvbHV0ZSB2YWx1ZXMgb25seSByZXF1aXJlIGEgbG9naWNhbCBvcGVyYXRvcgogICAgd2FybmluZzogICAgICAgICAgIyBpZiB0aGUgcmVzcG9uc2UgdGltZSBpcyBiZWxvdyA4MDBtcywgdGhlIHJlc3VsdCBzaG91bGQgYmUgYSB3YXJuaW5nCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PTgwMCIKICAgIHdlaWdodDogMQp0b3RhbF9zY29yZToKICBwYXNzOiAiOTAlIgogIHdhcm5pbmc6ICI3NSUi',
+            timeEnd: '2021-04-08T15:45:02Z',
+            timeStart: '2021-04-08T15:43:09Z',
+            sloFileContentParsed:
+              '---\nspec_version: "1.0"\ncomparison:\n  aggregate_function: "avg"\n  compare_with: "single_result"\n  include_result_with_score: "pass"\n  number_of_comparison_results: 1\nfilter:\nobjectives:\n  - sli: "response_time_p95"\n    key_sli: false\n    pass:             # pass if (relative change <= 10% AND absolute value is < 600ms)\n      - criteria:\n          - "<=+10%"  # relative values require a prefixed sign (plus or minus)\n          - "<600"    # absolute values only require a logical operator\n    warning:          # if the response time is below 800ms, the result should be a warning\n      - criteria:\n          - "<=800"\n    weight: 1\ntotal_score:\n  pass: "90%"\n  warning: "75%"',
+            score_pass: '90',
+            score_warning: '75',
+            compare_with: 'single_result\n',
+            include_result_with_score: 'pass\n',
+            number_of_comparison_results: 1,
+            number_of_missing_comparison_results: 0,
+          },
+          labels: {
+            DtCreds: 'dynatrace',
+          },
+          project: 'sockshop',
+          result: 'warning',
+          service: 'carts',
+          stage: 'staging',
+          status: 'succeeded',
+        },
+        id: '01b1eff1-5bd9-4955-b2ef-30fac990b761',
+        source: 'lighthouse-service',
+        specversion: '1.0',
+        type: 'sh.keptn.event.evaluation.finished',
+        shkeptncontext: '468286b0-9ea8-450e-800d-51897947c668',
+        triggeredid: '7a718389-0c3a-4997-a917-9112df3f8c2a',
+        heatmapLabel: '2021-04-08 17:47',
+      },
     ],
   },
   id: '01b1eff1-5bd9-4955-b2ef-30fac990b761',

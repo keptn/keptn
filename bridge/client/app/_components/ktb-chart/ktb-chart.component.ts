@@ -129,7 +129,14 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
           })
       );
       this.xAxisGroup.attr('transform', `translate(0, ${height - margin.bottom})`);
-      this.xAxisGroup.selectAll('text').attr('transform', 'translate(-10,0)rotate(-45)').style('text-anchor', 'end');
+      this.xAxisGroup
+        .selectAll('text')
+        .attr('transform', 'translate(-10,0)rotate(-45)')
+        .attr('uitestid', (d: unknown) => {
+          const label = this.xLabels[d as number];
+          return `axis-x-item-${label ? replaceSpace(label) : d}`;
+        })
+        .style('text-anchor', 'end');
     }
 
     if (this.yAxisGroupLeft) {
@@ -223,7 +230,10 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('height', (d) => height - margin.bottom - this.yScaleLeft(d[1]))
       .attr('fill', (d) => d[2])
       .attr('class', 'area')
-      .attr('uitestid', (d) => `area-${d[0]}`);
+      .attr('uitestid', (d) => {
+        const label = this.xLabels[d[0]];
+        return `area-${label ? replaceSpace(this.xLabels[d[0]]) : d}`;
+      });
     this.rects.push(rect);
   }
 

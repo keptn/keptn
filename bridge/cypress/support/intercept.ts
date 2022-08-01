@@ -1,4 +1,5 @@
 import { EvaluationFinishedMock } from '../fixtures/typed/evaluationFinished.mock';
+import { EvaluationFinishedScoredMock } from '../fixtures/typed/evaluationFinishedScoreMock';
 
 export function interceptEmptyEnvironmentScreen(): void {
   interceptProjectBoard();
@@ -441,5 +442,13 @@ export function interceptHeatmapWithKeySLI(): void {
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.keysli.mock.json',
+  }).as('heatmapEvaluations');
+}
+
+export function interceptHeatmapComponentWithScores(score1: number, score2: number): void {
+  interceptHeatmapComponent();
+  cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    statusCode: 200,
+    body: EvaluationFinishedScoredMock(score1, score2),
   }).as('heatmapEvaluations');
 }
