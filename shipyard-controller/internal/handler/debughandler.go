@@ -8,6 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/models/api"
+
+	_ "github.com/keptn/keptn/shipyard-controller/models"
 )
 
 type IDebugHandler interface {
@@ -31,11 +33,11 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 // @Summary      Get all sequences for specific project
 // @Description  Get all the sequences which are present in a project
 // @Tags         Sequence
-// @Param        project              path      string                    true "The name of the project"
-// @Success      200                  {object}  []models.SequenceState    "ok"
-// @Failure      400                  {object}  models.Error              "Bad Request"
-// @Failure      404                  {object}  models.Error              "not found"
-// @Failure      500                  {object}  models.Error              "Internal error"
+// @Param        project              path      string                    			true "The name of the project"
+// @Success      200                  {object}  api.GetSequenceExecutionResponse    "ok"
+// @Failure      400                  {object}  models.Error              			"Bad Request"
+// @Failure      404                  {object}  models.Error             			"not found"
+// @Failure      500                  {object}  models.Error              			"Internal error"
 // @Router       /sequence/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	projectName := c.Param("project")
