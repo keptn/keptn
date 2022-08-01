@@ -2,16 +2,17 @@ package main
 
 import (
 	"context"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
-	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
-	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
+	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"
@@ -66,6 +67,11 @@ func main() {
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
+	_main(controlPlane, log, env)
+
+}
+
+func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, env envConfig) {
 	go func() {
 		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
 			return controlPlane.IsRegistered()
@@ -73,7 +79,7 @@ func main() {
 	}()
 
 	ctx, wg := getGracefulContext()
-	err = controlPlane.Register(ctx, LighthouseService{env})
+	err := controlPlane.Register(ctx, LighthouseService{env})
 	if err != nil {
 		log.Fatal(err)
 	}

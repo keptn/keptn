@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -15,19 +14,29 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
+	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/strutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
+	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
+	gofake "github.com/keptn/go-utils/pkg/sdk/connector/fake"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
+	gonats "github.com/keptn/go-utils/pkg/sdk/connector/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
+	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
 	"github.com/nats-io/nats.go"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
 )
 
 var configurationService *httptest.Server
 
+var EventChan chan types.EventUpdate
+
 const natsTestPort = 8370
-const mongoDBVersion = "4.4.9"
 
 func setupNatsServer(port int, storeDir string) *server.Server {
 	opts := natsserver.DefaultTestOptions
@@ -48,10 +57,85 @@ func setupNatsServer(port int, storeDir string) *server.Server {
 func TestMain(m *testing.M) {
 	test := testing.T{}
 
+	//callBackSender := func(ce models.KeptnContextExtendedCE) error { return nil }
 	natsServer := setupNatsServer(natsTestPort, test.TempDir())
 	defer natsServer.Shutdown()
 
-	go main()
+	log := logrus.New()
+	log.SetLevel(logrus.DebugLevel)
+
+	// eventSource := gofake.EventSourceMock{
+	// 	StartFn: func(ctx context.Context, data types.RegistrationData, ces chan types.EventUpdate, errC chan error, wg *sync.WaitGroup) error {
+	// 		mtx.Lock()
+	// 		defer mtx.Unlock()
+	// 		EventChan = ces
+	// 		go func() {
+	// 			<-ctx.Done()
+	// 			wg.Done()
+	// 		}()
+	// 		return nil
+	// 	},
+	// 	OnSubscriptionUpdateFn: func(subscriptions []models.EventSubscription) {},
+	// 	SenderFn:               func() types.EventSender { return callBackSender },
+	// 	StopFn: func() error {
+	// 		return nil
+	// 	},
+	// 	CleanupFn: func() error {
+	// 		return nil
+	// 	},
+	// }
+
+	// apiSet, err := api.New("http://localhost")
+	// if err != nil {
+	// 	fmt.Errorf("err: %s", err.Error())
+	// 	return
+	// }
+
+	// server := httptest.NewServer(http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+	// 	reqBody, _ := ioutil.ReadAll(req.Body)
+	// 	data := models.Integration{}
+	// 	data.FromJSON(reqBody)
+	// 	rw.Write([]byte(``))
+	// }))
+	// defer server.Close()
+
+	natsConnector := gonats.New(fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort))
+	gonats.WithLogger(log)(natsConnector)
+	eventSource := eventsource.New(natsConnector, eventsource.WithLogger(log))
+
+	//subscriptionSource := subscriptionsource.New(api.NewUniformHandler(server.URL), subscriptionsource.WithLogger(log))
+	subscriptionSource := subscriptionsource.NewFixedSubscriptionSource(
+		subscriptionsource.WithFixedSubscriptions(
+			models.EventSubscription{Event: "sh.keptn.event.evaluation.triggered"},
+			models.EventSubscription{Event: "sh.keptn.event.get-sli.finished"},
+			models.EventSubscription{Event: "sh.keptn.event.monitoring.configure"},
+		),
+	)
+
+	// subscriptionSource := gofake.SubscriptionSourceMock{
+	// 	StartFn: func(ctx context.Context, data types.RegistrationData, c chan []models.EventSubscription, errC chan error, wg *sync.WaitGroup) error {
+	// 		mtx.Lock()
+	// 		defer mtx.Unlock()
+	// 		go func() {
+	// 			<-ctx.Done()
+	// 			wg.Done()
+	// 		}()
+	// 		return nil
+	// 	},
+	// 	RegisterFn: func(integration models.Integration) (string, error) {
+	// 		return "some-id", nil
+	// 	},
+	// 	StopFn: func() error {
+	// 		return nil
+	// 	},
+	// }
+
+	logHandler := &gofake.LogAPIMock{}
+	logForwarder := logforwarder.New(logHandler)
+
+	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
+
+	go _main(controlPlane, log, envConfig{})
 	m.Run()
 }
 
@@ -65,10 +149,7 @@ func Test_SLIWrongFinishedPayloadSend(t *testing.T) {
 	natsClient, err := newTestNatsClient(natsURL, t)
 	require.Nil(t, err)
 
-	c := http.Client{
-		Timeout: 2 * time.Second,
-	}
-
+	//send evaluation.triggered event
 	payload := apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: keptnv2.EvaluationTriggeredEventData{
@@ -100,17 +181,42 @@ func Test_SLIWrongFinishedPayloadSend(t *testing.T) {
 	marshal, err := json.Marshal(payload)
 	require.Nil(t, err)
 
-	t.Log("sent evaluation.triggered event")
-	req, err := http.NewRequest(http.MethodPost, "http://localhost:8080/v1/event", bytes.NewBuffer(marshal))
+	err = natsClient.Publish(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), marshal)
 	require.Nil(t, err)
 
-	resp, err := c.Do(req)
-	require.Nil(t, err)
-	bodyBytes, err := io.ReadAll(resp.Body)
-	fmt.Println(string(bodyBytes))
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	//EventChan <- types.EventUpdate{KeptnEvent: payload, MetaData: types.EventUpdateMetaData{Subject: keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)}}
 
 	//expect get-sli.triggered
+	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if event != nil {
+			getSLITriggeredEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("got get-sli.triggered event: ", getSLITriggeredEvent)
+
+	t.Log("validating get-sli.triggered event")
+	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
+	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, getSLITriggeredEvent.Shkeptncontext)
+	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
+	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
+	require.NotEmpty(t, getSLIPayload.GetSLI.End)
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "response_time_p95")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "throughput")
+	require.Contains(t, getSLIPayload.GetSLI.Indicators, "error_rate")
+	require.Equal(t, projectName, getSLIPayload.EventData.Project)
+	require.Equal(t, "hardening", getSLIPayload.EventData.Stage)
+	require.Equal(t, serviceName, getSLIPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusType(""), getSLIPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultType(""), getSLIPayload.EventData.Result)
+	require.Empty(t, getSLIPayload.EventData.Message)
+
 	//expect evaluation.started event
 	//send get-sli.started eventTriggerEvaluation
 	//send invalid get-sli.finished event
