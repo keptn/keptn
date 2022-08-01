@@ -196,7 +196,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	debugEngine := gin.Default()
 	apiDebug := debugEngine.Group("/")
 	debugHandler := handler.NewDebugHandler(debugManager)
-	debugController := controller.NewDebugController(debugHandler, projectService)
+	debugController := routing.NewDebugController(debugHandler, projectService)
 	debugController.Inject(apiDebug)
 
 	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectMVRepo)

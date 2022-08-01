@@ -7,9 +7,9 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/db"
-	db_mock "github.com/keptn/keptn/shipyard-controller/db/mock"
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	"github.com/keptn/keptn/shipyard-controller/internal/db"
+	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/mongo"

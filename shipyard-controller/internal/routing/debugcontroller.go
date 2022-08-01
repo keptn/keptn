@@ -1,8 +1,8 @@
-package controller
+package routing
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/keptn/keptn/shipyard-controller/handler"
+	"github.com/keptn/keptn/shipyard-controller/internal/handler"
 )
 
 type DebugController struct {
