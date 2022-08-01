@@ -33,6 +33,11 @@ import (
 	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	fakek8s "k8s.io/client-go/kubernetes/fake"
+	k8stesting "k8s.io/client-go/testing"
 )
 
 var configurationService *httptest.Server
@@ -90,7 +95,20 @@ func TestMain(m *testing.M) {
 	defer os.Unsetenv("RESOURCE_SERVICE")
 	fmt.Printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n")
 
-	go _main(controlPlane, log, envConfig{ConfigurationServiceURL: configurationService.URL, LogLevel: logrus.DebugLevel.String()})
+	fakeK8sClient := fakek8s.NewSimpleClientset(
+		&corev1.ConfigMap{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "keptn-webhook-config",
+			},
+			Data: map[string]string{
+				"denyList": ""},
+		},
+	)
+	fakeK8sClient.PrependReactor("get", "configmap", func(action k8stesting.Action) (handled bool, ret runtime.Object, err error) {
+		return true, nil, fmt.Errorf("cannot get configmap")
+	})
+
+	go _main(controlPlane, log, envConfig{ConfigurationServiceURL: configurationService.URL, LogLevel: logrus.DebugLevel.String(), KubeAPI: fakeK8sClient})
 	time.Sleep(5 * time.Second)
 	m.Run()
 }

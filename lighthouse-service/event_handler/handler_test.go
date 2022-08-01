@@ -8,7 +8,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/require"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -20,6 +19,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	"github.com/keptn/go-utils/pkg/sdk/connector/types"
+	fakek8s "k8s.io/client-go/kubernetes/fake"
 )
 
 func TestNewEventHandler(t *testing.T) {
@@ -53,7 +53,7 @@ func TestNewEventHandler(t *testing.T) {
 			want: &StartEvaluationHandler{
 				Event:             incomingEvent,
 				KeptnHandler:      keptnHandler,
-				SLIProviderConfig: K8sSLIProviderConfig{},
+				SLIProviderConfig: K8sSLIProviderConfig{KubeAPI: fake.NewSimpleClientset()},
 			},
 			wantErr: false,
 		},
@@ -97,13 +97,10 @@ func TestNewEventHandler(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			GetConfig().GetKubeAPI = func() (kubernetes.Interface, error) {
-				return fake.NewSimpleClientset(), nil
-			}
 			tt.args.event.SetType(tt.eventType)
 			t.Setenv("RESOURCE_SERVICE", configurationServiceURL)
 
-			got, err := NewEventHandler(ctx, tt.args.event)
+			got, err := NewEventHandler(ctx, tt.args.event, fake.NewSimpleClientset())
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -125,7 +122,7 @@ func TestEventSenderWithoutContext(t *testing.T) {
 	ctx = context.WithValue(ctx, types.EventSenderKey, nil)
 	defer cancel()
 
-	_, err := NewEventHandler(ctx, incomingEvent)
+	_, err := NewEventHandler(ctx, incomingEvent, fakek8s.NewSimpleClientset())
 	require.Error(t, err)
 	require.Equal(t, "could not get eventSender from context", err.Error())
 

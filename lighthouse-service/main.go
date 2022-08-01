@@ -13,6 +13,8 @@ import (
 	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"
@@ -36,10 +38,17 @@ type envConfig struct {
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
 	LogLevel                string `envconfig:"LOG_LEVEL" default:"info"`
+	KubeAPI                 kubernetes.Interface
 }
 
 func main() {
+	kubeAPI, err := createKubeAPI()
+	if err != nil {
+		log.Fatalf("could not create kubernetes client: %s", err.Error())
+	}
+
 	var env envConfig
+	env.KubeAPI = kubeAPI
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
@@ -98,7 +107,7 @@ type LighthouseService struct {
 
 func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	ce := v0_2_0.ToCloudEvent(event)
-	handler, err := event_handler.NewEventHandler(ctx, ce)
+	handler, err := event_handler.NewEventHandler(ctx, ce, l.env.KubeAPI)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -155,4 +164,20 @@ func getGracefulContext() (context.Context, *sync.WaitGroup) {
 	}()
 
 	return ctx, wg
+}
+
+// GetKubeAPI godoc
+func createKubeAPI() (*kubernetes.Clientset, error) {
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kubeAPI, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return kubeAPI, nil
 }

@@ -2,10 +2,11 @@ package event_handler
 
 import (
 	"context"
-	"github.com/sirupsen/logrus"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	"os"
 	"sync"
+
+	"github.com/sirupsen/logrus"
+	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	keptnevents "github.com/keptn/go-utils/pkg/lib"
@@ -38,14 +39,6 @@ func NewConfigureMonitoringHandler(event cloudevents.Event, logger *logrus.Logge
 
 	for _, opt := range opts {
 		opt(cmh)
-	}
-
-	if cmh.K8sClient == nil {
-		defaultK8sClient, err := GetConfig().GetKubeAPI()
-		if err != nil {
-			return nil, err
-		}
-		cmh.K8sClient = defaultK8sClient
 	}
 
 	return cmh, nil
