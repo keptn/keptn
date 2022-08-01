@@ -23,7 +23,7 @@ type EvaluationEventHandler interface {
 	HandleEvent(ctx context.Context) error
 }
 
-func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface) (EvaluationEventHandler, error) {
+func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface, es EventStore) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 
 	eventSender, ok := ctx.Value(types.EventSenderKey).(controlplane.EventSender)
@@ -33,6 +33,12 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 	keptnHandler, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &CPEventSender{Sender: eventSender}})
 	if err != nil {
 		return nil, err
+	}
+
+	var eventStore EventStore
+	eventStore = keptnHandler.EventHandler
+	if es != nil {
+		eventStore = es
 	}
 
 	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint("RESOURCE_SERVICE")
@@ -62,7 +68,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 				ResourceHandler: resourceHandler,
 				ServiceHandler:  serviceHandler,
 			},
-			EventStore: keptnHandler.EventHandler,
+			EventStore: eventStore,
 		}, nil
 	case keptn.ConfigureMonitoringEventType:
 		return NewConfigureMonitoringHandler(event, logger.StandardLogger(), WithK8sClient(kubeAPI))

@@ -39,6 +39,7 @@ type envConfig struct {
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
 	LogLevel                string `envconfig:"LOG_LEVEL" default:"info"`
 	KubeAPI                 kubernetes.Interface
+	EventStore              event_handler.EventStore
 }
 
 func main() {
@@ -107,7 +108,7 @@ type LighthouseService struct {
 
 func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	ce := v0_2_0.ToCloudEvent(event)
-	handler, err := event_handler.NewEventHandler(ctx, ce, l.env.KubeAPI)
+	handler, err := event_handler.NewEventHandler(ctx, ce, l.env.KubeAPI, l.env.EventStore)
 
 	if err != nil {
 		log.Println(err.Error())
