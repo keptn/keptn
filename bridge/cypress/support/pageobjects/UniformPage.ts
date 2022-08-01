@@ -359,29 +359,37 @@ class UniformPage {
     return this;
   }
 
-  public createSecret(): this {
+  public navigateToSecretCreationPage(overridePendingChangeGuard = false): this {
     this.assertSecretCreationLink();
     cy.byTestId('ktb-webhook-secret-creation-link').click();
-    return this;
-  }
-
-  public isAddSecretLink(): this {
-    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/secrets/add`);
-    return this;
-  }
-
-  public assertSecretScopeQueryParam(scope: string): this {
-    cy.location('search').should('eq', `?scope=${scope}`);
-    return this;
-  }
-
-  public assertSecretScope(scope: string): this {
-    cy.byTestId('keptn-secret-scope-input').should('have.text', scope);
+    if (overridePendingChangeGuard) {
+      cy.get('dt-confirmation-dialog-state').contains('Discard changes and leave page').click();
+    }
     return this;
   }
 
   public waitForJmeterInfoRequest(): this {
     cy.wait('@jmeterUniformInfo');
+    return this;
+  }
+
+  public assertSubscriptionAddPath(projectName: string, integrationId: string): this {
+    cy.location('pathname').should(
+      'eq',
+      `/project/${projectName}/settings/uniform/integrations/${integrationId}/subscriptions/add`
+    );
+    return this;
+  }
+
+  public assertOnChangeDialog(open = true): this {
+    cy.get('dt-confirmation-dialog-state')
+      .contains('You have pending changes. Are you sure you want to leave this page?')
+      .should(open ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public closeOnChangeDialog(): this {
+    cy.get('dt-confirmation-dialog-state').contains('Stay').click();
     return this;
   }
 }
