@@ -6,7 +6,6 @@ import (
 
 func Test_GKE(t *testing.T) {
 	// Shut DownTests
-
 	t.Run("Test_BackupRestore", Test_BackupRestore)
 	// Common Tests
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
@@ -37,4 +36,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
 	t.Run("Test_ImportCorrectManifest", Test_ImportCorrectManifest)
+	t.Run("Test_ImportCorrectManifestNonExistingProject", Test_ImportCorrectManifestNonExistingProject)
+	t.Run("Test_ImportMalformedZipFileCorrectName", Test_ImportMalformedZipFileCorrectName)
 }
