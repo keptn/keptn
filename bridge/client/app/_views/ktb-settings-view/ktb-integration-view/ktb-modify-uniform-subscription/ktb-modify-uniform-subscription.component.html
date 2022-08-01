@@ -114,6 +114,10 @@
         </div>
       </form>
       <div class="mt-2 required-info">fields are required</div>
+
+      <div class="settings-section" *ngIf="editMode">
+        <ktb-danger-zone [data]="projectDeletionData"></ktb-danger-zone>
+      </div>
     </ng-container>
   </ng-container>
   <ng-template #loading>

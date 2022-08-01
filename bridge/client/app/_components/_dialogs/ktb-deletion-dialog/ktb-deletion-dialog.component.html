@@ -9,10 +9,10 @@
     This action cannot be undone. This will permanently delete the <span class="bold">{{ data.name }}</span>
     {{ data.type }}.
   </div>
-  <div class="mb-3">
+  <div class="mb-3" *ngIf="data.name">
     Please type in <span class="bold">{{ data.name }}</span> to confirm deletion.
   </div>
-  <div class="mb-2">
+  <div class="mb-2" *ngIf="data.name">
     <dt-form-field>
       <input
         autofocus

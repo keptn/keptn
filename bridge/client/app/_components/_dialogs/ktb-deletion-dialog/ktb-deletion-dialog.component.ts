@@ -29,7 +29,9 @@ export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.deletionConfirmationControl.setValidators([Validators.required, Validators.pattern(this.data.name)]);
+    if (this.data.name) {
+      this.deletionConfirmationControl.setValidators([Validators.required, Validators.pattern(this.data.name)]);
+    }
 
     this.eventService.deletionProgressEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.result === DeleteResult.SUCCESS) {

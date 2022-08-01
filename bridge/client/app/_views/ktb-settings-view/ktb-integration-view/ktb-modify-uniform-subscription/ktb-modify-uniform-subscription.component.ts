@@ -21,6 +21,8 @@ import { Trace } from '../../../../_models/trace';
 import { HttpErrorResponse } from '@angular/common/http';
 import { IClientSecret } from '../../../../../../shared/interfaces/secret';
 import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
+import { DeleteData, DeleteResult, DeleteType } from '../../../../_interfaces/delete';
+import { EventService } from '../../../../_services/event.service';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -79,11 +81,14 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public unsavedDialogState: null | 'unsaved' = null;
   private isFilterDirty = false;
 
+  public projectDeletionData?: DeleteData;
+
   constructor(
     private route: ActivatedRoute,
     private dataService: DataService,
     private router: Router,
     private notificationsService: NotificationsService,
+    private eventService: EventService,
     private _changeDetectorRef: ChangeDetectorRef
   ) {
     const subscription$ = this.route.paramMap.pipe(
@@ -218,6 +223,49 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         this.updateDataSource(data.project, data.subscription);
       })
     );
+
+    this.projectDeletionData = {
+      type: DeleteType.SUBSCRIPTION,
+      name: '',
+    };
+
+    this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
+      if (data.type === DeleteType.SUBSCRIPTION) {
+        console.log('Deleting subscription');
+        this.deleteSubscription();
+      }
+    });
+  }
+
+  private deleteSubscription(): void {
+    this.data$.subscribe((data) => {
+      if (data.subscription.id)
+        this.dataService.deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService).subscribe(
+          () => {
+            this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
+            this.subscriptionForm.reset();
+            this.webhookFormDirty = false;
+            this.isFilterDirty = false;
+            this.router.navigate([
+              '/',
+              'project',
+              data.project.projectName,
+              'settings',
+              'uniform',
+              'integrations',
+              data.integrationId,
+            ]);
+          },
+          (err) => {
+            const deletionError = 'Subscription could not be deleted: ' + err.message;
+            this.eventService.deletionProgressEvent.next({
+              error: deletionError,
+              isInProgress: false,
+              result: DeleteResult.ERROR,
+            });
+          }
+        );
+    });
   }
 
   private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
