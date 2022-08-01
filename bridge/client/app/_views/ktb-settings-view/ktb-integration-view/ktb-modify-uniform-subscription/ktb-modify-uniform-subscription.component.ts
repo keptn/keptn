@@ -74,6 +74,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public errorMessage?: string;
 
   private pendingChangesSubject = new Subject<boolean>();
+  public dialogLabel = 'Pending Changes dialog';
   public message = 'You have pending changes. Are you sure you want to leave this page?';
   public unsavedDialogState: null | 'unsaved' = null;
   private isFilterDirty = false;
@@ -380,10 +381,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public showNotification(): void {
     this.unsavedDialogState = 'unsaved';
 
-    document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.add('shake');
-    setTimeout(() => {
-      document.querySelector('div[aria-label="Dialog for notifying about unsaved data"]')?.classList.remove('shake');
-    }, 500);
+    const dialog = document.querySelector(`div[aria-label="${this.dialogLabel}"]`);
+    dialog?.classList.add('shake');
+    setTimeout(() => dialog?.classList.remove('shake'), 500);
   }
 
   public hideNotification(): void {
