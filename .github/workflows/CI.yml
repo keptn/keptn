@@ -364,7 +364,7 @@ jobs:
 
   helm_charts_upload:
     name: Publish helm charts to dev repo
-    needs: [prepare_ci_run, helm_charts_build]
+    needs: [prepare_ci_run, helm_charts_build, docker_build]
     if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-20.04
     steps:

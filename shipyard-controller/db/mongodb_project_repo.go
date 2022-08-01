@@ -8,6 +8,7 @@ import (
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/mitchellh/copystructure"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -64,7 +65,7 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.E
 	result := projectCollection.FindOne(ctx, bson.M{"projectName": projectName})
 	if result.Err() != nil {
 		if result.Err() == mongo.ErrNoDocuments {
-			return nil, ErrProjectNotFound
+			return nil, common.ErrProjectNotFound
 		}
 		return nil, result.Err()
 	}

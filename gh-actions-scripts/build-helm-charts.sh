@@ -36,6 +36,9 @@ find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${DOCK
 
 mkdir keptn-charts/
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+
 # ####################
 # COMMON HELM CHART
 # ####################
@@ -49,84 +52,46 @@ fi
 
 mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
 
-# ####################
-# INSTALLER HELM CHART
-# ####################
-INSTALLER_BASE_PATH=installer/manifests
+# ##################################################################
+# INSTALLER HELM CHART # HELM-SVC HELM CHART # JMETER-SVC HELM CHART
+# ##################################################################
 
-helm dependency build ${INSTALLER_BASE_PATH}/keptn
+declare -A charts
+charts[keptn]=installer/manifests/keptn
+charts[helm-service]=helm-service/chart
+charts[jmeter-service]=jmeter-service/chart
 
-helm package ${INSTALLER_BASE_PATH}/keptn --app-version "$IMAGE_TAG" --version "$VERSION"
-if [ $? -ne 0 ]; then
-  echo "Error packing installer, exiting..."
-  exit 1
-fi
+for i in "${!charts[@]}"
+do
+  echo "=== Building $i ==="
+  BASE_NAME=$i
+  BASE_PATH=${charts[$i]}
 
-mv "keptn-${VERSION}.tgz" "keptn-charts/keptn-${VERSION}.tgz"
-
-# verify the chart
-echo "::group::Template install of keptn"
-helm template --debug "keptn-charts/keptn-${VERSION}.tgz"
-
-if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for installer has templating errors - exiting"
+  echo "::group::Helm dependency build"
+  helm dependency build ${BASE_PATH}
   echo "::endgroup::"
-  exit 1
-fi
 
-echo "::endgroup::"
+  helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+  if [ $? -ne 0 ]; then
+    echo "Error packing ${BASE_NAME}, exiting..."
+    exit 1
+  fi
 
-# ####################
-# HELM-SVC HELM CHART
-# ####################
-HELM_SVC_BASE_PATH=helm-service
+  mv "${BASE_NAME}-${VERSION}.tgz" "keptn-charts/${BASE_NAME}-${VERSION}.tgz"
 
-helm dependency build ${HELM_SVC_BASE_PATH}/chart
+  # verify the chart
+  echo "::group::Template install of ${BASE_NAME}"
+  helm template --debug "keptn-charts/${BASE_NAME}-${VERSION}.tgz"
 
-helm package ${HELM_SVC_BASE_PATH}/chart --app-version "$IMAGE_TAG" --version "$VERSION"
-if [ $? -ne 0 ]; then
-  echo "Error packaging installer, exiting..."
-  exit 1
-fi
+  if [ $? -ne 0 ]; then
+    echo "::error::Helm Chart for ${BASE_NAME} has templating errors - exiting"
+    echo "::endgroup::"
+    exit 1
+  fi
 
-mv "helm-service-${VERSION}.tgz" "keptn-charts/helm-service-${VERSION}.tgz"
-
-#verify the chart
-echo "::group::Template of helm-service"
-helm template --debug "keptn-charts/helm-service-${VERSION}.tgz"
-
-if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for helm-service has templating errors - exiting"
   echo "::endgroup::"
-  exit 1
-fi
-echo "::endgroup::"
 
-# ####################
-# JMETER-SVC HELM CHART
-# ####################
-JMETER_SVC_BASE_PATH=jmeter-service
-
-helm dependency build ${JMETER_SVC_BASE_PATH}/chart
-
-helm package ${JMETER_SVC_BASE_PATH}/chart --app-version "$IMAGE_TAG" --version "$VERSION"
-if [ $? -ne 0 ]; then
-  echo "Error packaging installer, exiting..."
-  exit 1
-fi
-
-mv "jmeter-service-${VERSION}.tgz" "keptn-charts/jmeter-service-${VERSION}.tgz"
-
-echo "::group::Template of jmeter-service"
-#verify the chart
-helm template --debug "keptn-charts/jmeter-service-${VERSION}.tgz"
-
-if [ $? -ne 0 ]; then
-  echo "::error::Helm Chart for jmeter-service has templating errors - exiting"
-  echo "::endgroup::"
-  exit 1
-fi
-echo "::endgroup::"
+done
 
 echo "Generated files:"
 echo " - keptn-charts/keptn-${VERSION}.tgz"

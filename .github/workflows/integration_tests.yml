@@ -359,20 +359,28 @@ jobs:
               "$HELM_SERVICE_HELM_CHART_NAME" \
               "$JMETER_SERVICE_HELM_CHART_NAME"
           else
+            if [[ "$CLOUD_PROVIDER" == *"k3s"* ]]; then
+              EXTRA_NATS_VALUES='--set nats.cluster.enabled=false'
+            else
+              EXTRA_NATS_VALUES=''
+            fi
+          
             if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 14m \
                 -f ./test/assets/helm-charts/keptn/values-int-tests-dev.yaml \
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
+                $EXTRA_NATS_VALUES
             else
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 14m \
                 -f ./test/assets/helm-charts/keptn/values-int-tests.yaml \
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
+                $EXTRA_NATS_VALUES
             fi
           fi
           echo "::endgroup::"

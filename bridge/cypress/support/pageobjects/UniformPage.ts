@@ -379,5 +379,10 @@ class UniformPage {
     cy.byTestId('keptn-secret-scope-input').should('have.text', scope);
     return this;
   }
+
+  public waitForJmeterInfoRequest(): this {
+    cy.wait('@jmeterUniformInfo');
+    return this;
+  }
 }
 export default UniformPage;

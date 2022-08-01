@@ -44,6 +44,7 @@ import { KtbLoadingModule } from './_components/ktb-loading/ktb-loading.module';
 import { KtbNotificationModule } from './_components/ktb-notification/ktb-notification.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { KtbChartModule } from './_components/ktb-chart/ktb-chart.module';
 
 registerLocaleData(localeEn, 'en');
 
@@ -74,7 +75,8 @@ const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, Kt
 
 @NgModule({
   declarations: [AppComponent, NotFoundComponent, KtbRootComponent],
-  imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule],
+  // Move KtbChartModule to the page module, where it is needed
+  imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule, KtbChartModule],
   entryComponents: [],
   providers: [
     EventService,

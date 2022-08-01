@@ -11,9 +11,7 @@ type CreateLogsResponse struct{}
 
 type GetLogParams struct {
 	LogFilter
-
-	NextPageKey int64 `form:"nextPageKey" json:"nextPageKey"`
-	PageSize    int64 `form:"pageSize" json:"pageSize"`
+	PaginationParams
 }
 
 type DeleteLogParams struct {
@@ -29,14 +27,7 @@ type LogFilter struct {
 }
 
 type GetLogsResponse struct {
-	// Pointer to next page
-	NextPageKey int64 `json:"nextPageKey,omitempty"`
-
-	// Size of returned page
-	PageSize int64 `json:"pageSize,omitempty"`
-
-	// Total number of logs
-	TotalCount int64 `json:"totalCount,omitempty"`
+	PaginationResult
 
 	// logs
 	Logs []apimodels.LogEntry `json:"logs"`

@@ -4,7 +4,7 @@
 package db_mock
 
 import (
-	"github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"sync"
 )
 
@@ -14,16 +14,16 @@ import (
 //
 // 		// make and configure a mocked db.SequenceStateRepo
 // 		mockedSequenceStateRepo := &SequenceStateRepoMock{
-// 			CreateSequenceStateFunc: func(state models.SequenceState) error {
+// 			CreateSequenceStateFunc: func(state apimodels.SequenceState) error {
 // 				panic("mock out the CreateSequenceState method")
 // 			},
-// 			DeleteSequenceStatesFunc: func(filter models.StateFilter) error {
+// 			DeleteSequenceStatesFunc: func(filter apimodels.StateFilter) error {
 // 				panic("mock out the DeleteSequenceStates method")
 // 			},
-// 			FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+// 			FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
 // 				panic("mock out the FindSequenceStates method")
 // 			},
-// 			UpdateSequenceStateFunc: func(state models.SequenceState) error {
+// 			UpdateSequenceStateFunc: func(state apimodels.SequenceState) error {
 // 				panic("mock out the UpdateSequenceState method")
 // 			},
 // 		}
@@ -34,38 +34,38 @@ import (
 // 	}
 type SequenceStateRepoMock struct {
 	// CreateSequenceStateFunc mocks the CreateSequenceState method.
-	CreateSequenceStateFunc func(state models.SequenceState) error
+	CreateSequenceStateFunc func(state apimodels.SequenceState) error
 
 	// DeleteSequenceStatesFunc mocks the DeleteSequenceStates method.
-	DeleteSequenceStatesFunc func(filter models.StateFilter) error
+	DeleteSequenceStatesFunc func(filter apimodels.StateFilter) error
 
 	// FindSequenceStatesFunc mocks the FindSequenceStates method.
-	FindSequenceStatesFunc func(filter models.StateFilter) (*models.SequenceStates, error)
+	FindSequenceStatesFunc func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error)
 
 	// UpdateSequenceStateFunc mocks the UpdateSequenceState method.
-	UpdateSequenceStateFunc func(state models.SequenceState) error
+	UpdateSequenceStateFunc func(state apimodels.SequenceState) error
 
 	// calls tracks calls to the methods.
 	calls struct {
 		// CreateSequenceState holds details about calls to the CreateSequenceState method.
 		CreateSequenceState []struct {
 			// State is the state argument value.
-			State models.SequenceState
+			State apimodels.SequenceState
 		}
 		// DeleteSequenceStates holds details about calls to the DeleteSequenceStates method.
 		DeleteSequenceStates []struct {
 			// Filter is the filter argument value.
-			Filter models.StateFilter
+			Filter apimodels.StateFilter
 		}
 		// FindSequenceStates holds details about calls to the FindSequenceStates method.
 		FindSequenceStates []struct {
 			// Filter is the filter argument value.
-			Filter models.StateFilter
+			Filter apimodels.StateFilter
 		}
 		// UpdateSequenceState holds details about calls to the UpdateSequenceState method.
 		UpdateSequenceState []struct {
 			// State is the state argument value.
-			State models.SequenceState
+			State apimodels.SequenceState
 		}
 	}
 	lockCreateSequenceState  sync.RWMutex
@@ -75,12 +75,12 @@ type SequenceStateRepoMock struct {
 }
 
 // CreateSequenceState calls CreateSequenceStateFunc.
-func (mock *SequenceStateRepoMock) CreateSequenceState(state models.SequenceState) error {
+func (mock *SequenceStateRepoMock) CreateSequenceState(state apimodels.SequenceState) error {
 	if mock.CreateSequenceStateFunc == nil {
 		panic("SequenceStateRepoMock.CreateSequenceStateFunc: method is nil but SequenceStateRepo.CreateSequenceState was just called")
 	}
 	callInfo := struct {
-		State models.SequenceState
+		State apimodels.SequenceState
 	}{
 		State: state,
 	}
@@ -94,10 +94,10 @@ func (mock *SequenceStateRepoMock) CreateSequenceState(state models.SequenceStat
 // Check the length with:
 //     len(mockedSequenceStateRepo.CreateSequenceStateCalls())
 func (mock *SequenceStateRepoMock) CreateSequenceStateCalls() []struct {
-	State models.SequenceState
+	State apimodels.SequenceState
 } {
 	var calls []struct {
-		State models.SequenceState
+		State apimodels.SequenceState
 	}
 	mock.lockCreateSequenceState.RLock()
 	calls = mock.calls.CreateSequenceState
@@ -106,12 +106,12 @@ func (mock *SequenceStateRepoMock) CreateSequenceStateCalls() []struct {
 }
 
 // DeleteSequenceStates calls DeleteSequenceStatesFunc.
-func (mock *SequenceStateRepoMock) DeleteSequenceStates(filter models.StateFilter) error {
+func (mock *SequenceStateRepoMock) DeleteSequenceStates(filter apimodels.StateFilter) error {
 	if mock.DeleteSequenceStatesFunc == nil {
 		panic("SequenceStateRepoMock.DeleteSequenceStatesFunc: method is nil but SequenceStateRepo.DeleteSequenceStates was just called")
 	}
 	callInfo := struct {
-		Filter models.StateFilter
+		Filter apimodels.StateFilter
 	}{
 		Filter: filter,
 	}
@@ -125,10 +125,10 @@ func (mock *SequenceStateRepoMock) DeleteSequenceStates(filter models.StateFilte
 // Check the length with:
 //     len(mockedSequenceStateRepo.DeleteSequenceStatesCalls())
 func (mock *SequenceStateRepoMock) DeleteSequenceStatesCalls() []struct {
-	Filter models.StateFilter
+	Filter apimodels.StateFilter
 } {
 	var calls []struct {
-		Filter models.StateFilter
+		Filter apimodels.StateFilter
 	}
 	mock.lockDeleteSequenceStates.RLock()
 	calls = mock.calls.DeleteSequenceStates
@@ -137,12 +137,12 @@ func (mock *SequenceStateRepoMock) DeleteSequenceStatesCalls() []struct {
 }
 
 // FindSequenceStates calls FindSequenceStatesFunc.
-func (mock *SequenceStateRepoMock) FindSequenceStates(filter models.StateFilter) (*models.SequenceStates, error) {
+func (mock *SequenceStateRepoMock) FindSequenceStates(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
 	if mock.FindSequenceStatesFunc == nil {
 		panic("SequenceStateRepoMock.FindSequenceStatesFunc: method is nil but SequenceStateRepo.FindSequenceStates was just called")
 	}
 	callInfo := struct {
-		Filter models.StateFilter
+		Filter apimodels.StateFilter
 	}{
 		Filter: filter,
 	}
@@ -156,10 +156,10 @@ func (mock *SequenceStateRepoMock) FindSequenceStates(filter models.StateFilter)
 // Check the length with:
 //     len(mockedSequenceStateRepo.FindSequenceStatesCalls())
 func (mock *SequenceStateRepoMock) FindSequenceStatesCalls() []struct {
-	Filter models.StateFilter
+	Filter apimodels.StateFilter
 } {
 	var calls []struct {
-		Filter models.StateFilter
+		Filter apimodels.StateFilter
 	}
 	mock.lockFindSequenceStates.RLock()
 	calls = mock.calls.FindSequenceStates
@@ -168,12 +168,12 @@ func (mock *SequenceStateRepoMock) FindSequenceStatesCalls() []struct {
 }
 
 // UpdateSequenceState calls UpdateSequenceStateFunc.
-func (mock *SequenceStateRepoMock) UpdateSequenceState(state models.SequenceState) error {
+func (mock *SequenceStateRepoMock) UpdateSequenceState(state apimodels.SequenceState) error {
 	if mock.UpdateSequenceStateFunc == nil {
 		panic("SequenceStateRepoMock.UpdateSequenceStateFunc: method is nil but SequenceStateRepo.UpdateSequenceState was just called")
 	}
 	callInfo := struct {
-		State models.SequenceState
+		State apimodels.SequenceState
 	}{
 		State: state,
 	}
@@ -187,10 +187,10 @@ func (mock *SequenceStateRepoMock) UpdateSequenceState(state models.SequenceStat
 // Check the length with:
 //     len(mockedSequenceStateRepo.UpdateSequenceStateCalls())
 func (mock *SequenceStateRepoMock) UpdateSequenceStateCalls() []struct {
-	State models.SequenceState
+	State apimodels.SequenceState
 } {
 	var calls []struct {
-		State models.SequenceState
+		State apimodels.SequenceState
 	}
 	mock.lockUpdateSequenceState.RLock()
 	calls = mock.calls.UpdateSequenceState

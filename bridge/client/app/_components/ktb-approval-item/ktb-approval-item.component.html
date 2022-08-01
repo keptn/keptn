@@ -1,21 +1,14 @@
 <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px" *ngIf="_event && _event.isApproval()">
   <h4 class="m-0" [textContent]="_event.getShortImageName()"></h4>
   <ng-container *ngIf="evaluationExists">
-    <dt-tag-list aria-label="evaluation-info" *ngIf="evaluation; else loading">
-      <dt-tag
+    <ng-container *ngIf="evaluation; else loading">
+      <ktb-evaluation-badge
         uitestid="ktb-approval-evaluation-bubble"
-        class="justify-content-center"
-        [dtOverlay]="overlay"
-        [dtOverlayConfig]="overlayConfig"
-        [class.error]="evaluation.isFaulty()"
-        [class.warning]="evaluation.isWarning()"
-        [class.success]="evaluation.isSuccessful()"
-        [textContent]="evaluation.data.evaluation?.score | number: '1.0-0'"
-      ></dt-tag>
-      <ng-template #overlay>
-        <ktb-evaluation-details [evaluationData]="evaluation" [showChart]="false"></ktb-evaluation-details>
-      </ng-template>
-    </dt-tag-list>
+        [evaluationState]="getEvaluationBadgeState(evaluation, EvaluationBadgeVariant.FILL)"
+        [evaluation]="evaluation"
+        [overlayDisabled]="false"
+      ></ktb-evaluation-badge>
+    </ng-container>
   </ng-container>
   <ng-template #loading>
     <ktb-loading-spinner class="smaller" uitestid="ktb-approval-evaluation-loading"></ktb-loading-spinner>

@@ -8,10 +8,10 @@ spec:
   selector:
     matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/name: shipyard-controller
-  {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
-  replicas : 1
+  {{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
+  replicas: {{ .Values.shipyardController.config.replicas }}
   {{- else }}
-  replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
+  replicas: 1
   {{- end }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
@@ -23,6 +23,10 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
+          volumeMounts:
+            - name: keptn-git-config-volume
+              mountPath: /keptn-git-config
+              readOnly: true
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           lifecycle:
             preStop:
@@ -84,11 +88,11 @@ spec:
             - name: AUTOMATIC_PROVISIONING_URL
               value: {{ ((.Values.features).automaticProvisioning).serviceURL | default "" | quote }}
             - name: DISABLE_LEADER_ELECTION
-              {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
+              {{- if lt .Capabilities.KubeVersion.Minor "14" }}
               value: {{ true | quote }}
-              {{else }}
-              value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
-              {{- end}}
+              {{ else }}
+              value: {{ not ((.Values.shipyardController.config).leaderElection).enabled | quote }}
+              {{- end }}
             - name: PROJECT_NAME_MAX_SIZE
               value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
             - name: SERVICE_NAME_MAX_SIZE
@@ -106,6 +110,10 @@ spec:
         {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.shipyardController.gracePeriod | default 60 }}
+      volumes:
+        - name: keptn-git-config-volume
+          configMap:
+            name: keptn-git-config
       {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
       {{- if .Values.shipyardController.extraVolumes }}
       volumes:
@@ -125,3 +133,14 @@ spec:
       protocol: TCP
   selector: {{- include "keptn.common.labels.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keptn-git-config
+  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
+    app.kubernetes.io/name: shipyard-controller
+data:
+  git-remote-url-denylist: |-
+{{ .Values.git.remoteURLDenyList | default "" | indent 4 }}

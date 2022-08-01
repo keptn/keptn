@@ -11,7 +11,7 @@ const routes: Routes = [
     component: KtbProjectViewComponent,
     children: [
       { path: '', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
-      { path: 'environment', pathMatch: 'full', loadChildren: lazyLoadEnvironmentView },
+      { path: 'environment', loadChildren: lazyLoadEnvironmentView },
       { path: 'environment/stage/:stageName', loadChildren: lazyLoadEnvironmentView },
       {
         path: 'settings',

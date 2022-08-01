@@ -29,14 +29,7 @@ type GetRootEventParams struct {
 }
 
 type GetEventsResult struct {
-	// Pointer to next page
-	NextPageKey int64 `json:"nextPageKey,omitempty"`
-
-	// Size of returned page
-	PageSize int64 `json:"pageSize,omitempty"`
-
-	// Total number of logs
-	TotalCount int64 `json:"totalCount,omitempty"`
+	PaginationResult
 
 	// Events
 	Events []models.KeptnContextExtendedCE `json:"events"`

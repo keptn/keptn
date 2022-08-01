@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -11,7 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/keptn/go-utils/pkg/common/testutils"
+	"github.com/keptn/keptn/shipyard-controller/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 )
@@ -58,7 +60,7 @@ func TestProvideRepository(t *testing.T) {
 			Body:       "",
 			StatusCode: http.StatusConflict,
 			expResult:  nil,
-			expErr:     fmt.Errorf(UnableProvisionInstance, http.StatusText(http.StatusConflict)),
+			expErr:     fmt.Errorf(common.UnableProvisionInstance, http.StatusText(http.StatusConflict)),
 		},
 		{
 			args: args{
@@ -68,7 +70,7 @@ func TestProvideRepository(t *testing.T) {
 			Body:       `invalid body`,
 			StatusCode: http.StatusCreated,
 			expResult:  nil,
-			expErr:     fmt.Errorf(UnableUnMarshallProvisioningData, "invalid character 'i' looking for beginning of value"),
+			expErr:     fmt.Errorf(common.UnableUnMarshallProvisioningData, "invalid character 'i' looking for beginning of value"),
 		},
 	}
 
@@ -116,7 +118,7 @@ func TestDeleteRepository(t *testing.T) {
 		}, {
 			Body:       "",
 			StatusCode: http.StatusNotFound,
-			expErr:     fmt.Errorf(UnableProvisionDelete, http.StatusText(http.StatusNotFound)),
+			expErr:     fmt.Errorf(common.UnableProvisionDelete, http.StatusText(http.StatusNotFound)),
 		},
 	}
 

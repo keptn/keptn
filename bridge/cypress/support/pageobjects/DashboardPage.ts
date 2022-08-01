@@ -69,6 +69,14 @@ class DashboardPage {
     );
     return this;
   }
+
+  public assertPauseIconShown(): this {
+    cy.byTestId('keptn-sequence-info-status')
+      .contains('paused')
+      .parentsUntil('ktb-sequence-state-info')
+      .assertDtIcon('pause');
+    return this;
+  }
 }
 
 export default DashboardPage;
