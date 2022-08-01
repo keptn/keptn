@@ -234,7 +234,7 @@ func Test_isServiceNotFoundErr(t *testing.T) {
 		want bool
 	}{
 		{
-			name: "service not found error from configuration-service",
+			name: "service not found error from resource-service",
 			args: args{
 				err: apimodels.Error{
 					Code:    http.StatusBadRequest,

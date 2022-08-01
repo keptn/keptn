@@ -8,10 +8,10 @@ spec:
   selector:
     matchLabels: {{- include "keptn.common.labels.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/name: shipyard-controller
-  {{- if or (lt .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.disableLeaderElection) }}
-  replicas : 1
+  {{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
+  replicas: {{ .Values.shipyardController.config.replicas }}
   {{- else }}
-  replicas: {{ .Values.shipyardController.config.replicas | default 3 }}
+  replicas: 1
   {{- end }}
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
@@ -88,11 +88,11 @@ spec:
             - name: AUTOMATIC_PROVISIONING_URL
               value: {{ ((.Values.features).automaticProvisioning).serviceURL | default "" | quote }}
             - name: DISABLE_LEADER_ELECTION
-              {{- if  lt .Capabilities.KubeVersion.Minor "14"}}
+              {{- if lt .Capabilities.KubeVersion.Minor "14" }}
               value: {{ true | quote }}
-              {{else }}
-              value: {{ .Values.shipyardController.config.disableLeaderElection | default false | quote }}
-              {{- end}}
+              {{ else }}
+              value: {{ not ((.Values.shipyardController.config).leaderElection).enabled | quote }}
+              {{- end }}
             - name: PROJECT_NAME_MAX_SIZE
               value: {{ .Values.shipyardController.config.validation.projectNameMaxSize | default 200 | quote }}
             - name: SERVICE_NAME_MAX_SIZE

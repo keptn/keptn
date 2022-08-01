@@ -15,13 +15,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: keptn-configuration-service
-  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: resource-service
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
   name: keptn-shipyard-controller
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
@@ -180,6 +173,7 @@ rules:
       - get
 
 ---
+{{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
@@ -197,6 +191,7 @@ rules:
       - get
       - update
       - create
+{{- end }}
 
 ---
 {{- if .Values.lighthouseService.enabled }}
@@ -264,21 +259,6 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: keptn-configuration-service-get-secrets
-  labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
-    app.kubernetes.io/name: resource-service
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: keptn-get-secrets
-subjects:
-  - kind: ServiceAccount
-    name: keptn-configuration-service
-
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
   name: keptn-shipyard-controller-manage-secrets
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: shipyard-controller
@@ -335,6 +315,7 @@ subjects:
     name: keptn-secret-service
 
 ---
+{{- if and (ge .Capabilities.KubeVersion.Minor "14") (.Values.shipyardController.config.leaderElection.enabled) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -348,3 +329,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: keptn-shipyard-controller
+{{- end }}
