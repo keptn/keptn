@@ -326,3 +326,62 @@ func addDirectoryContentToZip(writer *zip.Writer, baseDir string) error {
 		},
 	)
 }
+
+func TestResourceExistsValidResource(t *testing.T) {
+
+	sourceImportPackage := "../test/data/import/sample-package"
+	sampleResource := "api/create-service.json"
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	tempZipFile, err := ioutil.TempFile(tempDir, "test-archive*"+defaultImportArchiveExtension)
+	require.NoError(t, err)
+
+	err = writeZip(tempZipFile, sourceImportPackage)
+	require.NoError(t, err)
+
+	err = tempZipFile.Close()
+	require.NoError(t, err)
+
+	p, err := NewZippedPackage(tempZipFile.Name(), testArchiveSize20MB)
+	require.NoError(t, err)
+	require.NotNil(t, p)
+	defer p.Close()
+
+	tests := []struct {
+		name         string
+		resourceName string
+		shouldExist  bool
+		wantErr      bool
+	}{
+		{
+			name:         "Valid resource",
+			resourceName: "api/create-service.json",
+			shouldExist:  true,
+			wantErr:      false,
+		},
+		{
+			name:         "Valid resource",
+			resourceName: "api/invalid_resource.json",
+			shouldExist:  false,
+			wantErr:      true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				exists, err := p.ResourceExists(tt.resourceName)
+
+				if tt.wantErr {
+					assert.Error(t, err)
+				} else {
+					require.NoError(t, err)
+				}
+
+				require.Equal(t, exists, tt.shouldExist, fmt.Sprintf("Provided resource (%s) exist: %t, should exist: %t", sampleResource, exists, tt.shouldExist))
+			},
+		)
+	}
+}

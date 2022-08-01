@@ -43,8 +43,8 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 	err := sut.Process("project", importPackageMock)
@@ -89,8 +89,8 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 	err := sut.Process("project", importPackageMock)
@@ -129,8 +129,8 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 	err := sut.Process("project", importPackageMock)
@@ -192,8 +192,8 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 	err := sut.Process("project", importPackageMock)
@@ -245,8 +245,8 @@ func TestErrorImportPackageWhenUnknownManifestTaskType(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 	err := sut.Process("project", importPackageMock)
@@ -336,8 +336,8 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 	err := sut.Process("project", importPackageMock)
@@ -418,8 +418,8 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -491,8 +491,8 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -594,8 +594,8 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 			}
 			return os.Open(resourceName)
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -709,8 +709,8 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 						}
 						return os.Open(resourceName)
 					},
-					CheckIfResourceExistsFunc: func(resourceName string) error {
-						return nil
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
 					},
 				}
 
@@ -778,8 +778,8 @@ func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *test
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -848,8 +848,8 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -918,8 +918,8 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 						return io.NopCloser(bytes.NewReader([]byte{})), nil
 					},
-					CheckIfResourceExistsFunc: func(resourceName string) error {
-						return nil
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
 					},
 				}
 
@@ -1032,8 +1032,8 @@ func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
 					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 						return io.NopCloser(bytes.NewReader([]byte{})), nil
 					},
-					CheckIfResourceExistsFunc: func(resourceName string) error {
-						return nil
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
 					},
 				}
 
@@ -1188,8 +1188,8 @@ func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
 					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 						return os.Open(path.Join(tt.rawPackageDir, resourceName))
 					},
-					CheckIfResourceExistsFunc: func(resourceName string) error {
-						return nil
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
 					},
 				}
 
@@ -1239,8 +1239,8 @@ func TestPackageValidationEmptyId(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -1317,8 +1317,8 @@ func TestPackageValidationIdAlphaNumeric(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 
@@ -1401,8 +1401,8 @@ func TestPackageValidationInvalidType(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
-		CheckIfResourceExistsFunc: func(resourceName string) error {
-			return nil
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
 		},
 	}
 

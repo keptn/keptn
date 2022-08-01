@@ -34,7 +34,7 @@ type ImportPackageMock struct {
 	// GetResourceFunc mocks the GetResource method.
 	GetResourceFunc func(resourceName string) (io.ReadCloser, error)
 
-	CheckIfResourceExistsFunc func(resourceName string) error
+	ResourceExistsFunc func(resourceName string) (bool, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -46,15 +46,15 @@ type ImportPackageMock struct {
 			// ResourceName is the resourceName argument value.
 			ResourceName string
 		}
-		// CheckIfResourceExists holds details about calls to the GetResource method.
-		CheckIfResourceExists []struct {
+		// ResourceExists holds details about calls to the GetResource method.
+		ResourceExists []struct {
 			// ResourceName is the resourceName argument value.
 			ResourceName string
 		}
 	}
 	lockClose       sync.RWMutex
-	lockGetResource sync.RWMutex
-	lockCheckIfResourceExists sync.RWMutex
+	lockGetResource    sync.RWMutex
+	lockResourceExists sync.RWMutex
 }
 
 // Close calls CloseFunc.
@@ -99,20 +99,20 @@ func (mock *ImportPackageMock) GetResource(resourceName string) (io.ReadCloser, 
 	return mock.GetResourceFunc(resourceName)
 }
 
-// CheckIfResourceExists calls CheckIfResourceExistsFunc.
-func (mock *ImportPackageMock) CheckIfResourceExists(resourceName string) (error) {
-	if mock.CheckIfResourceExistsFunc == nil {
-		panic("ImportPackageMock.CheckIfResourceExistsFunc: method is nil but ImportPackage.CheckIfResourceExists was just called")
+// ResourceExists calls ResourceExistsFunc.
+func (mock *ImportPackageMock) ResourceExists(resourceName string) (bool, error) {
+	if mock.ResourceExistsFunc == nil {
+		panic("ImportPackageMock.ResourceExistsFunc: method is nil but ImportPackage.ResourceExists was just called")
 	}
 	callInfo := struct {
 		ResourceName string
 	}{
 		ResourceName: resourceName,
 	}
-	mock.lockCheckIfResourceExists.Lock()
-	mock.calls.CheckIfResourceExists = append(mock.calls.GetResource, callInfo)
-	mock.lockCheckIfResourceExists.Unlock()
-	return mock.CheckIfResourceExistsFunc(resourceName)
+	mock.lockResourceExists.Lock()
+	mock.calls.ResourceExists = append(mock.calls.GetResource, callInfo)
+	mock.lockResourceExists.Unlock()
+	return mock.ResourceExistsFunc(resourceName)
 }
 
 // GetResourceCalls gets all the calls that were made to GetResource.

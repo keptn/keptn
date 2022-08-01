@@ -21,7 +21,7 @@ type Renderer interface {
 type ImportPackage interface {
 	io.Closer
 	GetResource(resourceName string) (io.ReadCloser, error)
-	CheckIfResourceExists(resourceName string) error
+	ResourceExists(resourceName string) (bool, error)
 }
 
 type ManifestParser interface {
@@ -124,6 +124,10 @@ func (ipp *ImportPackageProcessor) validateManifest(
 		// Check if task definition is correct
 		switch task.Type {
 		case apiTaskType:
+			if task.ResourceTask != nil {
+				return fmt.Errorf("cannot set resource task fields on API task")
+			}
+
 			if task.APITask != nil {
 				// Check if the action type is supported
 				if !slices.Contains(model.AllActions, task.APITask.Action) {
@@ -131,20 +135,28 @@ func (ipp *ImportPackageProcessor) validateManifest(
 				}
 
 				// Check if payload file does exist
-				if err := ip.CheckIfResourceExists(task.APITask.PayloadFile); err != nil {
+				exists, err := ip.ResourceExists(task.APITask.PayloadFile)
+
+				if err != nil || !exists {
 					return fmt.Errorf("payload file %s does not exists: %w", task.APITask.PayloadFile, err)
 				}
 			} else {
 				return fmt.Errorf("empty api definition not supported")
 			}
 		case resourceTaskType:
+			if task.APITask != nil {
+				return fmt.Errorf("cannot set API task fields on resource task")
+			}
+
 			if task.ResourceTask != nil {
 				if task.ResourceTask.RemoteURI == "" {
 					return fmt.Errorf("resourceUri %s cannot be empty for resource task type", task.ResourceTask.RemoteURI)
 				}
 
 				// Check if resource file does exist
-				if err := ip.CheckIfResourceExists(task.ResourceTask.File); err != nil {
+				exists, err := ip.ResourceExists(task.ResourceTask.File)
+
+				if err != nil || !exists {
 					return fmt.Errorf("resource file %s does not exists: %w", task.ResourceTask.File, err)
 				}
 			} else {
