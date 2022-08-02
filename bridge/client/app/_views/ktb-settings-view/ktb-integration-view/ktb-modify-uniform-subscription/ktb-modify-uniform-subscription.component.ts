@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../_services/data.service';
 import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
@@ -19,13 +19,14 @@ import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uni
 import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-scope';
 import { EventTypes } from '../../../../../../shared/interfaces/event-types';
 import { Trace } from '../../../../_models/trace';
+import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
-export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
+export class KtbModifyUniformSubscriptionComponent implements OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   public eventPayload: Record<string, unknown> | undefined;
@@ -50,6 +51,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   });
   private _previousFilter?: PreviousWebhookConfig;
   public isWebhookFormValid = true;
+  public webhookFormDirty = false;
   public isWebhookService = false;
   public suffixes: { value: string; displayValue: string }[] = [
     {
@@ -70,6 +72,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     },
   ];
   public errorMessage?: string;
+
+  private pendingChangesSubject = new Subject<boolean>();
+  public dialogLabel = 'Pending Changes dialog';
+  public message = 'You have pending changes. Are you sure you want to leave this page?';
+  public unsavedDialogState: null | 'unsaved' = null;
+  private isFilterDirty = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -292,6 +300,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       () => {
         this.updating = false;
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
+        this.subscriptionForm.reset();
+        this.webhookFormDirty = false;
+        this.isFilterDirty = false;
         this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
       },
       () => {
@@ -315,6 +326,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   }
 
   public subscriptionFilterChanged(subscription: UniformSubscription, projectName: string): void {
+    this.isFilterDirty = !!subscription.filter.stages?.length || !!subscription.filter.services?.length;
     this.updateIsGlobalCheckbox(subscription);
     this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
   }
@@ -344,6 +356,41 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   public webhookFormValidityChanged(isValid: boolean): void {
     this.isWebhookFormValid = isValid;
     this._changeDetectorRef.detectChanges();
+  }
+
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload', ['$event'])
+  public canDeactivate(_$event?: BeforeUnloadEvent): Observable<boolean> {
+    if (this.subscriptionForm.dirty || this.webhookFormDirty || this.isFilterDirty) {
+      this.showNotification();
+      return this.pendingChangesSubject.asObservable();
+    }
+    return of(true);
+  }
+
+  public reject(): void {
+    this.pendingChangesSubject.next(false);
+    this.hideNotification();
+  }
+
+  public reset(): void {
+    this.pendingChangesSubject.next(true);
+    this.hideNotification();
+  }
+
+  public showNotification(): void {
+    this.unsavedDialogState = 'unsaved';
+
+    const dialog = document.querySelector(`div[aria-label="${this.dialogLabel}"]`);
+
+    if (!dialog) return;
+
+    dialog.classList.add('shake');
+    setTimeout(() => dialog.classList.remove('shake'), 500);
+  }
+
+  public hideNotification(): void {
+    this.unsavedDialogState = null;
   }
 
   public ngOnDestroy(): void {

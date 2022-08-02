@@ -7,7 +7,7 @@ import { KtbVariableSelectorModule } from './ktb-variable-selector.module';
 import { KtbVariableSelectorComponent } from './ktb-variable-selector.component';
 import { RouterTestingModule } from '@angular/router/testing';
 
-describe('KtbSecretSelectorComponent', () => {
+describe('KtbVariableSelectorComponent', () => {
   const variablePath = '.secret.SecretA.key1';
   let component: KtbVariableSelectorComponent;
   let fixture: ComponentFixture<KtbVariableSelectorComponent>;
