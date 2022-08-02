@@ -11,11 +11,11 @@ export interface SequenceStage {
   latestEvaluation?: EvaluationResult;
   latestEvent?: SequenceEvent;
   latestFailedEvent?: SequenceEvent;
-  state: SequenceState;
+  state: SequenceStatus;
   name: string;
 }
 
-export enum SequenceState {
+export enum SequenceStatus {
   TRIGGERED = 'triggered',
   STARTED = 'started',
   FINISHED = 'finished',
@@ -33,13 +33,13 @@ export enum SequenceStateControl {
   RESUME = 'resume',
 }
 
-export interface ISequence {
+export interface ISequenceState {
   name: string;
   project: string;
   service: string;
   shkeptncontext: string;
   stages: SequenceStage[];
-  state: SequenceState;
+  state: SequenceStatus;
   time: string;
   problemTitle?: string;
 }

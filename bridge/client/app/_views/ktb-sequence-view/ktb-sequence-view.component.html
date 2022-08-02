@@ -114,7 +114,8 @@
             ></span>
           </p>
           <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning">
-            Sequence is waiting for previous sequences to finish.
+            Sequence is blocked by another sequence. Click
+            <a (click)="navigateToBlockingSequence(currentSequence)">here</a> to get to the current running sequence.
           </dt-alert>
         </dt-info-group>
       </div>

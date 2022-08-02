@@ -1,5 +1,5 @@
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { Sequence } from './sequence';
+import { SequenceState } from './sequenceState';
 import { Trace } from './trace';
 import { Service as sv } from '../../../shared/models/service';
 import { ResultTypes } from '../../../shared/models/result-types';
@@ -9,24 +9,26 @@ export type DeploymentInformation = { deploymentUrl?: string; image?: string };
 export class Service extends sv {
   stage!: string;
   openApprovals: Trace[] = [];
-  openRemediations: Sequence[] = [];
-  latestSequence?: Sequence;
+  openRemediations: SequenceState[] = [];
+  latestSequence?: SequenceState;
 
   static fromJSON(data: unknown): Service {
     const service = Object.assign(new this(), data);
     if (service.latestSequence) {
-      service.latestSequence = Sequence.fromJSON(service.latestSequence);
+      service.latestSequence = SequenceState.fromJSON(service.latestSequence);
     }
 
     // Support old (deprecated) format from API - openRemediation should be a Sequence but old format just provides an event
     // If openRemediations do not have stages, it is in the old format and should not be processed as Sequence
     const hasStages = service.openRemediations?.some((remediation) => remediation.stages);
     if (hasStages) {
-      service.openRemediations = service.openRemediations?.map((remediation) => Sequence.fromJSON(remediation)) ?? [];
+      service.openRemediations =
+        service.openRemediations?.map((remediation) => SequenceState.fromJSON(remediation)) ?? [];
     } else {
       service.openRemediations = [];
     }
-    service.openRemediations = service.openRemediations?.map((remediation) => Sequence.fromJSON(remediation)) ?? [];
+    service.openRemediations =
+      service.openRemediations?.map((remediation) => SequenceState.fromJSON(remediation)) ?? [];
     service.openApprovals = service.openApprovals.map((approval) => Trace.fromJSON(approval));
     return service;
   }
@@ -55,7 +57,7 @@ export class Service extends sv {
     return this.latestSequence?.getEvaluation(this.stage)?.result === ResultTypes.FAILED;
   }
 
-  public getFailedEvaluationSequence(): Sequence | undefined {
+  public getFailedEvaluationSequence(): SequenceState | undefined {
     return this.latestSequence?.getEvaluation(this.stage)?.result === ResultTypes.FAILED
       ? this.latestSequence
       : undefined;

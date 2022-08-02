@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
-import { Sequence } from '../../../_models/sequence';
+import { SequenceState } from '../../../_models/sequenceState';
 import { IProject } from '../../../../../shared/interfaces/project';
 import { getDistinctServiceNames, getShipyardVersion, isShipyardNotSupported } from '../../../_models/project';
 
@@ -11,7 +11,7 @@ import { getDistinctServiceNames, getShipyardVersion, isShipyardNotSupported } f
 })
 export class KtbProjectTileComponent {
   @Input() project?: IProject;
-  @Input() sequences: Sequence[] = [];
+  @Input() sequences: SequenceState[] = [];
   @Input() supportedShipyardVersion: string | undefined;
 
   getShipyardVersion = getShipyardVersion;

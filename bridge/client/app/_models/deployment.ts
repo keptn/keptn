@@ -1,9 +1,9 @@
 import { Deployment as dp, IStageDeployment, SubSequence } from '../../../shared/interfaces/deployment';
 import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { Trace } from './trace';
-import { SequenceState } from '../../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
 import { ResultTypes } from '../../../shared/models/result-types';
-import { isSequenceAborted, isSequenceLoading, Sequence } from './sequence';
+import { isSequenceAborted, isSequenceLoading, SequenceState } from './sequenceState';
 import { ServiceRemediationInformation } from './service-remediation-information';
 
 export interface IStageDeploymentStateInfo {
@@ -19,7 +19,7 @@ export function createStageDeploymentStateInfo(stageDeployment: IStageDeployment
   return {
     isLoading: stageDeployment.subSequences.some((seq) => isSequenceLoading(seq.state)),
     isSuccessful: stageDeployment.subSequences.every(
-      (seq) => seq.state === SequenceState.FINISHED && seq.result === ResultTypes.PASSED
+      (seq) => seq.state === SequenceStatus.FINISHED && seq.result === ResultTypes.PASSED
     ),
     isWarning: stageDeployment.subSequences.some((seq) => seq.result === ResultTypes.WARNING) && !isFaulty,
     isFaulty,
@@ -29,13 +29,13 @@ export function createStageDeploymentStateInfo(stageDeployment: IStageDeployment
 
 export class StageDeployment implements IStageDeployment {
   name!: string;
-  state!: SequenceState;
+  state!: SequenceStatus;
   deploymentURL?: string;
   hasEvaluation!: boolean;
   lastTimeUpdated!: string;
   evaluationResult?: EvaluationResult;
   latestEvaluation?: Trace;
-  openRemediations!: Sequence[];
+  openRemediations!: SequenceState[];
   approvalInformation?: {
     trace: Trace;
     deployedImage?: string;
@@ -50,7 +50,7 @@ export class StageDeployment implements IStageDeployment {
     if (stage.approvalInformation?.trace) {
       stage.approvalInformation.trace = Trace.fromJSON(stage.approvalInformation.trace);
     }
-    stage.openRemediations = stage.openRemediations.map((seq) => Sequence.fromJSON(seq));
+    stage.openRemediations = stage.openRemediations.map((seq) => SequenceState.fromJSON(seq));
     return stage;
   }
 
@@ -105,7 +105,7 @@ export class Deployment implements dp {
   keptnContext!: string;
   service!: string;
   labels!: { [p: string]: string };
-  state!: SequenceState;
+  state!: SequenceStatus;
 
   public static fromJSON(data: unknown): Deployment {
     const deployment: Deployment = Object.assign(new this(), data);
@@ -114,7 +114,7 @@ export class Deployment implements dp {
   }
 
   public isFinished(): boolean {
-    return Sequence.isFinished(this.state);
+    return SequenceState.isFinished(this.state);
   }
 
   public getStage(stageName: string): StageDeployment | undefined {

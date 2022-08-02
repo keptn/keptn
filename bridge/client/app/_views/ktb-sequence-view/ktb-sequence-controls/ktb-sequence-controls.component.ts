@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, HostBinding, Input } from '@angular/core';
 import { DataService } from '../../../_services/data.service';
-import { Sequence } from '../../../_models/sequence';
+import { SequenceState } from '../../../_models/sequenceState';
 import { SequenceStateControl } from '../../../../../shared/interfaces/sequence';
 import {
   KtbConfirmationDialogComponent,
@@ -14,15 +14,15 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 })
 export class KtbSequenceControlsComponent {
   @HostBinding('class') cls = 'ktb-sequence-controls';
-  private _sequence?: Sequence;
+  private _sequence?: SequenceState;
   private _smallButtons = false;
   public confirmationDialogRef?: MatDialogRef<KtbConfirmationDialogComponent>;
 
   @Input()
-  get sequence(): Sequence | undefined {
+  get sequence(): SequenceState | undefined {
     return this._sequence;
   }
-  set sequence(sequence: Sequence | undefined) {
+  set sequence(sequence: SequenceState | undefined) {
     if (this._sequence !== sequence) {
       this._sequence = sequence;
     }
@@ -44,15 +44,15 @@ export class KtbSequenceControlsComponent {
     public dialog: MatDialog
   ) {}
 
-  triggerResumeSequence(sequence: Sequence): void {
+  triggerResumeSequence(sequence: SequenceState): void {
     this.dataService.sendSequenceControl(sequence, SequenceStateControl.RESUME);
   }
 
-  triggerPauseSequence(sequence: Sequence): void {
+  triggerPauseSequence(sequence: SequenceState): void {
     this.dataService.sendSequenceControl(sequence, SequenceStateControl.PAUSE);
   }
 
-  triggerAbortSequence(sequence: Sequence): void {
+  triggerAbortSequence(sequence: SequenceState): void {
     const data: SequenceConfirmDialogData = {
       sequence,
       confirmCallback: (params: SequenceConfirmDialogData): void => {
@@ -64,7 +64,7 @@ export class KtbSequenceControlsComponent {
     });
   }
 
-  abortSequence(sequence: Sequence): void {
+  abortSequence(sequence: SequenceState): void {
     this.dataService.sendSequenceControl(sequence, SequenceStateControl.ABORT);
   }
 }

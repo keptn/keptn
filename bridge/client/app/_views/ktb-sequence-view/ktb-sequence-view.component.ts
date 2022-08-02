@@ -12,7 +12,7 @@ import { distinctUntilChanged, filter, map, switchMap, take, takeUntil, tap } fr
 import moment from 'moment';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
-import { Sequence } from '../../_models/sequence';
+import { SequenceState } from '../../_models/sequenceState';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ISequencesFilter } from '../../../../shared/interfaces/sequencesFilter';
 import { ApiService } from '../../_services/api.service';
@@ -67,12 +67,12 @@ export class KtbSequenceViewComponent implements OnDestroy {
     // Method to decide if a node should be displayed in the quick filter
     showInSidebar: (node) => isObject(node) && node.showInSidebar,
   };
-  private unfinishedSequences: Sequence[] = [];
+  private unfinishedSequences: SequenceState[] = [];
   private readonly _tracesTimerInterval: number = 10_000;
   private readonly _sequenceTimerInterval: number = 30_000;
   private _tracesTimer: Subscription = Subscription.EMPTY;
-  private sequences: Sequence[] = [];
-  public currentSequence?: Sequence;
+  private sequences: SequenceState[] = [];
+  public currentSequence?: SequenceState;
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   public _seqFilters: FilterType[] = [];
@@ -80,7 +80,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     stages: [],
     services: [],
   };
-  public filteredSequences?: Sequence[];
+  public filteredSequences?: SequenceState[];
   public loading = false;
   public state$: Observable<ISequenceViewState>;
 
@@ -224,7 +224,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     });
   }
 
-  public selectSequence(event: { sequence: Sequence; stage?: string; eventId?: string }): void {
+  public selectSequence(event: { sequence: SequenceState; stage?: string; eventId?: string }): void {
     const sequenceFilters = this.apiService.getSequenceFilters(event.sequence.project);
     let stage = event.stage || event.sequence.getStages().pop();
     const additionalCommands = [];
@@ -243,14 +243,14 @@ export class KtbSequenceViewComponent implements OnDestroy {
     this.selectedStage = stage;
   }
 
-  public updateSequencesData(sequences: Sequence[], projectName: string): void {
+  public updateSequencesData(sequences: SequenceState[], projectName: string): void {
     // Update filteredSequences based on current filters
     this.filteredSequences = this.getFilteredSequences(sequences, this.apiService.getSequenceFilters(projectName));
     // Set unfinished sequences so that the state updates can be loaded
-    this.unfinishedSequences = sequences.filter((sequence: Sequence) => !sequence.isFinished());
+    this.unfinishedSequences = sequences.filter((sequence: SequenceState) => !sequence.isFinished());
   }
 
-  public loadTraces(sequence: Sequence, eventId?: string, stage?: string): void {
+  public loadTraces(sequence: SequenceState, eventId?: string, stage?: string): void {
     this._tracesTimer.unsubscribe();
     let setTraces$;
     if (moment().subtract(1, 'day').isBefore(sequence.time)) {
@@ -263,7 +263,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     });
   }
 
-  private setTraces(sequence: Sequence, eventId?: string, stage?: string): void {
+  private setTraces(sequence: SequenceState, eventId?: string, stage?: string): void {
     this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
       sequence.traces = traces;
       this.selectSequence({ sequence, stage, eventId });
@@ -273,7 +273,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
   public filtersClicked(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     event: DtQuickFilterChangeEvent<any> | { filters: any[] },
-    sequences: Sequence[],
+    sequences: SequenceState[],
     projectName: string
   ): void {
     this._seqFilters = event.filters as FilterType[];
@@ -292,7 +292,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     this.updateSequencesData(sequences, projectName);
   }
 
-  private updateFilterSequence(sequences: Sequence[]): void {
+  private updateFilterSequence(sequences: SequenceState[]): void {
     const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Sequence');
     if (!filterItem) {
       return;
@@ -313,7 +313,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     this.refreshFilterDataSource();
   }
 
-  private mapServiceFilters(metadata: ISequencesFilter, sequences: Sequence[]): void {
+  private mapServiceFilters(metadata: ISequencesFilter, sequences: SequenceState[]): void {
     const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Service');
     if (filterItem) {
       // Take basis from metadatadata ...
@@ -341,7 +341,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     }
   }
 
-  private updateFilterDataSource(metadata: ISequencesFilter, sequences: Sequence[]): void {
+  private updateFilterDataSource(metadata: ISequencesFilter, sequences: SequenceState[]): void {
     this.mapServiceFilters(metadata, sequences);
 
     const filterItem = this.filterFieldData.autocomplete.find((f) => f.name === 'Stage');
@@ -357,8 +357,8 @@ export class KtbSequenceViewComponent implements OnDestroy {
     this._filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   }
 
-  private getFilteredSequences(sequences: Sequence[], filters: Record<string, string[]>): Sequence[] {
-    const filterSequence = (s: Sequence): boolean => {
+  private getFilteredSequences(sequences: SequenceState[], filters: Record<string, string[]>): SequenceState[] {
+    const filterSequence = (s: SequenceState): boolean => {
       const mapFilter = (key: string): boolean => {
         switch (key) {
           case 'Service':
@@ -380,11 +380,11 @@ export class KtbSequenceViewComponent implements OnDestroy {
     return sequences.filter(filterSequence);
   }
 
-  public getTracesLastUpdated(sequence: Sequence): Date | undefined {
+  public getTracesLastUpdated(sequence: SequenceState): Date | undefined {
     return this.dataService.getTracesLastUpdated(sequence);
   }
 
-  public showReloadButton(sequence: Sequence): boolean {
+  public showReloadButton(sequence: SequenceState): boolean {
     return moment().subtract(1, 'day').isAfter(sequence.time);
   }
 
@@ -404,6 +404,26 @@ export class KtbSequenceViewComponent implements OnDestroy {
   public navigateToTriggerSequence(projectName: string): void {
     this.dataService.isTriggerSequenceOpen = true;
     this.router.navigate(['/project/' + projectName]);
+  }
+
+  public navigateToBlockingSequence(currentSequence: SequenceState): void {
+    this.apiService
+      .getSequenceExecution({
+        project: currentSequence.project,
+        service: currentSequence.service,
+        status: 'started',
+      })
+      .subscribe((sequenceExecutionResult) => {
+        const sequence = sequenceExecutionResult.sequenceExecutions[0];
+        this.router.navigate([
+          '/project',
+          sequence.scope.project,
+          'sequence',
+          sequence.scope.keptnContext,
+          'stage',
+          sequence.scope.stage,
+        ]);
+      });
   }
 
   public saveSequenceFilters(sequenceFilters: { [p: string]: string[] }, projectName: string): void {

@@ -32,6 +32,7 @@ import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
+import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
 
 @Injectable({
   providedIn: 'root',
@@ -491,5 +492,18 @@ export class ApiService {
 
   public getLookAndFeelConfig(): Observable<WindowConfig | undefined> {
     return this.http.get<WindowConfig | undefined>(environment.appConfigUrl);
+  }
+
+  public getSequenceExecution(params: {
+    project: string;
+    stage?: string;
+    service?: string;
+    name?: string;
+    status?: string;
+    keptnContext?: string;
+    pageSize?: number;
+    nextPageKey?: number;
+  }): Observable<SequenceExecutionResult> {
+    return this.http.get<SequenceExecutionResult>(`${this._baseUrl}/controlPlane/v1/sequence-execution`, { params });
   }
 }
