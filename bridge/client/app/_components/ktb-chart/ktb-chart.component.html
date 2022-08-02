@@ -5,7 +5,7 @@
   <div class="ktb-chart-legend-container">
     <div
       *ngFor="let item of chartItems; let i = index"
-      [attr.uitestid]="'chart-legend-item-' + replaceSpace(item.identifier)"
+      [attr.uitestid]="'chart-legend-item-' + replaceSpace(item.label)"
       class="ktb-chart-legend-item"
       [class.invisible]="item.invisible"
       (click)="hideChartItem(item)"
@@ -14,7 +14,7 @@
         [style]="getIconStyle(i, item.invisible)"
         [name]="item.type === 'score-bar' ? 'chart-legend-bar' : 'chart-legend-line'"
       ></dt-icon>
-      <span>{{ item.label ?? item.identifier }}</span>
+      <span>{{ item.label }}</span>
     </div>
   </div>
 </div>
