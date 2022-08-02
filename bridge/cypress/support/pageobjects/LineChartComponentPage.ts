@@ -1,5 +1,11 @@
 import { interceptHeatmapComponent, interceptHeatmapComponentWithScores } from '../intercept';
 
+// index for selecting the right score item
+enum ScoreSelectionIndex {
+  BAR = 0,
+  LINE = 1,
+}
+
 export class LineChartComponentPage {
   public intercept(): this {
     interceptHeatmapComponent();
@@ -37,23 +43,49 @@ export class LineChartComponentPage {
     return this;
   }
 
-  public assertIsMetricEnabled(
-    metric: string,
-    status: boolean,
-    selectorIndex?: number /*if there are two metrics like 'score'*/
-  ): this {
-    cy.byTestId(`chart-legend-item-${metric}`)
-      .eq(selectorIndex ?? 0)
-      .should(status ? 'not.have.class' : 'have.class', 'invisible');
-
-    if (selectorIndex === 0) {
-      cy.byTestId(`bar-${metric}`)
-        .find('rect')
-        .should(status ? 'exist' : 'not.exist');
-      return this;
+  public assertScoreBarEnabled(status: boolean, barCount?: number): this {
+    const metric = 'score';
+    this.assertChartLegendItemEnabled(metric, status, ScoreSelectionIndex.BAR).assertBarMetricExists(metric, status);
+    if (barCount !== undefined) {
+      this.assertBarMetricCount(metric, barCount);
     }
+    return this;
+  }
+
+  private assertBarMetricExists(metric: string, status: boolean): this {
+    cy.byTestId(`bar-${metric}`)
+      .find('rect')
+      .should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  private assertBarMetricCount(metric: string, count: number): this {
+    cy.byTestId(`bar-${metric}`).find('rect').should('have.length', count);
+    return this;
+  }
+
+  public assertScoreLineEnabled(status: boolean): this {
+    const metric = 'score';
+    return this.assertChartLegendItemEnabled(metric, status, ScoreSelectionIndex.LINE).assertLineMetricExists(
+      metric,
+      status
+    );
+  }
+
+  private assertChartLegendItemEnabled(metric: string, status: boolean, selectorIndex = 0): this {
+    cy.byTestId(`chart-legend-item-${metric}`)
+      .eq(selectorIndex)
+      .should(status ? 'not.have.class' : 'have.class', 'invisible');
+    return this;
+  }
+
+  private assertLineMetricExists(metric: string, status: boolean): this {
     cy.byTestId(`line-${metric}`).should(status ? 'exist' : 'not.exist');
     return this;
+  }
+
+  public assertMetricEnabled(metric: string, status: boolean): this {
+    return this.assertChartLegendItemEnabled(metric, status).assertLineMetricExists(metric, status);
   }
 
   public assertMetricName(metric: string, name: string): this {

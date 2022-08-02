@@ -3,7 +3,7 @@ import { LineChartComponentPage } from '../../support/pageobjects/LineChartCompo
 describe('Test line chart', () => {
   const lineChartComponentPage = new LineChartComponentPage();
   const slis = [
-    'response_time_p95',
+    'Response-time-P95',
     'http_response_time_seconds_main_page_sum',
     'request_throughput',
     'go_routines',
@@ -26,43 +26,44 @@ describe('Test line chart', () => {
       lineChartComponentPage.visitPageWithHeatmapComponent().selectLineChart();
     });
 
+    it('should initially show 10 score bars', () => {
+      lineChartComponentPage.assertScoreBarEnabled(true, 10);
+    });
+
     it('should initially hide all SLIs', () => {
-      lineChartComponentPage
-        .assertIsMetricEnabled('score', true, 0)
-        .assertIsMetricEnabled('score', true, 1)
-        .assertMetricCount(14);
+      lineChartComponentPage.assertScoreBarEnabled(true).assertScoreLineEnabled(true).assertMetricCount(14);
 
       for (const sli of slis) {
-        lineChartComponentPage.assertIsMetricEnabled(sli, false);
+        lineChartComponentPage.assertMetricEnabled(sli, false);
       }
     });
 
     it('should not be possible to hide all metrics', () => {
       lineChartComponentPage
         .toggleMetric('score')
-        .assertIsMetricEnabled('score', false, 0)
+        .assertScoreBarEnabled(false)
         .toggleMetric('score', 1)
-        .assertIsMetricEnabled('score', true, 1);
+        .assertScoreLineEnabled(true);
     });
 
     it('should show the displayName in favor of the metric name', () => {
-      lineChartComponentPage.assertMetricName('response_time_p95', 'Response time P95');
+      lineChartComponentPage.assertMetricName('Response-time-P95', 'Response time P95');
     });
 
     it('should disable and enable metric', () => {
       lineChartComponentPage
         .toggleMetric('score')
-        .assertIsMetricEnabled('score', false, 0)
+        .assertScoreBarEnabled(false)
         .toggleMetric('score')
-        .assertIsMetricEnabled('score', true, 0);
+        .assertScoreBarEnabled(true);
     });
 
     it('should enable and disable metric', () => {
       lineChartComponentPage
-        .toggleMetric('response_time_p95')
-        .assertIsMetricEnabled('response_time_p95', true)
-        .toggleMetric('response_time_p95')
-        .assertIsMetricEnabled('response_time_p95', false);
+        .toggleMetric('Response-time-P95')
+        .assertMetricEnabled('Response-time-P95', true)
+        .toggleMetric('Response-time-P95')
+        .assertMetricEnabled('Response-time-P95', false);
     });
   });
 
@@ -106,7 +107,7 @@ describe('Test line chart', () => {
     });
 
     it('should only show evaluations related to the activated metrics', () => {
-      lineChartComponentPage.toggleMetric('response_time_p95').toggleScores().assertXAxisLabelCount(4);
+      lineChartComponentPage.toggleMetric('Response-time-P95').toggleScores().assertXAxisLabelCount(4);
     });
   });
 
@@ -144,11 +145,8 @@ describe('Test line chart', () => {
         .assertYAxisRightLabels(...labels);
     });
 
-    xit('should not change a small right yAxis if score is enabled/disabled', () => {
-      //TODO: BUG
-      // if score is enabled, the right side is minimum set to [25,50,75,100]
-      // if everything is 0, fallback to 1,2,3,4 instead of just showing 0?
-      const labels = ['0,5', '1', '1,5', '2'] as const;
+    it('should not change a small right yAxis if score is enabled/disabled', () => {
+      const labels = ['0.5', '1', '1.5', '2'] as const;
       lineChartComponentPage
         .toggleMetric('http_response_time_seconds_main_page_sum')
         .assertYAxisRightLabels(...labels)
@@ -184,14 +182,14 @@ describe('Test line chart', () => {
 
     it('should show displayName in favor of metric in tooltip for SLI', () => {
       lineChartComponentPage
-        .toggleMetric('response_time_p95')
+        .toggleMetric('Response-time-P95')
         .showTooltip('2022-02-08-13:17')
         .assertToolTipValue('Response time P95', '0');
     });
 
     it('should show score in tooltip if one of the two scores is enabled', () => {
       lineChartComponentPage
-        .toggleMetric('response_time_p95')
+        .toggleMetric('Response-time-P95')
         .showTooltip('2022-02-08-13:17')
         .assertToolTipValue('score', '0')
         .toggleMetric('score', 0)
@@ -203,7 +201,7 @@ describe('Test line chart', () => {
 
     it('should not show score in tooltip if both scores are disabled', () => {
       lineChartComponentPage
-        .toggleMetric('response_time_p95')
+        .toggleMetric('Response-time-P95')
         .toggleScores()
         .showTooltip('2022-02-08-13:17')
         .assertTooltipValueCount(1);
@@ -211,7 +209,7 @@ describe('Test line chart', () => {
 
     it('should not show metric in tooltip if the evaluation does not have it', () => {
       lineChartComponentPage
-        .toggleMetric('response_time_p95')
+        .toggleMetric('Response-time-P95')
         .toggleMetric('go_routines')
         .toggleScores()
         .showTooltip('2022-02-08-13:17')

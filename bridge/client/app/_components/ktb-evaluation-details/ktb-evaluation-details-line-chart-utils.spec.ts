@@ -3,7 +3,7 @@ import {
   createChartPoints,
   createChartTooltipLabels,
   createChartXLabels,
-} from './ktb-evaluation-detials-line-chart-utils';
+} from './ktb-evaluation-details-line-chart-utils';
 import { Trace } from '../../_models/trace';
 
 describe('Line chart utils', () => {

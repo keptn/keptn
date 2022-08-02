@@ -36,7 +36,7 @@ import {
   createChartPoints,
   createChartTooltipLabels,
   createChartXLabels,
-} from './ktb-evaluation-detials-line-chart-utils';
+} from './ktb-evaluation-details-line-chart-utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;

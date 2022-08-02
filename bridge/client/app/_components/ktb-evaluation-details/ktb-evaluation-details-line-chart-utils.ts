@@ -1,5 +1,5 @@
 import { Trace } from '../../_models/trace';
-import { ChartItem, ChartItemPoint, IChartItemPointInfo } from '../../_interfaces/chart';
+import { ChartItem, ChartItemPoint, DrawType, IChartItemPointInfo } from '../../_interfaces/chart';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 
 export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
@@ -9,7 +9,6 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
       x: index,
       y: evaluation.data.evaluation?.score ?? 0,
       color: includeColor ? getScoreColor(evaluation) : undefined,
-      identifier: evaluation.id,
     });
   const mapIndicatorResultChartItemPointsToChartItem =
     (chartInfoDict: IChartItemPointInfo): ((metric: string) => ChartItem) =>
@@ -17,27 +16,20 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
       label: chartInfoDict[metric]?.label || metric,
       points: chartInfoDict[metric]?.points ?? [],
       type: 'metric-line',
-      identifier: metric,
       invisible: true,
     });
-  const mapChartItemPointsToChartItem = (chartPoints: ChartItemPoint[], type: ChartItem['type']): ChartItem => ({
+  const mapChartItemPointsToChartItem = (chartPoints: ChartItemPoint[], type: DrawType): ChartItem => ({
     label: 'score',
     points: chartPoints,
-    identifier: 'score',
     type,
   });
   const addIndicatorResultChartItemToDict =
-    (
-      chartPoints: IChartItemPointInfo,
-      identifier: string,
-      index: number
-    ): ((indicatorResult: IndicatorResult) => void) =>
+    (chartPoints: IChartItemPointInfo, index: number): ((indicatorResult: IndicatorResult) => void) =>
     (indicatorResult: IndicatorResult): void => {
       const metricChartItemPoints = (chartPoints[indicatorResult.value.metric] ??= { points: [] });
       metricChartItemPoints.points.push({
         x: index,
         y: indicatorResult.value.value,
-        identifier,
       });
       metricChartItemPoints.label ||= indicatorResult.displayName;
     };
@@ -47,9 +39,7 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
     evaluation: Trace,
     index: number
   ): IChartItemPointInfo => {
-    evaluation.data.evaluation?.indicatorResults?.forEach(
-      addIndicatorResultChartItemToDict(chartPoints, evaluation.id, index)
-    );
+    evaluation.data.evaluation?.indicatorResults?.forEach(addIndicatorResultChartItemToDict(chartPoints, index));
     return chartPoints;
   };
 
