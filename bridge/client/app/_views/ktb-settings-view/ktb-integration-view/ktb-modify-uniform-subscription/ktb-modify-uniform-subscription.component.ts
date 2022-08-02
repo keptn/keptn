@@ -263,7 +263,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
             ]);
           },
           (err) => {
-            console.log('test2');
             const deletionError = 'Subscription could not be deleted: ' + err.message;
             this.eventService.deletionProgressEvent.next({
               error: deletionError,
