@@ -1,12 +1,9 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -40,9 +36,35 @@ import (
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 )
 
-var configurationService *httptest.Server
-
-var EventChan chan types.EventUpdate
+const qualityGatesShortSLOFileContent = `---
+spec_version: "0.1.1"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "<800"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
+      - criteria:
+          - "<=1000"
+          - "<=+100%"
+    weight: 1
+  - sli: "throughput"
+    pass:
+      - criteria:
+          - "<=+100%"
+          - ">=-80%"
+  - sli: "error_rate"
+total_score:
+  pass: "100%"
+  warning: "65%"`
 
 const natsTestPort = 8370
 
@@ -50,22 +72,8 @@ var keptnContext = "context"
 var projectName = "quality-gates-invalid-finish"
 var serviceName = "my-service"
 var stageName = "dev"
-
-func setupNatsServer(port int, storeDir string) *server.Server {
-	opts := natsserver.DefaultTestOptions
-	opts.Port = port
-	opts.JetStream = true
-	opts.StoreDir = storeDir
-	svr := natsserver.RunServer(&opts)
-
-	connect, _ := nats.Connect(svr.ClientURL())
-
-	js, _ := connect.JetStream()
-
-	js.DeleteStream("keptn")
-
-	return svr
-}
+var configurationService *httptest.Server
+var EventChan chan types.EventUpdate
 
 func TestMain(m *testing.M) {
 	test := testing.T{}
@@ -483,6 +491,22 @@ type testNatsClient struct {
 	sync.RWMutex
 }
 
+func setupNatsServer(port int, storeDir string) *server.Server {
+	opts := natsserver.DefaultTestOptions
+	opts.Port = port
+	opts.JetStream = true
+	opts.StoreDir = storeDir
+	svr := natsserver.RunServer(&opts)
+
+	connect, _ := nats.Connect(svr.ClientURL())
+
+	js, _ := connect.JetStream()
+
+	js.DeleteStream("keptn")
+
+	return svr
+}
+
 func newTestNatsClient(natsURL string, t *testing.T) (*testNatsClient, error) {
 	natsConn, err := nats.Connect(natsURL)
 	if err != nil {
@@ -516,48 +540,6 @@ func (n *testNatsClient) onEvent(msg *nats.Msg) {
 	}
 }
 
-func (n *testNatsClient) triggerSequence(projectName, serviceName, stageName, sequenceName string) *apimodels.EventContext {
-	source := "golang-test"
-	eventType := keptnv2.GetTriggeredEventType(stageName + "." + sequenceName)
-	n.t.Log("triggering task sequence")
-
-	keptnContext := uuid.NewString()
-
-	eventPayload := apimodels.KeptnContextExtendedCE{
-		Contenttype: "application/json",
-		Data: keptnv2.EventData{
-			Project: projectName,
-			Stage:   stageName,
-			Service: serviceName,
-			Result:  keptnv2.ResultPass,
-		},
-		ID:                 uuid.NewString(),
-		Shkeptncontext:     keptnContext,
-		Shkeptnspecversion: "0.2.0",
-		Source:             &source,
-		Specversion:        "1.0",
-		Type:               &eventType,
-	}
-
-	marshal, err := json.Marshal(eventPayload)
-	require.Nil(n.t, err)
-
-	err = n.Publish(eventType, marshal)
-
-	return &apimodels.EventContext{
-		KeptnContext: &keptnContext,
-	}
-}
-
-func (n *testNatsClient) SendEvent(event cloudevents.Event) error {
-	m, _ := json.Marshal(event)
-	return n.Publish(event.Type(), m)
-}
-
-func (n *testNatsClient) Send(ctx context.Context, event cloudevents.Event) error {
-	return n.SendEvent(event)
-}
-
 func (n *testNatsClient) getLatestEventOfType(keptnContext, projectName, stage, eventType string) *apimodels.KeptnContextExtendedCE {
 	var result *apimodels.KeptnContextExtendedCE
 	n.Lock()
@@ -573,90 +555,6 @@ func (n *testNatsClient) getLatestEventOfType(keptnContext, projectName, stage, 
 		}
 	}
 	return result
-}
-
-func verifySequenceEndsUpInState(t *testing.T, projectName string, context *apimodels.EventContext, timeout time.Duration, desiredStates []string) {
-	t.Logf("waiting for state with keptnContext %s to have the status %s", *context.KeptnContext, desiredStates)
-
-	require.Eventually(t, func() bool {
-		states, err := getStates(projectName, context)
-		if err != nil {
-			return false
-		}
-
-		for _, state := range states.States {
-			if doesSequenceHaveOneOfTheDesiredStates(state, context, desiredStates) {
-				return true
-			}
-		}
-		return false
-	}, timeout, 100*time.Millisecond)
-}
-
-func getStates(projectName string, context *apimodels.EventContext) (*apimodels.SequenceStates, error) {
-	c := http.Client{}
-
-	var reqURL string
-	if context != nil {
-		reqURL = "http://localhost:8080/v1/sequence/" + projectName + "?keptnContext=" + *context.KeptnContext
-	} else {
-		reqURL = "http://localhost:8080/v1/sequence/" + projectName
-	}
-	req, err := http.NewRequest(http.MethodGet, reqURL, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := c.Do(req)
-	if err != nil {
-		return nil, err
-	}
-
-	respBytes, err := ioutil.ReadAll(resp.Body)
-
-	if err != nil {
-		return nil, err
-	}
-
-	states := &apimodels.SequenceStates{}
-
-	err = json.Unmarshal(respBytes, states)
-	if err != nil {
-		return nil, err
-	}
-	return states, nil
-}
-
-func doesSequenceHaveOneOfTheDesiredStates(state apimodels.SequenceState, context *apimodels.EventContext, desiredStates []string) bool {
-	if state.Shkeptncontext == *context.KeptnContext {
-		for _, desiredState := range desiredStates {
-			if state.State == desiredState {
-				return true
-			}
-		}
-	}
-	return false
-}
-
-func getStageOfState(state apimodels.SequenceState, stageName string) *apimodels.SequenceStateStage {
-	for index, stage := range state.Stages {
-		if stage.Name == stageName {
-			return &state.Stages[index]
-		}
-	}
-	return nil
-}
-
-func controlSequence(t *testing.T, projectName, keptnContextID string, cmd apimodels.SequenceControlState) {
-	command := apimodels.SequenceControlCommand{
-		State: cmd,
-	}
-
-	mCmd, _ := json.Marshal(command)
-
-	c := http.Client{}
-	_, err := c.Post(fmt.Sprintf("http://localhost:8080/v1/sequence/%s/%s/control", projectName, keptnContextID), "application/json", bytes.NewBuffer(mCmd))
-	require.Nil(t, err)
 }
 
 func setupFakeConfigurationService() {
@@ -691,33 +589,3 @@ func setupFakeConfigurationService() {
 		w.Write([]byte(`{}`))
 	})
 }
-
-const qualityGatesShortSLOFileContent = `---
-spec_version: "0.1.1"
-comparison:
-  aggregate_function: "avg"
-  compare_with: "single_result"
-  include_result_with_score: "pass"
-  number_of_comparison_results: 1
-filter:
-objectives:
-  - sli: "response_time_p95"
-    key_sli: false
-    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
-      - criteria:
-          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
-          - "<800"     # absolute values only require a logical operator
-    warning:          # if the response time is below 200ms, the result should be a warning
-      - criteria:
-          - "<=1000"
-          - "<=+100%"
-    weight: 1
-  - sli: "throughput"
-    pass:
-      - criteria:
-          - "<=+100%"
-          - ">=-80%"
-  - sli: "error_rate"
-total_score:
-  pass: "100%"
-  warning: "65%"`
