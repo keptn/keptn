@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/keptn/go-utils/pkg/api/models"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -91,9 +90,9 @@ func TestMain(m *testing.M) {
 
 	subscriptionSource := subscriptionsource.NewFixedSubscriptionSource(
 		subscriptionsource.WithFixedSubscriptions(
-			models.EventSubscription{Event: "sh.keptn.event.evaluation.triggered"},
-			models.EventSubscription{Event: "sh.keptn.event.get-sli.finished"},
-			models.EventSubscription{Event: "sh.keptn.event.monitoring.configure"},
+			apimodels.EventSubscription{Event: "sh.keptn.event.evaluation.triggered"},
+			apimodels.EventSubscription{Event: "sh.keptn.event.get-sli.finished"},
+			apimodels.EventSubscription{Event: "sh.keptn.event.monitoring.configure"},
 		),
 	)
 
@@ -116,8 +115,8 @@ func TestMain(m *testing.M) {
 	)
 
 	mockedEventStore := &lighthousefake.EventStoreMock{
-		GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*models.KeptnContextExtendedCE, *models.Error) {
-			return []*models.KeptnContextExtendedCE{
+		GetEventsFunc: func(filter *keptnapi.EventFilter) ([]*apimodels.KeptnContextExtendedCE, *apimodels.Error) {
+			return []*apimodels.KeptnContextExtendedCE{
 				{
 					Contenttype: "application/json",
 					Data: keptnv2.EvaluationTriggeredEventData{
@@ -178,7 +177,7 @@ func Test_ErroredFinishedPayloadSend(t *testing.T) {
 	natsClient := qualityGatesGenericTestStart(t)
 
 	t.Log("sending invalid get-sli.finished event")
-	payload := models.KeptnContextExtendedCE{
+	payload := apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -211,7 +210,7 @@ func Test_ErroredFinishedPayloadSend(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("expecting evaluation.finished event")
-	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	var evaluationFinishedEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if event != nil {
@@ -242,7 +241,7 @@ func Test_AbortedFinishedPayloadSend(t *testing.T) {
 	natsClient := qualityGatesGenericTestStart(t)
 
 	t.Log("sending invalid get-sli.finished event")
-	payload := models.KeptnContextExtendedCE{
+	payload := apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -275,7 +274,7 @@ func Test_AbortedFinishedPayloadSend(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("expecting evaluation.finished event")
-	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	var evaluationFinishedEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if event != nil {
@@ -306,7 +305,7 @@ func Test_SLIFailResultSend(t *testing.T) {
 	natsClient := qualityGatesGenericTestStart(t)
 
 	t.Log("sending invalid get-sli.finished event")
-	payload := models.KeptnContextExtendedCE{
+	payload := apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIFinishedEventData{
 			EventData: keptnv2.EventData{
@@ -339,7 +338,7 @@ func Test_SLIFailResultSend(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("expecting evaluation.finished event")
-	var evaluationFinishedEvent *models.KeptnContextExtendedCE
+	var evaluationFinishedEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
 		if event != nil {
@@ -409,7 +408,7 @@ func qualityGatesGenericTestStart(t *testing.T) *testNatsClient {
 	require.Nil(t, err)
 
 	t.Log("expecting evaluation.started event")
-	var evaluationStartedEvent *models.KeptnContextExtendedCE
+	var evaluationStartedEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName))
 		if event != nil {
@@ -432,7 +431,7 @@ func qualityGatesGenericTestStart(t *testing.T) *testNatsClient {
 	require.Empty(t, evaluationStartedPayload.EventData.Message)
 
 	t.Log("expecting get-sli.triggered event")
-	var getSLITriggeredEvent *models.KeptnContextExtendedCE
+	var getSLITriggeredEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
 		if event != nil {
@@ -461,7 +460,7 @@ func qualityGatesGenericTestStart(t *testing.T) *testNatsClient {
 	require.Empty(t, getSLIPayload.EventData.Message)
 
 	t.Log("sending get-sli.started event")
-	payload = models.KeptnContextExtendedCE{
+	payload = apimodels.KeptnContextExtendedCE{
 		Contenttype: "application/json",
 		Data: &keptnv2.GetSLIStartedEventData{
 			EventData: keptnv2.EventData{
