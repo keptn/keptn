@@ -18,12 +18,10 @@ describe('Line chart utils', () => {
       // then
       expect(points).toEqual([
         {
-          identifier: 'score',
           label: 'score',
           points: [
             {
               color: '#7dc540',
-              identifier: '04266cc2-eeea-485b-85b3-f1dea50890ce',
               x: 0,
               y: 100,
             },
@@ -31,12 +29,10 @@ describe('Line chart utils', () => {
           type: 'score-bar',
         },
         {
-          identifier: 'score',
           label: 'score',
           points: [
             {
               color: undefined,
-              identifier: '04266cc2-eeea-485b-85b3-f1dea50890ce',
               x: 0,
               y: 100,
             },
@@ -44,12 +40,10 @@ describe('Line chart utils', () => {
           type: 'score-line',
         },
         {
-          identifier: 'response_time_p95',
           invisible: true,
           label: 'response_time_p95',
           points: [
             {
-              identifier: '04266cc2-eeea-485b-85b3-f1dea50890ce',
               x: 0,
               y: 299.18637492576534,
             },
@@ -57,12 +51,10 @@ describe('Line chart utils', () => {
           type: 'metric-line',
         },
         {
-          identifier: 'response_time_p90',
           invisible: true,
           label: 'response_time_p90',
           points: [
             {
-              identifier: '04266cc2-eeea-485b-85b3-f1dea50890ce',
               x: 0,
               y: 250.18637492576534,
             },
@@ -70,12 +62,10 @@ describe('Line chart utils', () => {
           type: 'metric-line',
         },
         {
-          identifier: 'response_time_p50',
           invisible: true,
           label: 'response_time_p50',
           points: [
             {
-              identifier: '04266cc2-eeea-485b-85b3-f1dea50890ce',
               x: 0,
               y: 200.18637492576534,
             },
