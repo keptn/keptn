@@ -23,7 +23,7 @@ type EvaluationEventHandler interface {
 	HandleEvent(ctx context.Context) error
 }
 
-func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface, es ...EventStore) (EvaluationEventHandler, error) {
+func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface, es EventStore) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 
 	eventSender, ok := ctx.Value(types.EventSenderKey).(controlplane.EventSender)
@@ -74,11 +74,9 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 	}
 }
 
-func processEventStore(es []EventStore, keptnHandler *keptnv2.Keptn) EventStore {
-	var eventStore EventStore
-	eventStore = keptnHandler.EventHandler
-	if len(es) > 0 {
-		eventStore = es[0]
+func processEventStore(es EventStore, keptnHandler *keptnv2.Keptn) EventStore {
+	if es != nil {
+		return es
 	}
-	return eventStore
+	return keptnHandler.EventHandler
 }

@@ -122,7 +122,7 @@ func TestEventSenderWithoutContext(t *testing.T) {
 	ctx = context.WithValue(ctx, types.EventSenderKey, nil)
 	defer cancel()
 
-	_, err := NewEventHandler(ctx, incomingEvent, fakek8s.NewSimpleClientset())
+	_, err := NewEventHandler(ctx, incomingEvent, fakek8s.NewSimpleClientset(), nil)
 	require.Error(t, err)
 	require.Equal(t, "could not get eventSender from context", err.Error())
 
