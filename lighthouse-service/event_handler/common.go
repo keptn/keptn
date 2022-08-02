@@ -214,21 +214,10 @@ type K8sSLIProviderConfig struct {
 	KubeAPI kubernetes.Interface
 }
 
-type K8sSLIProviderOption func(c *K8sSLIProviderConfig)
-
-func WithKubeAPIClient(k8sClient kubernetes.Interface) K8sSLIProviderOption {
-	return func(c *K8sSLIProviderConfig) {
-		c.KubeAPI = k8sClient
+func NewSLIProviderConfig(kubeAPI kubernetes.Interface) K8sSLIProviderConfig {
+	return K8sSLIProviderConfig{
+		KubeAPI: kubeAPI,
 	}
-}
-
-func NewSLIProviderConfig(opts ...K8sSLIProviderOption) K8sSLIProviderConfig {
-	c := &K8sSLIProviderConfig{}
-
-	for _, opt := range opts {
-		opt(c)
-	}
-	return *c
 }
 
 // GetDefaultSLIProvider godoc

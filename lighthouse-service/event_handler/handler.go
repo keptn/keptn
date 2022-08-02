@@ -49,7 +49,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 		return &StartEvaluationHandler{
 			Event:             event,
 			KeptnHandler:      keptnHandler,
-			SLIProviderConfig: NewSLIProviderConfig(WithKubeAPIClient(kubeAPI)),
+			SLIProviderConfig: NewSLIProviderConfig(kubeAPI),
 			SLOFileRetriever: SLOFileRetriever{
 				ResourceHandler: resourceHandler,
 				ServiceHandler:  serviceHandler,
