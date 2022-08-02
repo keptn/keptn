@@ -471,10 +471,10 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e apimodels.KeptnContextExt
 				Scope: models.EventScope{EventData: keptnv2.EventData{Project: eventData.Project, Stage: eventData.Stage}},
 			})
 			if err != nil {
-				return fmt.Errorf("unable to fetch deployment.triggered event for keptn context %s: %w", e.Shkeptncontext, err)
+				return fmt.Errorf("unable to fetch sequence executions for keptn context %s: %w", e.Shkeptncontext, err)
 			}
 			if len(executions) == 0 {
-				return errors.New("no deployment.triggered events could be found for keptn context " + e.Shkeptncontext)
+				return fmt.Errorf("no sequence executions could be found for keptn context %s", e.Shkeptncontext)
 			}
 			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
 			err = keptnv2.Decode(executions[0].InputProperties, triggeredData)
