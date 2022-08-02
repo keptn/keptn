@@ -47,9 +47,6 @@ func main() {
 	}
 
 	var env envConfig
-	lighthouseService := LighthouseService{
-		KubeAPI: kubeAPI,
-	}
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
@@ -76,9 +73,8 @@ func main() {
 	logForwarder := logforwarder.New(api.LogsV1(), logforwarder.WithLogger(log))
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
-	lighthouseService.env = env
 
-	_main(controlPlane, log, lighthouseService)
+	_main(controlPlane, log, LighthouseService{KubeAPI: kubeAPI, env: env})
 
 }
 

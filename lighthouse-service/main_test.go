@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"sync"
 	"testing"
@@ -23,7 +22,6 @@ import (
 	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
 	gonats "github.com/keptn/go-utils/pkg/sdk/connector/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
-	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	lighthousefake "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -72,7 +70,6 @@ var projectName = "quality-gates-invalid-finish"
 var serviceName = "my-service"
 var stageName = "dev"
 var configurationService *httptest.Server
-var EventChan chan types.EventUpdate
 
 func TestMain(m *testing.M) {
 	test := testing.T{}
@@ -101,8 +98,7 @@ func TestMain(m *testing.M) {
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
-	os.Setenv("RESOURCE_SERVICE", configurationService.URL)
-	defer os.Unsetenv("RESOURCE_SERVICE")
+	test.Setenv("RESOURCE_SERVICE", configurationService.URL)
 
 	fakeK8sClient := fakek8s.NewSimpleClientset(
 		&corev1.ConfigMap{
