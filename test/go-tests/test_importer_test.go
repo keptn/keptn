@@ -39,7 +39,7 @@ func Test_ImportCorrectManifest(t *testing.T) {
 	require.Nil(t, err)
 
 	// Convert folder to Zip
-	err = recursiveZip("../assets/import/sample-package/", "./sample-package.zip", false)
+	err = createZipFileFromDirectory("../assets/import/sample-package/", "./sample-package.zip", false)
 	require.Nil(t, err)
 
 	// Getting Keptn API credentials
@@ -71,6 +71,7 @@ func Test_ImportCorrectManifestNonExistingProject(t *testing.T) {
 	projectName := "keptn-importer-test-non-existing"
 	wrongProjectName := "ketpn-importer-test-non-existing"
 	errorMessage := "project not found"
+	expectedErrorCode := 424
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(importerShipyard)
@@ -79,7 +80,7 @@ func Test_ImportCorrectManifestNonExistingProject(t *testing.T) {
 	require.Nil(t, err)
 
 	// Convert folder to Zip
-	err = recursiveZip("../assets/import/sample-package/", "./sample-package.zip", false)
+	err = createZipFileFromDirectory("../assets/import/sample-package/", "./sample-package.zip", false)
 	require.Nil(t, err)
 
 	// Getting Keptn API credentials
@@ -88,7 +89,7 @@ func Test_ImportCorrectManifestNonExistingProject(t *testing.T) {
 
 	// Make API call with ZIP file
 	responseCode, err := ImportUploadZipToProject(fmt.Sprintf("%s/v1/import", keptnApiUrl), wrongProjectName, "./sample-package.zip")
-	require.Equal(t, 424, responseCode, fmt.Sprintf("Expected response status 424 but got %d", responseCode))
+	require.Equal(t, expectedErrorCode, responseCode, fmt.Sprintf("Expected response status %d but got %d", expectedErrorCode, responseCode))
 	require.ErrorContains(t, err, errorMessage, fmt.Sprintf("Could not find expected error message: %s", errorMessage))
 	require.Error(t, err)
 }
@@ -96,6 +97,7 @@ func Test_ImportCorrectManifestNonExistingProject(t *testing.T) {
 func Test_ImportMalformedZipFileCorrectName(t *testing.T) {
 	projectName := "keptn-importer-test-malformed-zip"
 	errorMessage := "Error opening import archive"
+	expectedErrorCode := 415
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(importerShipyard)
@@ -104,7 +106,7 @@ func Test_ImportMalformedZipFileCorrectName(t *testing.T) {
 	require.Nil(t, err)
 
 	// Convert folder to Zip
-	err = recursiveZip("../assets/import/invalid-package/", "./invalid-package.zip", false)
+	err = createZipFileFromDirectory("../assets/import/invalid-package/", "./invalid-package.zip", false)
 	require.Nil(t, err)
 
 	// Getting Keptn API credentials
@@ -113,7 +115,7 @@ func Test_ImportMalformedZipFileCorrectName(t *testing.T) {
 
 	// Make API call with ZIP file
 	responseCode, err := ImportUploadZipToProject(fmt.Sprintf("%s/v1/import", keptnApiUrl), projectName, "./invalid-package.zip")
-	require.Equal(t, 415, responseCode, fmt.Sprintf("Expected response status 424 but got %d", responseCode))
+	require.Equal(t, expectedErrorCode, responseCode, fmt.Sprintf("Expected response status %d but got %d", expectedErrorCode, responseCode))
 	require.ErrorContains(t, err, errorMessage, fmt.Sprintf("Could not find expected error message: %s", errorMessage))
 	require.Error(t, err)
 }

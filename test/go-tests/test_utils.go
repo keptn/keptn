@@ -1146,7 +1146,7 @@ func resetTestPath(t *testing.T, path string) {
 	require.Nil(t, err)
 }
 
-func recursiveZip(source, target string, needBaseDir bool) error {
+func createZipFileFromDirectory(source, target string, needBaseDir bool) error {
 	zipfile, err := os.Create(target)
 	if err != nil {
 		return err
