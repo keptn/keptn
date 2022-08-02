@@ -48,7 +48,7 @@
   background-color: $yellow-100 !important;
 }
 
-dt-row[disabled='true'] {
+dt-row.disabled {
   color: $gray-400;
 }
 

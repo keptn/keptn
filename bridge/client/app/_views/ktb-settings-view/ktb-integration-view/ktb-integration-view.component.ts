@@ -1,4 +1,4 @@
-import { Component, TemplateRef } from '@angular/core';
+import { Component } from '@angular/core';
 import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/table';
 import { combineLatestWith, EMPTY, merge, mergeMap, Observable, of, shareReplay, Subject, switchMap } from 'rxjs';
 import { DataService } from '../../../_services/data.service';
@@ -103,16 +103,6 @@ export class KtbIntegrationViewComponent {
       sortEvent.active,
       sortEvent.direction === 'asc'
     );
-  }
-
-  public getOverlay(
-    registration: UniformRegistration,
-    projectName: string,
-    template: TemplateRef<unknown>
-  ): TemplateRef<unknown> {
-    // The overlay must be conditional but in general directives are not meant to be dynamic.
-    // That's why we ignore the fact that undefined is not assignable to TemplateRef
-    return (registration.hasSubscriptions(projectName) ? undefined : template) as TemplateRef<unknown>;
   }
 
   public getSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string[] {

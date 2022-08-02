@@ -9,27 +9,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewModule } from './ktb-integration-view.module';
 import { UniformRegistration } from '../../../_models/uniform-registration';
 import { UniformSubscription } from '../../../_models/uniform-subscription';
-import { ElementRef, EmbeddedViewRef, TemplateRef } from '@angular/core';
 import { skip } from 'rxjs/operators';
-
-class MockElementRef extends ElementRef {
-  nativeElement = {};
-
-  constructor() {
-    super(null);
-  }
-}
-
-class MockTemplateRef extends TemplateRef<unknown> {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  createEmbeddedView(_context: unknown): EmbeddedViewRef<unknown> {
-    return {} as unknown as EmbeddedViewRef<unknown>;
-  }
-
-  get elementRef(): ElementRef {
-    return new MockElementRef();
-  }
-}
 
 describe(KtbIntegrationViewComponent.name, () => {
   const projectName = 'sockshop';
@@ -195,17 +175,6 @@ describe(KtbIntegrationViewComponent.name, () => {
     // then
     expect(actual).toBe(u);
     expect(actual).toEqual(new UniformRegistration());
-  });
-
-  it('should return an overlay', () => {
-    // given
-    const templateRef = new MockTemplateRef();
-
-    // when
-    const actual = component.getOverlay(new UniformRegistration(), projectName, templateRef);
-
-    // then
-    expect(actual).toEqual(templateRef);
   });
 
   describe(KtbIntegrationViewComponent.name + '_HelperFunctions', () => {
