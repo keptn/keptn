@@ -5,6 +5,7 @@ import {
   interceptSubscription,
 } from '../support/intercept';
 import UniformPage from '../support/pageobjects/UniformPage';
+import SecretsPage from '../support/pageobjects/SecretsPage';
 
 const uniformPage = new UniformPage();
 const webhookID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
@@ -437,15 +438,114 @@ describe('Add secret from webhook subscriptions', () => {
     interceptNoWebhookSecrets();
   });
 
-  it('should have secret creation link if not secret is available', () => {
+  it('should have secret creation link if no secret is available (add page)', () => {
     uniformPage.visitAdd(webhookID, true).assertSecretCreationLink();
   });
 
+  it('should have secret creation link if no secret is available (edit page)', () => {
+    const subscriptionID = 'a0b7ea6b-01a7-4016-97ca-bc3251cd18ef';
+    const registrationID = '0f2d35875bbaa72b972157260a7bd4af4f2826df';
+
+    cy.intercept(`/api/controlPlane/v1/uniform/registration/${registrationID}/subscription/${subscriptionID}`, {
+      body: {
+        event: 'sh.keptn.event.deployment.triggered',
+        filter: {
+          projects: ['sockshop'],
+          services: [],
+          stages: [],
+        },
+        id: subscriptionID,
+      },
+    });
+
+    cy.intercept(`/api/uniform/registration/webhook-service/config/${subscriptionID}?projectName=sockshop`, {
+      body: {
+        type: '',
+        method: 'GET',
+        url: 'https://keptn.sh',
+        payload: '',
+        header: [],
+        sendStarted: true,
+        sendFinished: false,
+        proxy: '',
+      },
+    });
+
+    uniformPage.visitEdit(registrationID, subscriptionID).assertSecretCreationLink();
+  });
+
   it('should navigate to secret creation and have keptn-webhook-service preselected', () => {
+    const secretsPage = new SecretsPage();
+
     uniformPage.visitAdd(webhookID, true);
     interceptSecrets();
+    uniformPage.navigateToSecretCreationPage();
+
+    secretsPage
+      .isAddSecretLink()
+      .assertSecretScopeQueryParam('keptn-webhook-service')
+      .assertSecretScope('keptn-webhook-service');
+  });
+
+  it('should prevent data loss / navigation if filter was changed', () => {
     uniformPage
-      .createSecret()
+      .visitAdd(webhookID, true)
+      .appendStages('dev')
+      .appendServices('carts')
+      .navigateToSecretCreationPage()
+      .assertOnChangeDialog()
+      .assertSubscriptionAddPath('sockshop', webhookID);
+  });
+
+  it('should prevent data loss / navigation if task prefix was changed', () => {
+    uniformPage
+      .visitAdd(webhookID, true)
+      .setTaskPrefix('deployment')
+      .navigateToSecretCreationPage()
+      .assertOnChangeDialog()
+      .assertSubscriptionAddPath('sockshop', webhookID);
+  });
+
+  it('should prevent data loss / navigation if task suffix was changed', () => {
+    uniformPage
+      .visitAdd(webhookID, true)
+      .setTaskPrefix('deployment')
+      .setTaskSuffix('triggered')
+      .navigateToSecretCreationPage()
+      .assertOnChangeDialog()
+      .assertSubscriptionAddPath('sockshop', webhookID);
+  });
+
+  it('should prevent data loss / navigation if webhook was changed', () => {
+    uniformPage
+      .visitAdd(webhookID, true)
+      .setWebhookMethod('GET')
+      .appendURL('https://example.com')
+      .navigateToSecretCreationPage()
+      .assertOnChangeDialog()
+      .assertSubscriptionAddPath('sockshop', webhookID);
+  });
+
+  it('should close onChangeDialog if user clicks stay', () => {
+    uniformPage
+      .visitAdd(webhookID, true)
+      .setWebhookMethod('GET')
+      .appendURL('https://example.com')
+      .navigateToSecretCreationPage()
+      .assertOnChangeDialog()
+      .closeOnChangeDialog()
+      .assertOnChangeDialog(false)
+      .assertSubscriptionAddPath('sockshop', webhookID);
+  });
+
+  it('should lose data and navigate to secret creation', () => {
+    const secretsPage = new SecretsPage();
+
+    uniformPage.visitAdd(webhookID, true).setWebhookMethod('GET').appendURL('https://example.com');
+    interceptSecrets();
+    uniformPage.navigateToSecretCreationPage(true);
+
+    secretsPage
       .isAddSecretLink()
       .assertSecretScopeQueryParam('keptn-webhook-service')
       .assertSecretScope('keptn-webhook-service');

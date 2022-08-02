@@ -430,8 +430,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     this.unsavedDialogState = 'unsaved';
 
     const dialog = document.querySelector(`div[aria-label="${this.dialogLabel}"]`);
-    dialog?.classList.add('shake');
-    setTimeout(() => dialog?.classList.remove('shake'), 500);
+
+    if (!dialog) return;
+
+    dialog.classList.add('shake');
+    setTimeout(() => dialog.classList.remove('shake'), 500);
   }
 
   public hideNotification(): void {
