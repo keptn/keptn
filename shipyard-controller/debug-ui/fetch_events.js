@@ -14,7 +14,7 @@ function fetchEvents(context, projectname, rootevent_list) {
       let rootevent_li, taskevent_ul, label;
 
       response.forEach((object) => {
-        // rootevent has 5 dots
+        // rootevent has additional stage segment
         if (object.type.split(".").length == 6) {
           rootevent_li = document.createElement("li");
 
