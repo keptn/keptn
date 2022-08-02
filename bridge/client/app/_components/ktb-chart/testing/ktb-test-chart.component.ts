@@ -18,33 +18,28 @@ export class KtbTestChartComponent {
     const name = 'Metric ' + this.getSomeNumber(11);
     const item: ChartItem = {
       type: 'metric-line',
-      identifier: name,
+      label: name,
       invisible: false,
       points: [
         {
           x: 0,
           y: this.getSomeNumber(1),
-          identifier: 'e0',
         },
         {
           x: 1,
           y: this.getSomeNumber(2),
-          identifier: 'e1',
         },
         {
           x: 2,
           y: this.getSomeNumber(3),
-          identifier: 'e2',
         },
         {
           x: 3,
           y: this.getSomeNumber(3),
-          identifier: 'e3',
         },
         {
           x: 4,
           y: this.getSomeNumber(4),
-          identifier: 'e4',
         },
       ],
     };
