@@ -419,12 +419,21 @@ func Test__main_Delivery(t *testing.T) {
 	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
 	require.Nil(t, err)
 
-	source := "golang-test"
 	t.Logf("send started event")
-	_, err = keptn.SendTaskStartedEvent(nil, source)
+	_, err = keptn.SendTaskStartedEvent(nil, "golang-test")
 	require.Nil(t, err)
 
-	time.Sleep(5 * time.Second)
+	t.Log("wait for .started event to be persisted")
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, context)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("deployment")
+	}, 10*time.Second, 100*time.Millisecond)
 
 	t.Logf("send finished event")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.DeploymentFinishedEventData{
@@ -442,14 +451,16 @@ func Test__main_Delivery(t *testing.T) {
 			DeploymentURIsPublic: []string{"http://my-service-hardening.svc.cluster.local:80"},
 			DeploymentNames:      []string{"blue_green_service"},
 		},
-	}, source)
+	}, "golang-test")
 	require.Nil(t, err)
 
+	t.Log("wait for next task (test) to be triggered")
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("test"))
 		return taskTriggeredEvent != nil
 	}, 10*time.Second, 100*time.Millisecond)
 
+	t.Log("checking project information in project materialized view")
 	c := http.Client{}
 	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/v1/project/"+projectName, nil)
 	require.Nil(t, err)
@@ -460,8 +471,8 @@ func Test__main_Delivery(t *testing.T) {
 	require.Nil(t, err)
 
 	getProjectData := apimodels.Project{}
-	json.Unmarshal(respBody, &getProjectData)
-	fmt.Println(getProjectData)
+	err = json.Unmarshal(respBody, &getProjectData)
+	require.Nil(t, err)
 
 	require.Equal(t, "docker.io/my-image:0.1.0", getProjectData.Stages[1].Services[0].DeployedImage)
 
