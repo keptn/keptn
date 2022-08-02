@@ -114,7 +114,7 @@
                 "state": "finished",
                 "latestEvaluation": {
                   "result": "pass",
-                  "score": 0
+                  "score": 100
                 },
                 "latestEvent": {
                   "type": "sh.keptn.event.dev.delivery.finished",
@@ -126,7 +126,7 @@
                     "evaluation": {
                       "indicatorResults": null,
                       "result": "pass",
-                      "score": 0,
+                      "score": 100,
                       "sloFileContent": "",
                       "timeEnd": "2021-09-23T15:59:25Z",
                       "timeStart": "2021-09-23T15:58:11Z"
@@ -504,12 +504,12 @@
             "project": "sockshop",
             "time": "2021-09-17T09:32:05.363Z",
             "shkeptncontext": "7e2dca11-0baa-4a5c-be1d-6130a4954a9f",
-            "state": "finished",
+            "state": "paused",
             "stages": [
               {
                 "name": "staging",
                 "image": "docker.io/mongo:4.2.2",
-                "state": "finished",
+                "state": "paused",
                 "latestEvent": {
                   "type": "sh.keptn.event.staging.delivery-direct.finished",
                   "id": "c465f8ee-c29f-4d9f-bd96-e9e1fbfd2e75",
@@ -517,9 +517,6 @@
                 }
               }
             ]
-          },
-          "deploymentInformation": {
-            "deploymentUrl": "http://carts-db.sockshop-staging.35.188.183.151.nip.io:80"
           }
         }
       ],
@@ -592,6 +589,38 @@
                   "type": "sh.keptn.event.production.delivery.finished",
                   "id": "3a814dc1-0908-4e89-9ef9-ad3025fed821",
                   "time": "2021-09-23T16:14:51.750Z"
+                },
+                "latestEvaluation": {
+                  "result": "warning",
+                  "score": 50
+                },
+                "latestEvaluationTrace": {
+                  "data": {
+                    "evaluation": {
+                      "indicatorResults": null,
+                      "result": "warning",
+                      "score": 50,
+                      "sloFileContent": "",
+                      "timeEnd": "2021-09-23T15:59:25Z",
+                      "timeStart": "2021-09-23T15:58:11Z"
+                    },
+                    "labels": {
+                      "DtCreds": "dynatrace"
+                    },
+                    "project": "sockshop",
+                    "result": "warning",
+                    "service": "carts",
+                    "stage": "production",
+                    "status": "succeeded"
+                  },
+                  "id": "dfc49f43-097f-462a-8b98-1b59a7b775e9",
+                  "source": "lighthouse-service",
+                  "specversion": "1.0",
+                  "time": "2021-09-23T16:01:42.455Z",
+                  "type": "sh.keptn.event.evaluation.finished",
+                  "shkeptncontext": "6e3c1cd1-dd29-4fcd-bca6-291ed5d3b2db",
+                  "shkeptnspecversion": "0.2.3",
+                  "triggeredid": "72619f05-788d-4eef-be25-d7cf9ab14c1e"
                 }
               }
             ]

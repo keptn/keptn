@@ -55,6 +55,7 @@
           </dt-info-group>
         </ktb-expandable-tile-header>
         <ktb-deployment-list
+          [projectName]="projectName"
           [service]="serviceState"
           [(selectedDeploymentInfo)]="selectedDeployment"
           (selectedDeploymentInfoChange)="deploymentSelected($event, projectName)"

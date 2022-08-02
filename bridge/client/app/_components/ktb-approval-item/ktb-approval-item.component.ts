@@ -1,20 +1,24 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, Output } from '@angular/core';
 import { Trace } from '../../_models/trace';
 import { DataService } from '../../_services/data.service';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { KeptnService } from '../../../../shared/models/keptn-service';
+import { EvaluationBadgeVariant, getEvaluationBadgeState } from '../ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 @Component({
   selector: 'ktb-approval-item[event]',
   templateUrl: './ktb-approval-item.component.html',
   styleUrls: ['./ktb-approval-item.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbApprovalItemComponent {
   public _event?: Trace;
   public approvalResult?: boolean;
   public evaluation?: Trace;
   public evaluationExists = true;
+  public getEvaluationBadgeState = getEvaluationBadgeState;
+  public EvaluationBadgeVariant = EvaluationBadgeVariant;
 
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
@@ -39,7 +43,7 @@ export class KtbApprovalItemComponent {
     this.loadEvaluation(value);
   }
 
-  constructor(private dataService: DataService) {}
+  constructor(private dataService: DataService, private changeDetectorRef_: ChangeDetectorRef) {}
 
   private loadEvaluation(trace: Trace): void {
     this.dataService
@@ -53,6 +57,7 @@ export class KtbApprovalItemComponent {
       .subscribe((evaluation) => {
         this.evaluation = evaluation[0];
         this.evaluationExists = !!this.evaluation;
+        this.changeDetectorRef_.markForCheck();
       });
   }
 
@@ -61,5 +66,6 @@ export class KtbApprovalItemComponent {
       this.approvalSent.emit();
     });
     this.approvalResult = result;
+    this.changeDetectorRef_.markForCheck();
   }
 }

@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -21,7 +22,6 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/config"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -1574,6 +1574,13 @@ func createProject(t *testing.T, c http.Client, projectName string, shipyardCont
 	createProjectObj := models.CreateProjectParams{
 		Name:     &projectName,
 		Shipyard: &encodedShipyardContent,
+		GitCredentials: &apimodels.GitAuthCredentials{
+			RemoteURL: "http://some.url",
+			User:      "user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "token",
+			},
+		},
 	}
 
 	marshal, err := json.Marshal(createProjectObj)

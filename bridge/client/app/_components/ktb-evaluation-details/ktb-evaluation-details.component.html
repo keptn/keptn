@@ -25,7 +25,7 @@
       </div>
     </div>
   </div>
-  <div *ngIf="(d3HeatmapEnabled$ | async) && showChart && !isInvalidated">
+  <div *ngIf="(d3Enabled$ | async) && showChart && !isInvalidated">
     <ktb-heatmap
       [dataPoints]="dataPoints"
       [selectedIdentifier]="selectedIdentifier"
@@ -35,7 +35,7 @@
   </div>
   <div
     class="chart-container m-0"
-    *ngIf="(d3HeatmapEnabled$ | async) === false && showChart && !isInvalidated"
+    *ngIf="(d3Enabled$ | async) === false && showChart && !isInvalidated"
     (click)="$event.stopPropagation()"
   >
     <button
@@ -276,21 +276,24 @@
                 [textContent]="_selectedEvaluationData.data.result"
               ></span>
             </span>
-            <ng-container
-              *ngIf="
-                _selectedEvaluationData.data.evaluation.indicatorResults &&
-                getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo
-              "
-            >
-              <span class="small" *ngIf="sliInfo.keySliCount > 0" uitestid="keptn-evaluation-details-keySliInfo">
-                <span class="ml-2">Key SLI<span *ngIf="sliInfo.keySliCount > 1">s</span>: </span>
-                <span *ngIf="sliInfo.keySliFailedCount > 0" class="error">failed</span>
-                <span *ngIf="sliInfo.keySliFailedCount === 0" class="success">passed</span>
-              </span>
-            </ng-container>
           </p>
         </dt-consumption-count>
         <dt-consumption-label>
+          <p
+            class="m-0"
+            *ngIf="
+              _selectedEvaluationData.data.evaluation.indicatorResults &&
+              getSliInfo(_selectedEvaluationData.data.evaluation.indicatorResults) as sliInfo
+            "
+          >
+            <span class="small" *ngIf="sliInfo.keySliCount > 0" uitestid="keptn-evaluation-details-keySliInfo">
+              <span *ngIf="sliInfo.keySliFailedCount > 0">
+                <span [textContent]="sliInfo.keySliFailedCount"></span>
+                Key SLI<span *ngIf="sliInfo.keySliFailedCount > 1">s</span> failed</span
+              >
+              <span *ngIf="sliInfo.keySliFailedCount === 0">All Key SLIs passed</span>
+            </span>
+          </p>
           <p class="m-0 small">
             <span class="bold">Evaluation timeframe: </span
             ><span [textContent]="evaluation.timeStart | amDateFormat: 'YYYY-MM-DD HH:mm'"></span> -
