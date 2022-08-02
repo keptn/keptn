@@ -313,6 +313,12 @@ export function interceptIntegrations(): void {
   cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
 }
 
+export function interceptNoWebhookSecrets(): void {
+  cy.intercept('/api/secrets/scope/keptn-webhook-service', {
+    body: [],
+  }).as('webhook-secrets');
+}
+
 export function interceptSecrets(): void {
   interceptProjectBoard();
 
@@ -353,7 +359,7 @@ export function interceptSecrets(): void {
   cy.intercept('GET', 'api/secrets/v1/scope', {
     statusCode: 200,
     body: {
-      scopes: ['dynatrace-service'],
+      scopes: ['dynatrace-service', 'keptn-webhook-service'],
     },
   });
 }

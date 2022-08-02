@@ -2,6 +2,20 @@ package main
 
 import (
 	"context"
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	"github.com/keptn/keptn/shipyard-controller/internal/config"
+	"github.com/keptn/keptn/shipyard-controller/internal/configurationstore"
+	"github.com/keptn/keptn/shipyard-controller/internal/controller"
+	"github.com/keptn/keptn/shipyard-controller/internal/db"
+	"github.com/keptn/keptn/shipyard-controller/internal/db/migration"
+	"github.com/keptn/keptn/shipyard-controller/internal/filereader"
+	"github.com/keptn/keptn/shipyard-controller/internal/handler"
+	"github.com/keptn/keptn/shipyard-controller/internal/leaderelection"
+	"github.com/keptn/keptn/shipyard-controller/internal/nats"
+	"github.com/keptn/keptn/shipyard-controller/internal/provisioner"
+	"github.com/keptn/keptn/shipyard-controller/internal/routing"
+	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
+	"github.com/keptn/keptn/shipyard-controller/internal/shipyardretriever"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -11,23 +25,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/keptn/keptn/shipyard-controller/leaderelection"
-
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
 	"github.com/kelseyhightower/envconfig"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/osutils"
-	"github.com/keptn/keptn/shipyard-controller/common"
-	"github.com/keptn/keptn/shipyard-controller/config"
-	"github.com/keptn/keptn/shipyard-controller/controller"
-	"github.com/keptn/keptn/shipyard-controller/db"
-	"github.com/keptn/keptn/shipyard-controller/db/migration"
 	_ "github.com/keptn/keptn/shipyard-controller/docs"
-	"github.com/keptn/keptn/shipyard-controller/handler"
-	"github.com/keptn/keptn/shipyard-controller/handler/sequencehooks"
 	_ "github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/keptn/keptn/shipyard-controller/nats"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -109,7 +113,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	projectMVRepo := createProjectMVRepo()
 	projectManager := handler.NewProjectManager(
-		common.NewGitConfigurationStore(csEndpoint.String()),
+		configurationstore.New(csEndpoint.String()),
 		secretStore,
 		projectMVRepo,
 		sequenceExecutionRepo,
@@ -117,7 +121,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		createSequenceQueueRepo(),
 		createEventQueueRepo())
 
-	repositoryProvisioner := handler.NewRepositoryProvisioner(env.AutomaticProvisioningURL, &http.Client{})
+	repositoryProvisioner := provisioner.New(env.AutomaticProvisioningURL, &http.Client{})
 
 	uniformRepo := createUniformRepo()
 	err = uniformRepo.SetupTTLIndex(getDurationFromEnvVar(env.UniformIntegrationTTL, envVarUniformTTLDefault))
@@ -127,14 +131,14 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	serviceManager := handler.NewServiceManager(
 		projectMVRepo,
-		common.NewGitConfigurationStore(csEndpoint.String()),
+		configurationstore.New(csEndpoint.String()),
 		uniformRepo,
 	)
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
-	eventDispatcher := handler.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(env.EventDispatchIntervalSec)*time.Second)
-	sequenceDispatcher := handler.NewSequenceDispatcher(
+	eventDispatcher := controller.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(env.EventDispatchIntervalSec)*time.Second)
+	sequenceDispatcher := controller.NewSequenceDispatcher(
 		createEventsRepo(),
 		createSequenceQueueRepo(),
 		sequenceExecutionRepo,
@@ -145,11 +149,11 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	sequenceTimeoutChannel := make(chan apimodels.SequenceTimeout)
 
-	shipyardRetriever := handler.NewShipyardRetriever(
-		common.NewGitConfigurationStore(csEndpoint.String()),
+	shipyardRetriever := shipyardretriever.New(
+		configurationstore.New(csEndpoint.String()),
 		projectMVRepo,
 	)
-	shipyardController := handler.GetShipyardControllerInstance(
+	shipyardController := controller.GetShipyardControllerInstance(
 		ctx,
 		eventDispatcher,
 		sequenceDispatcher,
@@ -166,24 +170,24 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	apiV1 := engine.Group("/v1")
 	apiHealth := engine.Group("")
 
-	denyListProvider := common.NewFileReader()
-	remoteURLValidator := handler.NewRemoteURLValidator(denyListProvider)
+	denyListProvider := filereader.New()
+	remoteURLValidator := provisioner.NewRemoteURLValidator(denyListProvider)
 
 	projectService := handler.NewProjectHandler(projectManager, eventSender, env, repositoryProvisioner, remoteURLValidator)
 
-	projectController := controller.NewProjectController(projectService)
+	projectController := routing.NewProjectController(projectService)
 	projectController.Inject(apiV1)
 
 	serviceHandler := handler.NewServiceHandler(serviceManager, eventSender, env)
-	serviceController := controller.NewServiceController(serviceHandler)
+	serviceController := routing.NewServiceController(serviceHandler)
 	serviceController.Inject(apiV1)
 
 	eventHandler := handler.NewEventHandler(shipyardController)
-	eventController := controller.NewEventController(eventHandler)
+	eventController := routing.NewEventController(eventHandler)
 	eventController.Inject(apiV1)
 
 	stageHandler := handler.NewStageHandler(stageManager)
-	stageController := controller.NewStageController(stageHandler)
+	stageController := routing.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
 
 	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectMVRepo)
@@ -191,14 +195,14 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		log.Fatal(err)
 	}
 	evaluationHandler := handler.NewEvaluationHandler(evaluationManager)
-	evaluationController := controller.NewEvaluationController(evaluationHandler)
+	evaluationController := routing.NewEvaluationController(evaluationHandler)
 	evaluationController.Inject(apiV1)
 
 	stateHandler := handler.NewStateHandler(db.NewMongoDBStateRepo(db.GetMongoDBConnectionInstance()), shipyardController)
-	stateController := controller.NewStateController(stateHandler)
+	stateController := routing.NewStateController(stateHandler)
 	stateController.Inject(apiV1)
 
-	sequenceStateMaterializedView := sequencehooks.NewSequenceStateMaterializedView(createStateRepo())
+	sequenceStateMaterializedView := controller.NewSequenceStateMaterializedView(createStateRepo())
 	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceWaitingHook(sequenceStateMaterializedView)
@@ -218,7 +222,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	taskStartedWaitDuration := getDurationFromEnvVar(env.TaskStartedWaitDuration, envVarTaskStartedWaitDurationDefault)
 
-	watcher := handler.NewSequenceWatcher(
+	watcher := controller.NewSequenceWatcher(
 		sequenceTimeoutChannel,
 		createEventsRepo(),
 		createEventQueueRepo(),
@@ -231,11 +235,11 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	watcher.Run(ctx)
 
 	uniformHandler := handler.NewUniformIntegrationHandler(uniformRepo)
-	uniformController := controller.NewUniformIntegrationController(uniformHandler)
+	uniformController := routing.NewUniformIntegrationController(uniformHandler)
 	uniformController.Inject(apiV1)
 
 	sequenceExecutionHandler := handler.NewSequenceExecutionHandler(sequenceExecutionRepo, createProjectRepo())
-	sequenceExecutionController := controller.NewSequenceExecutionController(sequenceExecutionHandler)
+	sequenceExecutionController := routing.NewSequenceExecutionController(sequenceExecutionHandler)
 	sequenceExecutionController.Inject(apiV1)
 
 	logRepo := createLogRepo()
@@ -244,7 +248,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		log.WithError(err).Error("could not setup TTL index for log repo entries")
 	}
 	logHandler := handler.NewLogHandler(handler.NewLogManager(logRepo))
-	logController := controller.NewLogController(logHandler)
+	logController := routing.NewLogController(logHandler)
 	logController.Inject(apiV1)
 
 	log.Info("Migrating project git credentials")
@@ -272,7 +276,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	log.Info("Finished migrating sequence execution format")
 
 	healthHandler := handler.NewHealthHandler()
-	healthController := controller.NewHealthController(healthHandler)
+	healthController := routing.NewHealthController(healthHandler)
 	healthController.Inject(apiHealth)
 
 	engine.Static("/swagger-ui", "./swagger-ui")
@@ -381,8 +385,8 @@ func createEventQueueRepo() *db.MongoDBEventQueueRepo {
 	return db.NewMongoDBEventQueueRepo(db.GetMongoDBConnectionInstance())
 }
 
-func createSecretStore(kubeAPI kubernetes.Interface) *common.K8sSecretStore {
-	return common.NewK8sSecretStore(kubeAPI)
+func createSecretStore(kubeAPI kubernetes.Interface) *secretstore.K8sSecretStore {
+	return secretstore.New(kubeAPI)
 }
 
 func createLogRepo() *db.MongoDBLogRepo {

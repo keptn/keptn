@@ -353,8 +353,43 @@ class UniformPage {
     return this;
   }
 
+  public assertSecretCreationLink(): this {
+    cy.byTestId('ktb-webhook-secret-selector').first().click();
+    cy.byTestId('ktb-webhook-secret-creation-link').should('exist');
+    return this;
+  }
+
+  public navigateToSecretCreationPage(overridePendingChangeGuard = false): this {
+    this.assertSecretCreationLink();
+    cy.byTestId('ktb-webhook-secret-creation-link').click();
+    if (overridePendingChangeGuard) {
+      cy.get('dt-confirmation-dialog-state').contains('Discard changes and leave page').click();
+    }
+    return this;
+  }
+
   public waitForJmeterInfoRequest(): this {
     cy.wait('@jmeterUniformInfo');
+    return this;
+  }
+
+  public assertSubscriptionAddPath(projectName: string, integrationId: string): this {
+    cy.location('pathname').should(
+      'eq',
+      `/project/${projectName}/settings/uniform/integrations/${integrationId}/subscriptions/add`
+    );
+    return this;
+  }
+
+  public assertOnChangeDialog(open = true): this {
+    cy.get('dt-confirmation-dialog-state')
+      .contains('You have pending changes. Are you sure you want to leave this page?')
+      .should(open ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public closeOnChangeDialog(): this {
+    cy.get('dt-confirmation-dialog-state').contains('Stay').click();
     return this;
   }
 }

@@ -12,7 +12,10 @@ declare let dT_: any;
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent {
-  private keptnInfo$ = this.dataService.keptnInfo.pipe(filter((keptnInfo) => !!keptnInfo));
+  keptnInfo$ = this.dataService.keptnInfo.pipe(filter((keptnInfo) => !!keptnInfo));
+  keptnMetadata$ = this.dataService.keptnMetadata;
+  projects$ = this.dataService.projects;
+  selectedProject$ = this.dataService.projectName;
 
   constructor(private http: HttpClient, private dataService: DataService) {
     if (typeof dT_ !== 'undefined' && dT_.initAngularNg) {

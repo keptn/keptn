@@ -7,7 +7,7 @@ import (
 )
 
 const defaultControlPlaneEndpoint = "http://shipyard-controller:8080"
-const defaultConfigurationServiceEndpoint = "http://configuration-service:8080"
+const defaultConfigurationServiceEndpoint = "http://resource-service:8080"
 const defaultSecretServiceEndpoint = "http://secret-service:8080"
 
 func NewKeptnEndpointProviderFromEnv() *configurableKeptnEndpointProvider {

@@ -56,6 +56,116 @@
                 {
                   "criteria": "<=90",
                   "targetValue": 90,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "metric": "go_routines",
+                "success": true,
+                "value": 253
+              },
+              "warningTargets": null
+            },
+            {
+              "displayName": "Failing Requests",
+              "keySli": true,
+              "passTargets": [
+                {
+                  "criteria": "< 10",
+                  "targetValue": 10,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "metric": "failing_request",
+                "success": true,
+                "value": 11
+              },
+              "warningTargets": null
+            }
+          ],
+          "result": "fail",
+          "score": 25,
+          "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICcwLjEuMCcNCmNvbXBhcmlzb246DQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2Zw0Kb2JqZWN0aXZlczoNCiAgLSBzbGk6IGh0dHBfcmVzcG9uc2VfdGltZV9zZWNvbmRzX21haW5fcGFnZV9zdW0NCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PTEiDQogICAgd2FybmluZzoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0wLjUiDQogIC0gc2xpOiByZXF1ZXN0X3Rocm91Z2hwdXQNCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMDAlIg0KICAgICAgICAgIC0gIj49LTgwJSINCiAgLSBzbGk6IGdvX3JvdXRpbmVzDQogICAgcGFzczoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0xMDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
+          "timeEnd": "2022-02-09T09:29:47.625Z",
+          "timeStart": "2022-02-09T09:28:55.866Z"
+        },
+        "message": "Evaluation failed since the calculated score of 75 is below the target value of 90",
+        "project": "sockshop",
+        "result": "fail",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-02-09T09:31:07.865Z",
+      "type": "sh.keptn.event.evaluation.finished",
+      "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+    },
+    {
+      "data": {
+        "evaluation": {
+          "comparedEvents": ["182d10b8-b68d-49d4-86cd-5521352d7a42"],
+          "indicatorResults": [
+            {
+              "displayName": "HTTP Respone Time",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=0.4",
+                  "targetValue": 0.4,
+                  "violated": true
+                }
+              ],
+              "score": 0,
+              "status": "fail",
+              "value": {
+                "metric": "http_response_time_seconds_main_page_sum",
+                "success": true,
+                "value": 0.40115315268094103
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=0.1",
+                  "targetValue": 0.1,
+                  "violated": true
+                }
+              ]
+            },
+            {
+              "displayName": "Request Throughput",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": ">=-80%",
+                  "targetValue": 0,
+                  "violated": false
+                }
+              ],
+              "score": 1,
+              "status": "pass",
+              "value": {
+                "metric": "request_throughput",
+                "success": true,
+                "value": 169.23333333333332
+              },
+              "warningTargets": null
+            },
+            {
+              "displayName": "Go Routines",
+              "keySli": true,
+              "passTargets": [
+                {
+                  "criteria": "<=90",
+                  "targetValue": 90,
                   "violated": false
                 }
               ],
@@ -101,12 +211,12 @@
         "stage": "staging",
         "status": "succeeded"
       },
-      "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+      "id": "1500b971-bfc3-4e20-8dc1-a624e0faf961",
       "source": "lighthouse-service",
       "specversion": "1.0",
       "time": "2022-02-09T09:30:07.865Z",
       "type": "sh.keptn.event.evaluation.finished",
-      "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+      "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c1",
       "shkeptnspecversion": "0.2.3",
       "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
     },
