@@ -320,6 +320,17 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     });
   });
 
+  it('should not allow navigation for unsaved changes', () => {
+    // given
+
+    // when
+    component.webhookFormDirty = true;
+    fixture.detectChanges();
+
+    // then
+    expect(component.canDeactivate()).not.toEqual(true);
+  });
+
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
     const dataService = TestBed.inject(DataService);
     const uniformRegistration = UniformRegistrationsMock[integrationIndex];

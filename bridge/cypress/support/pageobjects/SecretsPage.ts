@@ -122,6 +122,21 @@ class SecretsPage {
     cy.byTestId(this.ADD_KEY_VALUE_PAIR_ID).click();
     return this;
   }
+
+  public isAddSecretLink(): this {
+    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/secrets/add`);
+    return this;
+  }
+
+  public assertSecretScopeQueryParam(scope: string): this {
+    cy.location('search').should('eq', `?scope=${scope}`);
+    return this;
+  }
+
+  public assertSecretScope(scope: string): this {
+    cy.byTestId('keptn-secret-scope-input').should('have.text', scope);
+    return this;
+  }
 }
 
 export default SecretsPage;
