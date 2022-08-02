@@ -3,7 +3,7 @@ import { DtSortEvent, DtTableDataSource } from '@dynatrace/barista-components/ta
 import { combineLatestWith, EMPTY, merge, mergeMap, Observable, of, shareReplay, Subject, switchMap } from 'rxjs';
 import { DataService } from '../../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { distinctUntilChanged, finalize, map, tap } from 'rxjs/operators';
+import { distinctUntilChanged, finalize, map, startWith, tap } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../../../../shared/interfaces/uniform-registration-log';
 import { UniformRegistration } from '../../../_models/uniform-registration';
 import { Location } from '@angular/common';
@@ -39,7 +39,8 @@ export class KtbIntegrationViewComponent {
 
   private registrations$ = this.dataService.getUniformRegistrations().pipe(
     shareReplay(1),
-    finalize(() => (this.isLoadingUniformRegistrations = false))
+    finalize(() => (this.isLoadingUniformRegistrations = false)),
+    startWith([])
   );
 
   public uniformRegistrations$ = this.registrations$.pipe(
@@ -55,7 +56,8 @@ export class KtbIntegrationViewComponent {
   ).pipe(distinctUntilChanged(), shareReplay(1));
 
   public selectedUniformRegistrationId$ = this._selectedUniformRegistrationId$.pipe(
-    map((id) => ({ id } as SelectedId))
+    map((id) => ({ id } as SelectedId)),
+    startWith({ id: undefined })
   );
 
   public selectedUniformRegistration$ = this._selectedUniformRegistrationId$.pipe(

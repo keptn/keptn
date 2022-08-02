@@ -10,6 +10,7 @@ import { KtbIntegrationViewModule } from './ktb-integration-view.module';
 import { UniformRegistration } from '../../../_models/uniform-registration';
 import { UniformSubscription } from '../../../_models/uniform-subscription';
 import { ElementRef, EmbeddedViewRef, TemplateRef } from '@angular/core';
+import { skip } from 'rxjs/operators';
 
 class MockElementRef extends ElementRef {
   nativeElement = {};
@@ -32,6 +33,7 @@ class MockTemplateRef extends TemplateRef<unknown> {
 
 describe(KtbIntegrationViewComponent.name, () => {
   const projectName = 'sockshop';
+  const startValue = 1;
   let component: KtbIntegrationViewComponent;
   let fixture: ComponentFixture<KtbIntegrationViewComponent>;
   let paramsSubject: BehaviorSubject<ParamMap>;
@@ -100,7 +102,7 @@ describe(KtbIntegrationViewComponent.name, () => {
     );
 
     // when
-    const actual = await firstValueFrom(component.selectedUniformRegistrationId$);
+    const actual = await firstValueFrom(component.selectedUniformRegistrationId$.pipe(skip(startValue)));
 
     // then
     expect(actual).toEqual({ id: 'abcdef' });
@@ -109,7 +111,7 @@ describe(KtbIntegrationViewComponent.name, () => {
   it('should load uniform registrations and build the data source', async () => {
     // given
     // when
-    const dataSource = await firstValueFrom(component.uniformRegistrations$);
+    const dataSource = await firstValueFrom(component.uniformRegistrations$.pipe(skip(startValue)));
 
     // then
     expect(dataSource.data).toBeTruthy();
@@ -142,7 +144,7 @@ describe(KtbIntegrationViewComponent.name, () => {
     );
 
     // when
-    const actual = await firstValueFrom(component.selectedUniformRegistration$);
+    const actual = await firstValueFrom(component.selectedUniformRegistration$.pipe(skip(startValue)));
 
     // then
     expect(actual).toBeTruthy();
@@ -191,7 +193,8 @@ describe(KtbIntegrationViewComponent.name, () => {
     const actual = component.toUniformRegistration(u);
 
     // then
-    expect(actual).toBeTruthy();
+    expect(actual).toBe(u);
+    expect(actual).toEqual(new UniformRegistration());
   });
 
   it('should return an overlay', () => {
