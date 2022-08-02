@@ -11,12 +11,14 @@ export enum DeleteResult {
 
 export interface DeleteData {
   type: DeleteType;
-  name: string;
+  name?: string;
+  context?: unknown;
 }
 
 export interface DeletionTriggeredEvent {
   type: DeleteType;
-  name: string;
+  name?: string;
+  context?: unknown;
 }
 
 export interface DeletionProgressEvent {

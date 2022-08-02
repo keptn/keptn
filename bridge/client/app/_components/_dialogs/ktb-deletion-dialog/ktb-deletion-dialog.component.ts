@@ -13,7 +13,7 @@ import { Subject } from 'rxjs';
 })
 export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
-  public isDeleteProjectInProgress$ = this.eventService.deletionProgressEvent
+  public isDeleteInProgress$ = this.eventService.deletionProgressEvent
     .asObservable()
     .pipe(map((evt) => evt.isInProgress));
   public deletionError$ = this.eventService.deletionProgressEvent.asObservable().pipe(map((evt) => evt.error));
@@ -46,6 +46,10 @@ export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   }
 
   public deleteConfirm(): void {
-    this.eventService.deletionTriggeredEvent.next({ type: this.data.type, name: this.data.name });
+    this.eventService.deletionTriggeredEvent.next({
+      type: this.data.type,
+      name: this.data.name,
+      context: this.data.context,
+    });
   }
 }

@@ -28,9 +28,9 @@
     dt-button
     class="danger-button"
     (click)="deleteConfirm()"
-    [disabled]="deletionConfirmationForm.invalid || (isDeleteProjectInProgress$ | async)"
+    [disabled]="deletionConfirmationForm.invalid || (isDeleteInProgress$ | async)"
   >
-    <ktb-loading-spinner *ngIf="isDeleteProjectInProgress$ | async"></ktb-loading-spinner>
+    <ktb-loading-spinner *ngIf="isDeleteInProgress$ | async"></ktb-loading-spinner>
     I understand the consequences, delete this {{ data.type }}
   </button>
   <div class="mt-3" *ngIf="deletionError$ | async as error">

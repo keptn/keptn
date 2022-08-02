@@ -20,8 +20,18 @@ import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-s
 import { EventTypes } from '../../../../../../shared/interfaces/event-types';
 import { Trace } from '../../../../_models/trace';
 import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
-import { DeleteData, DeleteResult, DeleteType } from '../../../../_interfaces/delete';
+import { DeleteData, DeleteResult, DeleteType, DeletionProgressEvent } from '../../../../_interfaces/delete';
 import { EventService } from '../../../../_services/event.service';
+
+export interface SubscriptionState {
+  projectName: string;
+  taskNames: string[];
+  subscription: UniformSubscription;
+  filter: ISequencesFilter;
+  integrationId: string;
+  webhook?: IWebhookConfigClient;
+  webhookSecrets?: IClientSecret[];
+}
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -34,15 +44,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public eventPayload: Record<string, unknown> | undefined;
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<{
-    projectName: string;
-    taskNames: string[];
-    subscription: UniformSubscription;
-    filter: ISequencesFilter;
-    integrationId: string;
-    webhook?: IWebhookConfigClient;
-    webhookSecrets?: IClientSecret[];
-  }>;
+  public data$: Observable<SubscriptionState>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -81,7 +83,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public unsavedDialogState: null | 'unsaved' = null;
   private isFilterDirty = false;
 
-  public projectDeletionData?: DeleteData;
+  public subscriptionDeletionData: DeleteData = {
+    type: DeleteType.SUBSCRIPTION,
+  };
 
   constructor(
     private route: ActivatedRoute,
@@ -231,47 +235,46 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       })
     );
 
-    this.projectDeletionData = {
-      type: DeleteType.SUBSCRIPTION,
-      name: '',
-    };
-
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
-      if (data.type === DeleteType.SUBSCRIPTION) {
-        this.deleteSubscription();
+      if (data.type === DeleteType.SUBSCRIPTION && data.context) {
+        this.deleteSubscription(data.context as SubscriptionState);
       }
     });
   }
 
-  public deleteSubscription(): void {
-    this.data$.subscribe((data) => {
-      if (data.subscription.id)
-        this.dataService.deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService).subscribe(
-          () => {
-            this.eventService.deletionProgressEvent.next({ isInProgress: false, result: DeleteResult.SUCCESS });
-            this.subscriptionForm.reset();
-            this.webhookFormDirty = false;
-            this.isFilterDirty = false;
-            this.router.navigate([
-              '/',
-              'project',
-              data.projectName,
-              'settings',
-              'uniform',
-              'integrations',
-              data.integrationId,
-            ]);
-          },
-          (err) => {
-            const deletionError = 'Subscription could not be deleted: ' + err.message;
-            this.eventService.deletionProgressEvent.next({
-              error: deletionError,
-              isInProgress: false,
-              result: DeleteResult.ERROR,
-            });
-          }
-        );
-    });
+  public deleteSubscription(data: SubscriptionState): void {
+    if (!data.subscription.id) return;
+
+    this.dataService
+      .deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService)
+      .pipe(
+        map((): DeletionProgressEvent => {
+          return { isInProgress: false, result: DeleteResult.SUCCESS };
+        }),
+        catchError((err): Observable<DeletionProgressEvent> => {
+          const deletionError = 'Subscription could not be deleted: ' + err.message;
+          return of({
+            error: deletionError,
+            isInProgress: false,
+            result: DeleteResult.ERROR,
+          });
+        })
+      )
+      .subscribe((progressEvent) => {
+        this.eventService.deletionProgressEvent.next(progressEvent);
+        if (progressEvent.result === DeleteResult.SUCCESS) {
+          this.resetForms();
+          this.router.navigate([
+            '/',
+            'project',
+            data.projectName,
+            'settings',
+            'uniform',
+            'integrations',
+            data.integrationId,
+          ]);
+        }
+      });
   }
 
   private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
@@ -347,9 +350,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       () => {
         this.updating = false;
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
-        this.subscriptionForm.reset();
-        this.webhookFormDirty = false;
-        this.isFilterDirty = false;
+        this.resetForms();
         this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
       },
       () => {
@@ -413,6 +414,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       return this.pendingChangesSubject.asObservable();
     }
     return of(true);
+  }
+
+  public resetForms(): void {
+    this.subscriptionForm.reset();
+    this.webhookFormDirty = false;
+    this.isFilterDirty = false;
   }
 
   public reject(): void {

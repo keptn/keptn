@@ -18,8 +18,9 @@ export class KtbDangerZoneComponent {
       const data = {
         type: this.data.type,
         name: this.data.name,
+        context: this.data.context,
       };
-      this.dialog.open(KtbDeletionDialogComponent, {
+      const dialogRef = this.dialog.open(KtbDeletionDialogComponent, {
         data,
         autoFocus: false, // else the close icon will be incorrectly selected
       });

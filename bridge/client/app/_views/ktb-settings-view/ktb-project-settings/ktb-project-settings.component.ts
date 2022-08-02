@@ -146,7 +146,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public ngOnInit(): void {
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
-      if (data.type === DeleteType.PROJECT) {
+      if (data.type === DeleteType.PROJECT && data.name) {
         this.deleteProject(data.name);
       }
     });
