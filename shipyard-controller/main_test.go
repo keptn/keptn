@@ -411,10 +411,7 @@ func Test__main_Delivery(t *testing.T) {
 	var taskTriggeredEvent *apimodels.KeptnContextExtendedCE
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent = natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("deployment"))
-		if taskTriggeredEvent == nil {
-			return false
-		}
-		return true
+		return taskTriggeredEvent != nil
 	}, 10*time.Second, 100*time.Millisecond)
 
 	t.Logf("send .started and .finished event for deployment task")
@@ -427,7 +424,7 @@ func Test__main_Delivery(t *testing.T) {
 	_, err = keptn.SendTaskStartedEvent(nil, source)
 	require.Nil(t, err)
 
-	// ????? wait?
+	time.Sleep(5 * time.Second)
 
 	t.Logf("send finished event")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.DeploymentFinishedEventData{
@@ -450,10 +447,7 @@ func Test__main_Delivery(t *testing.T) {
 
 	require.Eventually(t, func() bool {
 		taskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("test"))
-		if taskTriggeredEvent == nil {
-			return false
-		}
-		return true
+		return taskTriggeredEvent != nil
 	}, 10*time.Second, 100*time.Millisecond)
 
 	c := http.Client{}
@@ -465,9 +459,12 @@ func Test__main_Delivery(t *testing.T) {
 	respBody, err := ioutil.ReadAll(resp.Body)
 	require.Nil(t, err)
 
-	getProjectData := map[string]interface{}{}
+	getProjectData := apimodels.Project{}
 	json.Unmarshal(respBody, &getProjectData)
 	fmt.Println(getProjectData)
+
+	require.Equal(t, "docker.io/my-image:0.1.0", getProjectData.Stages[1].Services[0].DeployedImage)
+
 }
 
 func Test__main_SequenceQueue(t *testing.T) {

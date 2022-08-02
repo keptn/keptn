@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"strconv"
 	"strings"
 	"time"
@@ -47,15 +48,17 @@ type ProjectMVRepo interface {
 }
 
 type MongoDBProjectMVRepo struct {
-	projectRepo ProjectRepo
-	eventRepo   EventRepo
+	projectRepo           ProjectRepo
+	eventRepo             EventRepo
+	sequenceExecutionRepo SequenceExecutionRepo
 }
 
-func NewProjectMVRepo(projectRepo ProjectRepo, eventRepo EventRepo) *MongoDBProjectMVRepo {
+func NewProjectMVRepo(projectRepo ProjectRepo, eventRepo EventRepo, sequenceExecutionRepo SequenceExecutionRepo) *MongoDBProjectMVRepo {
 	if instance == nil {
 		instance = &MongoDBProjectMVRepo{
-			projectRepo: projectRepo,
-			eventRepo:   eventRepo,
+			projectRepo:           projectRepo,
+			eventRepo:             eventRepo,
+			sequenceExecutionRepo: sequenceExecutionRepo,
 		}
 	}
 	return instance
@@ -455,36 +458,33 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e apimodels.KeptnContextExt
 		KeptnContext: e.Shkeptncontext,
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
+
 	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *apimodels.ExpandedService) error {
 		if service.LastEventTypes == nil {
 			service.LastEventTypes = map[string]apimodels.EventContextInfo{}
 		}
 		service.LastEventTypes[*e.Type] = *contextInfo
-
 		// for events of type "deployment.finished", find the correlating
 		// "deployment.triggered" event to update the deployed image name
 		if *e.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
-
-			events, errObj := mv.getAllDeploymentTriggeredEvents(eventData, e.Triggeredid, e.Shkeptncontext)
-			if errObj != nil {
-				return err
+			executions, err := mv.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+				Scope: models.EventScope{EventData: keptnv2.EventData{Project: eventData.Project, Stage: eventData.Stage}},
+			})
+			if err != nil {
+				return fmt.Errorf("unable to fetch deployment.triggered event for keptn context %s: %w", e.Shkeptncontext, err)
 			}
-			if events == nil || len(events) == 0 {
-				return errors.New("No deployment.triggered events could be found for keptn context " + e.Shkeptncontext)
+			if len(executions) == 0 {
+				return errors.New("no deployment.triggered events could be found for keptn context " + e.Shkeptncontext)
 			}
-
 			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
-			err := keptnv2.Decode(events[0].Data, triggeredData)
+			err = keptnv2.Decode(executions[0].InputProperties, triggeredData)
 			if err != nil {
 				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
 			}
-
-			deployedImage := common.ExtractImageOfDeploymentEvent(*triggeredData)
-			service.DeployedImage = deployedImage
+			service.DeployedImage = common.ExtractImageOfDeploymentEvent(*triggeredData)
 		}
 		return nil
 	})
-
 	if err != nil {
 		log.Errorf("Could not update image of service %s: %s", eventData.Service, err.Error())
 		return err
