@@ -38,8 +38,6 @@ type envConfig struct {
 	K8SNamespace            string `envconfig:"K8S_NAMESPACE" default:""`
 	K8SNodeName             string `envconfig:"K8S_NODE_NAME" default:""`
 	LogLevel                string `envconfig:"LOG_LEVEL" default:"info"`
-	KubeAPI                 kubernetes.Interface
-	EventStore              event_handler.EventStore
 }
 
 func main() {
@@ -49,7 +47,9 @@ func main() {
 	}
 
 	var env envConfig
-	env.KubeAPI = kubeAPI
+	lighthouseService := LighthouseService{
+		KubeAPI: kubeAPI,
+	}
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
 	}
@@ -76,12 +76,13 @@ func main() {
 	logForwarder := logforwarder.New(api.LogsV1(), logforwarder.WithLogger(log))
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
+	lighthouseService.env = env
 
-	_main(controlPlane, log, env)
+	_main(controlPlane, log, lighthouseService)
 
 }
 
-func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, env envConfig) {
+func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, lighthouseService LighthouseService) {
 	go func() {
 		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
 			return controlPlane.IsRegistered()
@@ -89,7 +90,7 @@ func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, env envC
 	}()
 
 	ctx, wg := getGracefulContext()
-	err := controlPlane.Register(ctx, LighthouseService{env})
+	err := controlPlane.Register(ctx, lighthouseService)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -103,12 +104,14 @@ func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, env envC
 }
 
 type LighthouseService struct {
-	env envConfig
+	env        envConfig
+	KubeAPI    kubernetes.Interface
+	EventStore event_handler.EventStore
 }
 
 func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	ce := v0_2_0.ToCloudEvent(event)
-	handler, err := event_handler.NewEventHandler(ctx, ce, l.env.KubeAPI, l.env.EventStore)
+	handler, err := event_handler.NewEventHandler(ctx, ce, l.KubeAPI, l.EventStore)
 
 	if err != nil {
 		log.Println(err.Error())

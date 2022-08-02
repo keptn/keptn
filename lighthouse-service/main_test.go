@@ -149,7 +149,16 @@ func TestMain(m *testing.M) {
 		},
 	}
 
-	go _main(controlPlane, log, envConfig{ConfigurationServiceURL: configurationService.URL, LogLevel: logrus.DebugLevel.String(), KubeAPI: fakeK8sClient, EventStore: mockedEventStore})
+	lighthouseService := LighthouseService{
+		KubeAPI:    fakeK8sClient,
+		EventStore: mockedEventStore,
+		env: envConfig{
+			ConfigurationServiceURL: configurationService.URL,
+			LogLevel:                logrus.DebugLevel.String(),
+		},
+	}
+
+	go _main(controlPlane, log, lighthouseService)
 	// need to wait until the subscriptions are ready
 	time.Sleep(2 * time.Second)
 	m.Run()
