@@ -16,7 +16,7 @@
       <li class="header">
         Triggered:
         <input
-          onChange="fetchSequences()"
+          onChange="fetchSequencesHelper()"
           id="checkboxTriggered"
           type="checkbox"
           checked
@@ -26,7 +26,7 @@
       <li class="header">
         Finished:
         <input
-          onChange="fetchSequences()"
+          onChange="fetchSequencesHelper()"
           id="checkboxFinished"
           type="checkbox"
           checked
@@ -36,7 +36,7 @@
       <li class="header">
         TimedOut:
         <input
-          onChange="fetchSequences()"
+          onChange="fetchSequencesHelper()"
           id="checkboxTimedOut"
           type="checkbox"
           checked
@@ -46,7 +46,7 @@
       <li class="header">
         Select Project:
 
-        <select id="projectSelector" onChange="fetchSequences()"></select>
+        <select id="projectSelector" onChange="fetchSequencesHelper()"></select>
       </li>
     </ul>
 
@@ -79,8 +79,31 @@
             el_project.innerHTML = object.projectName;
             projectSelector.appendChild(el_project);
           });
-          fetchSequences();
+
+          fetchSequencesHelper();
         });
+    </script>
+
+    <script>
+      function fetchSequencesHelper() {
+        const project_name = document.getElementById("projectSelector").value;
+        let table = document.getElementById("prodTable");
+
+        const show_finished =
+          document.getElementById("checkboxFinished").checked;
+        const show_triggered =
+          document.getElementById("checkboxTriggered").checked;
+        const show_timedOut =
+          document.getElementById("checkboxTimedOut").checked;
+
+        fetchSequences(
+          project_name,
+          show_triggered,
+          show_finished,
+          show_timedOut,
+          table
+        );
+      }
     </script>
   </body>
 </html>

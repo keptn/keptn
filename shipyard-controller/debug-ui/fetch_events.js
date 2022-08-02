@@ -1,15 +1,8 @@
-fetchEvents();
-
-function fetchEvents() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const context = urlParams.get("shkeptncontext");
-  const projectname = urlParams.get("projectname");
-
+function fetchEvents(context, projectname, rootevent_list) {
   let list = document.getElementById("tree_container");
   list.innerHTML = "";
 
-  fetch(
-    "../sequence/project/" + projectname + "/shkeptncontext/" + context + "/event",
+  fetch(`/sequence/project/${projectname}/shkeptncontext/${context}/event`,
     {
       method: "get",
     }
@@ -18,10 +11,10 @@ function fetchEvents() {
       return res.json();
     })
     .then((response) => {
-      let rootevent_list = document.getElementById("tree_container");
       let rootevent_li, taskevent_ul, label;
 
       response.forEach((object) => {
+        // rootevent has 5 dots
         if (object.type.split(".").length == 6) {
           rootevent_li = document.createElement("li");
 
@@ -47,7 +40,7 @@ function fetchEvents() {
 
           for (let key in object.data) {
             let li = document.createElement("li");
-            li.innerHTML = key + ": " + object.data[key];
+            li.innerHTML = `${key}:  ${object.data[key]}`;
             detail_ul.appendChild(li);
           }
 
