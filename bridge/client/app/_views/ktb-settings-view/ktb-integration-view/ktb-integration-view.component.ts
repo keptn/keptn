@@ -62,7 +62,12 @@ export class KtbIntegrationViewComponent {
 
   public selectedUniformRegistration$ = this._selectedUniformRegistrationId$.pipe(
     combineLatestWith(this.registrations$),
-    map(([regId, registrations]) => (regId ? registrations.find((r) => r.id === regId) : undefined))
+    map(([regId, registrations]) => (regId ? registrations.find((r) => r.id === regId) : undefined)),
+    tap((uniformRegistration) => {
+      if (uniformRegistration) {
+        this.updateUniformUnreadCount(uniformRegistration);
+      }
+    })
   );
 
   public uniformRegistrationLogs$ = this._selectedUniformRegistrationId$.pipe(
@@ -88,13 +93,16 @@ export class KtbIntegrationViewComponent {
       uniformRegistration.id,
     ]);
     this.location.go(routeUrl.toString());
+    this.selectUniformRegistrationId$.next(uniformRegistration.id);
+  }
+
+  private updateUniformUnreadCount(uniformRegistration: UniformRegistration): void {
     this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
     uniformRegistration.unreadEventsCount = 0;
     const noUnreadLogs = this.uniformRegistrations.data.every((r) => r.unreadEventsCount === 0);
     if (noUnreadLogs) {
       this.dataService.setHasUnreadUniformRegistrationLogs(false);
     }
-    this.selectUniformRegistrationId$.next(uniformRegistration.id);
   }
 
   public sortData(sortEvent: DtSortEvent): void {
