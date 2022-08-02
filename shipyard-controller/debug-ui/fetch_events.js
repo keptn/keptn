@@ -15,7 +15,7 @@ function fetchEvents(context, projectname, rootevent_list) {
 
       response.forEach((object) => {
         // rootevent has additional stage segment
-        if (object.type.split(".").length == 6) {
+        if (object.type.split(".").length === 6) {
           rootevent_li = document.createElement("li");
 
           label = document.createElement("span");
@@ -48,7 +48,7 @@ function fetchEvents(context, projectname, rootevent_list) {
           taskevent_ul.appendChild(taskevent_li);
         }
 
-        if (taskevent_ul != null) {
+        if (taskevent_ul !== null) {
           rootevent_li.appendChild(taskevent_ul);
           rootevent_list.appendChild(rootevent_li);
         }

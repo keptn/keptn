@@ -5,7 +5,7 @@ function fetchSequences(
   show_timedOut,
   table
 ) {
-  fetch("/sequence/project/" + project_name, {
+  fetch(`/sequence/project/${project_name}`, {
     method: "get",
   })
     .then((res) => {
@@ -17,15 +17,15 @@ function fetchSequences(
 
       response.sequenceExecutions.forEach((object) => {
         if (
-          (object.status.state == "triggered" && show_triggered) ||
-          (object.status.state == "finished" && show_finished) ||
-          (object.status.state == "timedOut" && show_timedOut)
+          (object.status.state === "triggered" && show_triggered) ||
+          (object.status.state === "finished" && show_finished) ||
+          (object.status.state === "timedOut" && show_timedOut)
         ) {
           let tr = document.createElement("tr");
           let td_blocking = document.createElement("td");
 
-          if (object.status.state == "triggered") {
-            td_blocking.innerHTML = `<button onclick="getBlocking('${object.scope.keptnContext}', '${object.scope.project}')">
+          if (object.status.state === "triggered") {
+            td_blocking.innerHTML = `<button onclick="getBlocking('${object.scope.project}', '${object.scope.keptnContext}')">
               get blocking sequences
               </button>`;
           }
@@ -59,19 +59,18 @@ function fetchSequences(
     });
 }
 
-function getBlocking(context, project) {
-  fetch(
-    "/sequence/project/" + project + "/shkeptncontext/" + context + "/blocking",
-    {
-      method: "get",
-    }
-  )
+function getBlocking(project, context) {
+  fetch(`/sequence/project/${project}/shkeptncontext/${context}/blocking`, {
+    method: "get",
+  })
     .then((res) => {
       return res.json();
     })
     .then((response) => {
       response.forEach((blockingSequence) => {
-        console.log(blockingSequence.scope.keptnContext);
+        if (blockingSequence.scope !== null) {
+          console.log(blockingSequence.scope.keptnContext);
+        }
       });
     });
 }
