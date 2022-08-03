@@ -100,7 +100,7 @@ func TestNewEventHandler(t *testing.T) {
 			tt.args.event.SetType(tt.eventType)
 			t.Setenv("RESOURCE_SERVICE", configurationServiceURL)
 
-			got, err := NewEventHandler(ctx, tt.args.event, fake.NewSimpleClientset(), func(k *keptnv2.Keptn) EventStore { return keptnHandler.EventHandler })
+			got, err := NewEventHandler(ctx, tt.args.event, fake.NewSimpleClientset(), func(k *keptnv2.Keptn) EventStore { return k.EventHandler })
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return
