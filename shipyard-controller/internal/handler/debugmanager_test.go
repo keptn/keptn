@@ -519,3 +519,174 @@ func TestDebugManager_GetSequenceByID(t *testing.T) {
 		})
 	}
 }
+
+func TestDebugManager_GetBlockingSequences(t *testing.T) {
+
+	type fields struct {
+		DebugManager IDebugManager
+	}
+
+	sequences := []models.SequenceExecution{
+		{
+			ID:              "id",
+			SchemaVersion:   "version",
+			Sequence:        keptnv2.Sequence{},
+			Status:          models.SequenceExecutionStatus{},
+			Scope:           models.EventScope{},
+			InputProperties: nil,
+			TriggeredAt:     time.Time{},
+		},
+	}
+
+	tests := []struct {
+		name                    string
+		fields                  fields
+		expectedErrorResult     error
+		expectedSequencesResult []models.SequenceExecution
+	}{
+		{
+			name: "GET blocking sequences ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return sequences, nil
+							} else {
+								return nil, nil
+							}
+						},
+					},
+				},
+			},
+			expectedErrorResult:     nil,
+			expectedSequencesResult: sequences,
+		},
+		{
+			name: "GET blocking sequences sequence not found",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return []models.SequenceExecution{}, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return sequences, nil
+							} else {
+								return nil, nil
+							}
+						},
+					},
+				},
+			},
+			expectedErrorResult:     common.ErrSequenceNotFound,
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences sequence error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return nil, errors.New("error")
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return sequences, nil
+							} else {
+								return nil, nil
+							}
+						},
+					},
+				},
+			},
+			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences get blocking started error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return nil, errors.New("error")
+							} else {
+								return nil, nil
+							}
+						},
+					},
+				},
+			},
+			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences get blocking triggered error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return nil, nil
+							} else {
+								return nil, errors.New("error")
+							}
+						},
+					},
+				},
+			},
+			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := tt.fields.DebugManager.GetBlockingSequences("", "", "")
+
+			assert.Equal(t, tt.expectedSequencesResult, s)
+			assert.Equal(t, tt.expectedErrorResult, err)
+		})
+	}
+}

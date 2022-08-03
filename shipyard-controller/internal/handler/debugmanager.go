@@ -17,6 +17,7 @@ type IDebugManager interface {
 	GetAllSequencesForProject(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
+	GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error)
 }
 
 type DebugManager struct {
@@ -89,4 +90,58 @@ func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, 
 
 func (dm *DebugManager) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
 	return dm.projectRepo.GetProjects()
+}
+
+func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
+
+	sequences, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			KeptnContext: shkeptncontext,
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stage,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(sequences) == 0 {
+		return nil, common.ErrSequenceNotFound
+	}
+
+	sequence := sequences[0]
+
+	blockingSequences1, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stage,
+				Service: sequence.Scope.Service,
+			},
+		},
+		Status: []string{apimodels.SequenceStartedState},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	blockingSequences2, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stage,
+				Service: sequence.Scope.Service,
+			},
+		},
+		Status:      []string{apimodels.SequenceTriggeredState},
+		TriggeredAt: sequence.TriggeredAt,
+	})
+
+	blockingSequences := append(blockingSequences1, blockingSequences2...)
+
+	return blockingSequences, err
 }

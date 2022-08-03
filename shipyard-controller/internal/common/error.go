@@ -47,6 +47,8 @@ var UnableRetrieveLogsMsg = "Unable to retrieve logs: %s"
 
 var ProjectNotFoundMsg = "Project not found: %s"
 
+var SequenceNotFoundMsg = "Sequence not found: %s"
+
 var EventNotFoundMsg = "Event not found: %s"
 
 var InvalidPayloadMsg = "Could not validate payload: %s"
