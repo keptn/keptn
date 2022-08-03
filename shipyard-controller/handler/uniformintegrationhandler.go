@@ -188,28 +188,23 @@ func (rh *UniformIntegrationHandler) updateIntegration(c *gin.Context, existingI
 	var existingIntegration *apimodels.Integration
 	// if we get multiple results, merge them into one - this can be the case during an upgrade where a new version of an integration
 	// re-registered itself while the shipyard controller was not running the latest version yet
-	if len(existingIntegrations) > 1 {
-		var err2 error
-		existingIntegration, err2 = rh.mergeIntegrationSubscriptions(existingIntegrations, newIntegration)
-		if err2 != nil {
-			SetInternalServerErrorResponse(c, err2.Error())
-			return
-		}
-	} else {
-		existingIntegration = &existingIntegrations[0]
+
+	existingIntegration, err := rh.mergeIntegrationSubscriptions(existingIntegrations, newIntegration)
+	if err != nil {
+		SetInternalServerErrorResponse(c, err.Error())
+		return
 	}
+
 	logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
 	newIntegration.ID = existingIntegration.ID
 
-	err2 := rh.updateIntegrationMetadata(newIntegration)
-	if err2 != nil {
-		SetInternalServerErrorResponse(c, err2.Error())
+	if err = rh.updateIntegrationMetadata(newIntegration); err != nil {
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, &models.RegisterResponse{
 		ID: newIntegration.ID,
 	})
-	return
 }
 
 func (rh *UniformIntegrationHandler) updateIntegrationMetadata(integration *apimodels.Integration) error {
@@ -524,7 +519,7 @@ func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations 
 		}
 	}
 
-	// check if the target integration has no subscriptions property set - if yes, apply the initial subscriptions from the newly registered integration
+	// check if the target integration has no subscriptions' property set - if yes, apply the initial subscriptions from the newly registered integration
 	if targetIntegration.Subscriptions == nil || len(targetIntegration.Subscriptions) == 0 {
 		targetIntegration.Subscriptions = newIntegration.Subscriptions
 		updateSubscriptions = true
