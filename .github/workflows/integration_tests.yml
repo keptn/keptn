@@ -43,7 +43,6 @@ jobs:
             PLATFORM: "openshift"
             PLATFORM_VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -51,7 +50,6 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -59,7 +57,6 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
@@ -68,7 +65,6 @@ jobs:
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_AIRGAPPED_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -77,7 +73,6 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
@@ -87,7 +82,6 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
@@ -98,7 +92,6 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
-      RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
@@ -331,11 +324,6 @@ jobs:
           else
             echo "{}" > creds.json # empty credentials file
           fi
-          # Determine use case
-          USE_CASE=""
-          if [[ $RUN_CONTINUOUS_DELIVERY_TEST == "true" ]]; then
-            USE_CASE="--use-case=continuous-delivery"
-          fi
 
           echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
@@ -363,7 +351,6 @@ jobs:
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
                 $EXTRA_NATS_VALUES
             else
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 14m \
@@ -371,7 +358,6 @@ jobs:
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST} \
                 $EXTRA_NATS_VALUES
             fi
           fi
@@ -428,25 +414,11 @@ jobs:
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: oc expose svc/api-gateway-nginx -n ${KEPTN_NAMESPACE} --hostname=api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io
 
-      - name: Expose Deployed Services via Istio (for CD use-case)
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-        run: |
-          # set ingress-hostname params
-          INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          echo "INGRESS_IP=$INGRESS_IP"
-          kubectl create configmap -n ${KEPTN_NAMESPACE} ingress-config \
-            --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io \
-            --from-literal=ingress_port=80 \
-            --from-literal=ingress_protocol=http \
-            --from-literal=ingress_gateway=public-gateway.istio-system \
-            -oyaml --dry-run=client | kubectl replace -f -
-
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
         timeout-minutes: 5
         run: |
           source test/utils.sh
-
           # authenticate at Keptn API
           if [[ "$PLATFORM" == "openshift" ]]; then
             KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
@@ -459,9 +431,7 @@ jobs:
               KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
             fi
           fi
-
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
-
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
 

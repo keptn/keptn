@@ -41,9 +41,7 @@ jobs:
             deps-dev
             distributor
             docs
-            helm-service
             installer
-            jmeter-service
             lighthouse-service
             mongodb-datastore
             remediation-service

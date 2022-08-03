@@ -35,15 +35,10 @@ IMAGES_CONTROL_PLANE=(
   "${DOCKER_ORG}/webhook-service:${KEPTN_TAG}"
   "${DOCKER_ORG}/resource-service:${KEPTN_TAG}"
 )
-IMAGES_CONTINUOUS_DELIVERY=(
-  "${DOCKER_ORG}/helm-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/jmeter-service:${KEPTN_TAG}"
-)
 
 IMAGES=()
 IMAGES+=("${IMAGES_CONTROL_PLANE_THIRD_PARTY[@]}")
 IMAGES+=("${IMAGES_CONTROL_PLANE[@]}")
-IMAGE+=("${IMAGES_CONTINUOUS_DELIVERY[@]}")
 
 for img in "${IMAGES[@]}"; do
   echo "Processing $img..."

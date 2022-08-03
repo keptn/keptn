@@ -57,7 +57,6 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
-      RUN_CONTINUOUS_DELIVERY_TEST: "true"
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -176,11 +175,7 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
-          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz)
-          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz)
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
-          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
-          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
 
       - name: Setup upgrade charts
         id: setup_upgrade_charts
@@ -303,37 +298,6 @@ jobs:
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
-
-      - name: Install Helm/JMeter Service
-        timeout-minutes: 5
-        env:
-          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
-        run: |
-          
-          # In-cluster execution plane
-           if [[ "$HELM_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
-            echo "install helm locally from dev repo"
-            helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
-             -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml' 
-           else
-            echo "install helm locally from keptn repo"         
-            helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
-           fi
-          
-           if [[ "$JMETER_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
-            echo "install jmeter locally from dev repo"
-            helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
-             -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml'
-           else
-              echo "install jmeter locally from keptn repo"
-              helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
-           fi
-          
-           helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
-           helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
-
 
       - name: Set up gotestfmt
         uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
