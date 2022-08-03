@@ -1,6 +1,6 @@
 #!/bin/bash
 # shellcheck disable=SC2181
-if [[ $# -ne 5 ]]; then
+if [[ $# -ne 3 ]]; then
     echo "Please provide the target registry, organization and helm charts as parameters, e.g., "
     echo "$1 \"docker.io/your-username/\" \"keptn\" \"keptn-0.9.0.tgz\""
     exit 1
