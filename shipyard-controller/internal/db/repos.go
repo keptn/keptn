@@ -12,6 +12,7 @@ import (
 type SequenceStateRepo interface {
 	CreateSequenceState(state apimodels.SequenceState) error
 	FindSequenceStates(filter apimodels.StateFilter) (*apimodels.SequenceStates, error)
+	GetSequenceStateByID(filter apimodels.StateFilter) (*apimodels.SequenceState, error)
 	UpdateSequenceState(state apimodels.SequenceState) error
 	DeleteSequenceStates(filter apimodels.StateFilter) error
 }
@@ -54,6 +55,7 @@ type EventQueueRepo interface {
 //go:generate moq --skip-ensure -pkg db_mock -out ./mock/eventrepo_mock.go . EventRepo
 type EventRepo interface {
 	GetEvents(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error)
+	GetEventByID(project string, filter common.EventFilter, status ...common.EventStatus) (apimodels.KeptnContextExtendedCE, error)
 	GetRootEvents(params models.GetRootEventParams) (*models.GetEventsResult, error)
 	InsertEvent(project string, event apimodels.KeptnContextExtendedCE, status common.EventStatus) error
 	DeleteEvent(project string, eventID string, status common.EventStatus) error
