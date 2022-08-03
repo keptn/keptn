@@ -194,7 +194,6 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 // @Param        shkeptncontext       path      string                    			true "The Context of the sequence"
 // @Param        stage                path     string                    			true "The Stage of the sequences"
 // @Success      200                  {object}  []models.SequenceExecution          "ok"
-// @Failure      400                  {object}  models.Error              			"Bad Request"
 // @Failure      404                  {object}  models.Error             			"not found"
 // @Failure      500                  {object}  models.Error              			"Internal error"
 // @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/stage/{stage}/blocking", controller.DebugHandler.GetBlockingSequences)
@@ -208,6 +207,11 @@ func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
 	sequences, err := dh.DebugManager.GetBlockingSequences(projectName, shkeptncontext, stage)
 
 	if err != nil {
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.SequenceNotFoundMsg, shkeptncontext))
+			return
+		}
+
 		if errors.Is(err, common.ErrSequenceNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(common.SequenceNotFoundMsg, shkeptncontext))
 			return

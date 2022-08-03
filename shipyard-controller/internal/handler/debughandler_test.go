@@ -513,6 +513,22 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 			stage:          "stagename",
 		},
 		{
+			name: "get blocking project not found",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					GetBlockingSequencesFunc: func(projectName, shkeptncontext, stage string) ([]models.SequenceExecution, error) {
+						return nil, common.ErrProjectNotFound
+					},
+				},
+			},
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/stage/stagename/blocking", nil),
+			wantResponse:   nil,
+			wantStatus:     http.StatusNotFound,
+			projectName:    "projectname",
+			shkeptncontext: "context",
+			stage:          "stagename",
+		},
+		{
 			name: "get blocking sequence not found",
 			fields: fields{
 				DebugManager: &fake.IDebugManagerMock{

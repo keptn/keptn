@@ -94,6 +94,11 @@ func (dm *DebugManager) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
 
 func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
 
+	_, err := dm.projectRepo.GetProject(projectName)
+	if err != nil {
+		return nil, err
+	}
+
 	sequences, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			KeptnContext: shkeptncontext,
@@ -114,7 +119,7 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 
 	sequence := sequences[0]
 
-	blockingSequences1, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+	blockingSequencesStarted, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: projectName,
@@ -129,7 +134,7 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 		return nil, err
 	}
 
-	blockingSequences2, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+	blockingSequencesTriggered, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: projectName,
@@ -145,7 +150,7 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 		return nil, err
 	}
 
-	blockingSequences := append(blockingSequences1, blockingSequences2...)
+	blockingSequences := append(blockingSequencesStarted, blockingSequencesTriggered...)
 
 	return blockingSequences, nil
 }

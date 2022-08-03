@@ -566,6 +566,11 @@ func TestDebugManager_GetBlockingSequences(t *testing.T) {
 							}
 						},
 					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
 				},
 			},
 			expectedErrorResult:     nil,
@@ -591,6 +596,11 @@ func TestDebugManager_GetBlockingSequences(t *testing.T) {
 							} else {
 								return nil, nil
 							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
 						},
 					},
 				},
@@ -620,6 +630,11 @@ func TestDebugManager_GetBlockingSequences(t *testing.T) {
 							}
 						},
 					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
 				},
 			},
 			expectedErrorResult:     errors.New("error"),
@@ -647,9 +662,46 @@ func TestDebugManager_GetBlockingSequences(t *testing.T) {
 							}
 						},
 					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
 				},
 			},
 			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences project not found error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return nil, errors.New("error")
+							} else {
+								return nil, nil
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, common.ErrProjectNotFound
+						},
+					},
+				},
+			},
+			expectedErrorResult:     common.ErrProjectNotFound,
 			expectedSequencesResult: nil,
 		},
 		{
@@ -672,6 +724,11 @@ func TestDebugManager_GetBlockingSequences(t *testing.T) {
 							} else {
 								return nil, errors.New("error")
 							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
 						},
 					},
 				},
