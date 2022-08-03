@@ -15,12 +15,6 @@ export interface DeleteData {
   context?: unknown;
 }
 
-export interface DeletionTriggeredEvent {
-  type: DeleteType;
-  name?: string;
-  context?: unknown;
-}
-
 export interface DeletionProgressEvent {
   result?: DeleteResult;
   isInProgress: boolean;

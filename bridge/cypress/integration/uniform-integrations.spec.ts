@@ -595,7 +595,7 @@ describe('Add control plane subscription default requests', () => {
     cy.get('ktb-webhook-settings').should('not.exist');
   });
 
-  it('should show danger zone on edit page', () => {
+  it('should not show danger zone on add page', () => {
     cy.get('ktb-danger-zone').should('not.exist');
   });
 });
@@ -727,25 +727,21 @@ describe('Edit subscriptions', () => {
   it('should show danger zone on edit page', () => {
     interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
 
-    uniformPage.visitEdit(integrationID, subscriptionID);
-
-    cy.get('ktb-danger-zone').should('exist');
+    uniformPage.visitEdit(integrationID, subscriptionID).assertDangerZone();
   });
 
   it('should show deletion dialog after clicking the deleteSubscription button', () => {
     interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
 
-    uniformPage.visitEdit(integrationID, subscriptionID).openDeletionDialog();
-
-    cy.get('ktb-deletion-dialog').should('exist');
+    uniformPage.visitEdit(integrationID, subscriptionID).openDeletionDialog().assertDeletionDialog();
   });
 
-  it('should delete subscription', () => {
-    cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: true });
+  it.only('should delete subscription', () => {
     interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
 
-    uniformPage.visitEdit(integrationID, subscriptionID).deleteSubscriptionFromEditPage();
-
-    cy.location('pathname').should('eq', `/project/sockshop/settings/uniform/integrations/${integrationID}`);
+    uniformPage
+      .visitEdit(integrationID, subscriptionID)
+      .deleteSubscriptionFromEditPage()
+      .assertIntegrationPath('sockshop', integrationID);
   });
 });

@@ -6,8 +6,8 @@
 </div>
 <div class="mt-3" fxLayout="column" fxLayoutAlign="stretch" [formGroup]="deletionConfirmationForm">
   <div class="mb-1">
-    This action cannot be undone. This will permanently delete the <span class="bold">{{ data.name }}</span>
-    {{ data.type }}.
+    This action cannot be undone. This will permanently delete the
+    <span class="bold" *ngIf="data.name">{{ data.name }}</span> {{ data.type }}.
   </div>
   <div class="mb-3" *ngIf="data.name">
     Please type in <span class="bold">{{ data.name }}</span> to confirm deletion.

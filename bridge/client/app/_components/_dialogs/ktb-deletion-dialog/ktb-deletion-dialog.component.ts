@@ -46,10 +46,6 @@ export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   }
 
   public deleteConfirm(): void {
-    this.eventService.deletionTriggeredEvent.next({
-      type: this.data.type,
-      name: this.data.name,
-      context: this.data.context,
-    });
+    this.eventService.deletionTriggeredEvent.next(this.data);
   }
 }

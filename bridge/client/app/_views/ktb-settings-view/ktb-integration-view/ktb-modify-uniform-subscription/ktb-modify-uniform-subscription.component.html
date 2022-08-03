@@ -116,7 +116,7 @@
       <div class="mt-2 required-info">fields are required</div>
 
       <div class="settings-section" *ngIf="editMode">
-        <ktb-danger-zone [data]="{ type: subscriptionDeletionData.type, context: data }"></ktb-danger-zone>
+        <ktb-danger-zone [data]="{ type: deleteType, context: data }"></ktb-danger-zone>
       </div>
     </ng-container>
   </ng-container>

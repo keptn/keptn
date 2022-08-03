@@ -392,6 +392,11 @@ class UniformPage {
     return this;
   }
 
+  public assertIntegrationPath(projectName: string, integrationId: string): this {
+    cy.location('pathname').should('eq', `/project/${projectName}/settings/uniform/integrations/${integrationId}`);
+    return this;
+  }
+
   public assertOnChangeDialog(open = true): this {
     cy.get('dt-confirmation-dialog-state')
       .contains('You have pending changes. Are you sure you want to leave this page?')
@@ -401,6 +406,16 @@ class UniformPage {
 
   public closeOnChangeDialog(): this {
     cy.get('dt-confirmation-dialog-state').contains('Stay').click();
+    return this;
+  }
+
+  public assertDangerZone(): this {
+    cy.get('ktb-danger-zone').should('exist');
+    return this;
+  }
+
+  public assertDeletionDialog(): this {
+    cy.get('ktb-deletion-dialog').should('exist');
     return this;
   }
 }

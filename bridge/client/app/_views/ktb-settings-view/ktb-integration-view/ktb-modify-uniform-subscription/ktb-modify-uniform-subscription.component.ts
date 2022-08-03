@@ -20,7 +20,7 @@ import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-s
 import { EventTypes } from '../../../../../../shared/interfaces/event-types';
 import { Trace } from '../../../../_models/trace';
 import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
-import { DeleteData, DeleteResult, DeleteType, DeletionProgressEvent } from '../../../../_interfaces/delete';
+import { DeleteResult, DeleteType, DeletionProgressEvent } from '../../../../_interfaces/delete';
 import { EventService } from '../../../../_services/event.service';
 
 export interface SubscriptionState {
@@ -83,9 +83,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public unsavedDialogState: null | 'unsaved' = null;
   private isFilterDirty = false;
 
-  public subscriptionDeletionData: DeleteData = {
-    type: DeleteType.SUBSCRIPTION,
-  };
+  public deleteType = DeleteType.SUBSCRIPTION;
 
   constructor(
     private route: ActivatedRoute,

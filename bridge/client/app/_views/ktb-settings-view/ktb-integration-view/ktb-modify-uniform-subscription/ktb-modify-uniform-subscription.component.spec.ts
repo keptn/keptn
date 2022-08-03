@@ -337,7 +337,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     expect(component.canDeactivate()).not.toEqual(true);
   });
 
-  it('should delete a project and navigate to integration page', () => {
+  it('should delete a subscription and navigate to integration page', () => {
     // given
     setSubscription(2, 0);
     const router = TestBed.inject(Router);
@@ -363,7 +363,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     ]);
   });
 
-  it('should try to delete a project and throw an error', () => {
+  it('should try to delete a subscription and throw an error', () => {
     // given
     setSubscription(2, 0);
     const dataService = TestBed.inject(DataService);
