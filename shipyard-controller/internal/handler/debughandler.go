@@ -204,7 +204,7 @@ func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
 
 	if err != nil {
 		if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(common.SequenceNotFoundMsg, shkeptncontext))
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, shkeptncontext))
 			return
 		}
 
