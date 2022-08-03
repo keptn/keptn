@@ -129,17 +129,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	integrationInfo := fmt.Sprintf("name=%s, namespace=%s", integration.Name, integration.MetaData.KubernetesMetaData.Namespace)
 	logger.Debugf("Uniform:Register(): Checking for existing integration for %s", integrationInfo)
 	if err == nil && len(existingIntegrations) > 0 {
-		logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
-		integration.ID = existingIntegrations[0].ID
-
-		err2 := rh.updateExistingIntegration(integration)
-		if err2 != nil {
-			SetInternalServerErrorResponse(c, err2.Error())
-			return
-		}
-		c.JSON(http.StatusOK, &models.RegisterResponse{
-			ID: integration.ID,
-		})
+		rh.updateIntegration(c, existingIntegrations, integrationInfo, integration)
 		return
 	}
 
@@ -175,7 +165,7 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	if err != nil {
 		// if the integration already exists, update only needed fields
 		if errors.Is(err, db.ErrUniformRegistrationAlreadyExists) {
-			err2 := rh.updateExistingIntegration(integration)
+			err2 := rh.updateIntegrationMetadata(integration)
 			if err2 != nil {
 				SetInternalServerErrorResponse(c, err2.Error())
 				return
@@ -194,7 +184,35 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	})
 }
 
-func (rh *UniformIntegrationHandler) updateExistingIntegration(integration *apimodels.Integration) error {
+func (rh *UniformIntegrationHandler) updateIntegration(c *gin.Context, existingIntegrations []apimodels.Integration, integrationInfo string, newIntegration *apimodels.Integration) {
+	var existingIntegration *apimodels.Integration
+	// if we get multiple results, merge them into one - this can be the case during an upgrade where a new version of an integration
+	// re-registered itself while the shipyard controller was not running the latest version yet
+	if len(existingIntegrations) > 1 {
+		var err2 error
+		existingIntegration, err2 = rh.mergeIntegrationSubscriptions(existingIntegrations, newIntegration)
+		if err2 != nil {
+			SetInternalServerErrorResponse(c, err2.Error())
+			return
+		}
+	} else {
+		existingIntegration = &existingIntegrations[0]
+	}
+	logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
+	newIntegration.ID = existingIntegration.ID
+
+	err2 := rh.updateIntegrationMetadata(newIntegration)
+	if err2 != nil {
+		SetInternalServerErrorResponse(c, err2.Error())
+		return
+	}
+	c.JSON(http.StatusOK, &models.RegisterResponse{
+		ID: newIntegration.ID,
+	})
+	return
+}
+
+func (rh *UniformIntegrationHandler) updateIntegrationMetadata(integration *apimodels.Integration) error {
 	var err error
 	result, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: integration.ID})
 
@@ -484,4 +502,72 @@ func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, subscriptions)
+}
+
+func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations []apimodels.Integration, newIntegration *apimodels.Integration) (*apimodels.Integration, error) {
+	// first, determine the target integration - i.e. the one which was seen most recently
+	targetIntegration, err := getMostRecentIntegration(integrations)
+	if err != nil {
+		return nil, err
+	}
+
+	// put the subscriptions of the outdated integrations into the target integration
+	// only update the subscriptions if we actually took some subscriptions
+	updateSubscriptions := false
+	for _, integration := range integrations {
+		if len(integration.Subscriptions) > 0 && integration.ID != targetIntegration.ID {
+			subscriptionsAdded := false
+			targetIntegration.Subscriptions, subscriptionsAdded = adoptSubscriptions(targetIntegration.Subscriptions, integration.Subscriptions)
+			if subscriptionsAdded {
+				updateSubscriptions = true
+			}
+		}
+	}
+
+	// check if the target integration has no subscriptions property set - if yes, apply the initial subscriptions from the newly registered integration
+	if targetIntegration.Subscriptions == nil || len(targetIntegration.Subscriptions) == 0 {
+		targetIntegration.Subscriptions = newIntegration.Subscriptions
+		updateSubscriptions = true
+	}
+
+	if updateSubscriptions {
+		if err := rh.uniformRepo.CreateOrUpdateUniformIntegration(*targetIntegration); err != nil {
+			return nil, err
+		}
+	}
+	return targetIntegration, nil
+}
+
+func adoptSubscriptions(target []apimodels.EventSubscription, subscriptions []apimodels.EventSubscription) ([]apimodels.EventSubscription, bool) {
+	addedSubscription := false
+	for _, sub := range subscriptions {
+		skipSubscription := false
+		for _, existingSubscription := range target {
+			// if the subscription is already present, we don't add it
+			if existingSubscription.ID == sub.ID {
+				skipSubscription = true
+				break
+			}
+		}
+		if skipSubscription {
+			continue
+		}
+		addedSubscription = true
+		target = append(target, sub)
+	}
+	return target, addedSubscription
+}
+
+func getMostRecentIntegration(integrations []apimodels.Integration) (*apimodels.Integration, error) {
+	if len(integrations) == 0 {
+		return nil, errors.New("list of integrations is empty")
+	}
+	targetIntegration := integrations[0]
+
+	for _, integration := range integrations {
+		if integration.MetaData.LastSeen.After(targetIntegration.MetaData.LastSeen) {
+			targetIntegration = integration
+		}
+	}
+	return &targetIntegration, nil
 }
