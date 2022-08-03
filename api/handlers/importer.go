@@ -10,6 +10,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 
 	"github.com/keptn/keptn/api/importer"
+	"github.com/keptn/keptn/api/importer/model"
 	"github.com/keptn/keptn/api/models"
 	"github.com/keptn/keptn/api/restapi/operations/import_operations"
 
@@ -25,7 +26,7 @@ type projectChecker interface {
 }
 
 type importPackageProcessor interface {
-	Process(project string, ip importer.ImportPackage) error
+	Process(project string, ip importer.ImportPackage) (*model.ManifestExecution, error)
 }
 
 // parseArchiveFunction is the function called to parse the uploaded file
@@ -149,7 +150,7 @@ func (ih *ImportHandler) HandleImport(
 		}
 	}()
 
-	err = ih.processor.Process(params.Project, m)
+	mExec, err := ih.processor.Process(params.Project, m)
 	if err != nil {
 		logger.Errorf("Error processing import archive: %v", err)
 		message := fmt.Sprintf("Error processing import archive: %s", err)
@@ -160,5 +161,23 @@ func (ih *ImportHandler) HandleImport(
 		return import_operations.NewImportBadRequest().WithPayload(&mError)
 	}
 
-	return import_operations.NewImportOK()
+	return import_operations.NewImportOK().WithPayload(mapManifestExecution(mExec))
+}
+
+func mapManifestExecution(exec *model.ManifestExecution) *models.ImportSummary {
+	ret := new(models.ImportSummary)
+	ret.Outcome = models.ImportSummaryOutcomeSuccess
+	if exec != nil {
+		ret.Tasks = make([]*models.Task, len(exec.TaskSequence))
+		for i, tid := range exec.TaskSequence {
+			t, ok := exec.Tasks[tid]
+			if ok {
+				mt := new(models.Task)
+				mt.Task = t.TaskContext
+				mt.Response = t.Response
+				ret.Tasks[i] = mt
+			}
+		}
+	}
+	return ret
 }
