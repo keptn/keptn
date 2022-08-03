@@ -90,7 +90,7 @@ export function indicatorResultToDataPoint(
   };
 }
 
-export function evaluationToDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
+export function evaluationToScoreDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
   const resultInfo = getSliResultInfo(evaluation.data.evaluation?.indicatorResults ?? []);
   return {
     xElement: evaluation.getHeatmapLabel(),
@@ -117,7 +117,7 @@ const addEvaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDa
   const results: IDataPoint[] = evaluation.data.evaluation?.indicatorResults
     ? evaluation.data.evaluation?.indicatorResults.map(indicatorResultToDataPoint(evaluation, scoreValue))
     : [];
-  const score: IDataPoint = evaluationToDataPoint(evaluation, scoreValue);
+  const score: IDataPoint = evaluationToScoreDataPoint(evaluation, scoreValue);
   return [...points, ...results, score];
 };
 

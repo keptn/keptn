@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { catchError, filter, map, startWith, switchMap } from 'rxjs/operators';
 import { Observable, of, throwError } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -20,7 +20,6 @@ import { HttpErrorResponse } from '@angular/common/http';
   selector: 'ktb-evaluation-board',
   templateUrl: './ktb-evaluation-view.component.html',
   styleUrls: ['./ktb-evaluation-view.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbEvaluationViewComponent {
   public logoInvertedUrl = environment?.config?.logoInvertedUrl;
