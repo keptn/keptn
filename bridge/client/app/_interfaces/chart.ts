@@ -13,4 +13,4 @@ export interface ChartItem {
   points: ChartItemPoint[];
 }
 
-export type IChartItemPointInfo = Record<string, { points: ChartItemPoint[]; label?: string } | undefined>;
+export type ChartItemPointInfo = Record<string, { points: ChartItemPoint[]; label?: string } | undefined>;

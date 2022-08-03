@@ -1,17 +1,23 @@
 import { Trace } from '../../_models/trace';
-import { ChartItem, ChartItemPoint, DrawType, IChartItemPointInfo } from '../../_interfaces/chart';
+import { ChartItem, ChartItemPoint, ChartItemPointInfo, DrawType } from '../../_interfaces/chart';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
+
+type FuncEvaluationToChartItemPoint = (evaluation: Trace, index: number) => ChartItemPoint;
+type FuncMetricToChartItem = (metric: string) => ChartItem;
+type FuncMapIndicatorResult = (indicatorResult: IndicatorResult) => void;
+type FuncDateToString = (date: string, index: number) => string;
+type FuncDateToDict = (date: string) => number | undefined;
 
 export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
   const mapEvaluationToScoreCharItemPoint =
-    (includeColor: boolean): ((evaluation: Trace, index: number) => ChartItemPoint) =>
+    (includeColor: boolean): FuncEvaluationToChartItemPoint =>
     (evaluation: Trace, index: number): ChartItemPoint => ({
       x: index,
       y: evaluation.data.evaluation?.score ?? 0,
       color: includeColor ? getScoreColor(evaluation) : undefined,
     });
   const mapIndicatorResultChartItemPointsToChartItem =
-    (chartInfoDict: IChartItemPointInfo): ((metric: string) => ChartItem) =>
+    (chartInfoDict: ChartItemPointInfo): FuncMetricToChartItem =>
     (metric: string): ChartItem => ({
       label: chartInfoDict[metric]?.label || metric,
       points: chartInfoDict[metric]?.points ?? [],
@@ -24,7 +30,7 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
     type,
   });
   const addIndicatorResultChartItemToDict =
-    (chartPoints: IChartItemPointInfo, index: number): ((indicatorResult: IndicatorResult) => void) =>
+    (chartPoints: ChartItemPointInfo, index: number): FuncMapIndicatorResult =>
     (indicatorResult: IndicatorResult): void => {
       const metricChartItemPoints = (chartPoints[indicatorResult.value.metric] ??= { points: [] });
       metricChartItemPoints.points.push({
@@ -35,10 +41,10 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
     };
 
   const reduceEvaluationToIndicatorResultChartPoint = (
-    chartPoints: IChartItemPointInfo,
+    chartPoints: ChartItemPointInfo,
     evaluation: Trace,
     index: number
-  ): IChartItemPointInfo => {
+  ): ChartItemPointInfo => {
     evaluation.data.evaluation?.indicatorResults?.forEach(addIndicatorResultChartItemToDict(chartPoints, index));
     return chartPoints;
   };
@@ -47,7 +53,7 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
   const scoreLineChartPoints: ChartItemPoint[] = evaluationHistory.map(mapEvaluationToScoreCharItemPoint(false));
   const indicatorResultChartPoints = evaluationHistory.reduce(
     reduceEvaluationToIndicatorResultChartPoint,
-    {} as IChartItemPointInfo
+    {} as ChartItemPointInfo
   );
 
   const chartScoreBarItems = mapChartItemPointsToChartItem(scoreBarChartPoints, 'score-bar');
@@ -62,16 +68,13 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
 export function createChartXLabels(evaluationHistory: Trace[]): Record<number, string> {
   const mapEvaluationToLabel = (evaluation: Trace): string => evaluation.getHeatmapLabel();
   const mapDatesToDuplicateCounterAndSetOccurrences =
-    (dict: Record<string, number | undefined>): ((date: string) => number | undefined) =>
+    (dict: Record<string, number | undefined>): FuncDateToDict =>
     (date) => {
       dict[date] = (dict[date] ?? 0) + 1;
       return dict[date];
     };
   const mapDateToUniqueDate =
-    (
-      dict: Record<string, number | undefined>,
-      counter: (number | undefined)[]
-    ): ((date: string, index: number) => string) =>
+    (dict: Record<string, number | undefined>, counter: (number | undefined)[]): FuncDateToString =>
     (date: string, index: number): string =>
       dict[date] === 1 ? date : `${date} (${counter[index]})`;
   const reduceArrayToDict = (labels: Record<number, string>, date: string, index: number): Record<number, string> => {
