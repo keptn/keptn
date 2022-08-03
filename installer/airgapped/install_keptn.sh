@@ -18,7 +18,7 @@ echo "Installing Keptn Core Helm Chart in Namespace ${KEPTN_NAMESPACE}"
 echo "-----------------------------------------------------------------------"
 
 helm template keptn "${KEPTN_HELM_CHART}" -n "${KEPTN_NAMESPACE}" \
---set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},,\
+--set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
@@ -28,7 +28,7 @@ apiGatewayNginx.image.registry="",\
 apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
 
 helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --create-namespace --wait --timeout 12m \
---set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},,\
+--set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
