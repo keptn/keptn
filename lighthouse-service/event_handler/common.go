@@ -5,12 +5,12 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"net/url"
 	"os"
 	"strings"
-	"sync"
 	"time"
+
+	"github.com/google/uuid"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -18,7 +18,6 @@ import (
 	"gopkg.in/yaml.v3"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
 	utils "github.com/keptn/go-utils/pkg/api/utils"
 	keptn "github.com/keptn/go-utils/pkg/lib"
@@ -211,16 +210,20 @@ type SLIProviderConfig interface {
 }
 
 // K8sSLIProviderConfig godoc
-type K8sSLIProviderConfig struct{}
+type K8sSLIProviderConfig struct {
+	KubeAPI kubernetes.Interface
+}
+
+func NewSLIProviderConfig(kubeAPI kubernetes.Interface) K8sSLIProviderConfig {
+	return K8sSLIProviderConfig{
+		KubeAPI: kubeAPI,
+	}
+}
 
 // GetDefaultSLIProvider godoc
-func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
-	kubeAPI, err := GetConfig().GetKubeAPI()
-	if err != nil {
-		return "", err
-	}
+func (k K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
 
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "lighthouse-config", v1.GetOptions{})
+	configMap, err := k.KubeAPI.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "lighthouse-config", v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("no default SLI provider specified")
@@ -232,13 +235,9 @@ func (K8sSLIProviderConfig) GetDefaultSLIProvider() (string, error) {
 }
 
 // GetSLIProvider godoc
-func (K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
-	kubeAPI, err := GetConfig().GetKubeAPI()
-	if err != nil {
-		return "", err
-	}
+func (k K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
 
-	configMap, err := kubeAPI.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "lighthouse-config-"+project, v1.GetOptions{})
+	configMap, err := k.KubeAPI.CoreV1().ConfigMaps(namespace).Get(context.TODO(), "lighthouse-config-"+project, v1.GetOptions{})
 
 	if err != nil {
 		return "", errors.New("no SLI provider specified for project " + project)
@@ -247,35 +246,4 @@ func (K8sSLIProviderConfig) GetSLIProvider(project string) (string, error) {
 	sliProvider := configMap.Data["sli-provider"]
 
 	return sliProvider, nil
-}
-
-type Config struct {
-	GetKubeAPI KubeAPIConfigFunc
-}
-
-var config *Config
-var configOnce sync.Once
-
-func GetConfig() *Config {
-	configOnce.Do(func() {
-		config = &Config{GetKubeAPI: getInClusterKubeClient}
-	})
-	return config
-}
-
-type KubeAPIConfigFunc func() (kubernetes.Interface, error)
-
-func getInClusterKubeClient() (kubernetes.Interface, error) {
-	var config *rest.Config
-	config, err := rest.InClusterConfig()
-
-	if err != nil {
-		return nil, err
-	}
-
-	kubeAPI, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		return nil, err
-	}
-	return kubeAPI, nil
 }
