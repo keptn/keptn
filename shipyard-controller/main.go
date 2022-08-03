@@ -380,7 +380,7 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 }
 
 func createProjectMVRepo() *db.MongoDBProjectMVRepo {
-	return db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()))
+	return db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance()))
 }
 
 func createUniformRepo() *db.MongoDBUniformRepo {
