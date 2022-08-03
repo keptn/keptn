@@ -99,7 +99,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
       this._tracesTimerInterval = 0;
     }
 
-    const eventId$ = this.route.paramMap.pipe(map((params) => params.get('eventId')));
+    const eventId$ = this.route.paramMap.pipe(map((params) => params.get('eventId'), distinctUntilChanged()));
     const projectName$ = this.route.paramMap.pipe(
       map((params) => params.get('projectName')),
       filter((projectName): projectName is string => !!projectName),
@@ -266,7 +266,6 @@ export class KtbSequenceViewComponent implements OnDestroy {
   private setTraces(sequence: SequenceState, eventId?: string, stage?: string): void {
     this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
       sequence.traces = traces;
-      this.selectSequence({ sequence, stage, eventId });
     });
   }
 
@@ -406,23 +405,27 @@ export class KtbSequenceViewComponent implements OnDestroy {
     this.router.navigate(['/project/' + projectName]);
   }
 
-  public navigateToBlockingSequence(currentSequence: SequenceState): void {
+  public navigateToBlockingSequence(currentSequence: SequenceState, state?: ISequenceViewState): void {
+    const stages = currentSequence.getStages();
     this.apiService
       .getSequenceExecution({
         project: currentSequence.project,
+        stage: stages.length > 0 ? stages[stages.length - 1] : '',
         service: currentSequence.service,
         status: 'started',
+        pageSize: 1,
       })
       .subscribe((sequenceExecutionResult) => {
-        const sequence = sequenceExecutionResult.sequenceExecutions[0];
-        this.router.navigate([
-          '/project',
-          sequence.scope.project,
-          'sequence',
-          sequence.scope.keptnContext,
-          'stage',
-          sequence.scope.stage,
-        ]);
+        const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
+        const sequence = state?.sequenceInfo?.sequences.find(
+          (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext
+        );
+        if (sequence) {
+          this.selectSequence({ sequence: sequence });
+          this.loadTraces(sequence, undefined, sequenceExecution.scope.stage);
+        } else {
+          this.dataService.loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext);
+        }
       });
   }
 

@@ -113,9 +113,17 @@
               [textContent]="currentSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats(false, true)"
             ></span>
           </p>
-          <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning">
+          <dt-alert
+            class="mt-1"
+            *ngIf="currentSequence.isWaiting()"
+            severity="warning"
+            uitestid="keptn-sequence-view-blocked-message"
+          >
             Sequence is blocked by another sequence. Click
-            <a (click)="navigateToBlockingSequence(currentSequence)">here</a> to get to the current running sequence.
+            <span class="bold underline pointer" (click)="navigateToBlockingSequence(currentSequence, state)"
+              >here</span
+            >
+            to see the current running sequence.
           </dt-alert>
         </dt-info-group>
       </div>
