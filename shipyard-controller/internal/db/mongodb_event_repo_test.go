@@ -12,6 +12,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func TestMongoDBEventsRepo_InsertAndRetrieveFuture(t *testing.T) {
@@ -278,4 +279,42 @@ func GenerateTraceForRootEvent(projectName, stageName, serviceName string, rootE
 	result = append(result, mySequenceFinishedEvent)
 
 	return result
+}
+
+func TestMongoDBEventsRepo_InsertAndGetEventByID(t *testing.T) {
+	projectName := "my-project2"
+	stageName := "my-stage2"
+	serviceName := "my-service2"
+	eventID := "rootevent1"
+
+	repo := db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())
+
+	event := apimodels.KeptnContextExtendedCE{
+		Data: keptnv2.EventData{
+			Project: projectName,
+			Stage:   stageName,
+			Service: serviceName,
+		},
+		ID:             eventID,
+		Shkeptncontext: "keptncontext1",
+		Time:           time.Now().UTC(),
+		Type:           common.Stringp(keptnv2.GetTriggeredEventType("dev.delivery")),
+	}
+
+	err := repo.InsertEvent(projectName, event, common.RootEvent)
+	require.Nil(t, err)
+
+	// insert the event into the general events collection
+	err = repo.InsertEvent(projectName, event, "")
+	require.Nil(t, err)
+
+	// get single event
+	eventFetched, err := repo.GetEventByID(projectName, common.EventFilter{ID: &eventID})
+	require.Nil(t, err)
+	require.Equal(t, eventFetched.ID, event.ID)
+
+	// get single error not found
+	invalidEventID := "invalid"
+	eventFetched, err = repo.GetEventByID(projectName, common.EventFilter{ID: &invalidEventID})
+	require.Equal(t, err, mongo.ErrNoDocuments)
 }

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>DebugUI</title>
+    <link rel="icon" type="image/png" href="./favicon.png" />
+
+    <link rel="stylesheet" href="index.css" />
+    <script src="./fetch_sequences.js"></script>
+  </head>
+  <body>
+    <ul class="header">
+      <li class="header">
+        <img src="./favicon.png" alt="" />
+      </li>
+
+      <li class="header">
+        Triggered:
+        <input
+          onChange="fetchSequencesHelper()"
+          id="checkboxTriggered"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        Finished:
+        <input
+          onChange="fetchSequencesHelper()"
+          id="checkboxFinished"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        TimedOut:
+        <input
+          onChange="fetchSequencesHelper()"
+          id="checkboxTimedOut"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
+        Select Project:
+
+        <select id="projectSelector" onChange="fetchSequencesHelper()"></select>
+      </li>
+    </ul>
+
+    <table id="prodTable">
+      <caption>
+        Sequences table
+      </caption>
+      <tr>
+        <th>Fetching Sequences</th>
+      </tr>
+      <tr>
+        <td>Fetching Sequences</td>
+      </tr>
+    </table>
+
+    <script>
+      // get projects
+      fetch("/sequence/project", {
+        method: "get",
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((response) => {
+          var projectSelector = document.getElementById("projectSelector");
+          projectSelector.innerHTML = "";
+
+          response.projects.forEach((object) => {
+            el_project = document.createElement("option");
+            el_project.innerHTML = object.projectName;
+            projectSelector.appendChild(el_project);
+          });
+
+          fetchSequencesHelper();
+        });
+    </script>
+
+    <script>
+      function fetchSequencesHelper() {
+        const project_name = document.getElementById("projectSelector").value;
+        let table = document.getElementById("prodTable");
+
+        const show_finished =
+          document.getElementById("checkboxFinished").checked;
+        const show_triggered =
+          document.getElementById("checkboxTriggered").checked;
+        const show_timedOut =
+          document.getElementById("checkboxTimedOut").checked;
+
+        fetchSequences(
+          project_name,
+          show_triggered,
+          show_finished,
+          show_timedOut,
+          table
+        );
+      }
+    </script>
+  </body>
+</html>
