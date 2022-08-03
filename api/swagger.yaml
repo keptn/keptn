@@ -88,6 +88,8 @@ paths:
       responses:
         '200':
           description: OK
+          schema:
+            $ref: "#/definitions/importSummary"
         '400':
           description: Bad request
           schema:
@@ -106,6 +108,28 @@ paths:
             $ref: "#/definitions/error"
 
 definitions:
+
+  task:
+    type: object
+    properties:
+      task:
+        type: object
+      response:
+        type: object
+
+  importSummary:
+    type: object
+    properties:
+      outcome:
+        type: string
+        enum: ['success', 'failure']
+      message:
+        type: string
+      tasks:
+        type: array
+        items:
+          $ref: '#/definitions/task'
+
   eventContext:
     type: object
     required:
