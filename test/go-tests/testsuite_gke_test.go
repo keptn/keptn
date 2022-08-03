@@ -30,8 +30,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_QualityGates_AbortedFinishedPayloadSend", Test_QualityGates_AbortedFinishedPayloadSend)
 	t.Run("Test_QualityGates_ErroredFinishedPayloadSend", Test_QualityGates_ErroredFinishedPayloadSend)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
-	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
-	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)

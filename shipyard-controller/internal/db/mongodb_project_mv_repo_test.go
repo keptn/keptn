@@ -6,6 +6,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
 )
@@ -17,12 +18,12 @@ func TestGetProjectsMaterializedView(t *testing.T) {
 	}{
 		{
 			name: "get MV instance",
-			want: NewProjectMVRepo(NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())),
+			want: NewProjectMVRepo(NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance()), NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewProjectMVRepo(NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance())); got != tt.want {
+			if got := NewProjectMVRepo(NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance()), NewMongoDBEventsRepo(GetMongoDBConnectionInstance()), NewMongoDBSequenceExecutionRepo(GetMongoDBConnectionInstance())); got != tt.want {
 				t.Errorf("NewProjectMVRepo() = %v, want %v", got, tt.want)
 			}
 		})
@@ -888,8 +889,9 @@ func Test_updateServiceInStage(t *testing.T) {
 
 func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 	type fields struct {
-		ProjectRepo    ProjectRepo
-		EventRetriever EventRepo
+		ProjectRepo           ProjectRepo
+		EventRetriever        EventRepo
+		SequenceExecutionRepo SequenceExecutionRepo
 	}
 	type args struct {
 		event apimodels.KeptnContextExtendedCE
@@ -903,8 +905,9 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 		{
 			name: "empty event type",
 			fields: fields{
-				ProjectRepo:    &db_mock.ProjectRepoMock{},
-				EventRetriever: &db_mock.EventRepoMock{},
+				ProjectRepo:           &db_mock.ProjectRepoMock{},
+				EventRetriever:        &db_mock.EventRepoMock{},
+				SequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{},
 			},
 			args: args{
 				event: apimodels.KeptnContextExtendedCE{
@@ -995,8 +998,9 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 
 func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 	type fields struct {
-		ProjectRepo    ProjectRepo
-		EventRetriever EventRepo
+		ProjectRepo           ProjectRepo
+		EventRetriever        EventRepo
+		SequenceExecutionRepo SequenceExecutionRepo
 	}
 	type args struct {
 		event apimodels.KeptnContextExtendedCE
@@ -1009,6 +1013,7 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 		{
 			name: "deployment.finished",
 			fields: fields{
+
 				ProjectRepo: &db_mock.ProjectRepoMock{
 					CreateProjectFunc: nil,
 					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
@@ -1037,7 +1042,6 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 				},
 				EventRetriever: &db_mock.EventRepoMock{
 					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
-						//e1 := apimodels.KeptnContextExtendedCE{Triggeredid: "a-triggered-id"}
 						e2 := apimodels.KeptnContextExtendedCE{
 							Data: keptnv2.DeploymentTriggeredEventData{
 								EventData: keptnv2.EventData{
@@ -1056,6 +1060,11 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 
 					},
 				},
+				SequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+					GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+						return []models.SequenceExecution{{ID: "abcde"}}, nil
+					},
+				},
 			},
 			args: args{
 				event: apimodels.KeptnContextExtendedCE{
@@ -1071,8 +1080,9 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mv := &MongoDBProjectMVRepo{
-				projectRepo: tt.fields.ProjectRepo,
-				eventRepo:   tt.fields.EventRetriever,
+				projectRepo:           tt.fields.ProjectRepo,
+				eventRepo:             tt.fields.EventRetriever,
+				sequenceExecutionRepo: tt.fields.SequenceExecutionRepo,
 			}
 			mv.OnSequenceTaskFinished(tt.args.event)
 
