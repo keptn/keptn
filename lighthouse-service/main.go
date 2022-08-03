@@ -2,16 +2,19 @@ package main
 
 import (
 	"context"
-	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
-	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
-	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
-	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
+	eventsource "github.com/keptn/go-utils/pkg/sdk/connector/eventsource/nats"
+	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
+	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	logger "github.com/sirupsen/logrus"
@@ -20,6 +23,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
@@ -38,6 +42,11 @@ type envConfig struct {
 }
 
 func main() {
+	kubeAPI, err := createKubeAPI()
+	if err != nil {
+		log.Fatalf("could not create kubernetes client: %s", err.Error())
+	}
+
 	var env envConfig
 	if err := envconfig.Process("", &env); err != nil {
 		log.Fatalf("Failed to process env var: %s", err)
@@ -66,6 +75,11 @@ func main() {
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
+	_main(controlPlane, log, LighthouseService{KubeAPI: kubeAPI, env: env, EventStore: func(k *keptnv2.Keptn) event_handler.EventStore { return k.EventHandler }})
+
+}
+
+func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, lighthouseService LighthouseService) {
 	go func() {
 		keptnapi.RunHealthEndpoint("8080", keptnapi.WithReadinessConditionFunc(func() bool {
 			return controlPlane.IsRegistered()
@@ -73,7 +87,7 @@ func main() {
 	}()
 
 	ctx, wg := getGracefulContext()
-	err = controlPlane.Register(ctx, LighthouseService{env})
+	err := controlPlane.Register(ctx, lighthouseService)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -87,12 +101,14 @@ func main() {
 }
 
 type LighthouseService struct {
-	env envConfig
+	env        envConfig
+	KubeAPI    kubernetes.Interface
+	EventStore event_handler.EventStoreProvider
 }
 
 func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {
 	ce := v0_2_0.ToCloudEvent(event)
-	handler, err := event_handler.NewEventHandler(ctx, ce)
+	handler, err := event_handler.NewEventHandler(ctx, ce, l.KubeAPI, l.EventStore)
 
 	if err != nil {
 		log.Println(err.Error())
@@ -149,4 +165,20 @@ func getGracefulContext() (context.Context, *sync.WaitGroup) {
 	}()
 
 	return ctx, wg
+}
+
+// GetKubeAPI godoc
+func createKubeAPI() (*kubernetes.Clientset, error) {
+	var config *rest.Config
+	config, err := rest.InClusterConfig()
+
+	if err != nil {
+		return nil, err
+	}
+
+	kubeAPI, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	return kubeAPI, nil
 }

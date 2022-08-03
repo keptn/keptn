@@ -1,7 +1,7 @@
 import { Trace } from '../../_models/trace';
 import {
   createDataPoints,
-  evaluationToDataPoint,
+  evaluationToScoreDataPoint,
   filterUnparsedEvaluations,
   getScoreInfo,
   getScoreState,
@@ -28,8 +28,9 @@ describe('KtbEvaluationDetailsUtils', () => {
     const totalScores = traces.map((t) => getTotalScore(t));
 
     // then
-    expect(totalScores).toStrictEqual([7, 0.5, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1]);
+    expect(totalScores).toStrictEqual([7, 0.5, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1]);
   });
+
   it('should transform an evaluation score to a data point', () => {
     // given
     const traces = EvaluationsMock.data.evaluationHistory as Trace[];
@@ -37,7 +38,7 @@ describe('KtbEvaluationDetailsUtils', () => {
     const scoreValue = evaluation.data.evaluation?.score ?? 0;
 
     // when
-    const dataPoint = evaluationToDataPoint(evaluation, scoreValue);
+    const dataPoint = evaluationToScoreDataPoint(evaluation, scoreValue);
 
     // then
     expect(dataPoint.xElement).toBe('2020-11-10 12:12');
@@ -88,7 +89,7 @@ describe('KtbEvaluationDetailsUtils', () => {
     const dataPoints: IDataPoint[] = createDataPoints(traces);
 
     // then
-    expect(dataPoints.length).toBe(26);
+    expect(dataPoints.length).toBe(28);
 
     // Scores are before the SLIs
     // and sorting of them is NOT changed

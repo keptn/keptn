@@ -9,13 +9,14 @@ import { KtbHeatmapModule } from '../ktb-heatmap/ktb-heatmap.module';
 import { DtChartModule } from '@dynatrace/barista-components/chart';
 import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-list';
 import { DtConsumptionModule } from '@dynatrace/barista-components/consumption';
-import { MomentModule } from 'ngx-moment';
+import { DateFormatPipe, MomentModule } from 'ngx-moment';
 import { DtFormFieldModule } from '@dynatrace/barista-components/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
 import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.module';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtInputModule } from '@dynatrace/barista-components/input';
+import { KtbChartModule } from '../ktb-chart/ktb-chart.module';
 
 @NgModule({
   declarations: [KtbEvaluationDetailsComponent],
@@ -38,7 +39,9 @@ import { DtInputModule } from '@dynatrace/barista-components/input';
     KtbSliBreakdownModule,
     MatDialogModule,
     MomentModule,
+    KtbChartModule,
   ],
   exports: [KtbEvaluationDetailsComponent],
+  providers: [DateFormatPipe],
 })
 export class KtbEvaluationDetailsModule {}
