@@ -1,12 +1,16 @@
 import { Trace } from '../../_models/trace';
-import { ChartItem, ChartItemPoint, ChartItemPointInfo, DrawType } from '../../_interfaces/chart';
+import {
+  ChartItem,
+  ChartItemPoint,
+  ChartItemPointInfo,
+  DrawType,
+  FuncDateToDict,
+  FuncDateToString,
+  FuncEvaluationToChartItemPoint,
+  FuncMapIndicatorResult,
+  FuncMetricToChartItem,
+} from '../../_interfaces/chart';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
-
-type FuncEvaluationToChartItemPoint = (evaluation: Trace, index: number) => ChartItemPoint;
-type FuncMetricToChartItem = (metric: string) => ChartItem;
-type FuncMapIndicatorResult = (indicatorResult: IndicatorResult) => void;
-type FuncDateToString = (date: string, index: number) => string;
-type FuncDateToDict = (date: string) => number | undefined;
 
 export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
   const mapEvaluationToScoreCharItemPoint =
