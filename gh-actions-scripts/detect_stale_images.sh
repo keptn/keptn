@@ -39,8 +39,6 @@ IMAGES=(
   "resource-service"
   "distributor"
   "approval-service"
-  "helm-service"
-  "jmeter-service"
   "lighthouse-service"
   "mongodb-datastore"
   "remediation-service"
