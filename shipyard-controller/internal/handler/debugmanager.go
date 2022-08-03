@@ -118,7 +118,7 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: projectName,
-				Stage:   stage,
+				Stage:   sequence.Scope.Stage,
 				Service: sequence.Scope.Service,
 			},
 		},
@@ -133,7 +133,7 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
 				Project: projectName,
-				Stage:   stage,
+				Stage:   sequence.Scope.Stage,
 				Service: sequence.Scope.Service,
 			},
 		},
@@ -141,7 +141,11 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 		TriggeredAt: sequence.TriggeredAt,
 	})
 
+	if err != nil {
+		return nil, err
+	}
+
 	blockingSequences := append(blockingSequences1, blockingSequences2...)
 
-	return blockingSequences, err
+	return blockingSequences, nil
 }

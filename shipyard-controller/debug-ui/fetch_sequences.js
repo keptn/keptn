@@ -26,7 +26,7 @@ function fetchSequences(
 
           if (object.status.state === "triggered") {
             td_blocking.innerHTML = `
-              <a href="blocking.html?shkeptncontext=${object.scope.keptnContext}&projectname=${project_name}">
+              <a href="blocking.html?shkeptncontext=${object.scope.keptnContext}&projectname=${project_name}&stage=${object.scope.stage}">
               <button>View Blocking Sequences</button>
               </a>`;
           }

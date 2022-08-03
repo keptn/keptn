@@ -22,15 +22,15 @@
 
     <script>
       const urlParams = new URLSearchParams(window.location.search);
-      context = urlParams.get("shkeptncontext");
+      const context = urlParams.get("shkeptncontext");
       const projectname = urlParams.get("projectname");
+      const stage = urlParams.get("stage");
 
       document.getElementById("titlecontext").innerHTML = context;
 
       let blockingSequenceList = document.getElementById("blockingSequenceList");
 
-      fetchBlockingSequences(projectname, context, blockingSequenceList);
-    </script>
+      fetchBlockingSequences(projectname, context, stage, blockingSequenceList);
     </script>
 
   </body>

@@ -1,5 +1,5 @@
-function fetchBlockingSequences(project, context, blockingSequencesList) {
-  fetch(`/sequence/project/${project}/shkeptncontext/${context}/blocking`, {
+function fetchBlockingSequences(project, context, stage, blockingSequencesList) {
+  fetch(`/sequence/project/${project}/shkeptncontext/${context}/stage/${stage}/blocking`, {
     method: "get",
   })
     .then((res) => {

@@ -12,6 +12,10 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 )
 
+type GetBlockingSequencesParams struct {
+	Stage string `form:"stage" binding:"required"`
+}
+
 type IDebugHandler interface {
 	GetSequenceByID(context *gin.Context)
 	GetAllSequencesForProject(context *gin.Context)
@@ -188,29 +192,22 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 // @Tags         Sequence
 // @Param        project			  path      string                    			true "The name of the project"
 // @Param        shkeptncontext       path      string                    			true "The Context of the sequence"
-// @Param        stage                query     string                    			true "The Stage of the sequences"
+// @Param        stage                path     string                    			true "The Stage of the sequences"
 // @Success      200                  {object}  []models.SequenceExecution          "ok"
 // @Failure      400                  {object}  models.Error              			"Bad Request"
 // @Failure      404                  {object}  models.Error             			"not found"
 // @Failure      500                  {object}  models.Error              			"Internal error"
-// @Router       /sequence/project/{project} [get]
+// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/stage/{stage}/blocking", controller.DebugHandler.GetBlockingSequences)
+
 func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
 
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
+	stage := c.Param("stage")
 
-	params := &api.GetSequenceExecutionParams{}
-
-	c.BindQuery(params)
-
-	sequences, err := dh.DebugManager.GetBlockingSequences(projectName, shkeptncontext, params.Stage)
+	sequences, err := dh.DebugManager.GetBlockingSequences(projectName, shkeptncontext, stage)
 
 	if err != nil {
-		if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, projectName))
-			return
-		}
-
 		if errors.Is(err, common.ErrSequenceNotFound) {
 			SetNotFoundErrorResponse(c, fmt.Sprintf(common.SequenceNotFoundMsg, shkeptncontext))
 			return

@@ -494,6 +494,7 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 		wantStatus     int
 		projectName    string
 		shkeptncontext string
+		stage          string
 	}{
 		{
 			name: "get blocking ok",
@@ -504,11 +505,12 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 					},
 				},
 			},
-			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/blocking?stage=stagename", nil),
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/stage/stagename/blocking", nil),
 			wantResponse:   sequences,
 			wantStatus:     http.StatusOK,
 			projectName:    "projectname",
 			shkeptncontext: "context",
+			stage:          "stagename",
 		},
 		{
 			name: "get blocking sequence not found",
@@ -519,26 +521,12 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 					},
 				},
 			},
-			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/blocking?stage=stagename", nil),
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/stage/stagename/blocking", nil),
 			wantResponse:   nil,
 			wantStatus:     http.StatusNotFound,
 			projectName:    "projectname",
 			shkeptncontext: "context",
-		},
-		{
-			name: "get project not found",
-			fields: fields{
-				DebugManager: &fake.IDebugManagerMock{
-					GetBlockingSequencesFunc: func(projectName, shkeptncontext, stage string) ([]models.SequenceExecution, error) {
-						return nil, common.ErrProjectNotFound
-					},
-				},
-			},
-			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/blocking?stage=stagename", nil),
-			wantResponse:   nil,
-			wantStatus:     http.StatusNotFound,
-			projectName:    "projectname",
-			shkeptncontext: "context",
+			stage:          "stagename",
 		},
 		{
 			name: "get blocking internal server error",
@@ -549,11 +537,12 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 					},
 				},
 			},
-			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/blocking?stage=stagename", nil),
+			request:        httptest.NewRequest("GET", "/sequences/project/projectname/shkeptncontext/context/stage/stagename/blocking", nil),
 			wantResponse:   nil,
 			wantStatus:     http.StatusInternalServerError,
 			projectName:    "projectname",
 			shkeptncontext: "context",
+			stage:          "stagename",
 		},
 	}
 
@@ -561,7 +550,7 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 		dh := handler.NewDebugHandler(tt.fields.DebugManager)
 
 		router := gin.Default()
-		router.GET("/sequences/project/:project/shkeptncontext/:shkeptncontext/blocking", func(c *gin.Context) {
+		router.GET("/sequences/project/:project/shkeptncontext/:shkeptncontext/stage/:stage/blocking", func(c *gin.Context) {
 			dh.GetBlockingSequences(c)
 		})
 
@@ -574,9 +563,10 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 			err := json.Unmarshal(w.Body.Bytes(), &object)
 			require.Nil(t, err)
 			require.Equal(t, object, tt.wantResponse)
-		}
 
-		require.Equal(t, tt.projectName, tt.fields.DebugManager.GetBlockingSequencesCalls()[0].ProjectName)
-		require.Equal(t, tt.shkeptncontext, tt.fields.DebugManager.GetBlockingSequencesCalls()[0].Shkeptncontext)
+			require.Equal(t, tt.projectName, tt.fields.DebugManager.GetBlockingSequencesCalls()[0].ProjectName)
+			require.Equal(t, tt.shkeptncontext, tt.fields.DebugManager.GetBlockingSequencesCalls()[0].Shkeptncontext)
+			require.Equal(t, tt.stage, tt.fields.DebugManager.GetBlockingSequencesCalls()[0].Stage)
+		}
 	}
 }
