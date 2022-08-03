@@ -12,10 +12,6 @@ import (
 	_ "github.com/keptn/keptn/shipyard-controller/models"
 )
 
-type GetBlockingSequencesParams struct {
-	Stage string `form:"stage" binding:"required"`
-}
-
 type IDebugHandler interface {
 	GetSequenceByID(context *gin.Context)
 	GetAllSequencesForProject(context *gin.Context)
