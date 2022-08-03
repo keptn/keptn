@@ -23,6 +23,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	api "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
 	"github.com/keptn/go-utils/pkg/sdk/connector/nats"
 	"github.com/keptn/keptn/lighthouse-service/event_handler"
@@ -74,7 +75,7 @@ func main() {
 
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
-	_main(controlPlane, log, LighthouseService{KubeAPI: kubeAPI, env: env})
+	_main(controlPlane, log, LighthouseService{KubeAPI: kubeAPI, env: env, EventStore: func(k *keptnv2.Keptn) event_handler.EventStore { return k.EventHandler }})
 
 }
 
@@ -102,7 +103,7 @@ func _main(controlPlane *controlplane.ControlPlane, log *logger.Logger, lighthou
 type LighthouseService struct {
 	env        envConfig
 	KubeAPI    kubernetes.Interface
-	EventStore event_handler.EventStore
+	EventStore event_handler.EventStoreProvider
 }
 
 func (l LighthouseService) OnEvent(ctx context.Context, event models.KeptnContextExtendedCE) error {

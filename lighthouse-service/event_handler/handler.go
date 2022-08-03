@@ -23,7 +23,9 @@ type EvaluationEventHandler interface {
 	HandleEvent(ctx context.Context) error
 }
 
-func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface, es EventStore) (EvaluationEventHandler, error) {
+type EventStoreProvider func(k *keptnv2.Keptn) EventStore
+
+func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface, es EventStoreProvider) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 
 	eventSender, ok := ctx.Value(types.EventSenderKey).(controlplane.EventSender)
@@ -34,8 +36,6 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 	if err != nil {
 		return nil, err
 	}
-
-	eventStore := processEventStore(es, keptnHandler)
 
 	configurationServiceEndpoint, err := keptncommon.GetServiceEndpoint("RESOURCE_SERVICE")
 	if err != nil {
@@ -64,7 +64,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 				ResourceHandler: resourceHandler,
 				ServiceHandler:  serviceHandler,
 			},
-			EventStore: eventStore,
+			EventStore: es(keptnHandler),
 		}, nil
 	case keptn.ConfigureMonitoringEventType:
 		return NewConfigureMonitoringHandler(event, logger.StandardLogger(), WithK8sClient(kubeAPI))
@@ -72,11 +72,4 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 		logger.Info("received unhandled event type")
 		return nil, nil
 	}
-}
-
-func processEventStore(es EventStore, keptnHandler *keptnv2.Keptn) EventStore {
-	if es != nil {
-		return es
-	}
-	return keptnHandler.EventHandler
 }

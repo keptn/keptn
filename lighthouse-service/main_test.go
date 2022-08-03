@@ -22,6 +22,7 @@ import (
 	"github.com/keptn/go-utils/pkg/sdk/connector/logforwarder"
 	gonats "github.com/keptn/go-utils/pkg/sdk/connector/nats"
 	"github.com/keptn/go-utils/pkg/sdk/connector/subscriptionsource"
+	"github.com/keptn/keptn/lighthouse-service/event_handler"
 	lighthousefake "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -145,8 +146,10 @@ func TestMain(m *testing.M) {
 	}
 
 	lighthouseService := LighthouseService{
-		KubeAPI:    fakeK8sClient,
-		EventStore: mockedEventStore,
+		KubeAPI: fakeK8sClient,
+		EventStore: func(k *keptnv2.Keptn) event_handler.EventStore {
+			return mockedEventStore
+		},
 		env: envConfig{
 			ConfigurationServiceURL: configurationService.URL,
 			LogLevel:                logrus.DebugLevel.String(),

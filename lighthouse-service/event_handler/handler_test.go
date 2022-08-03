@@ -100,7 +100,7 @@ func TestNewEventHandler(t *testing.T) {
 			tt.args.event.SetType(tt.eventType)
 			t.Setenv("RESOURCE_SERVICE", configurationServiceURL)
 
-			got, err := NewEventHandler(ctx, tt.args.event, fake.NewSimpleClientset(), keptnHandler.EventHandler)
+			got, err := NewEventHandler(ctx, tt.args.event, fake.NewSimpleClientset(), func(k *keptnv2.Keptn) EventStore { return keptnHandler.EventHandler })
 			if (err != nil) != tt.wantErr {
 				t.Errorf("NewEventHandler() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -122,7 +122,7 @@ func TestEventSenderWithoutContext(t *testing.T) {
 	ctx = context.WithValue(ctx, types.EventSenderKey, nil)
 	defer cancel()
 
-	_, err := NewEventHandler(ctx, incomingEvent, fakek8s.NewSimpleClientset(), nil)
+	_, err := NewEventHandler(ctx, incomingEvent, fakek8s.NewSimpleClientset(), func(k *keptnv2.Keptn) EventStore { return k.EventHandler })
 	require.Error(t, err)
 	require.Equal(t, "could not get eventSender from context", err.Error())
 
