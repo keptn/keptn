@@ -1,5 +1,5 @@
 import ServicesPage from '../support/pageobjects/ServicesPage';
-import { SliResult } from '../../client/app/_models/sli-result';
+import { SliResult } from '../../client/app/_interfaces/sli-result';
 import { interceptProjectBoard } from '../support/intercept';
 
 describe('sli-breakdown', () => {

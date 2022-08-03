@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { SliResult } from '../../../client/app/_models/sli-result';
+import { SliResult } from '../../../client/app/_interfaces/sli-result';
 import {
   interceptProjectBoard,
   interceptServicesPage,
