@@ -42,7 +42,7 @@ type Request struct {
 	URL     string   `yaml:"url"`
 	Method  string   `yaml:"method"`
 	Headers []Header `yaml:"headers,omitempty"`
-	User    User     `yaml:"user,optional"`
+	User    Usr      `yaml:"user,optional"`
 	Payload string   `yaml:"payload,omitempty"`
 	Options string   `yaml:"options,omitempty"`
 }
@@ -52,7 +52,7 @@ type Header struct {
 	Value string `yaml:"value"`
 }
 
-type User struct {
+type Usr struct {
 	Key   string `yaml:"key"`
 	Value string `yaml:"value"`
 }

@@ -148,11 +148,9 @@ spec:
 							},
 							Requests: []interface{}{
 								Request{
-									User: User{
-										{
-											Key:   "key",
-											Value: "{{.env.secretKey}}",
-										}
+									User: Usr{
+										Key:   "key",
+										Value: "{{.env.secretKey}}",
 									},
 									Headers: []Header{
 										{
