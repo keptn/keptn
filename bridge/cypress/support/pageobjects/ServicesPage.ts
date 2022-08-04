@@ -10,6 +10,13 @@ import {
 import { EvaluationBadgeVariant } from '../../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 type SliColumn = 'name' | 'value' | 'weight' | 'score' | 'result' | 'criteria' | 'pass-criteria' | 'warning-criteria';
+type UISliResult = SliResult & {
+  availableScore: number;
+  calculatedChanges: {
+    absolute: number;
+    relative: number;
+  };
+};
 
 class ServicesPage {
   public interceptAll(): this {
@@ -142,7 +149,7 @@ class ServicesPage {
     return this;
   }
 
-  verifySliBreakdown(result: SliResult, isExpanded: boolean): this {
+  verifySliBreakdown(result: UISliResult, isExpanded: boolean): this {
     cy.byTestId('keptn-sli-breakdown').should('exist');
     if (isExpanded) {
       this.assertSliColumnText(
@@ -152,22 +159,22 @@ class ServicesPage {
       ).assertSliColumnText(
         result.name,
         'value',
-        `${result.value}${result.calculatedChanges?.absolute > 0 ? '+' : '-'}${result.calculatedChanges?.absolute}${
-          result.calculatedChanges?.relative > 0 ? '+' : '-'
-        }${result.calculatedChanges?.relative}% ${result.comparedValue}`
+        `${result.value}${result.calculatedChanges.absolute > 0 ? '+' : '-'}${result.calculatedChanges.absolute}${
+          result.calculatedChanges.relative > 0 ? '+' : '-'
+        }${result.calculatedChanges.relative}% ${result.comparedValue}`
       );
     } else {
       this.assertSliColumnText(result.name, 'name', result.name).assertSliColumnText(
         result.name,
         'value',
-        `${result.value} (${result.calculatedChanges?.relative > 0 ? '+' : '-'}${result.calculatedChanges?.relative}%) `
+        `${result.value} (${result.calculatedChanges.relative > 0 ? '+' : '-'}${result.calculatedChanges.relative}%) `
       );
     }
 
-    this.assertSliColumnText(result.name, 'weight', result.weight.toString()).assertSliColumnText(
+    this.assertSliColumnText(result.name, 'weight', result.weight.toString()).assertSliScoreColumn(
       result.name,
-      'score',
-      result.score.toString()
+      result.score,
+      result.availableScore
     );
 
     cy.byTestId(`keptn-sli-breakdown-row-${result.name}`)
@@ -179,10 +186,51 @@ class ServicesPage {
     return this;
   }
 
+  public assertSliScoreColumn(sliName: string, score: number, availableScore: number): this {
+    return this.assertSliColumnText(sliName, 'score', ` ${score}/${availableScore} `);
+  }
+
+  private showSliScoreOverlay(sliName: string): this {
+    this._getSliCell(sliName, 'score').trigger('mouseenter');
+    return this;
+  }
+
+  private assertSliScoreOverlayFailedExists(status: boolean): this {
+    cy.byTestId('ktb-sli-breakdown-score-overlay-failed').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  private assertSliScoreOverlayWarningExists(status: boolean): this {
+    cy.byTestId('ktb-sli-breakdown-score-overlay-warning').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertSliScoreOverlayDefault(sliName: string): this {
+    this.showSliScoreOverlay(sliName)
+      .assertSliScoreOverlayFailedExists(false)
+      .assertSliScoreOverlayWarningExists(false);
+    cy.get('.dt-overlay-container').should('exist');
+    return this;
+  }
+
+  public assertSliScoreOverlayWarning(sliName: string): this {
+    return this.showSliScoreOverlay(sliName)
+      .assertSliScoreOverlayFailedExists(false)
+      .assertSliScoreOverlayWarningExists(true);
+  }
+
+  public assertSliScoreOverlayFailed(sliName: string): this {
+    return this.showSliScoreOverlay(sliName)
+      .assertSliScoreOverlayFailedExists(true)
+      .assertSliScoreOverlayWarningExists(false);
+  }
+
+  private _getSliCell(sliName: string, columnName: SliColumn): Cypress.Chainable<JQuery> {
+    return cy.byTestId(`keptn-sli-breakdown-row-${sliName}`).byTestId(`keptn-sli-breakdown-${columnName}-cell`);
+  }
+
   assertSliColumnText(sliName: string, columnName: SliColumn, value: string): this {
-    cy.byTestId(`keptn-sli-breakdown-row-${sliName}`)
-      .find(`[uitestid="keptn-sli-breakdown-${columnName}-cell"]`)
-      .should('have.text', value);
+    this._getSliCell(sliName, columnName).should('have.text', value);
     return this;
   }
 
@@ -202,7 +250,7 @@ class ServicesPage {
   }
 
   clickEvaluationBoardButton(): this {
-    cy.get('button[uitestid="keptn-event-item-contextButton-evaluation"]').click();
+    cy.byTestId('keptn-event-item-contextButton-evaluation').click();
     return this;
   }
 

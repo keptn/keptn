@@ -183,6 +183,11 @@ export class HeatmapComponentPage {
     cy.get('ktb-heatmap button.show-more-button').should(visible ? 'be.visible' : 'not.be.visible');
     return this;
   }
+
+  public selectEvaluation(id: string): this {
+    cy.byTestId(`ktb-heatmap-tile-${id}`).eq(0).click();
+    return this;
+  }
 }
 
 export const range = (start: number, stop: number, step: number): number[] =>
