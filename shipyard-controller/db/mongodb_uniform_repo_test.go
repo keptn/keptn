@@ -164,18 +164,7 @@ func generateIntegrations() []apimodels.Integration {
 		Subscriptions: []apimodels.EventSubscription{},
 	}
 
-	integration6 := apimodels.Integration{
-		ID:   "i6",
-		Name: "integraiton6",
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{},
-		},
-		Subscriptions: nil,
-	}
-
-	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5, integration6}
+	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5}
 }
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
@@ -717,7 +706,16 @@ func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 }
 
 func TestMongoDBUniformRepo_CreateOrUpdateUniformIntegration(t *testing.T) {
-	testIntegration := generateIntegrations()[5]
+	testIntegration := apimodels.Integration{
+		ID:   "i6",
+		Name: "integraiton6",
+		Subscription: apimodels.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: apimodels.SubscriptionFilter{},
+		},
+		Subscriptions: nil,
+	}
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
 
