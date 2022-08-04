@@ -2,13 +2,14 @@ package db
 
 import (
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
 	"strings"
 	"sync"
 	"testing"
 	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 )
 
 type integrationTest struct {
@@ -162,7 +163,19 @@ func generateIntegrations() []apimodels.Integration {
 		},
 		Subscriptions: []apimodels.EventSubscription{},
 	}
-	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5}
+
+	integration6 := apimodels.Integration{
+		ID:   "i6",
+		Name: "integraiton6",
+		Subscription: apimodels.Subscription{
+			Topics: []string{"sh.keptn.event.deployment.triggered"},
+			Status: "active",
+			Filter: apimodels.SubscriptionFilter{},
+		},
+		Subscriptions: nil,
+	}
+
+	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5, integration6}
 }
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
 
@@ -701,4 +714,19 @@ func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 
 	// make sure the subscriptions are not touched by the version update
 	require.Len(t, updated.Subscriptions, 3)
+}
+
+func TestMongoDBUniformRepo_CreateOrUpdateUniformIntegration(t *testing.T) {
+	testIntegration := generateIntegrations()[5]
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i6"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 0)
+	require.Equal(t, []apimodels.EventSubscription{}, integrations[0].Subscriptions)
+	require.NotEqual(t, nil, integrations[0].Subscriptions)
 }
