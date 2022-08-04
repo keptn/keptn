@@ -123,6 +123,9 @@ spec:
           method: POST
           payload: "some payload"
           options: "some options"
+          user:
+            - key: key
+              value: "{{.env.secretKey}}"
           headers:
             - value: "{{.env.secretKey}}"
               key: key`),
@@ -145,6 +148,12 @@ spec:
 							},
 							Requests: []interface{}{
 								Request{
+									User: User{
+										{
+											Key:   "key",
+											Value: "{{.env.secretKey}}",
+										}
+									},
 									Headers: []Header{
 										{
 											Key:   "key",
@@ -303,6 +312,8 @@ spec:
       requests:
         - url: http://localhost:8080
           method: POST
+		      user:
+			- key: key
     		  headers:
             - value: value`),
 			},
