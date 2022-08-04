@@ -42,11 +42,17 @@ type Request struct {
 	URL     string   `yaml:"url"`
 	Method  string   `yaml:"method"`
 	Headers []Header `yaml:"headers,omitempty"`
+	User    User     `yaml:"user,optional"`
 	Payload string   `yaml:"payload,omitempty"`
 	Options string   `yaml:"options,omitempty"`
 }
 
 type Header struct {
+	Key   string `yaml:"key"`
+	Value string `yaml:"value"`
+}
+
+type User struct {
 	Key   string `yaml:"key"`
 	Value string `yaml:"value"`
 }
@@ -124,6 +130,9 @@ func verifyBeta1Request(request Request) error {
 	}
 	if !isMethodSupported(request.Method) {
 		return fmt.Errorf(webhookConfInvalid + "unsupported webhook request method")
+	}
+	if request.User.Key == "" || request.User.Value == "" {
+		return fmt.Errorf(webhookConfInvalid + "webhook request user or value empty")
 	}
 	if len(request.Headers) > 0 {
 		for _, header := range request.Headers {
