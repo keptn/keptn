@@ -60,7 +60,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrUnallowedEventKind)
+				return assert.ErrorIs(t, err, ErrDisallowedEventKind)
 			},
 		},
 		{
@@ -361,7 +361,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrUnallowedEventKind)
+				return assert.ErrorIs(t, err, ErrDisallowedEventKind)
 			},
 		},
 		{

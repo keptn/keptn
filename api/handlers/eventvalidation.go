@@ -8,8 +8,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-var ErrUnknownEventType = errors.New("invalid event: unkown event type:")
-var ErrUnallowedEventKind = errors.New("invalid event: event action is not allowed")
+var ErrUnknownEventType = errors.New("invalid event: unknown event type")
+var ErrDisallowedEventKind = errors.New("invalid event: event action is not allowed")
 var ErrCommonEventDataInvalid = errors.New("invalid event: could not parse common event data")
 var ErrCommonEventDataMissing = errors.New("invalid event: mandatory field(s) 'project', 'stage' or 'service' missing")
 var ErrStageMismatch = errors.New("invalid event: stage name in event data and in event type does not match")
@@ -50,7 +50,7 @@ func validate(event models.KeptnContextExtendedCE, allowedKinds []string, valida
 		return err
 	}
 	if !slices.Contains(allowedKinds, kind) {
-		return fmt.Errorf("invalid event kind/action: %s, %w", kind, ErrUnallowedEventKind)
+		return fmt.Errorf("invalid event kind/action: %s, %w", kind, ErrDisallowedEventKind)
 	}
 	if _, ok := validators[kind]; !ok {
 		return nil
