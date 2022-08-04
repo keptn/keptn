@@ -142,6 +142,7 @@
           *ngIf="result.success"
           [class.error]="result.result === ResultTypes.FAILED"
           [class.warning]="result.result === ResultTypes.WARNING"
+          class="underline-info"
         >
           {{ result.score | truncateNumber: 2 }}/{{
             (maximumAvailableWeight !== 0 ? result.weight / maximumAvailableWeight : 0) * 100 | truncateNumber: 2
