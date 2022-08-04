@@ -278,6 +278,9 @@ func buildBetaCurlRequest(req lib.Request) string {
 	if req.Method != "" {
 		tmpReq = fmt.Sprintf("curl --request %s", req.Method)
 	}
+	if req.User.Key != "" || req.User.Value != "" {
+		tmpReq = fmt.Sprintf(tmpReq+" --user '%s: %s'", req.User.Key, req.User.Value)
+	}
 	if len(req.Headers) > 0 {
 		for _, header := range req.Headers {
 			tmpReq = fmt.Sprintf(tmpReq+" --header '%s: %s'", header.Key, header.Value)
