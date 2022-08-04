@@ -124,8 +124,8 @@ spec:
           payload: "some payload"
           options: "some options"
           user:
-            - key: key
-              value: "{{.env.secretKey}}"
+            - value: "{{.env.mysecretKey}}"
+              key: mykey
           headers:
             - value: "{{.env.secretKey}}"
               key: key`),
@@ -149,8 +149,8 @@ spec:
 							Requests: []interface{}{
 								Request{
 									User: Usr{
-										Key:   "key",
-										Value: "{{.env.secretKey}}",
+										Key:   "mykey",
+										Value: "{{.env.mysecretKey}}",
 									},
 									Headers: []Header{
 										{
@@ -271,6 +271,53 @@ spec:
 			wantErr: true,
 		},
 		{
+			name: "Beta1 version input - missing user value",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST
+          user:
+            - key: key
+			  value: ""`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "Beta1 version input - missing user key",
+			args: args{
+				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "my-subscription-id"
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+        - url: http://localhost:8080
+          method: POST
+    	  user:
+            - value: value`),
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
 			name: "Beta1 version input - missing headers value",
 			args: args{
 				webhookConfigYaml: []byte(`apiVersion: webhookconfig.keptn.sh/v1beta1
@@ -310,8 +357,6 @@ spec:
       requests:
         - url: http://localhost:8080
           method: POST
-		      user:
-			- key: key
     		  headers:
             - value: value`),
 			},
