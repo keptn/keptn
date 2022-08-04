@@ -141,10 +141,8 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 
 	if integration.Subscriptions == nil {
 		logrus.Warnf("Invalid '%s' integration format during Subscriptions update: 'Subscriptions' field is null", integration.Name)
-		if err := mdbrepo.CreateOrUpdateUniformIntegration(integration); err != nil {
-			logrus.Errorf("Could not update '%s' integration: %s", integration.Name, err.Error())
-			return fmt.Errorf("could not update '%s' integration: %s", integration.Name, err.Error())
-		}
+		integration.Subscriptions = []apimodels.EventSubscription{subscription}
+		update = bson.M{"$set": integration}
 	}
 
 	if updateExisting {

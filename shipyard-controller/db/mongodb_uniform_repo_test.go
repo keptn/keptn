@@ -10,6 +10,8 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type integrationTest struct {
@@ -707,24 +709,50 @@ func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 
 func TestMongoDBUniformRepo_CreateOrUpdateUniformIntegration(t *testing.T) {
 	testIntegration := apimodels.Integration{
-		ID:   "i6",
-		Name: "integraiton6",
-		Subscription: apimodels.Subscription{
-			Topics: []string{"sh.keptn.event.deployment.triggered"},
-			Status: "active",
-			Filter: apimodels.SubscriptionFilter{},
-		},
+		ID:            "i6",
+		Name:          "integration6",
 		Subscriptions: nil,
+	}
+
+	testSubscription := apimodels.EventSubscription{
+		Event: "a-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
 	}
 
 	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
 
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegration)
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	require.Nil(t, err)
+
+	defer cancel()
+
+	// Creating integration with null subscriptions parameter
+
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{"_id", testIntegration.ID}}
+	update := bson.D{{"$set", testIntegration}}
+
+	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	require.Nil(t, err)
 
 	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i6"})
 	require.Nil(t, err)
 	require.Len(t, integrations, 1)
 	require.Len(t, integrations[0].Subscriptions, 0)
-	require.NotNil(t, integrations[0].Subscriptions)
-	require.Equal(t, []apimodels.EventSubscription{}, integrations[0].Subscriptions)
+	require.Nil(t, integrations[0].Subscriptions)
+
+	// Adding subscription to the integration
+
+	err = mdbrepo.CreateOrUpdateSubscription("i6", testSubscription)
+	require.Nil(t, err)
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i6"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+	require.EqualValues(t, testSubscription, integrations[0].Subscriptions[0])
 }
