@@ -5,6 +5,8 @@ import { IndicatorResult } from '../../../../shared/interfaces/indicator-result'
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { AppUtils } from '../../_utils/app.utils';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
+import { DataService } from '../../_services/data.service';
+import { Trace } from '../../_models/trace';
 
 @Component({
   selector: 'ktb-sli-breakdown',
@@ -52,6 +54,8 @@ export class KtbSliBreakdownComponent implements OnInit {
   }
 
   @Input() objectives?: SloConfig['objectives'];
+  @Input() comparedEvents: string[] = [];
+  @Input() projectName = '';
 
   @Input()
   get comparedIndicatorResults(): IndicatorResult[][] {
@@ -73,7 +77,7 @@ export class KtbSliBreakdownComponent implements OnInit {
     }
   }
 
-  constructor(private _changeDetectorRef: ChangeDetectorRef) {}
+  constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {}
 
   ngOnInit(): void {
     if (this.sortable) {
@@ -82,18 +86,41 @@ export class KtbSliBreakdownComponent implements OnInit {
     }
   }
 
-  private updateDataSource(): void {
-    this.tableEntries.data = this.assembleTablesEntries(this.indicatorResults);
+  private updateDataSource(fetchedComparedResults = false): void {
+    const data = this.assembleTablesEntries(this.indicatorResults, fetchedComparedResults);
+    if (!data) {
+      return;
+    }
+    this.tableEntries.data = data;
   }
 
-  private assembleTablesEntries(indicatorResults: IndicatorResult[]): SliResult[] {
+  private assembleTablesEntries(
+    indicatorResults: IndicatorResult[],
+    fetchedComparedEvaluations = false
+  ): SliResult[] | undefined {
     const totalscore = indicatorResults.reduce((acc, result) => acc + result.score, 0);
     const isOld = indicatorResults.some((result) => !!result.targets);
+    // splitting of targets into pass and warning was introduced in 0.8
     if (isOld) {
       this.columnNames = ['details', 'name', 'value', 'weight', 'targets', 'result', 'score'];
     } else {
       this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
     }
+    // comparedValue was introduced in 0.12
+    const hasComparedValue = indicatorResults.every(
+      (indicatorResult) => indicatorResult.value.comparedValue !== undefined
+    );
+    const loadComparedEvaluations =
+      this.comparedEvents.length && !this.comparedIndicatorResults?.length && !hasComparedValue;
+
+    if (loadComparedEvaluations && !fetchedComparedEvaluations) {
+      this.dataService.getTracesByIds(this.projectName, this.comparedEvents).subscribe((traces: Trace[]) => {
+        this._comparedIndicatorResults = traces.map((trace) => trace.data.evaluation?.indicatorResults ?? []);
+        this.updateDataSource(true);
+      });
+      return undefined;
+    }
+
     return indicatorResults.map((indicatorResult) => {
       const comparedValue = indicatorResult.value.comparedValue ?? this.calculateComparedValue(indicatorResult);
       const compared: Partial<SliResult> = {};

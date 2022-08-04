@@ -1,0 +1,64 @@
+<div class="mt-1 mb-1">
+  <div fxLayout="row" class="pr-2">
+    <div fxFlex>
+      <button dt-button (click)="refreshEvaluationBoard(evaluationHistoryUpdates)" *ngIf="evaluationHistoryUpdates">
+        <dt-icon name="refresh"></dt-icon>
+        Refresh
+      </button>
+    </div>
+    <div fxLayout="column" fxLayoutAlign="start end" uitestid="keptn-evaluation-details-contextButtons">
+      <dt-button-group [(value)]="chartType">
+        <dt-button-group-item
+          uitestid="keptn-evaluation-details-contextButtons-heatmap"
+          [value]="'heatmap'"
+          (click)="chartType = 'heatmap'"
+        >
+          Heatmap
+        </dt-button-group-item>
+        <dt-button-group-item
+          uitestid="keptn-evaluation-details-contextButtons-chart"
+          [value]="'chart'"
+          (click)="chartType = 'chart'"
+        >
+          Chart
+        </dt-button-group-item>
+      </dt-button-group>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="d3Enabled$ | async; else legacyChart">
+  <ktb-heatmap
+    *ngIf="chartType === 'heatmap' && dataPoints"
+    [dataPoints]="dataPoints"
+    [selectedIdentifier]="selectedIdentifier"
+    (selectedIdentifierChange)="dataPointChanged($event)"
+  >
+  </ktb-heatmap>
+  <ktb-chart
+    *ngIf="chartPoints && chartType === 'chart'"
+    [chartItems]="chartPoints"
+    [xLabels]="chartXLabels"
+    [xTooltipLabels]="chartTooltipLabels"
+  ></ktb-chart>
+</div>
+<ng-template #legacyChart>
+  <ktb-evaluation-chart-legacy
+    *ngIf="chartType"
+    [chartType]="chartType"
+    [evaluationData]="evaluationData"
+    (selectedEvaluationChange)="selectedEvaluationChange.emit($event)"
+  ></ktb-evaluation-chart-legacy>
+</ng-template>
+
+<ng-container *ngIf="numberOfMissingEvaluationComparisons">
+  <span *ngIf="numberOfMissingEvaluationComparisons === 1; else multipleMissingComparisons">
+    1 compared result is not showing up in the Heatmap, because it has been either invalidated or is older.
+  </span>
+  <ng-template #multipleMissingComparisons>
+    <span>
+      {{ numberOfMissingEvaluationComparisons }} compared results are not showing up in the Heatmap, because they have
+      been either invalidated or are older results.
+    </span>
+  </ng-template>
+</ng-container>

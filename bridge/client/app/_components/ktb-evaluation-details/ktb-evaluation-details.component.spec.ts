@@ -32,10 +32,10 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   xit('should have a reduced heatmap size when more than 10 SLOs are configured', () => {
     // given
-    component.evaluationData = EvaluationsTop10Mock;
+    component.evaluation = EvaluationsTop10Mock;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
+    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
 
     // then
     expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(10);
@@ -43,10 +43,10 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   xit('should have isHeatmapExtendable set to true when more than 10 SLOs are configured ', () => {
     // given
-    component.evaluationData = EvaluationsTop10Mock;
+    component.evaluation = EvaluationsTop10Mock;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
+    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
 
     // then
     expect(component.isHeatmapExtendable).toBeTruthy();
@@ -54,10 +54,10 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   xit('should have isHeatmapExtendable set to false when less than 10 SLOs are configured', () => {
     // given
-    component.evaluationData = EvaluationsMock;
+    component.evaluation = EvaluationsMock;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
+    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
 
     // then
     expect(component.isHeatmapExtendable).toBeFalsy();
@@ -65,10 +65,10 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   xit('should show a Show all SLIs button when more than 10 SLOs are configured', () => {
     // given
-    component.evaluationData = EvaluationsTop10Mock;
+    component.evaluation = EvaluationsTop10Mock;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
+    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
     fixture.detectChanges();
     const evaluationPage = fixture.nativeElement;
     const button = evaluationPage.querySelector('button.button-show-more-slo');
@@ -79,10 +79,10 @@ describe('KtbEvaluationDetailsComponent', () => {
 
   xit('should have a full heatmap size when more than 10 SLOs are configured and toggle is triggered', () => {
     // given
-    component.evaluationData = EvaluationsTop10Mock;
+    component.evaluation = EvaluationsTop10Mock;
 
     // when
-    component.updateChartData(component.evaluationData.data.evaluationHistory as Trace[]);
+    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
     component.toggleHeatmap();
 
     // then

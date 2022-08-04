@@ -17,9 +17,11 @@ import { KtbSliBreakdownModule } from '../ktb-sli-breakdown/ktb-sli-breakdown.mo
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtInputModule } from '@dynatrace/barista-components/input';
 import { KtbChartModule } from '../ktb-chart/ktb-chart.module';
+import { KtbEvaluationChartComponent } from './ktb-evaluation-chart/ktb-evaluation-chart.component';
+import { KtbEvaluationChartLegacyComponent } from './ktb-evaluation-chart/ktb-evaluation-chart-legacy/ktb-evaluation-chart-legacy.component';
 
 @NgModule({
-  declarations: [KtbEvaluationDetailsComponent],
+  declarations: [KtbEvaluationDetailsComponent, KtbEvaluationChartComponent, KtbEvaluationChartLegacyComponent],
   imports: [
     CommonModule,
     DtButtonModule,

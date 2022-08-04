@@ -343,6 +343,15 @@ export class ApiService {
     return this.http.get<EventResult>(url, { params });
   }
 
+  public getTracesByIds(projectName: string, ids: string[]): Observable<EventResult> {
+    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
+    const params = {
+      filter: `data.project:${projectName} source:${KeptnService.LIGHTHOUSE_SERVICE} AND id:${ids.join(',')}`,
+      excludeInvalidated: 'true',
+    };
+    return this.http.get<EventResult>(url, { params });
+  }
+
   public updateGitUpstreamExtended(projectName: string, gitCredentials?: IGitDataExtended): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put<unknown>(url, {
