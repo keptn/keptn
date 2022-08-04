@@ -67,6 +67,9 @@ spec:
 		requests:
 		- url: http://local:8080
 		  method: GET
+		  user:
+		    - key: email-id
+			  value: "{{.env.secretKey}}"
 		  headers:
             - key: x-token
               value: "{{.env.secretKey}}"
@@ -2010,6 +2013,10 @@ func Test_createRequest(t *testing.T) {
 		{
 			name: "valid beta input #1",
 			data: lib.Request{
+				User: lib.Usr{
+					Key:   "key",
+					Value: "value",
+				},
 				Headers: []lib.Header{
 					{
 						Key:   "key",
@@ -2021,12 +2028,16 @@ func Test_createRequest(t *testing.T) {
 				Payload: "some payload",
 				URL:     "http://local:8080",
 			},
-			want:    "curl --request POST --header 'key: value' --data 'some payload' --some-options http://local:8080",
+			want:    "curl --request POST --user 'key: value' --header 'key: value' --data 'some payload' --some-options http://local:8080",
 			wantErr: false,
 		},
 		{
 			name: "valid beta input #2",
 			data: lib.Request{
+				User: lib.Usr{
+					Key:   "key",
+					Value: "value",
+				},
 				Headers: []lib.Header{
 					{
 						Key:   "key",
@@ -2036,7 +2047,7 @@ func Test_createRequest(t *testing.T) {
 				Method: "POST",
 				URL:    "http://local:8080",
 			},
-			want:    "curl --request POST --header 'key: value' http://local:8080",
+			want:    "curl --request POST --user 'key: value' --header 'key: value' http://local:8080",
 			wantErr: false,
 		},
 		{
