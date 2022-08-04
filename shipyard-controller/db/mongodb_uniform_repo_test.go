@@ -727,6 +727,6 @@ func TestMongoDBUniformRepo_CreateOrUpdateUniformIntegration(t *testing.T) {
 	require.Nil(t, err)
 	require.Len(t, integrations, 1)
 	require.Len(t, integrations[0].Subscriptions, 0)
+	require.NotNil(t, integrations[0].Subscriptions)
 	require.Equal(t, []apimodels.EventSubscription{}, integrations[0].Subscriptions)
-	require.NotEqual(t, nil, integrations[0].Subscriptions)
 }
