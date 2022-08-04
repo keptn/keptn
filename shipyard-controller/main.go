@@ -225,6 +225,8 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceAbortedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceFinishedHook(eventDispatcher)
+	shipyardController.AddSequenceAbortedHook(eventDispatcher)
 	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
