@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/invopop/jsonschema v0.5.0
 	github.com/keptn/go-utils v0.17.1-0.20220718124953-6b126790c54c
-	github.com/keptn/keptn/webhook-service v0.0.0-20220803135051-ce231e8594df
+	github.com/keptn/keptn/webhook-service v0.0.0-20220801120858-9a5885986ee5
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
@@ -96,6 +96,7 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
+	github.com/keptn/keptn/webhook-service => ../webhook-service
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
