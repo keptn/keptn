@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -30,7 +29,6 @@ type eventPublisher interface {
 const defaultEventSource = "https://github.com/keptn/keptn/api"
 
 var eventHandlerInstance *EventHandler
-var instanceOnce = sync.Once{}
 
 type EventHandler struct {
 	EventPublisher eventPublisher
@@ -45,10 +43,15 @@ func GetEventHandlerInstance() (*EventHandler, error) {
 }
 
 func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.EventContext, error) {
+	logger.Info("API received a keptn event")
+	if err := Validate(event); err != nil {
+		return nil, err
+	}
+
+	// create or reuse context id
 	keptnContext := createOrApplyKeptnContext(event.Shkeptncontext)
 
-	logger.Info("API received a keptn event")
-
+	// determine source value
 	source := defaultEventSource
 	if event.Source != nil && len(*event.Source) > 0 {
 		sourceURL, err := url.Parse(*event.Source)
@@ -61,7 +64,7 @@ func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.
 
 	outEvent := &apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, outEvent); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not parse event: %w", err)
 	}
 
 	outEvent.Source = &source
