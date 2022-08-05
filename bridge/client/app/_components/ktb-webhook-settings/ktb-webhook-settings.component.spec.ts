@@ -175,7 +175,10 @@ describe('KtbWebhookSettingsComponent', () => {
     expect(component.getFormControl('method').value).toEqual(WebhookConfigMock.method);
     expect(component.getFormControl('payload').value).toEqual(WebhookConfigMock.payload);
     expect(component.getFormControl('proxy').value).toEqual(WebhookConfigMock.proxy);
-
+    expect(WebhookConfigMock.user).toEqual({
+      key: component.userControls.get('key')?.value,
+      value: component.userControls.get('value')?.value,
+    });
     for (let i = 0; i < component.headerControls.length; ++i) {
       expect(WebhookConfigMock.header[i]).toEqual({
         key: component.headerControls[i].get('key')?.value,
@@ -294,6 +297,8 @@ describe('KtbWebhookSettingsComponent', () => {
     component.getFormControl('method').setValue(component.webhookMethods[0]);
     component.getFormControl('url').setValue('https://example.com');
     component.addHeader();
+    component.userControls.get('key')?.setValue('email-id');
+    component.userControls.get('value')?.setValue('token-value');
     component.headerControls[0].get('key')?.setValue('x-token');
     component.headerControls[0].get('value')?.setValue('token-value');
     component.getFormControl('payload').setValue('payload');
@@ -305,6 +310,7 @@ describe('KtbWebhookSettingsComponent', () => {
     // then
     expect(spy).toHaveBeenCalledTimes(1);
     expect(spy).toHaveBeenCalledWith({
+      user: { key: 'email-id', value: 'token-value' },
       header: [{ key: 'x-token', value: 'token-value' }],
       method: 'GET',
       payload: 'payload',

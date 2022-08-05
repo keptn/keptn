@@ -8,6 +8,8 @@ class UniformPage {
   SUBSCRIPTION_DETAILS_LOC = 'ktb-expandable-tile dt-expandable-panel ktb-subscription-item';
   SUBSCRIPTION_EXPANDABLE_LOC = 'ktb-expandable-tile';
   EDIT_WEBHOOK_PAYLOAD_ID = 'edit-webhook-field-payload';
+  EDIT_WEBHOOK_FIELD_USER_NAME_ID = 'edit-webhook-field-userName';
+  EDIT_WEBHOOK_FIELD_USER_VALUE_ID = 'edit-webhook-field-userValue';
   EDIT_WEBHOOK_FIELD_HEADER_NAME_ID = 'edit-webhook-field-headerName';
   EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID = 'edit-webhook-field-headerValue';
   UPDATE_SUBSCRIPTION_BUTTON_ID = 'updateSubscriptionButton';
@@ -19,6 +21,8 @@ class UniformPage {
   EDIT_WEBHOOK_EVENT_SELECTOR_URL = 'event-url';
   EDIT_WEBHOOK_SECRET_SELECTOR_PAYLOAD = 'secret-payload';
   EDIT_WEBHOOK_EVENT_SELECTOR_PAYLOAD = 'event-payload';
+  EDIT_WEBHOOK_EVENT_SELECTOR_USER = 'event-user';
+  EDIT_WEBHOOK_SECRET_SELECTOR_USER = 'secret-user';
   EDIT_WEBHOOK_SECRET_SELECTOR_HEADER = 'secret-header';
   EDIT_WEBHOOK_EVENT_SELECTOR_HEADER = 'event-header';
   EDIT_WEBHOOK_FILTER = 'edit-subscription-field-filterStageService';

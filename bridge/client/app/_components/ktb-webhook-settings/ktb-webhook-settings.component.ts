@@ -8,7 +8,7 @@ import { IClientSecret } from '../../../../shared/interfaces/secret';
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
 
-type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished' | 'sendStarted';
+type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'user' | 'header' | 'sendFinished' | 'sendStarted';
 
 @Component({
   selector: 'ktb-webhook-settings',
@@ -21,6 +21,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     method: new FormControl('', [Validators.required]),
     url: new FormControl('', [Validators.required, FormUtils.isUrlOrSecretValidator]),
     payload: new FormControl('', [FormUtils.payloadSpecialCharValidator]),
+    user: new FormControl(''),
     header: new FormArray([]),
     proxy: new FormControl('', [FormUtils.isUrlValidator]),
     sendFinished: new FormControl('true'),
@@ -53,6 +54,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       this.getFormControl('url').setValue(webhookConfig.url);
       this.getFormControl('payload').setValue(webhookConfig.payload);
       this.getFormControl('proxy').setValue(webhookConfig.proxy);
+      this.addUser(webhookConfig.user.key, webhookConfig.user.value);
       this.setSendFinishedControl();
 
       for (const header of webhookConfig.header || []) {
@@ -114,6 +116,10 @@ export class KtbWebhookSettingsComponent implements OnInit {
   @Output() webhookChange: EventEmitter<IWebhookConfigClient> = new EventEmitter<IWebhookConfigClient>();
   @Output() webhookFormDirty: EventEmitter<boolean> = new EventEmitter<boolean>();
 
+  get user(): FormControl {
+    return this.getFormControl('user') as FormControl;
+  }
+
   get header(): FormArray {
     return this.getFormControl('header') as FormArray;
   }
@@ -138,6 +144,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
       url: this.getFormControl('url').value,
       payload: this.getFormControl('payload').value,
       proxy: this.getFormControl('proxy').value,
+      user: this.getFormControl('user').value,
       header: this.getFormControl('header').value,
       sendFinished: this.getFormControl('sendFinished').value === 'true',
       sendStarted: this.getFormControl('sendStarted').value === 'true',
@@ -145,6 +152,15 @@ export class KtbWebhookSettingsComponent implements OnInit {
     };
     this.webhookChange.emit(this._webhook);
     this.webhookFormDirty.emit(this.webhookConfigForm.dirty);
+  }
+
+  public addUser(name?: string, value?: string): void {
+    this.user(
+      {
+        key: new FormControl(name || '', [Validators.required]),
+        value: new FormControl(value || '', [Validators.required]),
+      }
+    );
   }
 
   public addHeader(name?: string, value?: string): void {

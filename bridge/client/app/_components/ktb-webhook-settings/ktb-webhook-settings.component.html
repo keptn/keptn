@@ -56,6 +56,46 @@
     </dt-form-field>
   </div>
   <div class="settings-section">
+    <p>Custom user</p>
+  </div>
+  <dt-form-field class="mr-2" uitestid="edit-webhook-field-userName">
+    <dt-label class="required">Key</dt-label>
+    <input formControlName="key" type="text" dtInput placeholder="e.g. xaror79553@lodores.co" autocomplete="false" />
+    <dt-error>Must not be empty</dt-error>
+  </dt-form-field>
+  <dt-form-field class="mr-2" uitestid="edit-webhook-field-userValue">
+    <dt-label class="required">Value</dt-label>
+    <input
+      #userInput
+      formControlName="value"
+      type="text"
+      dtInput
+      placeholder="e.g. hhjiieAfrzquLxkpKgcU58F7"
+      autocomplete="false"
+    />
+    <dt-error>Must not be empty</dt-error>
+    <div dtSuffix uitestid="event-user">
+      <ng-container
+        [ngTemplateOutlet]="payloadButton"
+        [ngTemplateOutletContext]="{
+          $implicit: undefined,
+          controlName: 'user',
+          selectionStart: userInput.selectionStart
+        }"
+      ></ng-container>
+    </div>
+    <div dtSuffix uitestid="secret-user">
+      <ng-container
+        [ngTemplateOutlet]="secretButton"
+        [ngTemplateOutletContext]="{
+          $implicit: '',
+          controlName: 'user',
+          selectionStart: userInput.selectionStart
+        }"
+      ></ng-container>
+    </div>
+  </dt-form-field>
+  <div class="settings-section">
     <p>Custom headers</p>
     <button
       type="button"
