@@ -1,23 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbEvaluationDetailsComponent } from './ktb-evaluation-details.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { EvaluationsTop10Mock } from '../../_services/_mockData/evaluations-top10.mock';
-import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
-import { Trace } from '../../_models/trace';
-import { EvaluationChartItemMock } from '../../_services/_mockData/evaluation-chart-item.mock';
-import { SliInfoMock } from '../../_services/_mockData/sli-info.mock';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbEvaluationDetailsModule } from './ktb-evaluation-details.module';
+import { ElementRef, EmbeddedViewRef, TemplateRef } from '@angular/core';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ClipboardService } from '../../_services/clipboard.service';
+import { Trace } from '../../_models/trace';
+import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
+import { DataService } from '../../_services/data.service';
 
-describe('KtbEvaluationDetailsComponent', () => {
+describe(KtbEvaluationDetailsComponent.name, () => {
   let component: KtbEvaluationDetailsComponent;
   let fixture: ComponentFixture<KtbEvaluationDetailsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [],
-      imports: [KtbEvaluationDetailsModule, HttpClientTestingModule],
+      imports: [KtbEvaluationDetailsModule, BrowserAnimationsModule, HttpClientTestingModule],
       providers: [{ provide: ApiService, useClass: ApiServiceMock }],
     }).compileComponents();
 
@@ -30,69 +32,152 @@ describe('KtbEvaluationDetailsComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  xit('should have a reduced heatmap size when more than 10 SLOs are configured', () => {
-    // given
-    component.evaluation = EvaluationsTop10Mock;
+  describe('SLO dialog', () => {
+    let openDialogSpy: jest.SpyInstance;
+    beforeEach(() => {
+      openDialogSpy = jest
+        .spyOn(TestBed.inject(MatDialog), 'open')
+        .mockReturnValue({ close: () => {} } as MatDialogRef<string>);
+    });
 
-    // when
-    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
+    it('should show SLO dialog', () => {
+      // given, when
+      const template = showSloDialog('bXlTTE8=');
 
-    // then
-    expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(10);
+      // then
+      expect(openDialogSpy).toHaveBeenCalledWith(template, {
+        data: 'mySLO',
+      });
+      expect(Reflect.get(component, 'sloDialogRef')).not.toBeUndefined();
+    });
+
+    it('should close SLO dialog', () => {
+      // given
+      showSloDialog('bXlTTE8=');
+      const closeSpy = jest.spyOn(Reflect.get(component, 'sloDialogRef'), 'close');
+
+      // when
+      component.closeSloDialog();
+
+      // then
+      expect(closeSpy).toHaveBeenCalled();
+    });
   });
 
-  xit('should have isHeatmapExtendable set to true when more than 10 SLOs are configured ', () => {
+  it('should copy payload to clipboard', async () => {
     // given
-    component.evaluation = EvaluationsTop10Mock;
+    const clipboardSpy = jest.spyOn(TestBed.inject(ClipboardService), 'copy');
+    document.execCommand = jest.fn();
 
     // when
-    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
+    component.copySloPayload('myPayload');
 
     // then
-    expect(component.isHeatmapExtendable).toBeTruthy();
+    expect(document.execCommand).toHaveBeenCalledWith('copy');
+    expect(clipboardSpy).toHaveBeenCalledWith('myPayload', 'slo payload');
   });
 
-  xit('should have isHeatmapExtendable set to false when less than 10 SLOs are configured', () => {
-    // given
+  describe('invalidate dialog', () => {
+    let openDialogSpy: jest.SpyInstance;
+    beforeEach(() => {
+      openDialogSpy = jest
+        .spyOn(TestBed.inject(MatDialog), 'open')
+        .mockReturnValue({ close: () => {} } as MatDialogRef<Trace | undefined>);
+    });
+
+    it('should show invalidate dialog', () => {
+      // given
+      const trace = EvaluationsMock;
+      component.evaluationData = {
+        evaluation: trace,
+        shouldSelect: true,
+      };
+
+      // when
+      const template = showInvalidateDialog();
+
+      // then
+      expect(openDialogSpy).toHaveBeenCalledWith(template, {
+        data: trace,
+      });
+      expect(Reflect.get(component, 'invalidateEvaluationDialogRef')).not.toBeUndefined();
+    });
+
+    it('should close invalidate dialog', () => {
+      // given
+      showInvalidateDialog();
+      const closeSpy = jest.spyOn(Reflect.get(component, 'invalidateEvaluationDialogRef'), 'close');
+
+      // when
+      component.closeInvalidateEvaluationDialog();
+
+      // then
+      expect(closeSpy).toHaveBeenCalled();
+    });
+
+    it('should close invalidate dialog after invalidating', () => {
+      // given
+      const trace = EvaluationsMock;
+      component.evaluationData = {
+        evaluation: trace,
+        shouldSelect: true,
+      };
+      showInvalidateDialog();
+      const closeSpy = jest.spyOn(Reflect.get(component, 'invalidateEvaluationDialogRef'), 'close');
+      const invalidateSpy = jest.spyOn(TestBed.inject(DataService), 'invalidateEvaluation');
+
+      // when
+      component.invalidateEvaluation(trace, 'myReason');
+
+      // then
+      expect(closeSpy).toHaveBeenCalled();
+      expect(invalidateSpy).toHaveBeenCalledWith(trace, 'myReason');
+    });
+  });
+
+  it('should map evaluation to evaluationData', () => {
+    // given, when
     component.evaluation = EvaluationsMock;
 
-    // when
-    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
-
     // then
-    expect(component.isHeatmapExtendable).toBeFalsy();
+    expect(component.evaluationData).toEqual({
+      evaluation: EvaluationsMock,
+      shouldSelect: true,
+    });
+    expect(component.evaluation).toEqual(EvaluationsMock);
   });
 
-  xit('should show a Show all SLIs button when more than 10 SLOs are configured', () => {
-    // given
-    component.evaluation = EvaluationsTop10Mock;
+  function showSloDialog(content: string): TemplateRef<string> {
+    const template = getTemplateRefMock();
+    component.showSloDialog(content, template);
+    return template;
+  }
 
-    // when
-    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
-    fixture.detectChanges();
-    const evaluationPage = fixture.nativeElement;
-    const button = evaluationPage.querySelector('button.button-show-more-slo');
+  function showInvalidateDialog(): TemplateRef<Trace | undefined> {
+    const template = {
+      get elementRef(): ElementRef {
+        return {
+          nativeElement: undefined,
+        };
+      },
+      createEmbeddedView(): EmbeddedViewRef<Trace | undefined> {
+        return undefined as unknown as EmbeddedViewRef<Trace | undefined>;
+      },
+    };
+    component.invalidateEvaluationTrigger(template);
+    return template;
+  }
 
-    // then
-    expect(button).toBeTruthy();
-  });
-
-  xit('should have a full heatmap size when more than 10 SLOs are configured and toggle is triggered', () => {
-    // given
-    component.evaluation = EvaluationsTop10Mock;
-
-    // when
-    component.updateChartData(component.evaluation.data.evaluationHistory as Trace[]);
-    component.toggleHeatmap();
-
-    // then
-    expect(component._heatmapOptions.yAxis[0].categories.length).toEqual(17);
-  });
-
-  it('should aggregate SLI results', () => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const result = component.getSliResultInfos(EvaluationChartItemMock);
-    expect(result).toEqual(SliInfoMock);
-  });
+  function getTemplateRefMock(): TemplateRef<string> {
+    return {
+      get elementRef(): ElementRef {
+        return {
+          nativeElement: undefined,
+        };
+      },
+      createEmbeddedView(): EmbeddedViewRef<string> {
+        return undefined as unknown as EmbeddedViewRef<string>;
+      },
+    };
+  }
 });

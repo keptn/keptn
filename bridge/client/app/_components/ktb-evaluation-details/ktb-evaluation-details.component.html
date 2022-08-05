@@ -32,7 +32,7 @@
               dt-button
               variant="secondary"
               uitestid="ktb-show-slo-button"
-              (click)="showSloDialog(selectedEvaluationData, sloDialog)"
+              (click)="showSloDialog(selectedEvaluationData.sloFileContent, sloDialog)"
               [disabled]="!selectedEvaluationData.sloFileContentParsed"
             >
               <dt-icon name="services"></dt-icon>

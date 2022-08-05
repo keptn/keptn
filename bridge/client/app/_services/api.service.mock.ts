@@ -383,6 +383,23 @@ export class ApiServiceMock extends ApiService {
   public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {
     return of({ keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' });
   }
+
+  public getTracesByIds(projectName: string, ids: string[]): Observable<EventResult> {
+    return of({
+      events: [
+        {
+          data: {
+            project: 'myProject',
+            stage: 'myStage',
+            service: 'myService',
+          },
+        } as Trace,
+      ],
+      nextPageKey: 0,
+      pageSize: 1,
+      totalCount: 1,
+    });
+  }
 }
 
 /* eslint-enable @typescript-eslint/no-unused-vars */

@@ -137,7 +137,9 @@ export class KtbSliBreakdownComponent implements OnInit {
       (indicatorResult) => indicatorResult.value.comparedValue !== undefined
     );
     const loadComparedEvaluations =
-      this.comparedEvents.length && this.projectName && !this.comparedIndicatorResults?.length && !hasComparedValue;
+      this.comparedEvents.length &&
+      this.projectName &&
+      (!hasComparedValue || this.comparedIndicatorResults?.length !== this.comparedEvents.length);
 
     if (loadComparedEvaluations && !fetchedComparedEvaluations) {
       this.dataService.getTracesByIds(this.projectName, this.comparedEvents).subscribe((traces: Trace[]) => {
