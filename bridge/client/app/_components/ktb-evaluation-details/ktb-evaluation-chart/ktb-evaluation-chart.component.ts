@@ -82,7 +82,7 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
       });
   }
 
-  private setEvaluation(evaluationData: { evaluation?: Trace; shouldSelect: boolean }): void {
+  private setEvaluation(evaluationData: IEvaluationSelectionData): void {
     if (this._evaluationData.evaluation?.id !== evaluationData.evaluation?.id) {
       this._evaluationData = evaluationData;
       this.evaluationHistoryUpdates = undefined;
@@ -98,9 +98,6 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
   }
 
   public dataPointChanged(identifier: string): void {
-    if (identifier === this.selectedIdentifier) {
-      return;
-    }
     const mapComparedEventsToEvaluations =
       (history: Trace[]): FuncEventIdToEvaluation =>
       (eventId: string) =>

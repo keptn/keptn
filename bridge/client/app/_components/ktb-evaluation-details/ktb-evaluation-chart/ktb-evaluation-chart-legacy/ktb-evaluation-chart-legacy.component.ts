@@ -95,7 +95,7 @@ class HeatmapPoint implements IHeatmapPoint {
 }
 
 @Component({
-  selector: 'ktb-evaluation-chart-legacy[evaluationData]',
+  selector: 'ktb-evaluation-chart-legacy[evaluationData][evaluationHistory]',
   templateUrl: './ktb-evaluation-chart-legacy.component.html',
   styleUrls: ['./ktb-evaluation-chart-legacy.component.scss'],
 })
@@ -106,11 +106,7 @@ export class KtbEvaluationChartLegacyComponent implements OnDestroy {
   private _heatmapCategoriesFull: string[] = [];
   private _heatmapCategoriesReduced: string[] = [];
   private heatmapChart?: DtChart;
-  public _heatmapSeries: HeatmapSeriesOptions[] = [];
-  public _chartSeries: (SeriesColumnOptions | SeriesLineOptions)[] = [];
-  public HeatmapPointClass = HeatmapPoint;
-  public isHeatmapExtendable = false;
-  public isHeatmapExtended = false;
+  private _evaluationData: IEvaluationSelectionData = { shouldSelect: false };
   private _evaluationColor: { [key: string]: string } = {
     pass: '#7dc540',
     warning: '#e6be00',
@@ -119,6 +115,13 @@ export class KtbEvaluationChartLegacyComponent implements OnDestroy {
     info: '#f8f8f8',
   };
   private _metrics: string[] = [];
+  private _evaluationHistory: Trace[] = [];
+  private selectedEvaluation?: Trace;
+  public _heatmapSeries: HeatmapSeriesOptions[] = [];
+  public _chartSeries: (SeriesColumnOptions | SeriesLineOptions)[] = [];
+  public HeatmapPointClass = HeatmapPoint;
+  public isHeatmapExtendable = false;
+  public isHeatmapExtended = false;
   public _heatmapOptions: HeatmapOptions = {
     chart: {
       type: 'heatmap',
@@ -229,20 +232,30 @@ export class KtbEvaluationChartLegacyComponent implements OnDestroy {
       },
     },
   };
-  private selectedEvaluation?: Trace;
+
+  @Output() selectedEvaluationChange = new EventEmitter<Trace>();
 
   @ViewChild('heatmapChart') set heatmap(heatmap: DtChart) {
     this.heatmapChart = heatmap;
   }
 
-  private _evaluationData: IEvaluationSelectionData = { shouldSelect: false };
-
-  @Input() set evaluationData(evaluationData: IEvaluationSelectionData) {
+  @Input()
+  set evaluationData(evaluationData: IEvaluationSelectionData) {
     this._evaluationData = evaluationData;
     this.setEvaluation(evaluationData);
   }
+  get evaluationData(): IEvaluationSelectionData {
+    return this._evaluationData;
+  }
   @Input() chartType: TChartType = 'heatmap';
-  @Output() selectedEvaluationChange = new EventEmitter<Trace>();
+  @Input()
+  set evaluationHistory(evaluationHistory: Trace[]) {
+    this._evaluationHistory = evaluationHistory;
+    this.evaluationDataChanged();
+  }
+  get evaluationHistory(): Trace[] {
+    return this._evaluationHistory;
+  }
 
   get heatmapSeries(): DtChartSeries[] {
     return this._heatmapSeries;
@@ -259,8 +272,8 @@ export class KtbEvaluationChartLegacyComponent implements OnDestroy {
   constructor(private zone: NgZone, public dateUtil: DateUtil, private _changeDetectorRef: ChangeDetectorRef) {}
 
   private evaluationDataChanged(): void {
-    if (!this.selectedEvaluation && this._evaluationData.evaluation?.data.evaluationHistory) {
-      this.setHeatmapDataAfterRender(this._evaluationData.evaluation.data.evaluationHistory);
+    if (!this.selectedEvaluation && this.evaluationHistory) {
+      this.setHeatmapDataAfterRender(this.evaluationHistory);
     }
   }
 
@@ -272,10 +285,9 @@ export class KtbEvaluationChartLegacyComponent implements OnDestroy {
     }
   }
 
-  private setEvaluation(evaluationData: { evaluation?: Trace; shouldSelect: boolean }): void {
+  private setEvaluation(evaluationData: IEvaluationSelectionData): void {
     if (this._evaluationData.evaluation?.id !== evaluationData.evaluation?.id) {
       this.selectedEvaluation = undefined;
-      this.evaluationData = evaluationData;
       this.evaluationDataChanged();
     }
   }

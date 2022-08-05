@@ -346,8 +346,9 @@ export class ApiService {
   public getTracesByIds(projectName: string, ids: string[]): Observable<EventResult> {
     const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
     const params = {
-      filter: `data.project:${projectName} source:${KeptnService.LIGHTHOUSE_SERVICE} AND id:${ids.join(',')}`,
+      filter: `data.project:${projectName} AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND id:${ids.join(',')}`,
       excludeInvalidated: 'true',
+      limit: ids.length.toString(),
     };
     return this.http.get<EventResult>(url, { params });
   }

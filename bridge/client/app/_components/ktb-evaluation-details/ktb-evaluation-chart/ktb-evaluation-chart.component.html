@@ -47,6 +47,7 @@
     *ngIf="chartType"
     [chartType]="chartType"
     [evaluationData]="evaluationData"
+    [evaluationHistory]="evaluationData.evaluation?.data?.evaluationHistory ?? []"
     (selectedEvaluationChange)="selectedEvaluationChange.emit($event)"
   ></ktb-evaluation-chart-legacy>
 </ng-template>

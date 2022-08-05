@@ -30,6 +30,11 @@ export class KtbSliBreakdownComponent implements OnInit {
   public columnNames: string[] = [];
   public tableEntries: DtTableDataSource<SliResult> = new DtTableDataSource();
   public readonly SliResultClass = SliResult;
+  private _objectives?: SloConfig['objectives'];
+  private _comparedEvents: string[] = [];
+  private _projectName = '';
+  // either the compared evaluations are fetched on demand if the comparedValue property does not exist,
+  //  or it is set through the ktb-evaluation-chart.component  because it already loads the history
   private _comparedIndicatorResults: IndicatorResult[][] = [];
 
   @Input()
@@ -53,9 +58,30 @@ export class KtbSliBreakdownComponent implements OnInit {
     }
   }
 
-  @Input() objectives?: SloConfig['objectives'];
-  @Input() comparedEvents: string[] = [];
-  @Input() projectName = '';
+  @Input()
+  set objectives(objectives: SloConfig['objectives'] | undefined) {
+    this._objectives = objectives;
+    this.updateDataSource();
+  }
+  get objectives(): SloConfig['objectives'] | undefined {
+    return this._objectives;
+  }
+  @Input()
+  set comparedEvents(comparedEvents: string[]) {
+    this._comparedEvents = comparedEvents;
+    this.updateDataSource();
+  }
+  get comparedEvents(): string[] {
+    return this._comparedEvents;
+  }
+  @Input()
+  set projectName(projectName: string) {
+    this._projectName = projectName;
+    this.updateDataSource();
+  }
+  get projectName(): string {
+    return this._projectName;
+  }
 
   @Input()
   get comparedIndicatorResults(): IndicatorResult[][] {
@@ -111,7 +137,7 @@ export class KtbSliBreakdownComponent implements OnInit {
       (indicatorResult) => indicatorResult.value.comparedValue !== undefined
     );
     const loadComparedEvaluations =
-      this.comparedEvents.length && !this.comparedIndicatorResults?.length && !hasComparedValue;
+      this.comparedEvents.length && this.projectName && !this.comparedIndicatorResults?.length && !hasComparedValue;
 
     if (loadComparedEvaluations && !fetchedComparedEvaluations) {
       this.dataService.getTracesByIds(this.projectName, this.comparedEvents).subscribe((traces: Trace[]) => {
