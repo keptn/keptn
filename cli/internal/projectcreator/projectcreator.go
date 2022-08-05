@@ -4,12 +4,13 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	api "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/pkg/logging"
 	"io"
 	"io/fs"
 	"strings"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	api "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/pkg/logging"
 )
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/api_v1_interface.go . apiV1Interface:APIV1InterfaceMock
@@ -119,6 +120,7 @@ func (p *ProjectCreator) CreateProject(projectInfo ProjectInfo) error {
 			}
 
 			project.GitCredentials.SshAuth = &sshCredentials
+			project.GitCredentials.Mode = apimodels.SshMode
 		} else if strings.HasPrefix(projectInfo.RemoteURL, "http") {
 			httpCredentials := apimodels.HttpsGitAuth{
 				Token:           projectInfo.GitToken,
@@ -148,6 +150,7 @@ func (p *ProjectCreator) CreateProject(projectInfo ProjectInfo) error {
 				httpCredentials.Certificate = base64.StdEncoding.EncodeToString(gitCertFileContent)
 			}
 			project.GitCredentials.HttpsAuth = &httpCredentials
+			project.GitCredentials.Mode = apimodels.SshMode
 		}
 	}
 	_, errCreateProject := p.APIV1Interface.CreateProject(project)

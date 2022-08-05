@@ -6,7 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,6 +15,8 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/config"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -1676,6 +1677,7 @@ func createProject(t *testing.T, c http.Client, projectName string, shipyardCont
 		GitCredentials: &apimodels.GitAuthCredentials{
 			RemoteURL: "http://some.url",
 			User:      "user",
+			Mode:      apimodels.HttpsMode,
 			HttpsAuth: &apimodels.HttpsGitAuth{
 				Token: "token",
 			},

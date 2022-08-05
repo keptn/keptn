@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/configurationstore"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
-	"strconv"
-	"strings"
-	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -475,6 +476,7 @@ func toSecureGitCredentials(credentials *apimodels.GitAuthCredentials) *apimodel
 	secureCredentials := apimodels.GitAuthCredentialsSecure{
 		User:      credentials.User,
 		RemoteURL: credentials.RemoteURL,
+		Mode:      credentials.Mode,
 	}
 
 	if credentials.HttpsAuth != nil {
@@ -503,6 +505,7 @@ func toInsecureGitCredentials(credentials *apimodels.GitAuthCredentialsSecure) *
 	insecureCredentials := apimodels.GitAuthCredentials{
 		User:      credentials.User,
 		RemoteURL: credentials.RemoteURL,
+		Mode:      credentials.Mode,
 	}
 
 	if credentials.HttpsAuth != nil {

@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/internal/configurationstore/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore/fake"
-	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -155,6 +156,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -196,6 +198,7 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -291,6 +294,7 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -355,6 +359,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -405,6 +410,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -484,6 +490,7 @@ func TestCreate(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -534,6 +541,7 @@ func TestUpdate_GettingOldSecretFails(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -583,6 +591,7 @@ func TestUpdate_GettingOldProjectFails(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -632,6 +641,7 @@ func TestUpdate_OldProjectNotAvailable(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -685,6 +695,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	gitCredentials := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -728,6 +739,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	newSecretsEncoded, _ := json.Marshal(apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -772,6 +784,7 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	gitCredentials2 := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -824,6 +837,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	newSecretsEncoded, _ := json.Marshal(apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -873,6 +887,7 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	gitCredentials3 := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -940,6 +955,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	gitCredentials3 := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -1020,6 +1036,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &httpCredentials,
 	}
 
@@ -1074,6 +1091,7 @@ func TestUpdate(t *testing.T) {
 	updateSecretsData, _ := json.Marshal(apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -1127,6 +1145,7 @@ func TestUpdate(t *testing.T) {
 	gitCredentials4 := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token:           "git-token",
 			InsecureSkipTLS: false,
@@ -1164,6 +1183,7 @@ func TestUpdate(t *testing.T) {
 	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &httpCredentials,
 	}
 
@@ -1339,6 +1359,7 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 
 	updateSecretsData, _ := json.Marshal(apimodels.GitAuthCredentials{
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		RemoteURL: "git-url",
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token: "git-token",
@@ -1392,6 +1413,7 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 	gitCredentials3 := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token: "git-token",
 			Proxy: &apimodels.ProxyGitAuth{
@@ -1428,6 +1450,7 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &httpCredentials,
 	}
 
@@ -1510,6 +1533,7 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	gitCredentials3 := apimodels.GitAuthCredentials{
 		RemoteURL: "git-url",
 		User:      "git-user",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuth{
 			Token: "git-token",
 		},
@@ -1873,6 +1897,7 @@ func TestToSecureGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "git-token",
 					Proxy: &apimodels.ProxyGitAuth{
@@ -1886,6 +1911,7 @@ func TestToSecureGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentialsSecure{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuthSecure{
 					Proxy: &apimodels.ProxyGitAuthSecure{
 						URL:    "some-url",
@@ -1899,6 +1925,7 @@ func TestToSecureGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -1907,6 +1934,7 @@ func TestToSecureGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentialsSecure{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuthSecure{
 					InsecureSkipTLS: true,
 				},
@@ -1916,6 +1944,7 @@ func TestToSecureGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey: "key",
 				},
@@ -1923,6 +1952,7 @@ func TestToSecureGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentialsSecure{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 			},
 		},
 	}
@@ -1944,6 +1974,7 @@ func TestToInsecureGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentialsSecure{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuthSecure{
 					Proxy: &apimodels.ProxyGitAuthSecure{
 						URL:    "some-url",
@@ -1955,6 +1986,7 @@ func TestToInsecureGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Proxy: &apimodels.ProxyGitAuth{
 						URL:    "some-url",
@@ -1968,6 +2000,7 @@ func TestToInsecureGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentialsSecure{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuthSecure{
 					InsecureSkipTLS: true,
 				},
@@ -1975,6 +2008,7 @@ func TestToInsecureGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					InsecureSkipTLS: true,
 				},
@@ -1984,10 +2018,12 @@ func TestToInsecureGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentialsSecure{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 			},
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 			},
 		},
 	}
@@ -2009,6 +2045,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "git-token",
 					Proxy: &apimodels.ProxyGitAuth{
@@ -2022,6 +2059,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "git-token",
 					Proxy: &apimodels.ProxyGitAuth{
@@ -2037,6 +2075,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -2045,6 +2084,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -2055,6 +2095,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -2064,6 +2105,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -2075,6 +2117,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -2084,6 +2127,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "git-token",
 					InsecureSkipTLS: true,
@@ -2095,6 +2139,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey:     "ZW5jb2RlZC1rZXk=",
 					PrivateKeyPass: "pass",
@@ -2103,6 +2148,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey:     "encoded-key",
 					PrivateKeyPass: "pass",
@@ -2113,6 +2159,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey:     "",
 					PrivateKeyPass: "",
@@ -2121,6 +2168,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey:     "",
 					PrivateKeyPass: "",
@@ -2131,6 +2179,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			oldProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKeyPass: "",
 				},
@@ -2138,6 +2187,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 			newProject: &apimodels.GitAuthCredentials{
 				RemoteURL: "git-url",
 				User:      "git-user",
+				Mode:      apimodels.HttpsMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKeyPass: "",
 				},

@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"github.com/keptn/keptn/shipyard-controller/internal/provisioner"
@@ -78,6 +79,10 @@ func (p ProjectValidator) validateCreateProjectParams(createProjectParams *model
 		return fmt.Errorf("gitCredentials cannot be empty")
 	}
 
+	if createProjectParams.GitCredentials.Mode == "" {
+		return fmt.Errorf("GitAuthCredentials mode cannot be empty")
+	}
+
 	if err := common.ValidateGitRemoteURL(createProjectParams.GitCredentials.RemoteURL); err != nil {
 		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
 	}
@@ -138,6 +143,10 @@ func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *model
 
 	if updateProjectParams.GitCredentials == nil {
 		return fmt.Errorf("gitCredentials cannot be empty")
+	}
+
+	if updateProjectParams.GitCredentials.Mode == "" {
+		return fmt.Errorf("GitAuthCredentials mode cannot be empty")
 	}
 
 	if err := common.ValidateGitRemoteURL(updateProjectParams.GitCredentials.RemoteURL); err != nil {
@@ -314,6 +323,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 		params.GitCredentials = &apimodels.GitAuthCredentials{
 			RemoteURL: provisioningData.GitRemoteURL,
+			Mode:      apimodels.ProvisionedMode,
 			HttpsAuth: &apimodels.HttpsGitAuth{
 				InsecureSkipTLS: false,
 				Token:           provisioningData.GitToken,
@@ -386,7 +396,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+	if params.GitCredentials.Mode != apimodels.ProvisionedMode && ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL) != nil {
 		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 		return
 	}
