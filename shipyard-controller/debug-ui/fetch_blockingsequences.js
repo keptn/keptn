@@ -1,7 +1,25 @@
-function fetchBlockingSequences(project, context, stage, blockingSequencesList) {
-  fetch(`/sequence/project/${project}/shkeptncontext/${context}/stage/${stage}/blocking`, {
-    method: "get",
-  })
+function fetchBlockingSequences(
+  project,
+  context,
+  stage,
+  blockingSequencesList
+) {
+  if (
+    project == null ||
+    context == null ||
+    stage == null ||
+    blockingSequencesList == null
+  ) {
+    console.log("fetchBlockingSequences() invalid parameters");
+    return;
+  }
+
+  fetch(
+    `/sequence/project/${project}/shkeptncontext/${context}/stage/${stage}/blocking`,
+    {
+      method: "get",
+    }
+  )
     .then((res) => {
       return res.json();
     })
@@ -9,9 +27,11 @@ function fetchBlockingSequences(project, context, stage, blockingSequencesList) 
       response.forEach((blockingSequence) => {
         if (blockingSequence.scope !== null) {
           let li = document.createElement("li");
-            li.innerHTML = blockingSequence.scope.keptnContext
-            blockingSequencesList.append(li)
+          li.innerHTML = blockingSequence.scope.keptnContext;
+          blockingSequencesList.append(li);
         }
       });
+    }).catch(err => {
+        console.log(err)
     });
 }

@@ -192,8 +192,7 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 // @Success      200                  {object}  []models.SequenceExecution          "ok"
 // @Failure      404                  {object}  models.Error             			"not found"
 // @Failure      500                  {object}  models.Error              			"Internal error"
-// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/stage/{stage}/blocking", controller.DebugHandler.GetBlockingSequences)
-
+// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/stage/{stage}/blocking [get]
 func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
 
 	shkeptncontext := c.Param("shkeptncontext")
