@@ -73,7 +73,7 @@
     "semver": "7.3.7",
     "uuid": "8.3.2",
     "yaml": "2.1.1",
-    "zone.js": "0.11.6"
+    "zone.js": "0.11.7"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "12.2.18",
