@@ -1447,3 +1447,253 @@ func TestPackageValidationInvalidType(t *testing.T) {
 
 	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
 }
+
+func TestPackageValidationApiAndResourceTaskNotBothSet(t *testing.T) {
+	manifests := []model.ImportManifest{
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "validate_resource_task_set_on_api_task",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+					ResourceTask: &model.ResourceTask{
+						File:      "./capture.pcap",
+						RemoteURI: "/wireshark/capture.pcap",
+						Stage:     "dev",
+						Service:   "service",
+					},
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "validate_api_task_set_on_resource_task",
+					Type:    "resource",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+					ResourceTask: &model.ResourceTask{
+						File:      "./capture.pcap",
+						RemoteURI: "/wireshark/capture.pcap",
+						Stage:     "dev",
+						Service:   "service",
+					},
+				},
+			},
+		},
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	tests := []struct {
+		name               string
+		manifest           model.ImportManifest
+		expectedErrMessage string
+		expectError        bool
+	}{
+		{
+			name:               "validate_resource_task_set_on_api_task",
+			manifest:           manifests[0],
+			expectedErrMessage: "cannot set resource task fields on API task",
+			expectError:        true,
+		},
+		{
+			name:               "validate_api_task_set_on_resource_task",
+			manifest:           manifests[1],
+			expectedErrMessage: "cannot set API task fields on resource task",
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				err := sut.validateManifest(&tt.manifest, importPackageMock)
+				if tt.expectError {
+					assert.EqualErrorf(t, err, tt.expectedErrMessage, "Error should be: %v, got: %v", tt.expectedErrMessage, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+	}
+
+}
+
+func TestPackageValidationResourceUriEmpty(t *testing.T) {
+	manifest := &model.ImportManifest{
+		ApiVersion: "v1beta1",
+		Tasks: []*model.ManifestTask{
+			{
+				ID:      "resource_uri_empty",
+				Type:    "resource",
+				Context: nil,
+				ResourceTask: &model.ResourceTask{
+					File:      "./capture.pcap",
+					RemoteURI: "",
+					Stage:     "dev",
+					Service:   "service",
+				},
+			},
+		},
+	}
+
+	expectedErrorMsg := fmt.Sprintf("resourceUri %s cannot be empty for resource task type", manifest.Tasks[0].ResourceTask.RemoteURI)
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	err := sut.validateManifest(manifest, importPackageMock)
+
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}
+
+func TestPackageValidationEmptyTaskNotAllowed(t *testing.T) {
+	manifests := []model.ImportManifest{
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "empty_api_task_not_allowed",
+					Type:    "api",
+					Context: nil,
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "empty_resource_task_not_allowed",
+					Type:    "resource",
+					Context: nil,
+				},
+			},
+		},
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	tests := []struct {
+		name               string
+		manifest           model.ImportManifest
+		expectedErrMessage string
+		expectError        bool
+	}{
+		{
+			name:               "empty_api_task_not_allowed",
+			manifest:           manifests[0],
+			expectedErrMessage: "empty api definition not supported",
+			expectError:        true,
+		},
+		{
+			name:               "empty_resource_task_not_allowed",
+			manifest:           manifests[1],
+			expectedErrMessage: "empty resource definition not supported",
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				err := sut.validateManifest(&tt.manifest, importPackageMock)
+				if tt.expectError {
+					assert.EqualErrorf(t, err, tt.expectedErrMessage, "Error should be: %v, got: %v", tt.expectedErrMessage, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+	}
+}
