@@ -128,13 +128,8 @@ export class KtbSliBreakdownComponent implements OnInit {
     fetchedComparedEvaluations = false
   ): SliResult[] | undefined {
     const totalscore = indicatorResults.reduce((acc, result) => acc + result.score, 0);
-    const isOld = indicatorResults.some((result) => !!result.targets);
-    // splitting of targets into pass and warning was introduced in 0.8
-    if (isOld) {
-      this.columnNames = ['details', 'name', 'value', 'weight', 'targets', 'result', 'score'];
-    } else {
-      this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
-    }
+    this.setColumnNames(indicatorResults);
+
     // comparedValue was introduced in 0.12
     const hasComparedValue = indicatorResults.every(
       (indicatorResult) => indicatorResult.value.comparedValue !== undefined
@@ -152,32 +147,43 @@ export class KtbSliBreakdownComponent implements OnInit {
       return undefined;
     }
 
-    return indicatorResults.map((indicatorResult) => {
-      const comparedValue = indicatorResult.value.comparedValue ?? this.calculateComparedValue(indicatorResult);
-      const compared: Partial<SliResult> = {};
-      if (!isNaN(comparedValue)) {
-        compared.comparedValue = AppUtils.formatNumber(comparedValue);
-        compared.calculatedChanges = {
-          absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
-          relative: AppUtils.formatNumber((indicatorResult.value.value / (comparedValue || 1)) * 100 - 100),
-        };
-      }
+    return indicatorResults.map((indicatorResult) => ({
+      name: indicatorResult.displayName || indicatorResult.value.metric,
+      value: indicatorResult.value.message || AppUtils.formatNumber(indicatorResult.value.value),
+      result: indicatorResult.status,
+      score: totalscore === 0 ? 0 : (indicatorResult.score / totalscore) * this.score,
+      passTargets: indicatorResult.passTargets,
+      warningTargets: indicatorResult.warningTargets,
+      targets: indicatorResult.targets,
+      keySli: indicatorResult.keySli,
+      success: indicatorResult.value.success,
+      expanded: false,
+      weight: this.objectives?.find((obj) => obj.sli === indicatorResult.value.metric)?.weight ?? 1,
+      ...this.getComparedValues(indicatorResult),
+    }));
+  }
 
-      return {
-        name: indicatorResult.displayName || indicatorResult.value.metric,
-        value: indicatorResult.value.message || AppUtils.formatNumber(indicatorResult.value.value),
-        result: indicatorResult.status,
-        score: totalscore === 0 ? 0 : (indicatorResult.score / totalscore) * this.score,
-        passTargets: indicatorResult.passTargets,
-        warningTargets: indicatorResult.warningTargets,
-        targets: indicatorResult.targets,
-        keySli: indicatorResult.keySli,
-        success: indicatorResult.value.success,
-        expanded: false,
-        weight: this.objectives?.find((obj) => obj.sli === indicatorResult.value.metric)?.weight ?? 1,
-        ...compared,
+  private setColumnNames(indicatorResults: IndicatorResult[]): void {
+    const isOld = indicatorResults.some((result) => !!result.targets);
+    // splitting of targets into pass and warning was introduced in 0.8
+    if (isOld) {
+      this.columnNames = ['details', 'name', 'value', 'weight', 'targets', 'result', 'score'];
+    } else {
+      this.columnNames = ['details', 'name', 'value', 'weight', 'passTargets', 'warningTargets', 'result', 'score'];
+    }
+  }
+
+  private getComparedValues(indicatorResult: IndicatorResult): Partial<SliResult> {
+    const comparedValue = indicatorResult.value.comparedValue ?? this.calculateComparedValue(indicatorResult);
+    const compared: Partial<SliResult> = {};
+    if (!isNaN(comparedValue)) {
+      compared.comparedValue = AppUtils.formatNumber(comparedValue);
+      compared.calculatedChanges = {
+        absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
+        relative: AppUtils.formatNumber((indicatorResult.value.value / (comparedValue || 1)) * 100 - 100),
       };
-    });
+    }
+    return compared;
   }
 
   public calculateComparedValue(indicatorResult: IndicatorResult): number {
