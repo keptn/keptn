@@ -246,6 +246,13 @@ export class SequencesPage {
     return this;
   }
 
+  public assertDtAlert(status: boolean): this {
+    cy.byTestId('keptn-sequence-view-sequenceDetails')
+      .find('dt-alert')
+      .should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
   public assertIsSelectedSequenceWaiting(status: boolean): this {
     cy.byTestId('keptn-sequence-view-sequenceDetails')
       .find('dt-alert')

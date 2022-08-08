@@ -94,10 +94,21 @@ describe('Sequences', () => {
       .visit(project)
       .assertIsWaitingSequence(context, true)
       .selectSequence(context)
+      .assertDtAlert(true)
       .assertIsSelectedSequenceWaiting(true);
   });
 
-  it.only('should navigate to blocking sequence', () => {
+  it('should not show waiting message if sequence is not waiting', () => {
+    const context = 'bb03865b-2bdd-43cc-9848-2a9cced86ff3';
+    const project = 'sockshop';
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
+      fixture: 'sequence.traces.mock.json',
+    });
+
+    sequencePage.visit(project).selectSequence(context).assertDtAlert(false);
+  });
+
+  it('should navigate to blocking sequence', () => {
     const context = 'f78c2fc7-d272-4bcd-9845-3f3041080ae1';
     const blockingContext = 'f78c2fc7-d272-4bcd-9845-3f3041080ae5';
     const project = 'sockshop';
