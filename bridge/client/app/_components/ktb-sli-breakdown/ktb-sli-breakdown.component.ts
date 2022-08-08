@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
 import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
-import { SliResult } from '../../_models/sli-result';
+import { SliResult } from '../../_interfaces/sli-result';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
 import { AppUtils } from '../../_utils/app.utils';
@@ -27,8 +27,9 @@ export class KtbSliBreakdownComponent implements OnInit {
   private _score = 0;
   public columnNames: string[] = [];
   public tableEntries: DtTableDataSource<SliResult> = new DtTableDataSource();
-  public readonly SliResultClass = SliResult;
   private _comparedIndicatorResults: IndicatorResult[][] = [];
+  public maximumAvailableWeight = 1;
+  public toSliResult = (row: SliResult): SliResult => row;
 
   @Input()
   get indicatorResults(): IndicatorResult[] {
@@ -83,7 +84,10 @@ export class KtbSliBreakdownComponent implements OnInit {
   }
 
   private updateDataSource(): void {
-    this.tableEntries.data = this.assembleTablesEntries(this.indicatorResults);
+    const sliResults = this.assembleTablesEntries(this.indicatorResults);
+    // max reachable weight is actually the max reachable score. max weight = 100% score
+    this.maximumAvailableWeight = sliResults.reduce((acc, result) => acc + result.weight, 0);
+    this.tableEntries.data = sliResults;
   }
 
   private assembleTablesEntries(indicatorResults: IndicatorResult[]): SliResult[] {
