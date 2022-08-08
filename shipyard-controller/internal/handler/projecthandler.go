@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
@@ -83,6 +84,14 @@ func (p ProjectValidator) validateCreateProjectParams(createProjectParams *model
 		return fmt.Errorf("GitAuthCredentials mode cannot be empty")
 	}
 
+	if createProjectParams.GitCredentials.Mode == apimodels.HttpsMode && !strings.HasPrefix(createProjectParams.GitCredentials.RemoteURL, "http") {
+		return fmt.Errorf("Https mode set with incorrect RemoteURL")
+	}
+
+	if createProjectParams.GitCredentials.Mode == apimodels.SshMode && !strings.HasPrefix(createProjectParams.GitCredentials.RemoteURL, "ssh") {
+		return fmt.Errorf("Ssh mode set with incorrect RemoteURL")
+	}
+
 	if err := common.ValidateGitRemoteURL(createProjectParams.GitCredentials.RemoteURL); err != nil {
 		return fmt.Errorf("provided gitRemoteURL is not valid: %s", err.Error())
 	}
@@ -147,6 +156,14 @@ func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *model
 
 	if updateProjectParams.GitCredentials.Mode == "" {
 		return fmt.Errorf("GitAuthCredentials mode cannot be empty")
+	}
+
+	if updateProjectParams.GitCredentials.Mode == apimodels.HttpsMode && !strings.HasPrefix(updateProjectParams.GitCredentials.RemoteURL, "http") {
+		return fmt.Errorf("Https mode set with incorrect RemoteURL")
+	}
+
+	if updateProjectParams.GitCredentials.Mode == apimodels.SshMode && !strings.HasPrefix(updateProjectParams.GitCredentials.RemoteURL, "ssh") {
+		return fmt.Errorf("Ssh mode set with incorrect RemoteURL")
 	}
 
 	if err := common.ValidateGitRemoteURL(updateProjectParams.GitCredentials.RemoteURL); err != nil {
