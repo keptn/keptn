@@ -20,6 +20,7 @@ import { NotificationsService } from '../../../_services/notifications.service';
 import { FormUtils } from '../../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 import { IGitDataExtendedWithNoUpstream } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component';
+import { handleDeletionError } from '../../../_components/ktb-danger-zone/ktb-danger-zone.utils';
 
 type DialogState = null | 'unsaved';
 
@@ -226,14 +227,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
         map((): DeletionProgressEvent => {
           return { isInProgress: false, result: DeleteResult.SUCCESS };
         }),
-        catchError((err): Observable<DeletionProgressEvent> => {
-          const deletionError = 'Project could not be deleted: ' + err.message;
-          return of({
-            error: deletionError,
-            isInProgress: false,
-            result: DeleteResult.ERROR,
-          });
-        })
+        catchError(handleDeletionError('Project'))
       )
       .subscribe((progressEvent) => {
         this.eventService.deletionProgressEvent.next(progressEvent);

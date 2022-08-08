@@ -22,6 +22,7 @@ import { Trace } from '../../../../_models/trace';
 import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
 import { DeleteResult, DeleteType, DeletionProgressEvent } from '../../../../_interfaces/delete';
 import { EventService } from '../../../../_services/event.service';
+import { handleDeletionError } from '../../../../_components/ktb-danger-zone/ktb-danger-zone.utils';
 
 export interface SubscriptionState {
   projectName: string;
@@ -249,14 +250,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         map((): DeletionProgressEvent => {
           return { isInProgress: false, result: DeleteResult.SUCCESS };
         }),
-        catchError((err): Observable<DeletionProgressEvent> => {
-          const deletionError = 'Subscription could not be deleted: ' + err.message;
-          return of({
-            error: deletionError,
-            isInProgress: false,
-            result: DeleteResult.ERROR,
-          });
-        })
+        catchError(handleDeletionError('Subscription'))
       )
       .subscribe((progressEvent) => {
         this.eventService.deletionProgressEvent.next(progressEvent);
