@@ -20,8 +20,7 @@ import { Subject } from 'rxjs';
 import { EvaluationChartDataItem, EvaluationChartItem } from '../../../../_models/evaluation-chart-item';
 import { IndicatorResult, Target } from '../../../../../../shared/interfaces/indicator-result';
 import { AppUtils } from '../../../../_utils/app.utils';
-import { getSliResultInfo, SliInfo } from '../../ktb-evaluation-details-utils';
-import { IEvaluationSelectionData, TChartType } from '../ktb-evaluation-chart.component';
+import { getSliResultInfo, IEvaluationSelectionData, SliInfo, TChartType } from '../../ktb-evaluation-details-utils';
 import { DateUtil } from '../../../../_utils/date.utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

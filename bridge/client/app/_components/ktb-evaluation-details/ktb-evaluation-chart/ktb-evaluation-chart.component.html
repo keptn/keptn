@@ -51,15 +51,3 @@
     (selectedEvaluationChange)="selectedEvaluationChange.emit($event)"
   ></ktb-evaluation-chart-legacy>
 </ng-template>
-
-<ng-container *ngIf="numberOfMissingEvaluationComparisons">
-  <span *ngIf="numberOfMissingEvaluationComparisons === 1; else multipleMissingComparisons">
-    1 compared result is not showing up in the Heatmap, because it has been either invalidated or is older.
-  </span>
-  <ng-template #multipleMissingComparisons>
-    <span>
-      {{ numberOfMissingEvaluationComparisons }} compared results are not showing up in the Heatmap, because they have
-      been either invalidated or are older results.
-    </span>
-  </ng-template>
-</ng-container>

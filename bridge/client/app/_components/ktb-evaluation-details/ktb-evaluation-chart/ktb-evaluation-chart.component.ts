@@ -2,7 +2,14 @@ import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angu
 import { filter, map, takeUntil, tap } from 'rxjs/operators';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { FeatureFlagsService } from '../../../_services/feature-flags.service';
-import { createDataPoints, parseSloOfEvaluations } from '../ktb-evaluation-details-utils';
+import {
+  createDataPoints,
+  FuncEventIdExists,
+  FuncEventIdToEvaluation,
+  IEvaluationSelectionData,
+  parseSloOfEvaluations,
+  TChartType,
+} from '../ktb-evaluation-details-utils';
 import { DataService } from '../../../_services/data.service';
 import { Trace } from '../../../_models/trace';
 import { IDataPoint } from '../../../_interfaces/heatmap';
@@ -17,14 +24,6 @@ import {
 import { DateFormatPipe } from 'ngx-moment';
 import { Subject } from 'rxjs';
 import { IndicatorResult } from '../../../../../shared/interfaces/indicator-result';
-
-export interface IEvaluationSelectionData {
-  shouldSelect: boolean;
-  evaluation?: Trace;
-}
-export type TChartType = 'heatmap' | 'chart';
-type FuncEventIdToEvaluation = (eventId: string) => Trace | undefined;
-type FuncEventIdExists = (eventId: string) => boolean;
 
 @Component({
   selector: 'ktb-evaluation-chart[evaluationData]',
@@ -43,10 +42,10 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
   public chartPoints?: ChartItem[];
   public chartXLabels: Record<number, string> = {};
   public chartTooltipLabels: Record<number, string> = {};
-  public numberOfMissingEvaluationComparisons = 0;
 
   @Output() selectedEvaluationChange = new EventEmitter<Trace | undefined>();
   @Output() comparedIndicatorResultsChange = new EventEmitter<IndicatorResult[][]>();
+  @Output() numberOfMissingEvaluationComparisonsChange = new EventEmitter<number>();
 
   @Input()
   set evaluationData(evaluationData: IEvaluationSelectionData) {
@@ -108,21 +107,20 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
 
     const evaluationHistory = this.evaluationData.evaluation?.data.evaluationHistory ?? [];
     const changedEvaluation = evaluationHistory.find((value) => value.id === identifier);
-    const secondaryHighlightIndices = changedEvaluation?.data.evaluation?.comparedEvents
+    const indicatorResults = changedEvaluation?.data.evaluation?.comparedEvents
       ?.map(mapComparedEventsToEvaluations(evaluationHistory))
       .filter(filterOutUndefinedEvaluations)
       .map(mapEvaluationToIndicatorResult);
 
     this.selectedIdentifier = identifier;
     this.selectedEvaluationChange.emit(changedEvaluation);
-    this.comparedIndicatorResultsChange.emit(secondaryHighlightIndices);
+    this.comparedIndicatorResultsChange.emit(indicatorResults);
     this.setMissingComparedEvaluations(changedEvaluation, evaluationHistory);
-    // this.selectEvaluationData(changedEvaluation, true);
   }
 
   private setMissingComparedEvaluations(evaluation: Trace | undefined, evaluationHistory: Trace[]): void {
     if (!evaluation?.data.evaluation?.comparedEvents) {
-      this.numberOfMissingEvaluationComparisons = 0;
+      this.numberOfMissingEvaluationComparisonsChange.emit(0);
       return;
     }
     const filterOutNotFoundEvaluations =
@@ -135,19 +133,23 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
       filterOutNotFoundEvaluations(evaluationHistory)
     );
 
-    // TODO: leave it here or emit it and show it where it was shown before (inside the dt-consumption thing)?
-    this.numberOfMissingEvaluationComparisons =
-      comparedEventsCount === 0 ? 0 : comparedEventsCount - foundIdentifiers.length;
+    this.numberOfMissingEvaluationComparisonsChange.emit(
+      comparedEventsCount === 0 ? 0 : comparedEventsCount - foundIdentifiers.length
+    );
   }
 
   public refreshEvaluationBoard(results: EvaluationHistory): void {
+    // currently the history to an evaluation is stored in evaluation.data.evaluationHistory instead of some behaviorSubject
     if (this.evaluationData.evaluation) {
+      // evaluation history update
       if (results.type === 'evaluationHistory' && results.triggerEvent === this.evaluationData.evaluation) {
         this.evaluationData.evaluation.data.evaluationHistory = [
           ...(results.traces || []),
           ...(this.evaluationData.evaluation.data.evaluationHistory || []),
         ].sort((a, b) => DateUtil.compareTraceTimesDesc(a, b));
-      } else if (
+      }
+      // remove invalidated evaluation
+      else if (
         results.type === 'invalidateEvaluation' &&
         this.evaluationData.evaluation.data.project === results.triggerEvent.data.project &&
         this.evaluationData.evaluation.data.service === results.triggerEvent.data.service &&

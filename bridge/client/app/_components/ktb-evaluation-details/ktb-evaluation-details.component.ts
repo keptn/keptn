@@ -5,8 +5,7 @@ import { DataService } from '../../_services/data.service';
 import { Trace } from '../../_models/trace';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { ResultTypes } from '../../../../shared/models/result-types';
-import { getSliResultInfo } from './ktb-evaluation-details-utils';
-import { IEvaluationSelectionData } from './ktb-evaluation-chart/ktb-evaluation-chart.component';
+import { getSliResultInfo, IEvaluationSelectionData } from './ktb-evaluation-details-utils';
 import { DateUtil } from '../../_utils/date.utils';
 
 @Component({
@@ -26,6 +25,7 @@ export class KtbEvaluationDetailsComponent {
   public selectedEvaluation?: Trace;
   private _evaluationData: IEvaluationSelectionData = { shouldSelect: true };
   public getSliInfo = getSliResultInfo;
+  public numberOfMissingComparisonResults = 0;
 
   @Input() public showChart = true;
   @Input() public isInvalidated = false;

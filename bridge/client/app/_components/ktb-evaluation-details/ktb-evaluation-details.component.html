@@ -4,6 +4,7 @@
     [evaluationData]="evaluationData"
     (selectedEvaluationChange)="selectedEvaluation = $event"
     (comparedIndicatorResultsChange)="comparedIndicatorResults = $event"
+    (numberOfMissingEvaluationComparisonsChange)="numberOfMissingComparisonResults = $event"
   ></ktb-evaluation-chart>
   <div *ngIf="isInvalidated">
     <p class="m-0 error">This evaluation result has been invalidated.</p>
@@ -130,6 +131,13 @@
             <span *ngIf="selectedEvaluationData.include_result_with_score === 'pass'">passed</span>
             <span *ngIf="selectedEvaluationData.include_result_with_score === 'pass_or_warn'">passed or warned</span>
             evaluation<span *ngIf="selectedEvaluationData.compare_with === 'several_results'">s</span>.
+            <span *ngIf="numberOfMissingComparisonResults === 1">
+              1 result is not showing up in the Heatmap, because it has been either invalidated or is older.
+            </span>
+            <span *ngIf="numberOfMissingComparisonResults > 1">
+              {{ numberOfMissingComparisonResults }} results are not showing up in the Heatmap, because they have been
+              either invalidated or are older results.
+            </span>
           </p>
           <p
             class="m-0"
