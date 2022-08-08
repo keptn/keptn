@@ -184,32 +184,27 @@ func (rh *UniformIntegrationHandler) Register(c *gin.Context) {
 	})
 }
 
-func (rh *UniformIntegrationHandler) updateIntegration(c *gin.Context, existingIntegrations []apimodels.Integration, integrationInfo string, integration *apimodels.Integration) {
+func (rh *UniformIntegrationHandler) updateIntegration(c *gin.Context, existingIntegrations []apimodels.Integration, integrationInfo string, newIntegration *apimodels.Integration) {
 	var existingIntegration *apimodels.Integration
 	// if we get multiple results, merge them into one - this can be the case during an upgrade where a new version of an integration
 	// re-registered itself while the shipyard controller was not running the latest version yet
-	if len(existingIntegrations) > 1 {
-		var err2 error
-		existingIntegration, err2 = rh.mergeIntegrationSubscriptions(existingIntegrations)
-		if err2 != nil {
-			SetInternalServerErrorResponse(c, err2.Error())
-			return
-		}
-	} else {
-		existingIntegration = &existingIntegrations[0]
-	}
-	logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
-	integration.ID = existingIntegration.ID
 
-	err2 := rh.updateIntegrationMetadata(integration)
-	if err2 != nil {
-		SetInternalServerErrorResponse(c, err2.Error())
+	existingIntegration, err := rh.mergeIntegrationSubscriptions(existingIntegrations, newIntegration)
+	if err != nil {
+		SetInternalServerErrorResponse(c, err.Error())
+		return
+	}
+
+	logger.Debugf("Uniform:Register(): Found existing integration for %s with id %s", integrationInfo, existingIntegrations[0].ID)
+	newIntegration.ID = existingIntegration.ID
+
+	if err = rh.updateIntegrationMetadata(newIntegration); err != nil {
+		SetInternalServerErrorResponse(c, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, &models.RegisterResponse{
-		ID: integration.ID,
+		ID: newIntegration.ID,
 	})
-	return
 }
 
 func (rh *UniformIntegrationHandler) updateIntegrationMetadata(integration *apimodels.Integration) error {
@@ -504,7 +499,7 @@ func (rh *UniformIntegrationHandler) GetSubscriptions(c *gin.Context) {
 	c.JSON(http.StatusOK, subscriptions)
 }
 
-func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations []apimodels.Integration) (*apimodels.Integration, error) {
+func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations []apimodels.Integration, newIntegration *apimodels.Integration) (*apimodels.Integration, error) {
 	// first, determine the target integration - i.e. the one which was seen most recently
 	targetIntegration, err := getMostRecentIntegration(integrations)
 	if err != nil {
@@ -522,6 +517,12 @@ func (rh *UniformIntegrationHandler) mergeIntegrationSubscriptions(integrations 
 				updateSubscriptions = true
 			}
 		}
+	}
+
+	// check if the target integration has no subscriptions' property set - if yes, apply the initial subscriptions from the newly registered integration
+	if targetIntegration.Subscriptions == nil || len(targetIntegration.Subscriptions) == 0 {
+		targetIntegration.Subscriptions = newIntegration.Subscriptions
+		updateSubscriptions = true
 	}
 
 	if updateSubscriptions {

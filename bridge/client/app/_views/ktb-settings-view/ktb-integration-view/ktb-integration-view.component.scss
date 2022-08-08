@@ -48,6 +48,11 @@
   background-color: $yellow-100 !important;
 }
 
-dt-row[disabled='true'] {
+dt-row.disabled {
   color: $gray-400;
+}
+
+.dt-table dt-cell.subscriptions {
+  flex-direction: column;
+  align-items: start;
 }

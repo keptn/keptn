@@ -1,4 +1,5 @@
 import { EvaluationFinishedMock } from '../fixtures/typed/evaluationFinished.mock';
+import { EvaluationFinishedScoredMock } from '../fixtures/typed/evaluationFinishedScoreMock';
 
 export function interceptEmptyEnvironmentScreen(): void {
   interceptProjectBoard();
@@ -407,9 +408,13 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
   });
 }
 
-export function interceptHeatmapComponent(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+export function interceptD3(): void {
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
+}
+
+export function interceptHeatmapComponent(): void {
+  interceptD3();
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {
@@ -447,5 +452,13 @@ export function interceptHeatmapWithKeySLI(): void {
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.keysli.mock.json',
+  }).as('heatmapEvaluations');
+}
+
+export function interceptHeatmapComponentWithScores(score1: number, score2: number): void {
+  interceptHeatmapComponent();
+  cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+    statusCode: 200,
+    body: EvaluationFinishedScoredMock(score1, score2),
   }).as('heatmapEvaluations');
 }

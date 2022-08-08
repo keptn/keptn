@@ -1283,7 +1283,7 @@ func getTestShipyardController(shipyardContent string) (*ShipyardController, con
 		common.SDModeRW,
 	)
 	sc := &ShipyardController{
-		projectMvRepo: db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance())),
+		projectMvRepo: db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance())),
 		eventRepo:     eventRepo,
 		eventDispatcher: &fake.IEventDispatcherMock{
 			AddFunc: func(event models.DispatcherEvent, skipQueue bool) error {

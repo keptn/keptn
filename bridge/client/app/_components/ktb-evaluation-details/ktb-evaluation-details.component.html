@@ -27,11 +27,20 @@
   </div>
   <div *ngIf="(d3Enabled$ | async) && showChart && !isInvalidated">
     <ktb-heatmap
+      *ngIf="_comparisonView === 'heatmap'; else showLineChart"
       [dataPoints]="dataPoints"
       [selectedIdentifier]="selectedIdentifier"
       (selectedIdentifierChange)="dataPointChanged($event)"
     >
     </ktb-heatmap>
+    <ng-template #showLineChart>
+      <ktb-chart
+        *ngIf="chartPoints"
+        [chartItems]="chartPoints"
+        [xLabels]="chartXLabels"
+        [xTooltipLabels]="chartTooltipLabels"
+      ></ktb-chart>
+    </ng-template>
   </div>
   <div
     class="chart-container m-0"

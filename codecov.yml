@@ -51,14 +51,6 @@ flags:
     paths:
       - approval-service/
     carryforward: true
-  helm-service:
-    paths:
-      - helm-service/
-    carryforward: true
-  jmeter-service:
-    paths:
-      - jmeter-service/
-    carryforward: true
   lighthouse-service:
     paths:
       - lighthouse-service/
