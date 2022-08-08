@@ -4,6 +4,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/db"
@@ -12,10 +18,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"net/http/httptest"
-	"reflect"
-	"testing"
 )
 
 func TestUniformIntegrationHandler_GetRegistrations(t *testing.T) {
@@ -266,6 +268,95 @@ func TestUniformIntegrationHandler_Register(t *testing.T) {
 		})
 	}
 
+}
+
+func TestUniformIntegrationHandler_RegisterMergeIntegrationInstancesNoExistingSubscriptions(t *testing.T) {
+	mockRepo := &db_mock.UniformRepoMock{
+		CreateUniformIntegrationFunc: func(integration apimodels.Integration) error { return db.ErrUniformRegistrationAlreadyExists },
+		CreateOrUpdateUniformIntegrationFunc: func(integration apimodels.Integration) error {
+			return nil
+		},
+		UpdateLastSeenFunc: func(integrationID string) (*apimodels.Integration, error) {
+			return nil, nil
+		},
+		UpdateVersionInfoFunc: func(integrationID string, integrationVersion string, distributorVersion string) (*apimodels.Integration, error) {
+			return nil, nil
+		},
+		GetUniformIntegrationsFunc: func(filter models.GetUniformIntegrationsParams) ([]apimodels.Integration, error) {
+			return []apimodels.Integration{
+				{
+					ID:   "123",
+					Name: "my-integration",
+					MetaData: apimodels.MetaData{
+						Hostname:           "my-host",
+						DistributorVersion: "0.16.0",
+						KubernetesMetaData: apimodels.KubernetesMetaData{
+							Namespace: "my-namespace",
+						},
+						LastSeen: time.Now(),
+					},
+					Subscriptions: []apimodels.EventSubscription{},
+				},
+				{
+					ID:   "456",
+					Name: "my-integration",
+					MetaData: apimodels.MetaData{
+						Hostname:           "my-host",
+						DistributorVersion: "0.17.0",
+						KubernetesMetaData: apimodels.KubernetesMetaData{
+							Namespace: "my-namespace",
+						},
+						LastSeen: time.Now().Add(10 * time.Second),
+					},
+					Subscriptions: []apimodels.EventSubscription{},
+				},
+			}, nil
+		},
+	}
+
+	h := handler.NewUniformIntegrationHandler(mockRepo)
+
+	router := gin.Default()
+	router.POST("/uniform/registration", func(c *gin.Context) {
+		h.Register(c)
+	})
+
+	myIntegration := &apimodels.Integration{
+		Name: "my-integration",
+		MetaData: apimodels.MetaData{
+			Hostname:           "my-host",
+			DistributorVersion: "0.17.0",
+			KubernetesMetaData: apimodels.KubernetesMetaData{
+				Namespace: "my-namespace",
+			},
+		},
+		Subscriptions: []apimodels.EventSubscription{
+			{
+				Event: "sh.keptn.event.test.triggered",
+			},
+		},
+	}
+	payload, _ := json.Marshal(myIntegration)
+
+	request := httptest.NewRequest("POST", "/uniform/registration", bytes.NewBuffer(payload))
+
+	resp := performRequest(router, request)
+
+	require.Equal(t, http.StatusOK, resp.Code)
+
+	require.Len(t, mockRepo.CreateOrUpdateUniformIntegrationCalls(), 1)
+
+	// the update should have been performed for the integration which has been seen most recently
+	require.Equal(t, "456", mockRepo.CreateOrUpdateUniformIntegrationCalls()[0].Integration.ID)
+
+	require.Len(t, mockRepo.CreateOrUpdateUniformIntegrationCalls()[0].Integration.Subscriptions, 1)
+
+	// in this case we want to apply the subscriptions from the new integration, since the existing integrations did not have any subscriptions
+	require.ElementsMatch(t, mockRepo.CreateOrUpdateUniformIntegrationCalls()[0].Integration.Subscriptions, []apimodels.EventSubscription{
+		{
+			Event: "sh.keptn.event.test.triggered",
+		},
+	})
 }
 
 func TestUniformIntegrationKeepAlive(t *testing.T) {
