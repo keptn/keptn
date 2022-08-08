@@ -364,8 +364,8 @@ func TestResourceExistsValidResource(t *testing.T) {
 		{
 			name:         "Valid resource",
 			resourceName: "api/invalid_resource.json",
-			shouldExist:  true,
-			wantErr:      false,
+			shouldExist:  false,
+			wantErr:      true,
 		},
 	}
 
