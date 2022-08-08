@@ -36,6 +36,9 @@ find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${DOCK
 
 mkdir keptn-charts/
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add nats https://nats-io.github.io/k8s/helm/charts/
+
 # ####################
 # COMMON HELM CHART
 # ####################
@@ -49,21 +52,22 @@ fi
 
 mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
 
-# ##################################################################
-# INSTALLER HELM CHART # HELM-SVC HELM CHART # JMETER-SVC HELM CHART
-# ##################################################################
+# ####################
+# INSTALLER HELM CHART
+# ####################
 
 declare -A charts
 charts[keptn]=installer/manifests/keptn
-charts[helm-service]=helm-service/chart
-charts[jmeter-service]=jmeter-service/chart
 
 for i in "${!charts[@]}"
 do
+  echo "=== Building $i ==="
   BASE_NAME=$i
   BASE_PATH=${charts[$i]}
 
+  echo "::group::Helm dependency build"
   helm dependency build ${BASE_PATH}
+  echo "::endgroup::"
 
   helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
   if [ $? -ne 0 ]; then
@@ -89,5 +93,3 @@ done
 
 echo "Generated files:"
 echo " - keptn-charts/keptn-${VERSION}.tgz"
-echo " - keptn-charts/helm-service-${VERSION}.tgz"
-echo " - keptn-charts/jmeter-service-${VERSION}.tgz"

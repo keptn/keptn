@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { NotificationType } from '../../../_models/notification';
 import { NotificationsService } from '../../../_services/notifications.service';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { catchError, finalize, map } from 'rxjs/operators';
 import { IServiceSecret, SecretKeyValuePair } from '../../../../../shared/interfaces/secret';
 
@@ -40,7 +40,15 @@ export class KtbCreateSecretFormComponent implements OnInit {
   });
 
   _scopes = new BehaviorSubject<string[]>([]);
-  scopes$ = this._scopes.asObservable();
+  scopeQueryParam$ = this.route.queryParams.pipe(map((params) => params.scope));
+  scopes$: Observable<string[]> = combineLatest([this.scopeQueryParam$, this._scopes.asObservable()]).pipe(
+    map(([scope, scopes]) => {
+      if (scopes.includes(scope)) {
+        this.scopeControl.setValue(scope);
+      }
+      return scopes;
+    })
+  );
   isUpdating = false;
   isLoading = false;
 

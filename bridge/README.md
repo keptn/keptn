@@ -188,6 +188,12 @@ Both commands serve Angular on port 3000 with no live reload - this will also en
 
 The Keptn Bridge is bundled with the Angular CLI. To analyze the current bundle size, first run `yarn build:stats`, to generate the [`stats.json`](https://webpack.js.org/api/stats/) file. Then run the [Webpack Bundle Analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer) with `yarn bundle-report` to create an interactive treemap visualization of the contents of all your bundles.
 
+### Storybook
+
+For development of new components outside of the context of the actual app Storybook is a good option. It allows to only show a single component with arbitrary inputs that you define in a user story. It's also pretty simple to write multiple user stories with different inputs, showing all possible states of your component. 
+
+`yarn storybook` will start the Storybook development server and open the endpoint in a browser. The user stories can be found in the `bridge/stories` directory.
+
 ## IDE Setup
 
 ### Create workspace

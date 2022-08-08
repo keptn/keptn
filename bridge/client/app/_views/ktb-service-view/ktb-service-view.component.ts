@@ -83,6 +83,7 @@ export class KtbServiceViewComponent implements OnDestroy {
 
     projectName$.subscribe((projectName) => {
       this.projectName = projectName;
+      this.selectedDeployment = undefined;
     });
 
     if (this.initialDelayMillis !== 0) {

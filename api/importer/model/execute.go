@@ -40,8 +40,9 @@ const (
 var AllActions = []string{CreateServiceAction, CreateSecretAction, CreateWebhookAction}
 
 type ManifestExecution struct {
-	Inputs map[string]string
-	Tasks  map[string]TaskExecution
+	Inputs       map[string]string
+	Tasks        map[string]TaskExecution
+	TaskSequence []string
 }
 
 func (mc ManifestExecution) GetProject() string {
@@ -50,7 +51,8 @@ func (mc ManifestExecution) GetProject() string {
 
 func NewManifestExecution(project string) *ManifestExecution {
 	return &ManifestExecution{
-		Inputs: map[string]string{projectInputContextKey: project},
-		Tasks:  map[string]TaskExecution{},
+		Inputs:       map[string]string{projectInputContextKey: project},
+		Tasks:        map[string]TaskExecution{},
+		TaskSequence: nil,
 	}
 }

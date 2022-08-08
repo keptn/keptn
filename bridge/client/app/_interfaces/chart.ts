@@ -1,14 +1,24 @@
+import { Trace } from '../_models/trace';
+import { IndicatorResult } from '../../../shared/interfaces/indicator-result';
+
+export type DrawType = 'metric-line' | 'score-bar' | 'score-line';
+
 export interface ChartItemPoint {
   x: number;
   y: number;
-  identifier: string;
   color?: string;
 }
 
 export interface ChartItem {
-  identifier: string;
-  label?: string;
-  type: 'metric-line' | 'score-bar' | 'score-line';
+  label: string;
+  type: DrawType;
   invisible?: boolean;
   points: ChartItemPoint[];
 }
+
+export type ChartItemPointInfo = Record<string, { points: ChartItemPoint[]; label?: string } | undefined>;
+export type FuncEvaluationToChartItemPoint = (evaluation: Trace, index: number) => ChartItemPoint;
+export type FuncMetricToChartItem = (metric: string) => ChartItem;
+export type FuncMapIndicatorResult = (indicatorResult: IndicatorResult) => void;
+export type FuncDateToString = (date: string, index: number) => string;
+export type FuncDateToDict = (date: string) => number | undefined;

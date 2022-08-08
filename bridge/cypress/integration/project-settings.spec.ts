@@ -211,3 +211,34 @@ describe('Project settings with invalid metadata', () => {
     projectSettingsPage.visitSettings('sockshop').assertErrorVisible(true);
   });
 });
+
+describe('Project settings with automatic provisioning', () => {
+  const projectSettingsPage = new ProjectSettingsPage();
+
+  it('should select NO_UPSTREAM when creating a project', () => {
+    projectSettingsPage.interceptSettings(true, true).visit();
+    projectSettingsPage.assertNoUpstreamSelected(true);
+  });
+
+  it('should select HTTPS when editing a project', () => {
+    const project: IProject = {
+      projectName: 'sockshop',
+      stages: [],
+      gitCredentials: {
+        https: { insecureSkipTLS: false, token: '' },
+        remoteURL: 'http://gitea-http.gitea-ns:3000/keptn/gitea-allocate-project-pls.git',
+        user: 'keptn',
+      },
+      shipyardVersion: '0.14',
+      creationDate: '',
+      shipyard: '',
+    };
+
+    projectSettingsPage.interceptSettings(true, true).interceptProject(project);
+    projectSettingsPage
+      .visitSettings('sockshop')
+      .assertHttpsSelected(true)
+      .assertHttpsFormExists(true)
+      .assertHttpsFormVisible(true);
+  });
+});

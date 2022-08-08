@@ -30,6 +30,13 @@ import { IDataPoint } from '../../_interfaces/heatmap';
 import { createDataPoints, getSliResultInfo, parseSloOfEvaluations, SliInfo } from './ktb-evaluation-details-utils';
 import { FeatureFlagsService } from '../../_services/feature-flags.service';
 import { IClientFeatureFlags } from '../../../../shared/interfaces/feature-flags';
+import { ChartItem } from '../../_interfaces/chart';
+import { DateFormatPipe } from 'ngx-moment';
+import {
+  createChartPoints,
+  createChartTooltipLabels,
+  createChartXLabels,
+} from './ktb-evaluation-details-line-chart-utils';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare let require: any;
@@ -110,6 +117,9 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   public HeatmapPointClass = HeatmapPoint;
   public comparedIndicatorResults: IndicatorResult[][] = [];
+  public chartPoints?: ChartItem[];
+  public chartXLabels: Record<number, string> = {};
+  public chartTooltipLabels: Record<number, string> = {};
   @Input() public showChart = true;
   @Input() public isInvalidated = false;
 
@@ -269,8 +279,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
   private _shouldSelectEvaluation = true;
   public updateResults?: EvaluationHistory;
   public dataPoints: IDataPoint[] = [];
-  public d3HeatmapEnabled$ = this.featureFlagService.featureFlags$.pipe(
-    map((featureFlags: IClientFeatureFlags) => featureFlags.D3_HEATMAP_ENABLED)
+  public d3Enabled$ = this.featureFlagService.featureFlags$.pipe(
+    map((featureFlags: IClientFeatureFlags) => featureFlags.D3_ENABLED)
   );
   public selectedIdentifier = '';
 
@@ -327,7 +337,8 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
     private clipboard: ClipboardService,
     public dateUtil: DateUtil,
     private zone: NgZone,
-    private featureFlagService: FeatureFlagsService
+    private featureFlagService: FeatureFlagsService,
+    private dateFormatPipe: DateFormatPipe
   ) {}
 
   public ngOnInit(): void {
@@ -426,7 +437,14 @@ export class KtbEvaluationDetailsComponent implements OnInit, OnDestroy {
         this._heatmapSeries = this._heatmapSeriesFull;
       }
 
+      // D3 data
       this.dataPoints = createDataPoints(evaluationHistory);
+      this.chartPoints = createChartPoints(evaluationHistory);
+      this.chartXLabels = createChartXLabels(evaluationHistory);
+      this.chartTooltipLabels = createChartTooltipLabels(evaluationHistory, (time: string) =>
+        this.dateFormatPipe.transform(time, this.dateUtil.getDateTimeFormat())
+      );
+      // D3 data
       this._evaluationDatas = evaluationHistory;
     }
 

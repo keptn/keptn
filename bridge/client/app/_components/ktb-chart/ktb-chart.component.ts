@@ -13,7 +13,7 @@ import {
 import { axisBottom, axisLeft, axisRight, BaseType, line, ScaleLinear, scaleLinear, select, Selection } from 'd3';
 import { v4 as uuid } from 'uuid';
 import { BehaviorSubject } from 'rxjs';
-import { ChartItem, ChartItemPoint } from '../../_interfaces/chart';
+import { ChartItem, ChartItemPoint, DrawType } from '../../_interfaces/chart';
 import { getColor, getIconStyle, getTooltipPosition, replaceSpace } from './ktb-chart-utils';
 
 type BarPoint = [number, number, string];
@@ -117,7 +117,9 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     this.xScale.domain([-0.5, xMaxValue + 0.5]).range([margin.left, width - margin.right]);
     const xTicks = this.xScale.ticks().filter((n) => Number.isInteger(n));
     this.yScaleLeft.domain([0, 100]).range([height - margin.bottom, margin.top]);
-    this.yScaleRight.domain([0, this.getMaxValue((p) => p.y)]).range([height - margin.bottom, margin.top]);
+    this.yScaleRight
+      .domain([0, this.getMaxValue((p) => p.y, 'metric-line')])
+      .range([height - margin.bottom, margin.top]);
 
     if (this.xAxisGroup) {
       this.xAxisGroup.call(
@@ -129,7 +131,14 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
           })
       );
       this.xAxisGroup.attr('transform', `translate(0, ${height - margin.bottom})`);
-      this.xAxisGroup.selectAll('text').attr('transform', 'translate(-10,0)rotate(-45)').style('text-anchor', 'end');
+      this.xAxisGroup
+        .selectAll('text')
+        .attr('transform', 'translate(-10,0)rotate(-45)')
+        .attr('uitestid', (d: unknown) => {
+          const label = this.xLabels[d as number];
+          return `axis-x-item-${label ? replaceSpace(label) : d}`;
+        })
+        .style('text-anchor', 'end');
     }
 
     if (this.yAxisGroupLeft) {
@@ -176,7 +185,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('stroke', color)
       .attr('stroke-width', 1.5)
       .attr('class', 'line red')
-      .attr('uitestid', `line-${replaceSpace(item.identifier)}`)
+      .attr('uitestid', `line-${replaceSpace(item.label)}`)
       .attr(
         'd',
         line()
@@ -194,7 +203,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .data(points)
       .enter()
       .append('g')
-      .attr('uitestid', `bar-${replaceSpace(item.identifier)}`);
+      .attr('uitestid', `bar-${replaceSpace(item.label)}`);
 
     const rect = selection
       .append('rect')
@@ -203,7 +212,7 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('width', barWidth)
       .attr('height', (d) => height - margin.bottom - this.yScaleLeft(d[1]))
       .attr('fill', (d) => d[2])
-      .attr('uitestid', (d) => `bar-${replaceSpace(item.identifier)}-${d[0]}`);
+      .attr('uitestid', (d) => `bar-${replaceSpace(item.label)}-${d[0]}`);
     this.rects.push(rect);
   }
 
@@ -223,7 +232,10 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       .attr('height', (d) => height - margin.bottom - this.yScaleLeft(d[1]))
       .attr('fill', (d) => d[2])
       .attr('class', 'area')
-      .attr('uitestid', (d) => `area-${d[0]}`);
+      .attr('uitestid', (d) => {
+        const label = this.xLabels[d[0]];
+        return `area-${label ? replaceSpace(this.xLabels[d[0]]) : d}`;
+      });
     this.rects.push(rect);
   }
 
@@ -249,9 +261,8 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
       const label = this.xTooltipLabels[xValue] ?? this.xLabels[xValue] ?? xValue + '';
       const addMetricValue = (cur: MetricValue[], item: ChartItem): MetricValue[] => {
         const point = item.points.find((p) => p.x === xValue);
-        const itemLabel = item.label ?? item.identifier;
-        const alreadyInList = cur.find((v) => v.label === itemLabel);
-        const metricValue = !!point && !alreadyInList ? { label: itemLabel, value: point.y } : undefined;
+        const alreadyInList = cur.find((v) => v.label === item.label);
+        const metricValue = !!point && !alreadyInList ? { label: item.label, value: point.y } : undefined;
         return metricValue ? [...cur, metricValue] : cur;
       };
       const metricValues = this.visibleChartItems.reduce(addMetricValue, [] as MetricValue[]);
@@ -276,8 +287,10 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
     return { width: availableSpace.width, height: _height };
   }
 
-  private getMaxValue(getPointValue: (p: ChartItemPoint) => number): number {
-    return this.visibleChartItems.reduce((prev, cur) => Math.max(prev, ...cur.points.map(getPointValue)), 0);
+  private getMaxValue(getPointValue: (p: ChartItemPoint) => number, onlyInclude?: DrawType): number {
+    return this.visibleChartItems
+      .filter((i) => (onlyInclude ? onlyInclude === i.type : true))
+      .reduce((prev, cur) => Math.max(prev, ...cur.points.map(getPointValue)), 0);
   }
 
   private get visibleChartItems(): ChartItem[] {
