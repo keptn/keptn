@@ -97,6 +97,46 @@ describe('Sequences', () => {
       .assertIsSelectedSequenceWaiting(true);
   });
 
+  it.only('should navigate to blocking sequence', () => {
+    const context = 'f78c2fc7-d272-4bcd-9845-3f3041080ae1';
+    const blockingContext = 'f78c2fc7-d272-4bcd-9845-3f3041080ae5';
+    const project = 'sockshop';
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
+      body: {
+        events: [],
+      },
+    });
+    // Intercept blocking sequence
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${blockingContext}&project=${project}`, {
+      body: {
+        events: [],
+      },
+    });
+    cy.intercept(
+      `/api/controlPlane/v1/sequence-execution?project=${project}&stage=dev&service=carts-db&status=started&pageSize=1`,
+      {
+        body: {
+          sequenceExecutions: [
+            {
+              scope: {
+                keptnContext: 'f78c2fc7-d272-4bcd-9845-3f3041080ae5',
+                stage: 'dev',
+              },
+            },
+          ],
+        },
+      }
+    );
+
+    sequencePage
+      .visit(project)
+      .assertIsWaitingSequence(context, true)
+      .selectSequence(context)
+      .assertIsSelectedSequenceWaiting(true)
+      .navigateToBlockingSequence()
+      .assertSequenceDeepLink(project, blockingContext, 'dev');
+  });
+
   it('should load older sequences', () => {
     sequencePage.visit('sockshop');
     cy.wait('@Sequences');

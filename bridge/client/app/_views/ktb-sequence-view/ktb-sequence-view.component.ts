@@ -266,6 +266,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
   private setTraces(sequence: SequenceState, eventId?: string, stage?: string): void {
     this.dataService.getTracesOfSequence(sequence).subscribe((traces) => {
       sequence.traces = traces;
+      this.selectSequence({ sequence, stage, eventId });
     });
   }
 

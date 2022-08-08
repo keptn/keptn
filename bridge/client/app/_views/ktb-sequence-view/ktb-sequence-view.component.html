@@ -120,7 +120,10 @@
             uitestid="keptn-sequence-view-blocked-message"
           >
             Sequence is blocked by another sequence. Click
-            <span class="bold underline pointer" (click)="navigateToBlockingSequence(currentSequence, state)"
+            <span
+              class="bold underline pointer"
+              uitestid="keptn-blocking-sequence-navigation"
+              (click)="navigateToBlockingSequence(currentSequence, state)"
               >here</span
             >
             to see the current running sequence.
