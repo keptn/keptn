@@ -596,7 +596,7 @@ describe('Add control plane subscription default requests', () => {
   });
 
   it('should not show danger zone on add page', () => {
-    cy.get('ktb-danger-zone').should('not.exist');
+    uniformPage.assertDangerZoneExists(false);
   });
 });
 
@@ -727,16 +727,16 @@ describe('Edit subscriptions', () => {
   it('should show danger zone on edit page', () => {
     interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
 
-    uniformPage.visitEdit(integrationID, subscriptionID).assertDangerZone();
+    uniformPage.visitEdit(integrationID, subscriptionID).assertDangerZoneExists(true);
   });
 
   it('should show deletion dialog after clicking the deleteSubscription button', () => {
     interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
 
-    uniformPage.visitEdit(integrationID, subscriptionID).openDeletionDialog().assertDeletionDialog();
+    uniformPage.visitEdit(integrationID, subscriptionID).openDeletionDialog().assertDeletionDialogExists(true);
   });
 
-  it.only('should delete subscription', () => {
+  it('should delete subscription', () => {
     interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
 
     uniformPage

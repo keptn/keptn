@@ -69,7 +69,9 @@ class UniformPage {
 
   public deleteSubscriptionFromEditPage(): this {
     this.openDeletionDialog();
-    cy.get('button').contains('I understand the consequences, delete this subscription').click();
+    cy.byTestId('keptn-deletion-dialog-button')
+      .contains('I understand the consequences, delete this subscription')
+      .click();
     return this;
   }
 
@@ -409,13 +411,13 @@ class UniformPage {
     return this;
   }
 
-  public assertDangerZone(): this {
-    cy.get('ktb-danger-zone').should('exist');
+  public assertDangerZoneExists(status: boolean): this {
+    cy.get('ktb-danger-zone').should(status ? 'exist' : 'not.exist');
     return this;
   }
 
-  public assertDeletionDialog(): this {
-    cy.get('ktb-deletion-dialog').should('exist');
+  public assertDeletionDialogExists(status: boolean): this {
+    cy.get('ktb-deletion-dialog').should(status ? 'exist' : 'not.exist');
     return this;
   }
 }

@@ -26,6 +26,7 @@
   </div>
   <button
     dt-button
+    uitestid="keptn-deletion-dialog-button"
     class="danger-button"
     (click)="deleteConfirm()"
     [disabled]="deletionConfirmationForm.invalid || (isDeleteInProgress$ | async)"
