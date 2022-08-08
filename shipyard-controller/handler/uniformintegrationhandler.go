@@ -209,7 +209,6 @@ func (rh *UniformIntegrationHandler) updateIntegration(c *gin.Context, existingI
 }
 
 func (rh *UniformIntegrationHandler) updateIntegrationMetadata(integration *apimodels.Integration) error {
->>>>>>> ec0036f45 (fix: Merge integration subscriptions into one, apply newly supplied subscriptions if existing ones are empty (#8573)):shipyard-controller/internal/handler/uniformintegrationhandler.go
 	var err error
 	result, err := rh.uniformRepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: integration.ID})
 
@@ -568,4 +567,3 @@ func getMostRecentIntegration(integrations []apimodels.Integration) (*apimodels.
 	}
 	return &targetIntegration, nil
 }
-
