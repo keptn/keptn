@@ -85,7 +85,7 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) (*m
 
 	err = ipp.validateManifest(manifest, ip)
 	if err != nil {
-		return fmt.Errorf("error validating manifest: %w", err)
+		return nil, fmt.Errorf("error validating manifest: %w", err)
 	}
 
 	mCtx := model.NewManifestExecution(project)
