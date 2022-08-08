@@ -2,8 +2,9 @@ package db
 
 import (
 	"fmt"
-	common_mock "github.com/keptn/keptn/shipyard-controller/internal/secretstore/fake"
 	"testing"
+
+	common_mock "github.com/keptn/keptn/shipyard-controller/internal/secretstore/fake"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -34,6 +35,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "ssh://some-url",
 				User:      "user",
+				Mode:      apimodels.SshMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey:     "key",
 					PrivateKeyPass: "pass",
@@ -49,6 +51,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			},
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "ssh://some-url",
+				Mode:      apimodels.SshMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey:     "key",
 					PrivateKeyPass: "pass",
@@ -65,6 +68,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "ssh://some-url",
 				User:      "user",
+				Mode:      apimodels.SshMode,
 				SshAuth: &apimodels.SshGitAuth{
 					PrivateKey: "key",
 				},
@@ -81,6 +85,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "https://some-url",
 				User:      "user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "token",
 					InsecureSkipTLS: false,
@@ -98,6 +103,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "https://some-url",
 				User:      "user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:       "token",
 					Certificate: "cert",
@@ -114,6 +120,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "https://some-url",
 				User:      "user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token: "token",
 				},
@@ -134,6 +141,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "https://some-url",
 				User:      "user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "token",
 					InsecureSkipTLS: false,
@@ -159,6 +167,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "https://some-url",
 				User:      "user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "token",
 					InsecureSkipTLS: false,
@@ -181,6 +190,7 @@ func TestSecretCredentialsRepo_Transform(t *testing.T) {
 			out: &apimodels.GitAuthCredentials{
 				RemoteURL: "https://some-url",
 				User:      "user",
+				Mode:      apimodels.HttpsMode,
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "token",
 					InsecureSkipTLS: false,

@@ -115,6 +115,9 @@ func TransformGitCredentials(project *models.ExpandedProjectOld) *apimodels.Expa
 				User:   project.GitProxyUser,
 			}
 		}
+		newProject.GitCredentials.Mode = apimodels.HttpsMode
+	} else if strings.HasPrefix(project.GitRemoteURI, "ssh") {
+		newProject.GitCredentials.Mode = apimodels.SshMode
 	}
 
 	return &newProject

@@ -2,9 +2,10 @@ package migration
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
-	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -206,6 +207,7 @@ var projectNew = &apimodels.ExpandedProject{
 	GitCredentials: &apimodels.GitAuthCredentialsSecure{
 		RemoteURL: "http://some-url1",
 		User:      "user1",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuthSecure{
 			InsecureSkipTLS: false,
 			Proxy: &apimodels.ProxyGitAuthSecure{
@@ -250,6 +252,7 @@ var projectOldToNew = &apimodels.ExpandedProject{
 	GitCredentials: &apimodels.GitAuthCredentialsSecure{
 		RemoteURL: "http://some-url2",
 		User:      "user2",
+		Mode:      apimodels.HttpsMode,
 		HttpsAuth: &apimodels.HttpsGitAuthSecure{
 			InsecureSkipTLS: true,
 			Proxy: &apimodels.ProxyGitAuthSecure{

@@ -3,8 +3,9 @@ package db
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
 	"strings"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -78,12 +79,14 @@ func transformSecret(oldSecret *models.GitOldCredentials) *apimodels.GitAuthCred
 			PrivateKey:     oldSecret.GitPrivateKey,
 			PrivateKeyPass: oldSecret.GitPrivateKeyPass,
 		}
+		newSecret.Mode = apimodels.SshMode
 	} else { //project is using https auth
 		newSecret.HttpsAuth = &apimodels.HttpsGitAuth{
 			Token:           oldSecret.Token,
 			InsecureSkipTLS: oldSecret.InsecureSkipTLS,
 			Certificate:     oldSecret.GitPemCertificate,
 		}
+		newSecret.Mode = apimodels.HttpsMode
 
 		if oldSecret.GitProxyURL != "" {
 			newSecret.HttpsAuth.Proxy = &apimodels.ProxyGitAuth{

@@ -62,6 +62,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "ssh://some-url",
 					User:      "user",
+					Mode:      apimodels.SshMode,
 				},
 			},
 		},
@@ -86,6 +87,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				Stages:           nil,
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "ssh://some-url",
+					Mode:      apimodels.SshMode,
 				},
 			},
 		},
@@ -109,6 +111,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				Stages:           nil,
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "ssh://some-url",
+					Mode:      apimodels.SshMode,
 				},
 			},
 		},
@@ -135,6 +138,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
 					User:      "user",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: false,
 					},
@@ -164,6 +168,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
 					User:      "user",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: true,
 					},
@@ -192,6 +197,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
 					User:      "user",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: false,
 					},
@@ -218,6 +224,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				Stages:           nil,
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: false,
 					},
@@ -247,6 +254,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				Stages:           nil,
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: false,
 						Proxy: &apimodels.ProxyGitAuthSecure{
@@ -280,6 +288,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				Stages:           nil,
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: false,
 						Proxy: &apimodels.ProxyGitAuthSecure{
@@ -312,6 +321,7 @@ func TestProjectCredentialsRepo_Transform(t *testing.T) {
 				Stages:           nil,
 				GitCredentials: &apimodels.GitAuthCredentialsSecure{
 					RemoteURL: "http://some-url",
+					Mode:      apimodels.HttpsMode,
 					HttpsAuth: &apimodels.HttpsGitAuthSecure{
 						InsecureSkipTLS: false,
 					},
