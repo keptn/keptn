@@ -134,7 +134,6 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 	}
 
 	if env.MaxEventSizeKB > 0 {
-		fmt.Printf("Using middle ware to limit event payload size to %d\n", env.MaxEventSizeKB)
 		api.AddMiddlewareFor(http.MethodPost, "/event", custommiddleware.EnforceMaxEventSize(env.MaxEventSizeBytes()))
 	}
 
