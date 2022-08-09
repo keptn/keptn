@@ -6,36 +6,32 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type EventValidationError struct {
-	Msg string
-}
+// EventValidationError is a custom error used to represent
+// errors during validation of keptn events sent to the API
+type EventValidationError struct{ Msg string }
 
-func (e EventValidationError) Error() string {
-	return e.Msg
-}
+func (e EventValidationError) Error() string { return e.Msg }
 
-func (e EventValidationError) Unwrap() error {
-	return e
-}
+func (e EventValidationError) Unwrap() error { return e }
 
-//var ErrUnknownEventType = errors.New("invalid event: unknown event type")
-//var ErrDisallowedEventKind = errors.New("invalid event: event action is not allowed")
-//var ErrCommonEventDataInvalid = errors.New("invalid event: could not parse common event data")
-//var ErrCommonEventDataMissing = errors.New("invalid event: mandatory field(s) 'project', 'stage' or 'service' missing")
-//var ErrStageMismatch = errors.New("invalid event: stage name in event data and in event type does not match")
-//var ErrResultFieldMissing = errors.New("invalid event: result field is not set")
-//var ErrStatusFieldMissing = errors.New("invalid event: status field is not set")
+type validateFn func(models.KeptnContextExtendedCE) error
 
-type ValidateFn func(models.KeptnContextExtendedCE) error
-
+// allow only "sh.keptn.event.<task>.<started|finished>" events
 var allowedTaskActions = []string{"started", "finished"}
+
+// allow only "sh.keptn.event.<sequence>.triggered" events
 var allowedSequenceActions = []string{"triggered"}
-var sequenceEventValidators = map[string]ValidateFn{"triggered": validateSequenceTriggeredEvent}
-var taskEventValidators = map[string]ValidateFn{
+
+// specify validation functions for sequence triggered events
+var sequenceEventValidators = map[string]validateFn{"triggered": validateSequenceTriggeredEvent}
+
+// specify validation functions for task.started and task.finished events
+var taskEventValidators = map[string]validateFn{
 	"started":  validateTaskStartedEvent,
 	"finished": validateTaskFinishedEvent,
 }
 
+// Validate takes a KeptnContextExtendedCE value and validates its content.
 func Validate(e models.KeptnContextExtendedCE) error {
 	if v0_2_0.IsSequenceEventType(*e.Type) {
 		return validate(e, allowedSequenceActions, sequenceEventValidators)
@@ -49,12 +45,7 @@ func Validate(e models.KeptnContextExtendedCE) error {
 	return &EventValidationError{Msg: "unknown event type"}
 }
 
-func validateErrorLogEvent(event models.KeptnContextExtendedCE) error {
-	// TODO: implement what makes sense
-	return nil
-}
-
-func validate(event models.KeptnContextExtendedCE, allowedKinds []string, validators map[string]ValidateFn) error {
+func validate(event models.KeptnContextExtendedCE, allowedKinds []string, validators map[string]validateFn) error {
 	kind, err := v0_2_0.ParseEventKind(*event.Type)
 	if err != nil {
 		return err
@@ -69,6 +60,7 @@ func validate(event models.KeptnContextExtendedCE, allowedKinds []string, valida
 
 }
 
+// validateTaskStartedEvent contains logic to validate "sh.keptn.event.task.started" events
 func validateTaskStartedEvent(e models.KeptnContextExtendedCE) error {
 	var eventData v0_2_0.EventData
 	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
@@ -80,6 +72,7 @@ func validateTaskStartedEvent(e models.KeptnContextExtendedCE) error {
 	return nil
 }
 
+// validateTaskFinishedEvent contains logic that validates "sh.keptn.event.task.finished" events
 func validateTaskFinishedEvent(e models.KeptnContextExtendedCE) error {
 	var eventData v0_2_0.EventData
 	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
@@ -97,6 +90,7 @@ func validateTaskFinishedEvent(e models.KeptnContextExtendedCE) error {
 	return nil
 }
 
+// validateSequenceTriggeredEvent contains logic that validates "sh.keptn.dev.sequence.triggered" events
 func validateSequenceTriggeredEvent(e models.KeptnContextExtendedCE) error {
 	var eventData v0_2_0.EventData
 	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
@@ -112,5 +106,11 @@ func validateSequenceTriggeredEvent(e models.KeptnContextExtendedCE) error {
 	if eventData.Stage != stage {
 		return &EventValidationError{Msg: "stage name in event data and in event type does not match"}
 	}
+	return nil
+}
+
+// validateErrorLogEvent contains logic that validates a "sh.keptn.log.error" event
+func validateErrorLogEvent(event models.KeptnContextExtendedCE) error {
+	// TODO: implement what makes sense
 	return nil
 }

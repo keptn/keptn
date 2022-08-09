@@ -42,8 +42,14 @@ type EnvConfig struct {
 	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 	MaxImportUncompressedSize uint64  `envconfig:"MAX_IMPORT_UNCOMPRESSED_SIZE" default:"52428800"` // 50MB default value
+	MaxEventSizeKB            int64   `envconfig:"MAX_EVENT_BODY_SIZE_KB" default:"64"`
 	OAuthEnabled              bool    `envconfig:"OAUTH_ENABLED" default:"false"`
 	OAuthPrefix               string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
+}
+
+// MaxEventSizeBytes returns MaxEventSizeKB in bytes
+func (e EnvConfig) MaxEventSizeBytes() int64 {
+	return e.MaxEventSizeKB << 10
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -125,6 +131,11 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 			env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New(),
 		)
 		api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
+	}
+
+	if env.MaxEventSizeKB > 0 {
+		fmt.Printf("Using middle ware to limit event payload size to %d\n", env.MaxEventSizeKB)
+		api.AddMiddlewareFor(http.MethodPost, "/event", custommiddleware.EnforceMaxEventSize(env.MaxEventSizeBytes()))
 	}
 
 	api.ServerShutdown = func() {}
