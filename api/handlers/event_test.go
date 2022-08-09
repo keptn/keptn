@@ -138,22 +138,18 @@ func TestPostEventHandlerFunc(t *testing.T) {
 }
 
 func TestPostEventHandlerFunc_NoNatsConnection(t *testing.T) {
-
+	eventType := "sh.keptn.event.task.started"
 	eventHandlerInstance = nil
-	topicName := "my-topic"
 
 	params := event.PostEventParams{
 		HTTPRequest: nil,
 		Body: &models.KeptnContextExtendedCE{
-			Contenttype:    "application/json",
-			Data:           map[string]interface{}{},
-			Extensions:     nil,
-			ID:             "",
-			Shkeptncontext: "",
-			Source:         stringp("test-source"),
-			Specversion:    "1.0",
-			Time:           strfmt.DateTime{},
-			Type:           &topicName,
+			Contenttype: "application/json",
+			Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+			Source:      stringp("test-source"),
+			Specversion: "1.0",
+			Time:        strfmt.DateTime{},
+			Type:        &eventType,
 		},
 	}
 

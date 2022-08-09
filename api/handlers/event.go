@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
@@ -89,7 +90,11 @@ func PostEventHandlerFunc(params event.PostEventParams, principal *models.Princi
 	}
 	keptnContext, err := eh.PostEvent(*params.Body)
 	if err != nil {
-		return sendInternalErrorForPost(err)
+		if errors.As(err, &EventValidationError{}) {
+			return sendBadRequestErrorForPost(err)
+		} else {
+			return sendInternalErrorForPost(err)
+		}
 	}
 	return event.NewPostEventOK().WithPayload(keptnContext)
 }
@@ -119,4 +124,9 @@ func createOrApplyKeptnContext(eventKeptnContext string) string {
 func sendInternalErrorForPost(err error) *event.PostEventInternalServerError {
 	logger.Error(err.Error())
 	return event.NewPostEventInternalServerError().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func sendBadRequestErrorForPost(err error) *event.PostEventBadRequest {
+	logger.Error(err.Error())
+	return event.NewPostEventBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 }

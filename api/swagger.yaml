@@ -63,6 +63,10 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/error"
+        400:
+          description: Invalid Event Payload Error
+          schema:
+            $ref: "#/definitions/error"
   /import:
     post:
       tags:

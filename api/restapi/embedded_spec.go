@@ -48,6 +48,7 @@ func init() {
     },
     "/event": {
       "post": {
+        "description": "\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}events:write\u003c/span\u003e\n",
         "tags": [
           "Event"
         ],
@@ -66,6 +67,12 @@ func init() {
             "description": "Forwarded",
             "schema": {
               "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Invalid Event Payload Error",
+            "schema": {
+              "$ref": "#/definitions/error"
             }
           },
           "500": {
@@ -143,6 +150,7 @@ func init() {
     },
     "/metadata": {
       "get": {
+        "description": "\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}metadata:read\u003c/span\u003e\n",
         "tags": [
           "Metadata"
         ],
@@ -343,6 +351,7 @@ func init() {
     },
     "/event": {
       "post": {
+        "description": "\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}events:write\u003c/span\u003e\n",
         "tags": [
           "Event"
         ],
@@ -361,6 +370,12 @@ func init() {
             "description": "Forwarded",
             "schema": {
               "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Invalid Event Payload Error",
+            "schema": {
+              "$ref": "#/definitions/error"
             }
           },
           "500": {
@@ -438,6 +453,7 @@ func init() {
     },
     "/metadata": {
       "get": {
+        "description": "\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}metadata:read\u003c/span\u003e\n",
         "tags": [
           "Metadata"
         ],

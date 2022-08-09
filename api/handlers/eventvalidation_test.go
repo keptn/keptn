@@ -30,7 +30,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrUnknownEventType)
+				return assert.ErrorAs(t, err, &EventValidationError{Msg: "unknown event type"})
 			},
 		},
 		{
@@ -60,7 +60,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrDisallowedEventKind)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -76,7 +76,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -92,7 +92,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -108,7 +108,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -124,7 +124,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -140,7 +140,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataInvalid)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -156,7 +156,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrStageMismatch)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -186,7 +186,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -202,7 +202,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -218,7 +218,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -234,7 +234,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -250,7 +250,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataInvalid)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -281,7 +281,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -297,7 +297,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -313,7 +313,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -329,7 +329,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -345,7 +345,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrCommonEventDataInvalid)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -361,7 +361,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrDisallowedEventKind)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -377,7 +377,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrResultFieldMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{
@@ -393,7 +393,7 @@ func TestValidate(t *testing.T) {
 				},
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorIs(t, err, ErrStatusFieldMissing)
+				return assert.ErrorAs(t, err, &EventValidationError{})
 			},
 		},
 		{

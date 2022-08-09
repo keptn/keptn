@@ -1,20 +1,30 @@
 package handlers
 
 import (
-	"errors"
-	"fmt"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/api/models"
 	"golang.org/x/exp/slices"
 )
 
-var ErrUnknownEventType = errors.New("invalid event: unknown event type")
-var ErrDisallowedEventKind = errors.New("invalid event: event action is not allowed")
-var ErrCommonEventDataInvalid = errors.New("invalid event: could not parse common event data")
-var ErrCommonEventDataMissing = errors.New("invalid event: mandatory field(s) 'project', 'stage' or 'service' missing")
-var ErrStageMismatch = errors.New("invalid event: stage name in event data and in event type does not match")
-var ErrResultFieldMissing = errors.New("invalid event: result field is not set")
-var ErrStatusFieldMissing = errors.New("invalid event: status field is not set")
+type EventValidationError struct {
+	Msg string
+}
+
+func (e EventValidationError) Error() string {
+	return e.Msg
+}
+
+func (e EventValidationError) Unwrap() error {
+	return e
+}
+
+//var ErrUnknownEventType = errors.New("invalid event: unknown event type")
+//var ErrDisallowedEventKind = errors.New("invalid event: event action is not allowed")
+//var ErrCommonEventDataInvalid = errors.New("invalid event: could not parse common event data")
+//var ErrCommonEventDataMissing = errors.New("invalid event: mandatory field(s) 'project', 'stage' or 'service' missing")
+//var ErrStageMismatch = errors.New("invalid event: stage name in event data and in event type does not match")
+//var ErrResultFieldMissing = errors.New("invalid event: result field is not set")
+//var ErrStatusFieldMissing = errors.New("invalid event: status field is not set")
 
 type ValidateFn func(models.KeptnContextExtendedCE) error
 
@@ -36,7 +46,7 @@ func Validate(e models.KeptnContextExtendedCE) error {
 	if *e.Type == "sh.keptn.log.error" {
 		return validateErrorLogEvent(e)
 	}
-	return ErrUnknownEventType
+	return &EventValidationError{Msg: "unknown event type"}
 }
 
 func validateErrorLogEvent(event models.KeptnContextExtendedCE) error {
@@ -50,7 +60,7 @@ func validate(event models.KeptnContextExtendedCE, allowedKinds []string, valida
 		return err
 	}
 	if !slices.Contains(allowedKinds, kind) {
-		return fmt.Errorf("invalid event kind/action: %s, %w", kind, ErrDisallowedEventKind)
+		return &EventValidationError{Msg: "kind/action: " + kind}
 	}
 	if _, ok := validators[kind]; !ok {
 		return nil
@@ -62,10 +72,10 @@ func validate(event models.KeptnContextExtendedCE, allowedKinds []string, valida
 func validateTaskStartedEvent(e models.KeptnContextExtendedCE) error {
 	var eventData v0_2_0.EventData
 	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
-		return ErrCommonEventDataInvalid
+		return &EventValidationError{Msg: "could not parse common event data"}
 	}
 	if eventData.Project == "" || eventData.Stage == "" || eventData.Service == "" {
-		return ErrCommonEventDataMissing
+		return &EventValidationError{Msg: "mandatory field(s) 'project', 'stage' or 'service' missing"}
 	}
 	return nil
 }
@@ -73,16 +83,16 @@ func validateTaskStartedEvent(e models.KeptnContextExtendedCE) error {
 func validateTaskFinishedEvent(e models.KeptnContextExtendedCE) error {
 	var eventData v0_2_0.EventData
 	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
-		return ErrCommonEventDataInvalid
+		return &EventValidationError{Msg: "could not parse common event data"}
 	}
 	if eventData.Project == "" || eventData.Stage == "" || eventData.Service == "" {
-		return ErrCommonEventDataMissing
+		return &EventValidationError{Msg: "mandatory field(s) 'project', 'stage' or 'service' missing"}
 	}
 	if eventData.Result == "" {
-		return ErrResultFieldMissing
+		return &EventValidationError{Msg: "result field is not set"}
 	}
 	if eventData.Status == "" {
-		return ErrStatusFieldMissing
+		return &EventValidationError{Msg: "status field is not set"}
 	}
 	return nil
 }
@@ -90,17 +100,17 @@ func validateTaskFinishedEvent(e models.KeptnContextExtendedCE) error {
 func validateSequenceTriggeredEvent(e models.KeptnContextExtendedCE) error {
 	var eventData v0_2_0.EventData
 	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
-		return ErrCommonEventDataInvalid
+		return &EventValidationError{Msg: "could not parse common event data"}
 	}
 	if eventData.Project == "" || eventData.Stage == "" || eventData.Service == "" {
-		return ErrCommonEventDataMissing
+		return &EventValidationError{Msg: "mandatory field(s) 'project', 'stage' or 'service' missing"}
 	}
 	stage, _, _, err := v0_2_0.ParseSequenceEventType(*e.Type)
 	if err != nil {
-		return ErrUnknownEventType
+		return &EventValidationError{Msg: "unknown event type"}
 	}
 	if eventData.Stage != stage {
-		return ErrStageMismatch
+		return &EventValidationError{Msg: "stage name in event data and in event type does not match"}
 	}
 	return nil
 }
