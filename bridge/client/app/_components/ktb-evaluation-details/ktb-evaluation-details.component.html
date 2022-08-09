@@ -148,12 +148,14 @@
       </dt-consumption>
       <ktb-sli-breakdown
         *ngIf="selectedEvaluationData.indicatorResults"
-        [comparedIndicatorResults]="comparedIndicatorResults"
+        [fallBackData]="{
+          comparedEvents: selectedEvaluationData.comparedEvents ?? [],
+          projectName: selectedEvaluationTrace.data.project ?? '',
+          comparedIndicatorResults: this.comparedIndicatorResults
+        }"
         [objectives]="selectedEvaluationData.sloObjectives"
         [score]="selectedEvaluationData.score"
         [indicatorResults]="selectedEvaluationData.indicatorResults"
-        [comparedEvents]="selectedEvaluationData.comparedEvents ?? []"
-        [projectName]="selectedEvaluationTrace.data.project ?? ''"
       >
       </ktb-sli-breakdown>
     </div>

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, ViewChild } from '@angular/core';
 import { DtSort, DtTableDataSource } from '@dynatrace/barista-components/table';
 import { SliResult } from '../../_interfaces/sli-result';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
@@ -7,14 +7,29 @@ import { AppUtils } from '../../_utils/app.utils';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
 import { DataService } from '../../_services/data.service';
 import { Trace } from '../../_models/trace';
+import { finalize } from 'rxjs/operators';
+
+interface IFallbackData {
+  comparedEvents: string[];
+  projectName: string;
+  comparedIndicatorResults?: IndicatorResult[][];
+}
 
 @Component({
   selector: 'ktb-sli-breakdown',
   templateUrl: './ktb-sli-breakdown.component.html',
   styleUrls: ['./ktb-sli-breakdown.component.scss'],
 })
-export class KtbSliBreakdownComponent implements OnInit {
-  @ViewChild('sortable', { read: DtSort, static: true }) sortable?: DtSort;
+export class KtbSliBreakdownComponent {
+  private _sortable?: DtSort;
+  @ViewChild('sortable', { read: DtSort, static: false })
+  set sortable(sortable: DtSort | undefined) {
+    this._sortable = sortable;
+    this.updateSort();
+  }
+  get sortable(): DtSort | undefined {
+    return this._sortable;
+  }
 
   public evaluationState: Map<ResultTypes, string> = new Map<ResultTypes, string>([
     [ResultTypes.PASSED, 'passed'],
@@ -30,13 +45,14 @@ export class KtbSliBreakdownComponent implements OnInit {
   public columnNames: string[] = [];
   public tableEntries: DtTableDataSource<SliResult> = new DtTableDataSource();
   private _objectives?: SloConfig['objectives'];
-  private _comparedEvents: string[] = [];
-  private _projectName = '';
+  private comparedEvents: string[] = [];
+  private projectName = '';
   // either the compared evaluations are fetched on demand if the comparedValue property does not exist,
   //  or it is set through the ktb-evaluation-chart.component  because it already loads the history
-  private _comparedIndicatorResults: IndicatorResult[][] = [];
+  private comparedIndicatorResults?: IndicatorResult[][];
   public maximumAvailableWeight = 1;
   public toSliResult = (row: SliResult): SliResult => row;
+  public isLoading = false;
 
   @Input()
   get indicatorResults(): IndicatorResult[] {
@@ -68,29 +84,19 @@ export class KtbSliBreakdownComponent implements OnInit {
     return this._objectives;
   }
   @Input()
-  set comparedEvents(comparedEvents: string[]) {
-    this._comparedEvents = comparedEvents;
-    this.updateDataSource();
-  }
-  get comparedEvents(): string[] {
-    return this._comparedEvents;
-  }
-  @Input()
-  set projectName(projectName: string) {
-    this._projectName = projectName;
-    this.updateDataSource();
-  }
-  get projectName(): string {
-    return this._projectName;
-  }
+  set fallBackData(data: IFallbackData) {
+    this.comparedEvents = data.comparedEvents;
+    this.projectName = data.projectName;
+    this.comparedIndicatorResults = data.comparedIndicatorResults;
 
-  @Input()
-  get comparedIndicatorResults(): IndicatorResult[][] {
-    return this._comparedIndicatorResults;
-  }
-  set comparedIndicatorResults(comparedIndicatorResults: IndicatorResult[][]) {
-    this._comparedIndicatorResults = comparedIndicatorResults;
     this.updateDataSource();
+  }
+  get fallBackData(): IFallbackData {
+    return {
+      comparedEvents: this.comparedEvents,
+      projectName: this.projectName,
+      comparedIndicatorResults: this.comparedIndicatorResults,
+    };
   }
 
   @Input()
@@ -106,7 +112,7 @@ export class KtbSliBreakdownComponent implements OnInit {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, private dataService: DataService) {}
 
-  ngOnInit(): void {
+  private updateSort(): void {
     if (this.sortable) {
       this.sortable.sort('score', 'asc');
       this.tableEntries.sort = this.sortable;
@@ -121,6 +127,7 @@ export class KtbSliBreakdownComponent implements OnInit {
     // max reachable weight is actually the max reachable score. max weight = 100% score
     this.maximumAvailableWeight = sliResults.reduce((acc, result) => acc + result.weight, 0);
     this.tableEntries.data = sliResults;
+    this.updateSort();
   }
 
   private assembleTablesEntries(
@@ -131,19 +138,29 @@ export class KtbSliBreakdownComponent implements OnInit {
     this.setColumnNames(indicatorResults);
 
     // comparedValue was introduced in 0.12
-    const hasComparedValue = indicatorResults.every(
-      (indicatorResult) => indicatorResult.value.comparedValue !== undefined
+    const comparedValueMissing = indicatorResults.some(
+      (indicatorResult) =>
+        indicatorResult.value.comparedValue === undefined || indicatorResult.value.comparedValue === null
     );
     const loadComparedEvaluations =
       this.comparedEvents.length &&
       this.projectName &&
-      (!hasComparedValue || this.comparedIndicatorResults?.length !== this.comparedEvents.length);
+      (comparedValueMissing ||
+        (this.comparedIndicatorResults && this.comparedIndicatorResults.length !== this.comparedEvents.length));
 
     if (loadComparedEvaluations && !fetchedComparedEvaluations) {
-      this.dataService.getTracesByIds(this.projectName, this.comparedEvents).subscribe((traces: Trace[]) => {
-        this._comparedIndicatorResults = traces.map((trace) => trace.data.evaluation?.indicatorResults ?? []);
-        this.updateDataSource(true);
-      });
+      this.isLoading = true;
+      this.dataService
+        .getTracesByIds(this.projectName, this.comparedEvents)
+        .pipe(
+          finalize(() => {
+            this.isLoading = false;
+          })
+        )
+        .subscribe((traces: Trace[]) => {
+          this.comparedIndicatorResults = traces.map((trace) => trace.data.evaluation?.indicatorResults ?? []);
+          this.updateDataSource(true);
+        });
       return undefined;
     }
 
@@ -180,16 +197,23 @@ export class KtbSliBreakdownComponent implements OnInit {
       compared.comparedValue = AppUtils.formatNumber(comparedValue);
       compared.calculatedChanges = {
         absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
-        relative: AppUtils.formatNumber((indicatorResult.value.value / (comparedValue || 1)) * 100 - 100),
+        relative: AppUtils.formatNumber(this.getRelativeChange(indicatorResult, comparedValue)),
       };
     }
     return compared;
   }
 
+  private getRelativeChange(indicatorResult: IndicatorResult, comparedValue: number): number {
+    if (indicatorResult.value.value === 0 && comparedValue === 0) {
+      return 0;
+    }
+    return (indicatorResult.value.value / (comparedValue || 1)) * 100 - 100;
+  }
+
   public calculateComparedValue(indicatorResult: IndicatorResult): number {
     let accSum = 0;
     let accCount = 0;
-    for (const comparedIndicatorResult of this.comparedIndicatorResults) {
+    for (const comparedIndicatorResult of this.comparedIndicatorResults ?? []) {
       const result = comparedIndicatorResult.find((res) => res.value.metric === indicatorResult.value.metric);
       if (result) {
         accSum += result.value.value;

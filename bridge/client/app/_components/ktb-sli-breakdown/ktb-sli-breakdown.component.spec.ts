@@ -136,12 +136,14 @@ describe(KtbSliBreakdownComponent.name, () => {
     component.score = 100;
 
     // when
-    component.projectName = 'myProjectName';
-    component.comparedEvents = ['id1'];
+    component.fallBackData = {
+      projectName: 'myProjectName',
+      comparedEvents: ['id1'],
+    };
 
     // then
     expect(getTraceByIdSpy).toHaveBeenCalledWith('myProjectName', ['id1']);
-    expect(component.comparedIndicatorResults).toEqual([[newIndicatorResult]]);
+    expect(component.fallBackData.comparedIndicatorResults).toEqual([[newIndicatorResult]]);
     expect(component.tableEntries.data.length).toBe(1);
   });
 
@@ -153,11 +155,15 @@ describe(KtbSliBreakdownComponent.name, () => {
     component.objectives = sloFileContentParsed.objectives;
     component.score = selectedEvaluation.data.evaluation?.score as number;
 
-    component.comparedIndicatorResults =
-      EvaluationsMock.data.evaluationHistory
-        ?.filter(
-          (evaluation: Trace) => selectedEvaluation.data.evaluation?.comparedEvents?.indexOf(evaluation.id) !== -1
-        )
-        .map((evaluation: Trace) => evaluation.data.evaluation?.indicatorResults as IndicatorResult[]) ?? [];
+    component.fallBackData = {
+      comparedEvents: [],
+      projectName: '',
+      comparedIndicatorResults:
+        EvaluationsMock.data.evaluationHistory
+          ?.filter(
+            (evaluation: Trace) => selectedEvaluation.data.evaluation?.comparedEvents?.indexOf(evaluation.id) !== -1
+          )
+          .map((evaluation: Trace) => evaluation.data.evaluation?.indicatorResults as IndicatorResult[]) ?? [],
+    };
   }
 });

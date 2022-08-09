@@ -1,5 +1,12 @@
 <p class="mb-0">SLI breakdown</p>
-<dt-table [dataSource]="tableEntries" [multiExpand]="true" dtSort #sortable uitestid="keptn-sli-breakdown">
+<dt-table
+  [dataSource]="tableEntries"
+  [multiExpand]="true"
+  dtSort
+  #sortable
+  uitestid="keptn-sli-breakdown"
+  *ngIf="!isLoading; else loading"
+>
   <ng-container dtColumnDef="details" dtColumnProportion="0.1" dtColumnMinWidth="50">
     <dt-header-cell *dtHeaderCellDef></dt-header-cell>
     <dt-cell *dtCellDef="let row">
@@ -32,7 +39,7 @@
     <dt-cell uitestid="keptn-sli-breakdown-value-cell" *dtCellDef="let row">
       <div fxFlexFill fxLayout="column" *ngIf="toSliResult(row) as result">
         <p class="m-0" *ngIf="result.success">
-          <span [textContent]="result.value"></span>
+          <span [textContent]="result.value" uitestid="ktb-sli-breakdown-value-value"></span>
           <span
             *ngIf="!result.expanded && result.calculatedChanges as changes"
             class="small m-0"
@@ -52,6 +59,7 @@
         <ng-container *ngIf="result.expanded && result.calculatedChanges as changes">
           <p
             class="change-indicator small m-0"
+            uitestid="ktb-sli-breakdown-value-absolute"
             [class.error]="result.result === ResultTypes.FAILED"
             [class.warning]="result.result === ResultTypes.WARNING"
           >
@@ -60,13 +68,14 @@
           </p>
           <p
             class="change-indicator small m-0"
+            uitestid="ktb-sli-breakdown-value-relative"
             [class.error]="result.result === ResultTypes.FAILED"
             [class.warning]="result.result === ResultTypes.WARNING"
           >
             <span *ngIf="changes.relative > 0">+</span>
             <span [textContent]="changes.relative"></span>%
           </p>
-          <p class="small mt-1" [textContent]="result.comparedValue"></p>
+          <p class="small mt-1" uitestid="ktb-sli-breakdown-value-compared" [textContent]="result.comparedValue"></p>
         </ng-container>
       </div>
     </dt-cell>
@@ -178,3 +187,7 @@
     [attr.uitestid]="'keptn-sli-breakdown-row-' + row.name"
   ></dt-row>
 </dt-table>
+
+<ng-template #loading>
+  <ktb-loading-distractor uitestid="ktb-sli-breakdown-loading">Loading...</ktb-loading-distractor>
+</ng-template>

@@ -15,7 +15,7 @@ import { DateUtil } from '../../_utils/date.utils';
 })
 export class KtbEvaluationDetailsComponent {
   private sloDialogRef?: MatDialogRef<string>;
-  public comparedIndicatorResults: IndicatorResult[][] = [];
+  public comparedIndicatorResults?: IndicatorResult[][];
   public invalidateEvaluationDialogRef?: MatDialogRef<Trace | undefined>;
   public _evaluationState: Record<ResultTypes, string> = {
     [ResultTypes.PASSED]: 'recovered',
