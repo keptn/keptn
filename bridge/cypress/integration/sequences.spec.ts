@@ -90,12 +90,7 @@ describe('Sequences', () => {
       },
     });
 
-    sequencePage
-      .visit(project)
-      .assertIsWaitingSequence(context, true)
-      .selectSequence(context)
-      .assertDtAlert(true)
-      .assertIsSelectedSequenceWaiting(true);
+    sequencePage.visit(project).assertIsWaitingSequence(context, true).selectSequence(context).assertDtAlert(true);
   });
 
   it('should not show waiting message if sequence is not waiting', () => {
@@ -143,7 +138,6 @@ describe('Sequences', () => {
       .visit(project)
       .assertIsWaitingSequence(context, true)
       .selectSequence(context)
-      .assertIsSelectedSequenceWaiting(true)
       .navigateToBlockingSequence()
       .assertSequenceDeepLink(project, blockingContext, 'dev');
   });

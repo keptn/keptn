@@ -12,9 +12,6 @@ type EFilterGroup = 'Service' | 'Stage' | 'Sequence' | 'Status';
 export class SequencesPage {
   private readonly sequenceWaitingMessage = ' Sequence is waiting for previous sequences to finish. ';
 
-  private readonly selectedSequenceWaitingMessage =
-    ' Sequence is blocked by another sequence. Click here to see the current running sequence. ';
-
   public intercept(): this {
     interceptSequencesPage();
     return this;
@@ -250,13 +247,6 @@ export class SequencesPage {
     cy.byTestId('keptn-sequence-view-sequenceDetails')
       .find('dt-alert')
       .should(status ? 'exist' : 'not.exist');
-    return this;
-  }
-
-  public assertIsSelectedSequenceWaiting(status: boolean): this {
-    cy.byTestId('keptn-sequence-view-sequenceDetails')
-      .find('dt-alert')
-      .should(status ? 'have.text' : 'not.have.text', this.selectedSequenceWaitingMessage);
     return this;
   }
 

@@ -82,6 +82,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
   };
   public filteredSequences?: SequenceState[];
   public loading = false;
+  public navigationToRunningSequenceLoading = false;
   public state$: Observable<ISequenceViewState>;
 
   constructor(
@@ -407,6 +408,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
   }
 
   public navigateToBlockingSequence(currentSequence: SequenceState, state?: ISequenceViewState): void {
+    this.navigationToRunningSequenceLoading = true;
     const stages = currentSequence.getStages();
     this.apiService
       .getSequenceExecution({
@@ -427,6 +429,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
         } else {
           this.dataService.loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext);
         }
+        this.navigationToRunningSequenceLoading = false;
       });
   }
 
