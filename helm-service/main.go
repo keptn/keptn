@@ -3,22 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/url"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/keptn/keptn/helm-service/controller"
 	"github.com/keptn/keptn/helm-service/pkg/common"
 	"github.com/keptn/keptn/helm-service/pkg/configurationchanger"
 	"github.com/keptn/keptn/helm-service/pkg/helm"
 
-	"net/url"
-	"os/signal"
-	"sync"
-	"syscall"
-
 	logger "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"log"
-	"os"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 
@@ -231,7 +229,7 @@ func getGracefulContext() context.Context {
 	ctx, cancel := context.WithCancel(cloudevents.WithEncodingStructured(context.WithValue(context.Background(), controller.GracefulShutdownKey, wg)))
 	go func() {
 		<-ch
-		log.Fatal("Container termination triggered, starting graceful shutdown")
+		log.Println("Container termination triggered, starting graceful shutdown")
 		wg.Wait()
 		cancel()
 	}()
