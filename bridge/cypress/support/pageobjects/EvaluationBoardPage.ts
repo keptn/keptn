@@ -71,8 +71,14 @@ export class EvaluationBoardPage {
     cy.byTestId('keptn-evaluation-details-resultInfo').should('have.text', `Result: ${type}`);
     return this;
   }
-  public assertKeySliInfo(type: 'passed' | 'failed'): this {
-    cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', `Key SLI: ${type}`);
+  public assertKeySliInfo(failedKeySlis: number): this {
+    if (failedKeySlis > 1) {
+      cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', `${failedKeySlis} Key SLIs failed`);
+    } else if (failedKeySlis > 0) {
+      cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', `1 Key SLI failed`);
+    } else {
+      cy.byTestId('keptn-evaluation-details-keySliInfo').should('have.text', `All Key SLIs passed`);
+    }
     return this;
   }
 }

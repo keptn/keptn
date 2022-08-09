@@ -337,7 +337,7 @@ describe('Automatic provisioning message', () => {
     user: 'claus.keptn-dev@ruxitlabs.com',
     featureFlags: {
       RESOURCE_SERVICE_ENABLED: true,
-      D3_HEATMAP_ENABLED: false,
+      D3_ENABLED: false,
     },
   };
 

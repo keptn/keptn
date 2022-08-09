@@ -43,7 +43,6 @@ jobs:
             PLATFORM: "openshift"
             PLATFORM_VERSION: "3.11"
             KEPTN_SERVICE_TYPE: "ClusterIP"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -51,7 +50,6 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
@@ -59,7 +57,6 @@ jobs:
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
@@ -68,7 +65,6 @@ jobs:
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_AIRGAPPED_TEST: "true"
-            RUN_CONTINUOUS_DELIVERY_TEST: "false"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "GKE"
@@ -77,7 +73,6 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
@@ -87,7 +82,6 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            RUN_CONTINUOUS_DELIVERY_TEST: "true"
             REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
@@ -98,7 +92,6 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-test-${{ github.run_number }}-${{ github.run_attempt }}"
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
-      RUN_CONTINUOUS_DELIVERY_TEST: ${{ matrix.RUN_CONTINUOUS_DELIVERY_TEST }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
       REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
@@ -128,7 +121,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.5
+        uses: actions/cache@v3.0.6
         with:
           path: |
             ~/downloads
@@ -226,12 +219,8 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
-          HELM_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/helm*.tgz)
-          JMETER_SERVICE_HELM_CHART_NAME=$(ls dist/keptn-installer/jmeter*.tgz)
 
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
-          echo "##[set-output name=HELM_SERVICE_HELM_CHART_NAME;]$(echo ${HELM_SERVICE_HELM_CHART_NAME})"
-          echo "##[set-output name=JMETER_SERVICE_HELM_CHART_NAME;]$(echo ${JMETER_SERVICE_HELM_CHART_NAME})"
 
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
@@ -322,8 +311,6 @@ jobs:
         timeout-minutes: 15
         env:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
           RUN_AIRGAPPED_TEST: ${{ env.RUN_AIRGAPPED_TEST }}
           USE_RESOURCE_SERVICE_DIRECTORY: ${{ matrix.USE_RESOURCE_SERVICE_DIRECTORY }}
         run: |
@@ -336,11 +323,6 @@ jobs:
             }" > creds.json
           else
             echo "{}" > creds.json # empty credentials file
-          fi
-          # Determine use case
-          USE_CASE=""
-          if [[ $RUN_CONTINUOUS_DELIVERY_TEST == "true" ]]; then
-            USE_CASE="--use-case=continuous-delivery"
           fi
 
           echo "::group::Keptn Installation Log"
@@ -355,24 +337,28 @@ jobs:
             installer/airgapped/install_keptn.sh \
               "$AIRGAPPED_REGISTRY_URL/" \
               "$DOCKER_ORG" \
-              "$HELM_CHART_NAME" \
-              "$HELM_SERVICE_HELM_CHART_NAME" \
-              "$JMETER_SERVICE_HELM_CHART_NAME"
+              "$HELM_CHART_NAME"
           else
+            if [[ "$CLOUD_PROVIDER" == *"k3s"* ]]; then
+              EXTRA_NATS_VALUES='--set nats.cluster.enabled=false'
+            else
+              EXTRA_NATS_VALUES=''
+            fi
+          
             if [[ "$HELM_CHART_NAME" == *"dev"* ]]; then
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 14m \
                 -f ./test/assets/helm-charts/keptn/values-int-tests-dev.yaml \
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+                $EXTRA_NATS_VALUES
             else
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 14m \
                 -f ./test/assets/helm-charts/keptn/values-int-tests.yaml \
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
-                --set continuousDelivery.enabled=${RUN_CONTINUOUS_DELIVERY_TEST}
+                $EXTRA_NATS_VALUES
             fi
           fi
           echo "::endgroup::"
@@ -428,25 +414,11 @@ jobs:
         if: env.CLOUD_PROVIDER == 'minishift-on-GHA'
         run: oc expose svc/api-gateway-nginx -n ${KEPTN_NAMESPACE} --hostname=api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io
 
-      - name: Expose Deployed Services via Istio (for CD use-case)
-        if: env.RUN_CONTINUOUS_DELIVERY_TEST == 'true'
-        run: |
-          # set ingress-hostname params
-          INGRESS_IP=$(kubectl -n istio-system get service istio-ingressgateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          echo "INGRESS_IP=$INGRESS_IP"
-          kubectl create configmap -n ${KEPTN_NAMESPACE} ingress-config \
-            --from-literal=ingress_hostname_suffix=${INGRESS_IP}.nip.io \
-            --from-literal=ingress_port=80 \
-            --from-literal=ingress_protocol=http \
-            --from-literal=ingress_gateway=public-gateway.istio-system \
-            -oyaml --dry-run=client | kubectl replace -f -
-
       - name: Determine Keptn Endpoint
         id: determine_keptn_endpoint
         timeout-minutes: 5
         run: |
           source test/utils.sh
-
           # authenticate at Keptn API
           if [[ "$PLATFORM" == "openshift" ]]; then
             KEPTN_ENDPOINT=http://api.${KEPTN_NAMESPACE}.127.0.0.1.nip.io/api
@@ -459,97 +431,9 @@ jobs:
               KEPTN_ENDPOINT=http://$(kubectl -n ${KEPTN_NAMESPACE} get service api-gateway-nginx -o jsonpath='{.status.loadBalancer.ingress[0].ip}')/api
             fi
           fi
-
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
-
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
           echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
-
-      - name: Install Remote Helm/JMeter Service
-        if: env.CLOUD_PROVIDER == 'GKE' && env.REMOTE_EXECUTION_PLANE == 'true'
-        timeout-minutes: 5
-        env:
-          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
-        run: |
-            # Remote execution plane
-            KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n "$KEPTN_NAMESPACE" -o jsonpath='{.data.keptn-api-token}' | base64 --decode)
-            KEPTN_API_HOSTNAME=$(echo "${KEPTN_ENDPOINT}" | awk -F[/] '{print $3}')
-          
-            if [[ "$HELM_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
-              echo "installing helm service from dev repo"
-              echo 'helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} --namespace ${{ env.KEPTN_NAMESPACE }}-helm-service --set remoteControlPlane.enabled=true --set remoteControlPlane.api.protocol=http --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" --create-namespace --values "./test/assets/helm-charts/helm-service/values-int-tests.yaml"'
-              helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} --namespace ${{ env.KEPTN_NAMESPACE }}-helm-service \
-                --set remoteControlPlane.enabled=true \
-                --set remoteControlPlane.api.protocol=http \
-                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
-                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
-                --create-namespace \
-                --values "./test/assets/helm-charts/keptn/values-int-tests-dev.yaml"
-
-            else
-              echo "installing helm service from keptn repo" 
-              helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}-helm-service \
-                --set remoteControlPlane.enabled=true \
-                --set remoteControlPlane.api.protocol=http \
-                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
-                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
-                --create-namespace
-            fi
-          
-            if [[ "$JMETER_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
-              echo "installing jmeter from dev repo"
-              helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
-                --set remoteControlPlane.enabled=true \
-                --set remoteControlPlane.api.protocol=http \
-                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
-                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
-                --create-namespace \
-                --values "./test/assets/helm-charts/keptn/values-int-tests-dev.yaml"
-                
-            else
-              echo "installing jmeter from keptn repo"
-              helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service \
-                --set remoteControlPlane.enabled=true \
-                --set remoteControlPlane.api.protocol=http \
-                --set remoteControlPlane.api.hostname="${KEPTN_API_HOSTNAME}" \
-                --set remoteControlPlane.api.token="${KEPTN_API_TOKEN}" \
-                --create-namespace
-            fi
-          
-            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}-jmeter-service
-            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}-helm-service
-
-      - name: Install Helm/JMeter Service
-        if: env.CLOUD_PROVIDER == 'GKE' && env.REMOTE_EXECUTION_PLANE != 'true'
-        timeout-minutes: 5
-        env:
-          KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
-          HELM_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_SERVICE_HELM_CHART_NAME }}
-          JMETER_SERVICE_HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.JMETER_SERVICE_HELM_CHART_NAME }}
-        run: |
-            # In-cluster execution plane
-            if [[ "$HELM_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
-             echo "install helm locally from dev repo"
-             helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
-              -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml' 
-            else
-             echo "install helm locally from keptn repo"         
-             helm install helm-service ${HELM_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
-            fi
-          
-            if [[ "$JMETER_SERVICE_HELM_CHART_NAME" == *"dev"* ]]; then
-             echo "install jmeter locally from dev repo"
-             helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }} \
-              -f './test/assets/helm-charts/keptn/values-int-tests-dev.yaml'
-            else
-               echo "install jmeter locally from keptn repo"
-               helm install jmeter-service ${JMETER_SERVICE_HELM_CHART_NAME} -n ${{ env.KEPTN_NAMESPACE }}
-            fi
-          
-            helm test jmeter-service -n ${{ env.KEPTN_NAMESPACE }}
-            helm test helm-service -n ${{ env.KEPTN_NAMESPACE }}
 
       - name: Prepare test run
         id: prepare_test_run
@@ -987,19 +871,15 @@ jobs:
           KEPTN_HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
           KEPTN_INGRESS_TEMPLATE_FILENAME=test/assets/keptn-on-keptn/ingress.yaml
           ENDPOINTS_TEMPLATE_BASE_PATH=test/assets/keptn-on-keptn
-          HELM_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/helm-service*.tgz | head -1)
-          JMETER_SERVICE_HELM_CHART_FILENAME=$(ls dist/keptn-installer/jmeter-service*.tgz | head -1)
 
           echo "Adding resources to meta keptn..."
 
           keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${KEPTN_HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
-          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=helm-service --all-stages --resource=${HELM_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/helm-service.tgz
-          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=jmeter-service --all-stages --resource=${JMETER_SERVICE_HELM_CHART_FILENAME} --resourceUri=helm/jmeter-service.tgz
 
           echo "Adding ingresses and endpoints to all keptn-on-keptn stages..."
 
           stages=('dev' 'hardening' 'production')
-          services=('keptn' 'helm-service' 'jmeter-service')
+          services=('keptn')
           for SERVICE in "${services[@]}"; do
             for STAGE in "${stages[@]}"; do
               export SERVICE
@@ -1037,8 +917,6 @@ jobs:
       matrix:
         include:
           - SERVICE_NAME: keptn
-          - SERVICE_NAME: jmeter-service
-          - SERVICE_NAME: helm-service
     env:
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
       KEPTN_ARCHIVE_PATH: ~/downloads/keptn-archive.tar.gz
@@ -1079,7 +957,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v3.0.5
+        uses: actions/cache@v3.0.6
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli

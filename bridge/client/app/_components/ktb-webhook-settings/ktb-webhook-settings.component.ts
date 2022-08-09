@@ -5,6 +5,8 @@ import { IWebhookConfigClient, WebhookConfigMethod } from '../../../../shared/in
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 import { IClientSecret } from '../../../../shared/interfaces/secret';
+import { ActivatedRoute } from '@angular/router';
+import { map } from 'rxjs/operators';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished' | 'sendStarted';
 
@@ -30,6 +32,8 @@ export class KtbWebhookSettingsComponent implements OnInit {
     pinnable: true,
     originY: 'center',
   };
+  public projectName$ = this.route.paramMap.pipe(map((params) => params.get('projectName')));
+
   public _eventType?: string;
   public eventDataSource?: SelectTreeNode[];
 
@@ -108,6 +112,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
 
   @Output() validityChanged: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() webhookChange: EventEmitter<IWebhookConfigClient> = new EventEmitter<IWebhookConfigClient>();
+  @Output() webhookFormDirty: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   get header(): FormArray {
     return this.getFormControl('header') as FormArray;
@@ -117,7 +122,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     return this.header.controls as FormGroup[];
   }
 
-  constructor() {
+  constructor(private route: ActivatedRoute) {
     this.webhookConfigForm.statusChanges.subscribe((status: 'INVALID' | 'VALID') => {
       this.validityChanged.next(status === 'VALID');
     });
@@ -139,12 +144,13 @@ export class KtbWebhookSettingsComponent implements OnInit {
       type: this._webhook?.type ?? '',
     };
     this.webhookChange.emit(this._webhook);
+    this.webhookFormDirty.emit(this.webhookConfigForm.dirty);
   }
 
   public addHeader(name?: string, value?: string): void {
     this.header.push(
       new FormGroup({
-        name: new FormControl(name || '', [Validators.required]),
+        key: new FormControl(name || '', [Validators.required]),
         value: new FormControl(value || '', [Validators.required]),
       })
     );

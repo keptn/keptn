@@ -37,14 +37,11 @@ jobs:
             approval-service
             bridge
             cli
-            configuration-service
             deps
             deps-dev
             distributor
             docs
-            helm-service
             installer
-            jmeter-service
             lighthouse-service
             mongodb-datastore
             remediation-service

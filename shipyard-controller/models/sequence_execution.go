@@ -1,11 +1,11 @@
 package models
 
 import (
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
-	"github.com/keptn/keptn/shipyard-controller/common"
 )
 
 // SequenceExecution contains all required information needed by the shipyard controller on how to preceed within a task sequence.

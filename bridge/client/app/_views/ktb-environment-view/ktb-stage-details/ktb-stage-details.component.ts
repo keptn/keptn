@@ -1,13 +1,11 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { DtToggleButtonChange, DtToggleButtonItem } from '@dynatrace/barista-components/toggle-button-group';
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { Project } from '../../../_models/project';
 import { Stage } from '../../../_models/stage';
 import { Service } from '../../../_models/service';
-import { DataService } from '../../../_services/data.service';
-import { takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
-import { Router } from '@angular/router';
+import { ISelectedStageInfo } from '../ktb-environment-view.component';
+import { EvaluationBadgeVariant } from '../../../_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 export type ServiceFilterType = 'evaluation' | 'problem' | 'approval' | undefined;
 
@@ -15,48 +13,33 @@ export type ServiceFilterType = 'evaluation' | 'problem' | 'approval' | undefine
   selector: 'ktb-stage-details',
   templateUrl: './ktb-stage-details.component.html',
   styleUrls: ['./ktb-stage-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbStageDetailsComponent implements OnInit, OnDestroy {
-  public _project?: Project;
-  public selectedStage?: Stage;
+export class KtbStageDetailsComponent {
   public filterEventType: ServiceFilterType;
   public overlayConfig: DtOverlayConfig = {
     pinnable: true,
   };
-  public isQualityGatesOnly = false;
   public filteredServices: string[] = [];
-  private readonly unsubscribe$ = new Subject<void>();
+  private _selectedStageInfo?: ISelectedStageInfo;
+  public EvaluationBadgeVariant = EvaluationBadgeVariant;
+
+  @Input() project?: Project;
+  @Input() set selectedStageInfo(stageInfo: ISelectedStageInfo | undefined) {
+    this._selectedStageInfo = stageInfo;
+    if (stageInfo && this.filterEventType !== stageInfo.filterType) {
+      this.resetFilter(stageInfo.filterType);
+    }
+  }
+  get selectedStageInfo(): ISelectedStageInfo | undefined {
+    return this._selectedStageInfo;
+  }
+  @Output() selectedStageInfoChange = new EventEmitter<ISelectedStageInfo>();
+  @Input() isQualityGatesOnly = false;
 
   @ViewChild('problemFilterEventButton') public problemFilterEventButton?: DtToggleButtonItem<string>;
   @ViewChild('evaluationFilterEventButton') public evaluationFilterEventButton?: DtToggleButtonItem<string>;
   @ViewChild('approvalFilterEventButton') public approvalFilterEventButton?: DtToggleButtonItem<string>;
-
-  @Input()
-  get project(): Project | undefined {
-    return this._project;
-  }
-
-  set project(project: Project | undefined) {
-    if (this._project !== project) {
-      this._project = project;
-      this.selectedStage = undefined;
-    }
-  }
-
-  constructor(private dataService: DataService, private router: Router) {}
-
-  ngOnInit(): void {
-    this.dataService.isQualityGatesOnly.pipe(takeUntil(this.unsubscribe$)).subscribe((isQualityGatesOnly) => {
-      this.isQualityGatesOnly = isQualityGatesOnly;
-    });
-  }
-
-  selectStage($event: { stage: Stage; filterType: ServiceFilterType }): void {
-    this.selectedStage = $event.stage;
-    if (this.filterEventType !== $event.filterType) {
-      this.resetFilter($event.filterType);
-    }
-  }
 
   private resetFilter(eventType: ServiceFilterType): void {
     this.problemFilterEventButton?.deselect();
@@ -66,21 +49,19 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  selectFilterEvent($event: DtToggleButtonChange<any>): void {
+  selectFilterEvent(stage: Stage, $event: DtToggleButtonChange<any>): void {
     if ($event.isUserInput) {
-      this.filterEventType = $event.source.selected ? $event.value : null;
+      this.filterEventType = $event.source.selected ? $event.value : undefined;
 
-      // Add filterType query parameter
-      this.router.navigate([], {
-        queryParams: { filterType: this.filterEventType },
-      });
+      this._selectedStageInfo = { stage, filterType: this.filterEventType };
+      this.selectedStageInfoChange.emit(this.selectedStageInfo);
     }
   }
 
-  getServiceLink(service: Service): string[] {
+  getServiceLink(service: Service, projectName: string): string[] {
     return [
       '/project',
-      this.project?.projectName ?? '',
+      projectName,
       'service',
       service.serviceName,
       'context',
@@ -90,7 +71,7 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     ];
   }
 
-  public filterServices(services: Service[], type: ServiceFilterType): Service[] {
+  public filterServices(stage: Stage, services: Service[], type: ServiceFilterType): Service[] {
     const filteredServices =
       this.filteredServices.length === 0
         ? services
@@ -98,16 +79,9 @@ export class KtbStageDetailsComponent implements OnInit, OnDestroy {
     if (this.filterEventType && filteredServices.length === 0 && this.filterEventType === type) {
       this.resetFilter(undefined);
 
-      // Remove filterType query parameter
-      this.router.navigate([], {
-        queryParams: { filterType: null },
-      });
+      this._selectedStageInfo = { stage, filterType: undefined };
+      this.selectedStageInfoChange.emit(this.selectedStageInfo);
     }
     return filteredServices;
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 }

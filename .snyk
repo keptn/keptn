@@ -1,0 +1,79 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  'snyk:lic:golang:github.com:hashicorp:golang-lru:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-12T09:35:29.655Z
+  'snyk:lic:golang:github.com:hashicorp:hcl:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-12T09:35:29.655Z
+  'snyk:lic:golang:github.com:hashicorp:consul:api:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:consul:sdk:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:errwrap:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-cleanhttp:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-immutable-radix:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-version:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-multierror:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-retryablehttp:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-rootcerts:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-sockaddr:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:go-uuid:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:logutils:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:memberlist:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:hashicorp:serf:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+  'snyk:lic:golang:github.com:mitchellh:cli:MPL-2.0':
+    - '*':
+        reason: this license is fine for keptn
+        created: 2022-07-21T07:14:53.099Z
+patch: {}
+exclude:
+  global:
+    - '**/*.spec.ts'
+    - '**/*.mock.ts'
+    - '**/*_test.go'
+    - 'test/**'

@@ -7,7 +7,9 @@ import (
 	"text/template"
 )
 
-func RenderContent(raw io.ReadCloser, context any) (io.ReadCloser, error) {
+type templateRenderer struct{}
+
+func (tr *templateRenderer) RenderContent(raw io.ReadCloser, context any) (io.ReadCloser, error) {
 	defer raw.Close()
 	bytes, err := io.ReadAll(raw)
 
@@ -15,19 +17,28 @@ func RenderContent(raw io.ReadCloser, context any) (io.ReadCloser, error) {
 		return nil, fmt.Errorf("error reading template: %w", err)
 	}
 
+	rendered, err := tr.RenderString(string(bytes), context)
+
+	if err != nil {
+		return nil, err
+	}
+	return io.NopCloser(strings.NewReader(rendered)), nil
+}
+func (tr *templateRenderer) RenderString(raw string, context any) (string, error) {
+
 	t, err := template.New("template").
 		Delims("[[", "]]").
 		Option("missingkey=error").
-		Parse(string(bytes))
+		Parse(raw)
 
 	if err != nil {
-		return nil, fmt.Errorf("error parsing template: %w", err)
+		return "", fmt.Errorf("error parsing template: %w", err)
 	}
 
 	buf := new(strings.Builder)
 	err = t.Execute(buf, context)
 	if err != nil {
-		return nil, fmt.Errorf("error rendering template: %w", err)
+		return "", fmt.Errorf("error rendering template: %w", err)
 	}
-	return io.NopCloser(strings.NewReader(buf.String())), nil
+	return buf.String(), nil
 }

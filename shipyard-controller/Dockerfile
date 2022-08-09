@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.4 as builder-base
+FROM golang:1.18.5 as builder-base
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
@@ -71,6 +71,8 @@ RUN apk add --no-cache ca-certificates libc6-compat
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/main /shipyard-controller
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui
+
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debug-ui /debug-ui
 
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml

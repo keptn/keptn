@@ -1,18 +1,34 @@
 <div class="container dark" fxFlex fxLayout="column" fxLayoutGap="15px">
-  <ng-container *ngIf="selectedStage && project as project">
+  <ng-container *ngIf="selectedStageInfo && project as project">
     <ng-container
       *ngIf="
-        filterServices(selectedStage.getServicesWithFailedEvaluation(), 'evaluation') as failedQualityGatesServices
+        filterServices(
+          selectedStageInfo.stage,
+          selectedStageInfo.stage.getServicesWithFailedEvaluation(),
+          'evaluation'
+        ) as failedQualityGatesServices
       "
     >
       <ng-container
-        *ngIf="filterServices(selectedStage.getServicesWithRemediations(), 'problem') as remediationServices"
+        *ngIf="
+          filterServices(
+            selectedStageInfo.stage,
+            selectedStageInfo.stage.getServicesWithRemediations(),
+            'problem'
+          ) as remediationServices
+        "
       >
         <ng-container
-          *ngIf="filterServices(selectedStage.getServicesWithOpenApprovals(), 'approval') as approvalServices"
+          *ngIf="
+            filterServices(
+              selectedStageInfo.stage,
+              selectedStageInfo.stage.getServicesWithOpenApprovals(),
+              'approval'
+            ) as approvalServices
+          "
         >
-          <h2 [textContent]="selectedStage.stageName"></h2>
-          <dt-toggle-button-group (change)="selectFilterEvent($event)">
+          <h2 [textContent]="selectedStageInfo.stage.stageName"></h2>
+          <dt-toggle-button-group (change)="selectFilterEvent(selectedStageInfo.stage, $event)">
             <button
               #problemFilterEventButton
               dt-toggle-button-item
@@ -66,11 +82,13 @@
             </button>
           </dt-toggle-button-group>
 
-          <ng-container *ngIf="selectedStage.services.length === 0">
+          <ng-container *ngIf="selectedStageInfo.stage.services.length === 0">
             <ktb-no-service-info></ktb-no-service-info>
           </ng-container>
 
-          <ng-container *ngFor="let service of filterServices(selectedStage.services, undefined)">
+          <ng-container
+            *ngFor="let service of filterServices(selectedStageInfo.stage, selectedStageInfo.stage.services, undefined)"
+          >
             <ktb-expandable-tile
               class="mt-1"
               [expanded]="service.getOpenApprovals().length > 0"
@@ -100,11 +118,11 @@
                         *ngIf="service.getOpenApprovals().length > 0"
                         name="deploy"
                       ></dt-icon>
-                      <ng-container *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                      <ng-container *ngIf="project.getLatestDeployment(service, selectedStageInfo.stage) as deployment">
                         <a
                           *ngIf="deployment.deploymentUrl"
                           [href]="deployment.deploymentUrl"
-                          [title]="'View ' + service.serviceName + ' in ' + selectedStage.stageName"
+                          [title]="'View ' + service.serviceName + ' in ' + selectedStageInfo.stage.stageName"
                           target="_blank"
                         >
                           <button dt-icon-button variant="nested">
@@ -116,28 +134,32 @@
                   </dt-info-group-title>
                   <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
                     <a
-                      [routerLink]="getServiceLink(service)"
+                      [routerLink]="getServiceLink(service, project.projectName)"
                       class="m-0 mt-1"
                       *ngIf="service.deployedImage; else noDeployment"
                       [textContent]="service.getImageName()"
                     ></a>
                     <div fxFlex fxLayoutAlign="end">
                       <ktb-evaluation-info
+                        *ngIf="{
+                          value: service.latestSequence?.getEvaluationTrace(selectedStageInfo.stage.stageName)
+                        } as evaluation"
                         [evaluationInfo]="{
-                          trace: service.latestSequence?.getEvaluationTrace(selectedStage.stageName),
+                          trace: evaluation.value,
                           showHistory: true,
                           data: {
                             project: project.projectName,
-                            stage: selectedStage.stageName,
+                            stage: selectedStageInfo.stage.stageName,
                             service: service.serviceName
                           }
                         }"
+                        [fillState]="evaluation.value ? EvaluationBadgeVariant.FILL : EvaluationBadgeVariant.NONE"
                       ></ktb-evaluation-info>
                     </div>
                   </div>
 
                   <ng-template #noDeployment>
-                    <p class="m-0" *ngIf="isQualityGatesOnly">
+                    <p class="m-0" *ngIf="isQualityGatesOnly; else noQualityGatesOnly">
                       Use
                       <a
                         [href]="'/reference/cli/commands/keptn_trigger_evaluation/' | keptnUrl"
@@ -147,16 +169,18 @@
                       >
                       to trigger a quality gate evaluation.
                     </p>
-                    <p class="m-0" *ngIf="!isQualityGatesOnly">
-                      Service not deployed yet. Use
-                      <a
-                        [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        >keptn trigger delivery</a
-                      >
-                      to trigger a deployment.
-                    </p>
+                    <ng-template #noQualityGatesOnly>
+                      <p class="m-0">
+                        Service not deployed yet. Use
+                        <a
+                          [href]="'/reference/cli/commands/keptn_trigger_delivery/' | keptnUrl"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          >keptn trigger delivery</a
+                        >
+                        to trigger a deployment.
+                      </p>
+                    </ng-template>
                   </ng-template>
                 </dt-info-group>
               </ktb-expandable-tile-header>
@@ -202,7 +226,7 @@
                     <ng-container
                       *ngIf="
                         failedRootEvent
-                          .getEvaluationTrace(selectedStage.stageName)
+                          .getEvaluationTrace(selectedStageInfo.stage.stageName)
                           ?.getEvaluationFinishedEvent() as evaluation
                       "
                     >
@@ -223,12 +247,12 @@
                     'context',
                     failedRootEvent.shkeptncontext,
                     'stage',
-                    selectedStage.stageName
+                    selectedStageInfo.stage.stageName
                   ]"
                 >
                   View evaluation result
                 </button>
-                <p class="m-0" *ngIf="project.getLatestDeployment(service, selectedStage) as deployment">
+                <p class="m-0" *ngIf="project.getLatestDeployment(service, selectedStageInfo.stage) as deployment">
                   Rollback to <span [textContent]="deployment.image"></span> performed.
                 </p>
               </ng-container>
