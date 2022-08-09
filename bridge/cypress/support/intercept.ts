@@ -408,9 +408,13 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
   });
 }
 
-export function interceptHeatmapComponent(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+export function interceptD3(): void {
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
+}
+
+export function interceptHeatmapComponent(): void {
+  interceptD3();
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {
