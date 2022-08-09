@@ -1,5 +1,6 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
+import { interceptSequenceExecution } from '../support/intercept';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
@@ -118,27 +119,13 @@ describe('Sequences', () => {
         events: [],
       },
     });
-    cy.intercept(
-      `/api/controlPlane/v1/sequence-execution?project=${project}&stage=dev&service=carts-db&status=started&pageSize=1`,
-      {
-        body: {
-          sequenceExecutions: [
-            {
-              scope: {
-                keptnContext: 'f78c2fc7-d272-4bcd-9845-3f3041080ae5',
-                stage: 'dev',
-              },
-            },
-          ],
-        },
-      }
-    );
+    interceptSequenceExecution(project, blockingContext, 'dev', 'carts-db');
 
     sequencePage
       .visit(project)
       .assertIsWaitingSequence(context, true)
       .selectSequence(context)
-      .navigateToBlockingSequence()
+      .clickBlockingSequenceNavigationButton()
       .assertSequenceDeepLink(project, blockingContext, 'dev');
   });
 

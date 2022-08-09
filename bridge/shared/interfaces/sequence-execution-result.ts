@@ -1,4 +1,6 @@
 import { IShipyardSequence } from './shipyard';
+import { ResultTypes } from '../models/result-types';
+import { StatusTypes } from '../models/status-types';
 
 export interface SequenceExecutionResult {
   nextPageKey?: number;
@@ -21,17 +23,13 @@ export interface EventScope {
   eventType: string;
   gitcommitid: string;
   keptnContext: string;
-  labels: {
-    additionalProp1: string;
-    additionalProp2: string;
-    additionalProp3: string;
-  };
+  labels: Record<string, string | undefined>;
   message: string;
   project: string;
-  result: string;
+  result: ResultTypes;
   service: string;
   stage: string;
-  status: string;
+  status: StatusTypes;
   triggeredId: string;
 }
 
@@ -40,14 +38,11 @@ export interface SequenceExecutionStatus {
     events: [
       {
         eventType: string;
-        properties: {
-          // eslint-disable-next-line @typescript-eslint/ban-types
-          additionalProp1: {};
-        };
-        result: string;
+        properties: Record<string, unknown>;
+        result: ResultTypes;
         source: string;
-        status: string;
-        time: string;
+        status: StatusTypes;
+        time: string; // ISO_INSTANT format e.g. yyyy-mm-ddThh:mm:ss.SSSZ
       }
     ];
     name: string;
@@ -56,15 +51,12 @@ export interface SequenceExecutionStatus {
   previousTasks: [
     {
       name: string;
-      properties: {
-        // eslint-disable-next-line @typescript-eslint/ban-types
-        additionalProp1: {};
-      };
-      result: string;
-      status: string;
+      properties: Record<string, unknown>;
+      result: ResultTypes;
+      status: StatusTypes;
       triggeredID: string;
     }
   ];
-  state: string;
+  state: 'triggered' | 'waiting' | 'suspended' | 'paused' | 'finished' | 'cancelled' | 'timedOut';
   stateBeforePause: string;
 }

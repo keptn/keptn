@@ -419,6 +419,10 @@ export class KtbSequenceViewComponent implements OnDestroy {
         pageSize: 1,
       })
       .subscribe((sequenceExecutionResult) => {
+        if (sequenceExecutionResult.sequenceExecutions.length === 0) {
+          this.navigationToRunningSequenceLoading = false;
+          return;
+        }
         const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
         const sequence = state?.sequenceInfo?.sequences.find(
           (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext

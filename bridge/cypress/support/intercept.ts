@@ -449,3 +449,28 @@ export function interceptHeatmapWithKeySLI(): void {
     fixture: 'get.sockshop.service.carts.evaluations.keysli.mock.json',
   }).as('heatmapEvaluations');
 }
+
+export function interceptSequenceExecution(
+  project: string,
+  returnKeptnContext: string,
+  stage?: string,
+  service?: string
+): void {
+  let url = `/api/controlPlane/v1/sequence-execution?project=${project}`;
+  if (stage) url += `&stage=${stage}`;
+  if (service) url += `&service=${service}`;
+  url += '&status=started&pageSize=1';
+
+  cy.intercept(url, {
+    body: {
+      sequenceExecutions: [
+        {
+          scope: {
+            keptnContext: returnKeptnContext,
+            stage: 'dev',
+          },
+        },
+      ],
+    },
+  }).as('sequenceExecution');
+}

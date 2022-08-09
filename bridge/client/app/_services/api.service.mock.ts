@@ -43,6 +43,8 @@ import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
+import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
+import { SequenceExecutionResultMock } from './_mockData/sequence-execution-result.mock';
 
 @Injectable({
   providedIn: null,
@@ -382,6 +384,19 @@ export class ApiServiceMock extends ApiService {
 
   public triggerSequence(type: string, data: TriggerSequenceData): Observable<TriggerResponse> {
     return of({ keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' });
+  }
+
+  public getSequenceExecution(params: {
+    project: string;
+    stage?: string;
+    service?: string;
+    name?: string;
+    status?: string;
+    keptnContext?: string;
+    pageSize?: number;
+    nextPageKey?: number;
+  }): Observable<SequenceExecutionResult> {
+    return of(SequenceExecutionResultMock);
   }
 }
 

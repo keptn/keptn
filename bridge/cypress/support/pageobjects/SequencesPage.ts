@@ -390,7 +390,7 @@ export class SequencesPage {
       .parentsUntil('ktb-stage-badge');
   }
 
-  public navigateToBlockingSequence(): this {
+  public clickBlockingSequenceNavigationButton(): this {
     cy.byTestId('keptn-blocking-sequence-navigation').click();
     return this;
   }
