@@ -125,6 +125,7 @@ func TestPostEventHandlerFunc(t *testing.T) {
 			Specversion:    "1.0",
 			Time:           strfmt.DateTime{},
 			Type:           &eventType,
+			Triggeredid:    "triggeredid",
 		},
 	}
 
@@ -150,6 +151,7 @@ func TestPostEventHandlerFunc_NoNatsConnection(t *testing.T) {
 			Specversion: "1.0",
 			Time:        strfmt.DateTime{},
 			Type:        &eventType,
+			Triggeredid: "triggeredid",
 		},
 	}
 
@@ -266,6 +268,7 @@ func TestEventHandler_PostEvent(t *testing.T) {
 		Specversion: "1.0",
 		Time:        strfmt.DateTime{},
 		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -303,6 +306,7 @@ func TestEventHandler_PostEvent_UseAvailableKeptnContext(t *testing.T) {
 		Specversion:    "1.0",
 		Time:           strfmt.DateTime{},
 		Type:           &eventType,
+		Triggeredid:    "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -338,6 +342,7 @@ func TestEventHandler_PostEvent_SetDefaultSource(t *testing.T) {
 		Specversion: "1.0",
 		Time:        strfmt.DateTime{},
 		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -372,6 +377,7 @@ func TestEventHandler_PostEvent_ReplaceInvalidWithDefaultSource(t *testing.T) {
 		Specversion: "1.0",
 		Time:        strfmt.DateTime{},
 		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -406,6 +412,7 @@ func TestEventHandler_PostEvent_SendFails(t *testing.T) {
 		Specversion: "1.0",
 		Time:        strfmt.DateTime{},
 		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)

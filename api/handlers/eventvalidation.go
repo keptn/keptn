@@ -69,6 +69,10 @@ func validateTaskStartedEvent(e models.KeptnContextExtendedCE) error {
 	if eventData.Project == "" || eventData.Stage == "" || eventData.Service == "" {
 		return &EventValidationError{Msg: "mandatory field(s) 'project', 'stage' or 'service' missing"}
 	}
+
+	if e.Triggeredid == "" {
+		return &EventValidationError{Msg: "mandatroy field 'triggeredid' missing"}
+	}
 	return nil
 }
 
@@ -86,6 +90,10 @@ func validateTaskFinishedEvent(e models.KeptnContextExtendedCE) error {
 	}
 	if eventData.Status == "" {
 		return &EventValidationError{Msg: "status field is not set"}
+	}
+
+	if e.Triggeredid == "" {
+		return &EventValidationError{Msg: "mandatroy field 'triggeredid' missing"}
 	}
 	return nil
 }
@@ -111,6 +119,6 @@ func validateSequenceTriggeredEvent(e models.KeptnContextExtendedCE) error {
 
 // validateErrorLogEvent contains logic that validates a "sh.keptn.log.error" event
 func validateErrorLogEvent(event models.KeptnContextExtendedCE) error {
-	// TODO: implement what makes sense
+	// no validation logic yet
 	return nil
 }

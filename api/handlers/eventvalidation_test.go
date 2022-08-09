@@ -169,6 +169,7 @@ func TestValidate(t *testing.T) {
 					Specversion: "1.0",
 					Time:        strfmt.DateTime{},
 					Type:        stringp("sh.keptn.event.task.started"),
+					Triggeredid: "triggeredid",
 				},
 			},
 			wantErr: assert.NoError,
@@ -238,6 +239,22 @@ func TestValidate(t *testing.T) {
 			},
 		},
 		{
+			name: "task .started event - triggeredid missing",
+			args: args{
+				e: models.KeptnContextExtendedCE{
+					Contenttype: "application/json",
+					Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+					Source:      stringp("test-source"),
+					Specversion: "1.0",
+					Time:        strfmt.DateTime{},
+					Type:        stringp("sh.keptn.event.task.started"),
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorAs(t, err, &EventValidationError{})
+			},
+		},
+		{
 			name: "task .started event - common data un-parsable",
 			args: args{
 				e: models.KeptnContextExtendedCE{
@@ -263,6 +280,7 @@ func TestValidate(t *testing.T) {
 					Specversion: "1.0",
 					Time:        strfmt.DateTime{},
 					Type:        stringp("sh.keptn.event.task.finished"),
+					Triggeredid: "triggeredid",
 				},
 			},
 			wantErr: assert.NoError,
@@ -322,6 +340,22 @@ func TestValidate(t *testing.T) {
 				e: models.KeptnContextExtendedCE{
 					Contenttype: "application/json",
 					Data:        map[string]interface{}{},
+					Source:      stringp("test-source"),
+					Specversion: "1.0",
+					Time:        strfmt.DateTime{},
+					Type:        stringp("sh.keptn.event.task.finished"),
+				},
+			},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				return assert.ErrorAs(t, err, &EventValidationError{})
+			},
+		},
+		{
+			name: "task .finished event - triggeredid missing",
+			args: args{
+				e: models.KeptnContextExtendedCE{
+					Contenttype: "application/json",
+					Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc", "result": "succeeded", "status": "pass"},
 					Source:      stringp("test-source"),
 					Specversion: "1.0",
 					Time:        strfmt.DateTime{},
