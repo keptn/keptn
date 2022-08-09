@@ -3,6 +3,7 @@ package importer
 import (
 	"fmt"
 	"io"
+	"regexp"
 
 	"github.com/keptn/keptn/api/importer/model"
 )
@@ -19,6 +20,7 @@ type Renderer interface {
 type ImportPackage interface {
 	io.Closer
 	GetResource(resourceName string) (io.ReadCloser, error)
+	ResourceExists(resourceName string) (bool, error)
 }
 
 type ManifestParser interface {
@@ -28,6 +30,7 @@ type ManifestParser interface {
 type TaskExecutor interface {
 	ExecuteAPI(ate model.APITaskExecution) (any, error)
 	PushResource(rp model.ResourcePush) (any, error)
+	ActionSupported(actionName string) bool
 }
 
 type ProjectStageRetriever interface {
@@ -80,6 +83,11 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) (*m
 		return nil, fmt.Errorf("error parsing manifest: %w", err)
 	}
 
+	err = ipp.validateManifest(manifest, ip)
+	if err != nil {
+		return nil, fmt.Errorf("error validating manifest: %w", err)
+	}
+
 	mCtx := model.NewManifestExecution(project)
 
 	for _, task := range manifest.Tasks {
@@ -99,6 +107,67 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) (*m
 	}
 
 	return mCtx, nil
+}
+
+func (ipp *ImportPackageProcessor) validateManifest(
+	manifest *model.ImportManifest, ip ImportPackage) error {
+	re := regexp.MustCompile("^[a-zA-Z0-9_]*$")
+
+	for _, task := range manifest.Tasks {
+		// Check if ID is not empty and formatted properly
+		if task.ID == "" {
+			return fmt.Errorf("task id cannot be empty")
+		} else if !re.MatchString(task.ID) {
+			return fmt.Errorf("task id %s can only consist of alphnumeric characters and underscores", task.ID)
+		}
+
+		// Check if task definition is correct
+		switch task.Type {
+		case apiTaskType:
+			if task.ResourceTask != nil {
+				return fmt.Errorf("cannot set resource task fields on API task")
+			}
+
+			if task.APITask != nil {
+				// Check if the action type is supported
+				if supported := ipp.executor.ActionSupported(task.APITask.Action); !supported {
+					return fmt.Errorf("unsupported action type: %s", task.APITask.Action)
+				}
+
+				// Check if payload file does exist
+				exists, err := ip.ResourceExists(task.APITask.PayloadFile)
+
+				if err != nil || !exists {
+					return fmt.Errorf("payload file %s does not exists: %w", task.APITask.PayloadFile, err)
+				}
+			} else {
+				return fmt.Errorf("empty api definition not supported")
+			}
+		case resourceTaskType:
+			if task.APITask != nil {
+				return fmt.Errorf("cannot set API task fields on resource task")
+			}
+
+			if task.ResourceTask != nil {
+				if task.ResourceTask.RemoteURI == "" {
+					return fmt.Errorf("resourceUri %s cannot be empty for resource task type", task.ResourceTask.RemoteURI)
+				}
+
+				// Check if resource file does exist
+				exists, err := ip.ResourceExists(task.ResourceTask.File)
+
+				if err != nil || !exists {
+					return fmt.Errorf("resource file %s does not exists: %w", task.ResourceTask.File, err)
+				}
+			} else {
+				return fmt.Errorf("empty resource definition not supported")
+			}
+		default:
+			return fmt.Errorf("task of type %s not implemented", task.Type)
+		}
+	}
+
+	return nil
 }
 
 func (ipp *ImportPackageProcessor) processResourceTask(
