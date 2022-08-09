@@ -19,7 +19,7 @@ helm repo add keptn-dev https://charts-dev.keptn.sh
 8. The global registry for dev images is docker.io/keptndev so this value should be overwritten in the helm chart as shown below
 9. To install version 0.16.0-dev-PR-1234
 ``` 
-helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=global.keptn.registry=docker.io/keptndev --set=continuousDelivery.enabled=true --wait --version 0.16.0-dev-PR-1234
+helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=global.keptn.registry=docker.io/keptndev --wait --version 0.16.0-dev-PR-1234
 helm upgrade --install jmeter-service keptn-dev/jmeter-service -n keptn --set=global.keptn.registry=docker.io/keptndev --wait --version 0.16.0-dev-PR-1234
 helm upgrade --install helm-service keptn-dev/helm-service -n keptn --set=global.keptn.registry=docker.io/keptndev --wait --version 0.16.0-dev-PR-1234
 
@@ -34,9 +34,10 @@ helm upgrade --install helm-service keptn-dev/helm-service -n keptn --set=global
 
 <!-- toc -->
 
-- [Known Issues](#known-issues)
-  * [Docker Image Pull Rate](#docker-image-pull-rate)
-  * [Old Images](#old-images)
+- [Install master branch](#install-master-branch)
+  - [Known Issues](#known-issues)
+    - [Docker Image Pull Rate](#docker-image-pull-rate)
+    - [Old Images](#old-images)
 
 <!-- tocstop -->
 

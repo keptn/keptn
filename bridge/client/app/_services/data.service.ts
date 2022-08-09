@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, forkJoin, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, debounceTime, forkJoin, Observable, of, Subject } from 'rxjs';
 import { catchError, map, mergeMap, take, tap } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
@@ -90,7 +90,10 @@ export class DataService {
   }
 
   get hasUnreadUniformRegistrationLogs(): Observable<boolean> {
-    return this._hasUnreadUniformRegistrationLogs.asObservable();
+    // There could be a case where a component is changing the value upon rendering the page
+    // The debounceTime will reduce to many emitted values in that time frame
+    // Not using debounceTime can lead to an Angular "ExpressionChangedError"
+    return this._hasUnreadUniformRegistrationLogs.asObservable().pipe(debounceTime(500));
   }
 
   public getSequences(projectName: string): Observable<ISequenceStateInfo | undefined> {

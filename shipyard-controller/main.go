@@ -2,6 +2,15 @@ package main
 
 import (
 	"context"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"os"
+	"os/signal"
+	"sync"
+	"syscall"
+	"time"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"github.com/keptn/keptn/shipyard-controller/internal/configurationstore"
@@ -16,14 +25,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/internal/routing"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
 	"github.com/keptn/keptn/shipyard-controller/internal/shipyardretriever"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
-	"time"
 
 	"github.com/benbjohnson/clock"
 	"github.com/gin-gonic/gin"
@@ -137,6 +138,8 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
+	debugManager := handler.NewDebugManager(createEventsRepo(), createStateRepo(), createProjectRepo(), createSequenceExecutionRepo())
+
 	eventDispatcher := controller.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(env.EventDispatchIntervalSec)*time.Second)
 	sequenceDispatcher := controller.NewSequenceDispatcher(
 		createEventsRepo(),
@@ -189,6 +192,12 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	stageHandler := handler.NewStageHandler(stageManager)
 	stageController := routing.NewStageController(stageHandler)
 	stageController.Inject(apiV1)
+
+	debugEngine := gin.Default()
+	apiDebug := debugEngine.Group("/")
+	debugHandler := handler.NewDebugHandler(debugManager)
+	debugController := routing.NewDebugController(debugHandler, projectService)
+	debugController.Inject(apiDebug)
 
 	evaluationManager, err := handler.NewEvaluationManager(eventSender, projectMVRepo)
 	if err != nil {
@@ -285,6 +294,14 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		Handler: engine,
 	}
 
+	// TODO! feature flag
+	/*
+		srvDebug := &http.Server{
+			Addr:    ":9090",
+			Handler: debugEngine,
+		}
+	*/
+
 	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}, nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent)); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
 	}
@@ -296,6 +313,15 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 			log.WithError(err).Error("could not start API server")
 		}
 	}()
+
+	// TODO! feature flag
+	/*
+		go func() {
+			if err := srvDebug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.WithError(err).Error("could not start debug server")
+			}
+		}()
+	*/
 
 	if env.DisableLeaderElection {
 		// single shipyard
@@ -354,7 +380,7 @@ func GracefulShutdown(wg *sync.WaitGroup, srv *http.Server) {
 }
 
 func createProjectMVRepo() *db.MongoDBProjectMVRepo {
-	return db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()))
+	return db.NewProjectMVRepo(db.NewMongoDBKeyEncodingProjectsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBEventsRepo(db.GetMongoDBConnectionInstance()), db.NewMongoDBSequenceExecutionRepo(db.GetMongoDBConnectionInstance()))
 }
 
 func createUniformRepo() *db.MongoDBUniformRepo {

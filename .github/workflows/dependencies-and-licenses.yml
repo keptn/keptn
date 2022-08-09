@@ -46,8 +46,6 @@ jobs:
             approval-service
             cli
             distributor
-            helm-service
-            jmeter-service
             lighthouse-service
             mongodb-datastore
             remediation-service

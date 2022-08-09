@@ -3,14 +3,6 @@ global:
     registry: docker.io/keptn
     tag: ""
 
-continuousDelivery:
-  enabled: false
-  ingressConfig:
-    ingress_hostname_suffix: "svc.cluster.local"
-    ingress_protocol: "http"
-    ingress_port: "80"
-    istio_gateway: "public-gateway.istio-system"
-
 mongo:
   enabled: true
   host: mongodb:27017

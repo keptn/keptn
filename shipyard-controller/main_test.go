@@ -379,6 +379,105 @@ func Test_getDurationFromEnvVar(t *testing.T) {
 	}
 }
 
+func Test__main_Delivery(t *testing.T) {
+	projectName := "my-project-delivery"
+	serviceName := "my-service"
+
+	natsClient, tearDown, _ := setupTestProject(t, projectName, serviceName, testShipyardFile)
+	defer tearDown()
+
+	context := natsClient.triggerSequenceWithData(keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "hardening",
+			Service: serviceName,
+		},
+		ConfigurationChange: keptnv2.ConfigurationChange{
+			Values: map[string]interface{}{
+				"image": "docker.io/my-image:0.1.0",
+			},
+		},
+		Deployment: keptnv2.DeploymentTriggeredData{
+			DeploymentURIsLocal:  []string{"http://my-service-hardening:8080"},
+			DeploymentURIsPublic: []string{"http://my-service-hardening.svc.cluster.local:80"},
+			DeploymentStrategy:   "blue_green_service",
+		},
+	}, "hardening", "artifact-delivery")
+
+	t.Logf("wait for the sequence state to be available")
+	verifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{apimodels.SequenceStartedState})
+
+	t.Logf("check if deployment.triggered has been sent")
+	var taskTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent = natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("deployment"))
+		return taskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Logf("send .started and .finished event for deployment task")
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	t.Logf("send started event")
+	_, err = keptn.SendTaskStartedEvent(nil, "golang-test")
+	require.Nil(t, err)
+
+	t.Log("wait for .started event to be persisted")
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, context)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("deployment")
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Logf("send finished event")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "hardening",
+			Service: serviceName,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+			Message: "Successfully deployed",
+		},
+		Deployment: keptnv2.DeploymentFinishedData{
+			DeploymentStrategy:   "blue_green_service",
+			DeploymentURIsLocal:  []string{"http://my-service-hardening:8080"},
+			DeploymentURIsPublic: []string{"http://my-service-hardening.svc.cluster.local:80"},
+			DeploymentNames:      []string{"blue_green_service"},
+		},
+	}, "golang-test")
+	require.Nil(t, err)
+
+	t.Log("wait for next task (test) to be triggered")
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "hardening", keptnv2.GetTriggeredEventType("test"))
+		return taskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("checking project information in project materialized view")
+	c := http.Client{}
+	req, err := http.NewRequest(http.MethodGet, "http://localhost:8080/v1/project/"+projectName, nil)
+	require.Nil(t, err)
+
+	resp, err := c.Do(req)
+	require.Nil(t, err)
+	respBody, err := ioutil.ReadAll(resp.Body)
+	require.Nil(t, err)
+
+	getProjectData := apimodels.Project{}
+	err = json.Unmarshal(respBody, &getProjectData)
+	require.Nil(t, err)
+
+	require.Equal(t, "docker.io/my-image:0.1.0", getProjectData.Stages[1].Services[0].DeployedImage)
+
+}
+
 func Test__main_SequenceQueue(t *testing.T) {
 	projectName := "my-project-queue"
 	serviceName := "my-service"
@@ -1679,7 +1778,7 @@ func (n *testNatsClient) onEvent(msg *nats.Msg) {
 	}
 }
 
-func (n *testNatsClient) triggerSequence(projectName, serviceName, stageName, sequenceName string) *apimodels.EventContext {
+func (n *testNatsClient) triggerSequenceWithData(data interface{}, stageName, sequenceName string) *apimodels.EventContext {
 	source := "golang-test"
 	eventType := keptnv2.GetTriggeredEventType(stageName + "." + sequenceName)
 	n.t.Log("triggering task sequence")
@@ -1687,13 +1786,8 @@ func (n *testNatsClient) triggerSequence(projectName, serviceName, stageName, se
 	keptnContext := uuid.NewString()
 
 	eventPayload := apimodels.KeptnContextExtendedCE{
-		Contenttype: "application/json",
-		Data: keptnv2.EventData{
-			Project: projectName,
-			Stage:   stageName,
-			Service: serviceName,
-			Result:  keptnv2.ResultPass,
-		},
+		Contenttype:        "application/json",
+		Data:               data,
 		ID:                 uuid.NewString(),
 		Shkeptncontext:     keptnContext,
 		Shkeptnspecversion: "0.2.0",
@@ -1710,6 +1804,15 @@ func (n *testNatsClient) triggerSequence(projectName, serviceName, stageName, se
 	return &apimodels.EventContext{
 		KeptnContext: &keptnContext,
 	}
+}
+
+func (n *testNatsClient) triggerSequence(projectName, serviceName, stageName, sequenceName string) *apimodels.EventContext {
+	return n.triggerSequenceWithData(keptnv2.EventData{
+		Project: projectName,
+		Stage:   stageName,
+		Service: serviceName,
+		Result:  keptnv2.ResultPass,
+	}, stageName, sequenceName)
 }
 
 func (n *testNatsClient) SendEvent(event cloudevents.Event) error {

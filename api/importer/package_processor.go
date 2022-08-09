@@ -62,14 +62,14 @@ const manifestFileName = "manifest.yaml"
 const apiTaskType = "api"
 const resourceTaskType = "resource"
 
-func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) error {
+func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) (*model.ManifestExecution, error) {
 
 	defer ip.Close()
 
 	manifestReader, err := ip.GetResource(manifestFileName)
 
 	if err != nil {
-		return fmt.Errorf("error accessing manifest: %w", err)
+		return nil, fmt.Errorf("error accessing manifest: %w", err)
 	}
 
 	defer manifestReader.Close()
@@ -77,28 +77,28 @@ func (ipp *ImportPackageProcessor) Process(project string, ip ImportPackage) err
 	manifest, err := ipp.parser.Parse(manifestReader)
 
 	if err != nil {
-		return fmt.Errorf("error parsing manifest: %w", err)
+		return nil, fmt.Errorf("error parsing manifest: %w", err)
 	}
 
 	mCtx := model.NewManifestExecution(project)
 
 	for _, task := range manifest.Tasks {
-
+		mCtx.TaskSequence = append(mCtx.TaskSequence, task.ID)
 		switch task.Type {
 		case apiTaskType:
 			if err = ipp.processAPITask(mCtx, ip, task); err != nil {
-				return err
+				return mCtx, err
 			}
 		case resourceTaskType:
 			if err = ipp.processResourceTask(mCtx, ip, task); err != nil {
-				return err
+				return mCtx, err
 			}
 		default:
-			return fmt.Errorf("task of type %s not implemented", task.Type)
+			return mCtx, fmt.Errorf("task of type %s not implemented", task.Type)
 		}
 	}
 
-	return nil
+	return mCtx, nil
 }
 
 func (ipp *ImportPackageProcessor) processResourceTask(

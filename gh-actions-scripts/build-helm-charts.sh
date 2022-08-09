@@ -52,14 +52,12 @@ fi
 
 mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
 
-# ##################################################################
-# INSTALLER HELM CHART # HELM-SVC HELM CHART # JMETER-SVC HELM CHART
-# ##################################################################
+# ####################
+# INSTALLER HELM CHART
+# ####################
 
 declare -A charts
 charts[keptn]=installer/manifests/keptn
-charts[helm-service]=helm-service/chart
-charts[jmeter-service]=jmeter-service/chart
 
 for i in "${!charts[@]}"
 do
@@ -95,5 +93,3 @@ done
 
 echo "Generated files:"
 echo " - keptn-charts/keptn-${VERSION}.tgz"
-echo " - keptn-charts/helm-service-${VERSION}.tgz"
-echo " - keptn-charts/jmeter-service-${VERSION}.tgz"

@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
-	"time"
 )
 
 const taskSequenceStateCollectionSuffix = "-taskSequenceStates"
@@ -111,6 +112,42 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	}
 	result.States = states
 	return result, nil
+}
+
+func (mdbrepo *MongoDBStateRepo) GetSequenceStateByID(filter models.StateFilter) (*models.SequenceState, error) {
+	var sequence *models.SequenceState
+
+	if filter.Project == "" {
+		return nil, errors.New("project must be set")
+	}
+	err := mdbrepo.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return nil, err
+	}
+	collection := mdbrepo.DBConnection.Client.Database(getDatabaseName()).Collection(filter.Project + taskSequenceStateCollectionSuffix)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	cur := collection.FindOne(ctx, mdbrepo.getSearchOptions(filter))
+
+	if cur.Err() != nil {
+		if errors.Is(cur.Err(), mongo.ErrNoDocuments) {
+			return sequence, mongo.ErrNoDocuments
+		}
+
+		return sequence, fmt.Errorf("could not retrieve sequence: %w", err)
+	}
+
+	err = cur.Decode(&sequence)
+
+	if err != nil {
+		return sequence, err
+	}
+
+	cur.Decode(sequence)
+
+	return sequence, cur.Err()
 }
 
 func (mdbrepo *MongoDBStateRepo) getSearchOptions(filter models.StateFilter) bson.M {
