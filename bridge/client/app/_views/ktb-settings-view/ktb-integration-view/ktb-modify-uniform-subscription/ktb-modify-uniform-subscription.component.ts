@@ -243,6 +243,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
   public deleteSubscription(data: SubscriptionState): void {
     if (!data.subscription.id) return;
+    this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
     this.dataService
       .deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService)
