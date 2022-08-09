@@ -455,6 +455,27 @@ export function interceptHeatmapWithKeySLI(): void {
   }).as('heatmapEvaluations');
 }
 
+export function interceptSubscription(
+  integrationID: string,
+  subscriptionID: string,
+  projectName?: string,
+  service?: string,
+  stage?: string,
+  event = 'sh.keptn.event.test.finished'
+): void {
+  cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
+    body: {
+      event: event,
+      filter: {
+        projects: [projectName],
+        services: [service],
+        stages: [stage],
+      },
+      id: subscriptionID,
+    },
+  });
+}
+
 export function interceptHeatmapComponentWithScores(score1: number, score2: number): void {
   interceptHeatmapComponent();
   cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
