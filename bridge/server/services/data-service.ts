@@ -1241,7 +1241,7 @@ export class DataService {
 
   public async getSequencesFilter(accessToken: string | undefined, projectName: string): Promise<ISequencesFilter> {
     const res = await this.apiService.getStages(accessToken, projectName);
-    const stages = res.data.stages;
+    const stages = res.data.stages.sort((a, b) => (!b.parentStages || a.parentStages?.includes(b.stageName) ? 1 : -1));
     const stageNames: string[] = [];
     const serviceSet: Set<string> = new Set();
 

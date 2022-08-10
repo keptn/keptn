@@ -33,6 +33,7 @@ import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
 
 @Injectable({
   providedIn: 'root',
@@ -499,7 +500,7 @@ export class ApiService {
     stage?: string;
     service?: string;
     name?: string;
-    status?: string;
+    status?: SequenceStatus;
     keptnContext?: string;
     pageSize?: number;
     nextPageKey?: number;

@@ -1,6 +1,7 @@
 import { IShipyardSequence } from './shipyard';
 import { ResultTypes } from '../models/result-types';
 import { StatusTypes } from '../models/status-types';
+import { SequenceStatus } from './sequence';
 
 export interface SequenceExecutionResult {
   nextPageKey?: number;
@@ -57,6 +58,6 @@ export interface SequenceExecutionStatus {
       triggeredID: string;
     }
   ];
-  state: 'triggered' | 'waiting' | 'suspended' | 'paused' | 'finished' | 'cancelled' | 'timedOut';
+  state: SequenceStatus;
   stateBeforePause: string;
 }

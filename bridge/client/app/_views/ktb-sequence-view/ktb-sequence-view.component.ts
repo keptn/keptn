@@ -8,7 +8,7 @@ import {
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
 import { combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
-import { distinctUntilChanged, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { distinctUntilChanged, filter, finalize, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import moment from 'moment';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -18,6 +18,7 @@ import { ISequencesFilter } from '../../../../shared/interfaces/sequencesFilter'
 import { ApiService } from '../../_services/api.service';
 import { isEqual } from 'lodash-es';
 import { FilterName, FilterType, ISequenceViewState, SequencesState } from './ktb-sequence-view.utils';
+import { SequenceStatus } from '../../../../shared/interfaces/sequence';
 
 const SEQUENCE_STATUS = {
   started: 'Active',
@@ -409,15 +410,23 @@ export class KtbSequenceViewComponent implements OnDestroy {
 
   public navigateToBlockingSequence(currentSequence: SequenceState, state?: ISequenceViewState): void {
     this.navigationToRunningSequenceLoading = true;
-    const stages = currentSequence.getStages();
+    const stages = this.metadata.stages;
+    const lastStage = currentSequence.getLastStage() || '';
+    const nextStageIndex = stages.indexOf(lastStage);
+    const nextStage = stages[nextStageIndex + 1];
     this.apiService
       .getSequenceExecution({
         project: currentSequence.project,
-        stage: stages.length > 0 ? stages[stages.length - 1] : '',
+        stage: nextStage,
         service: currentSequence.service,
-        status: 'started',
+        status: SequenceStatus.STARTED,
         pageSize: 1,
       })
+      .pipe(
+        finalize(() => {
+          this.navigationToRunningSequenceLoading = false;
+        })
+      )
       .subscribe((sequenceExecutionResult) => {
         if (sequenceExecutionResult.sequenceExecutions.length === 0) {
           this.navigationToRunningSequenceLoading = false;
@@ -427,13 +436,14 @@ export class KtbSequenceViewComponent implements OnDestroy {
         const sequence = state?.sequenceInfo?.sequences.find(
           (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext
         );
-        if (sequence) {
+        if (sequence && sequence.shkeptncontext === currentSequence.shkeptncontext) {
+          this.dataService.updateSequence(sequence.project, sequence.shkeptncontext);
+        } else if (sequence) {
           this.selectSequence({ sequence: sequence });
           this.loadTraces(sequence, undefined, sequenceExecution.scope.stage);
         } else {
           this.dataService.loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext);
         }
-        this.navigationToRunningSequenceLoading = false;
       });
   }
 
