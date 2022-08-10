@@ -747,3 +747,111 @@ func TestDebugManager_GetBlockingSequences(t *testing.T) {
 		})
 	}
 }
+
+func TestDebugManager_GetDatabaseDump(t *testing.T) {
+
+	type fields struct {
+		DebugManager IDebugManager
+	}
+
+	expected := []bson.M{{"id": "asdf"}}
+
+	tests := []struct {
+		name                string
+		fields              fields
+		expectedErrorResult error
+		expectedResult      []bson.M
+	}{
+		{
+			name: "GET databse dump ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						GetDumpFunc: func(collectionName string) ([]bson.M, error) {
+							return expected, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult: nil,
+			expectedResult:      expected,
+		},
+		{
+			name: "GET databse dump error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						GetDumpFunc: func(collectionName string) ([]bson.M, error) {
+							return nil, errors.New("error")
+						},
+					},
+				},
+			},
+			expectedErrorResult: errors.New("error"),
+			expectedResult:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := tt.fields.DebugManager.GetDatabaseDump("")
+
+			assert.Equal(t, tt.expectedResult, s)
+			assert.Equal(t, tt.expectedErrorResult, err)
+		})
+	}
+}
+
+func TestDebugManager_ListAllCollections(t *testing.T) {
+
+	type fields struct {
+		DebugManager IDebugManager
+	}
+
+	expected := []string{"collection1", "collection2"}
+
+	tests := []struct {
+		name                string
+		fields              fields
+		expectedErrorResult error
+		expectedResult      []string
+	}{
+		{
+			name: "GET databse dump ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						ListAllCollectionsFunc: func() ([]string, error) {
+							return expected, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult: nil,
+			expectedResult:      expected,
+		},
+		{
+			name: "GET databse dump error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						ListAllCollectionsFunc: func() ([]string, error) {
+							return nil, errors.New("error")
+						},
+					},
+				},
+			},
+			expectedErrorResult: errors.New("error"),
+			expectedResult:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := tt.fields.DebugManager.ListAllCollections()
+
+			assert.Equal(t, tt.expectedResult, s)
+			assert.Equal(t, tt.expectedErrorResult, err)
+		})
+	}
+}

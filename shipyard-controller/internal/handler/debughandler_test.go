@@ -602,3 +602,136 @@ func TestDebughandlerGetBlockingSequences(t *testing.T) {
 		}
 	}
 }
+
+func TestDebughandlerGetDatabaseDump(t *testing.T) {
+
+	type fields struct {
+		DebugManager *fake.IDebugManagerMock
+	}
+
+	expected := []bson.M{{"id": "asdf"}}
+
+	tests := []struct {
+		name           string
+		fields         fields
+		request        *http.Request
+		wantResponse   []bson.M
+		wantStatus     int
+		collectionName string
+	}{
+		{
+			name: "get dbdump ok",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					GetDatabaseDumpFunc: func(collectionName string) ([]bson.M, error) {
+						return expected, nil
+					},
+				},
+			},
+			request:        httptest.NewRequest("GET", "/dbdump/collection/collection1", nil),
+			wantResponse:   expected,
+			wantStatus:     http.StatusOK,
+			collectionName: "collection1",
+		},
+		{
+			name: "get dbdump internal error",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					GetDatabaseDumpFunc: func(collectionName string) ([]bson.M, error) {
+						return nil, common.ErrInternalError
+					},
+				},
+			},
+			request:        httptest.NewRequest("GET", "/dbdump/collection/collection1", nil),
+			wantResponse:   nil,
+			wantStatus:     http.StatusInternalServerError,
+			collectionName: "collection1",
+		},
+	}
+
+	for _, tt := range tests {
+		dh := handler.NewDebugHandler(tt.fields.DebugManager)
+
+		router := gin.Default()
+		router.GET("/dbdump/collection/:collectionName", func(c *gin.Context) {
+			dh.GetDatabaseDump(c)
+		})
+
+		w := performRequest(router, tt.request)
+
+		require.Equal(t, tt.wantStatus, w.Code)
+
+		if tt.wantStatus == http.StatusOK {
+			var object []bson.M
+			err := json.Unmarshal(w.Body.Bytes(), &object)
+			require.Nil(t, err)
+			require.Equal(t, object, tt.wantResponse)
+
+			require.Equal(t, tt.collectionName, tt.fields.DebugManager.GetDatabaseDumpCalls()[0].CollectionName)
+		}
+	}
+}
+
+func TestDebughandlerListAllCollections(t *testing.T) {
+
+	type fields struct {
+		DebugManager *fake.IDebugManagerMock
+	}
+
+	expected := []string{"collection1", "collection2"}
+
+	tests := []struct {
+		name         string
+		fields       fields
+		request      *http.Request
+		wantResponse []string
+		wantStatus   int
+	}{
+		{
+			name: "list all collections ok",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					ListAllCollectionsFunc: func() ([]string, error) {
+						return expected, nil
+					},
+				},
+			},
+			request:      httptest.NewRequest("GET", "/dbdump/listall", nil),
+			wantResponse: expected,
+			wantStatus:   http.StatusOK,
+		},
+		{
+			name: "list all collections internal error",
+			fields: fields{
+				DebugManager: &fake.IDebugManagerMock{
+					ListAllCollectionsFunc: func() ([]string, error) {
+						return nil, common.ErrInternalError
+					},
+				},
+			},
+			request:      httptest.NewRequest("GET", "/dbdump/listall", nil),
+			wantResponse: nil,
+			wantStatus:   http.StatusInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		dh := handler.NewDebugHandler(tt.fields.DebugManager)
+
+		router := gin.Default()
+		router.GET("/dbdump/listall", func(c *gin.Context) {
+			dh.ListAllCollections(c)
+		})
+
+		w := performRequest(router, tt.request)
+
+		require.Equal(t, tt.wantStatus, w.Code)
+
+		if tt.wantStatus == http.StatusOK {
+			var object []string
+			err := json.Unmarshal(w.Body.Bytes(), &object)
+			require.Nil(t, err)
+			require.Equal(t, object, tt.wantResponse)
+		}
+	}
+}

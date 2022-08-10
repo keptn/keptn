@@ -48,6 +48,19 @@
 
         <select id="projectSelector" onChange="fetchSequencesHelper()"></select>
       </li>
+
+      <li>
+        <!--<input type="text" id="inputField" />-->
+        <select id="collectionSelector" onChange="updateDumpButton()"></select>
+
+        <a
+          id="adownload"
+          href="/dbdump/collection/keptn-stats"
+          download="dump.json"
+        >
+          <button>Downoad</button>
+        </a>
+      </li>
     </ul>
 
     <table id="prodTable">
@@ -82,9 +95,35 @@
 
           fetchSequencesHelper();
         });
-    </script>
 
-    <script>
+      // get collections
+      fetch("/dbdump/listall", {
+        method: "get",
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((response) => {
+          var collectionSelector =
+            document.getElementById("collectionSelector");
+          collectionSelector.innerHTML = "";
+
+          response.forEach((collection) => {
+            el_collection = document.createElement("option");
+            el_collection.innerHTML = collection;
+            collectionSelector.appendChild(el_collection);
+          });
+
+          updateDumpButton();
+        });
+
+      function updateDumpButton() {
+        const adownload = document.getElementById("adownload");
+        const collection = document.getElementById("collectionSelector").value;
+        adownload.href = `/dbdump/collection/${collection}`;
+        adownload.download = `${collection}.json`;
+      }
+
       function fetchSequencesHelper() {
         const project_name = document.getElementById("projectSelector").value;
         let table = document.getElementById("prodTable");

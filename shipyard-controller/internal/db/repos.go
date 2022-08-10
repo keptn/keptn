@@ -99,3 +99,9 @@ type SequenceExecutionRepo interface {
 	IsContextPaused(eventScope models.EventScope) bool
 	Clear(projectName string) error
 }
+
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/dbdump_mock.go . DBDumpRepo
+type DBDumpRepo interface {
+	GetDump(collectionName string) ([]bson.M, error)
+	ListAllCollections() ([]string, error)
+}

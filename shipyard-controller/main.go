@@ -138,7 +138,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	stageManager := handler.NewStageManager(projectMVRepo)
 
-	debugManager := handler.NewDebugManager(createEventsRepo(), createStateRepo(), createProjectRepo(), createSequenceExecutionRepo())
+	debugManager := handler.NewDebugManager(createEventsRepo(), createStateRepo(), createProjectRepo(), createSequenceExecutionRepo(), createDbDumpRepo())
 
 	eventDispatcher := controller.NewEventDispatcher(createEventsRepo(), createEventQueueRepo(), sequenceExecutionRepo, eventSender, time.Duration(env.EventDispatchIntervalSec)*time.Second)
 	sequenceDispatcher := controller.NewSequenceDispatcher(
@@ -417,6 +417,10 @@ func createSecretStore(kubeAPI kubernetes.Interface) *secretstore.K8sSecretStore
 
 func createLogRepo() *db.MongoDBLogRepo {
 	return db.NewMongoDBLogRepo(db.GetMongoDBConnectionInstance())
+}
+
+func createDbDumpRepo() *db.MongoDBDumpRepo {
+	return db.NewMongoDBDumpRepo(db.GetMongoDBConnectionInstance())
 }
 
 // GetKubeAPI godoc
