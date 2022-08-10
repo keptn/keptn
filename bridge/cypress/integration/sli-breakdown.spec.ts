@@ -9,7 +9,7 @@ describe('sli-breakdown', () => {
   beforeEach(() => {
     servicesPage.interceptAll();
     interceptD3();
-    servicesPage.visitServicePage('sockshop').selectService('carts', 'v0.1.2');
+    servicesPage.visitServicePage('sockshop').selectService('carts', 'v0.1.2').waitForEvaluations();
   });
 
   it('should load the heatmap with sli breakdown in service screen', () => {
@@ -139,5 +139,38 @@ describe('sli-breakdown', () => {
     it('should show score overlay with error message', () => {
       servicesPage.assertSliScoreOverlayFailed('http_response_time_seconds_main_page_sum');
     });
+  });
+});
+
+describe('sli-breakdown with fallback api call', () => {
+  const servicesPage = new ServicesPage();
+  const heatmapPage = new HeatmapComponentPage();
+
+  beforeEach(() => {
+    servicesPage.interceptAll().interceptSliFallback('sockshop', ['91a77341-fe5e-43e1-a8a7-be9761b9cee5']);
+    interceptD3();
+  });
+
+  it('should fallback to api call', () => {
+    servicesPage.visitServicePage('sockshop').selectService('carts', 'v0.1.2');
+    heatmapPage.selectEvaluation('c1b2761f-5b6d-4bdc-9bb7-4661a05ea3b2');
+    servicesPage
+      .waitForSliFallbackFetch()
+      .expandSliBreakdown('go_routines')
+      .expandSliBreakdown('http_response_time_seconds_main_page_sum')
+      .expandSliBreakdown('request_throughput')
+      .assertSliValueColumnExpanded('go_routines', 10, 2, 25, 8)
+      .assertSliValueColumnExpanded('http_response_time_seconds_main_page_sum', 0, 0, 0, 0)
+      .assertSliValueColumnExpanded('request_throughput', 0, 0, 0, 0)
+      .assertSliBreakdownLoading(false);
+  });
+
+  it('should show loading indicator if fallback api call is triggered', () => {
+    servicesPage
+      .interceptSliFallback('sockshop', ['91a77341-fe5e-43e1-a8a7-be9761b9cee5'], true)
+      .visitServicePage('sockshop')
+      .selectService('carts', 'v0.1.2');
+    heatmapPage.selectEvaluation('c1b2761f-5b6d-4bdc-9bb7-4661a05ea3b2');
+    servicesPage.assertSliBreakdownLoading(true);
   });
 });

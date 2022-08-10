@@ -8,19 +8,21 @@ import { KtbPipeModule } from '../../_pipes/ktb-pipe.module';
 import { FlexModule } from '@angular/flex-layout';
 import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 import { DtButtonModule } from '@dynatrace/barista-components/button';
+import { KtbLoadingModule } from '../ktb-loading/ktb-loading.module';
 
 @NgModule({
   declarations: [KtbSliBreakdownComponent, KtbSliBreakdownCriteriaItemComponent],
   imports: [
     CommonModule,
-    DtTableModule,
+    DtButtonModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),
-    KtbPipeModule,
-    FlexModule,
     DtOverlayModule,
-    DtButtonModule,
+    DtTableModule,
+    FlexModule,
+    KtbLoadingModule,
+    KtbPipeModule,
   ],
   exports: [KtbSliBreakdownComponent],
 })

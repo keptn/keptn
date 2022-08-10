@@ -47,6 +47,21 @@ class ServicesPage {
     return this;
   }
 
+  public interceptSliFallback(projectName: string, comparedEventIds: string[], addDelay = false): this {
+    cy.intercept(
+      'GET',
+      `api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?filter=data.project:${projectName}%20AND%20source:lighthouse-service%20AND%20id:${comparedEventIds.join(
+        ','
+      )}&excludeInvalidated=true&limit=${comparedEventIds.length}`,
+      {
+        statusCode: 200,
+        fixture: 'get.sockshop.service.carts.evaluation.compared.event.mock',
+        delay: addDelay ? 10_000 : 0,
+      }
+    ).as('sliFallback');
+    return this;
+  }
+
   public visitServicePage(projectName: string): this {
     cy.visit(`/project/${projectName}/service`).wait('@metadata');
     return this;
@@ -63,6 +78,16 @@ class ServicesPage {
       url += `/stage/${stage}`;
     }
     cy.visit(url).wait('@metadata');
+    return this;
+  }
+
+  public waitForSliFallbackFetch(): this {
+    cy.wait('@sliFallback');
+    return this;
+  }
+
+  public waitForEvaluations(): this {
+    cy.wait('@serviceDatastore').get('ktb-heatmap').should('exist'); // wait until heatmap is rendered
     return this;
   }
 
@@ -156,12 +181,12 @@ class ServicesPage {
         result.name,
         'name',
         `${result.name}Absolute change:Relative change:Compared with:`
-      ).assertSliColumnText(
+      ).assertSliValueColumnExpanded(
         result.name,
-        'value',
-        `${result.value}${result.calculatedChanges.absolute > 0 ? '+' : '-'}${result.calculatedChanges.absolute}${
-          result.calculatedChanges.relative > 0 ? '+' : '-'
-        }${result.calculatedChanges.relative}% ${result.comparedValue}`
+        +result.value,
+        result.calculatedChanges.absolute,
+        result.calculatedChanges.relative,
+        result.comparedValue ?? 0
       );
     } else {
       this.assertSliColumnText(result.name, 'name', result.name).assertSliColumnText(
@@ -183,6 +208,27 @@ class ServicesPage {
       .find('.error')
       .should('have.length', result.result == 'pass' ? 0 : 1);
 
+    return this;
+  }
+
+  public assertSliValueColumnExpanded(
+    sliName: string,
+    value: number,
+    absoluteChange: number,
+    relativeChange: number,
+    comparedValue: number
+  ): this {
+    const columnName = 'value';
+    this._getSliCell(sliName, columnName).byTestId('ktb-sli-breakdown-value-value').should('have.text', value);
+    this._getSliCell(sliName, columnName)
+      .byTestId('ktb-sli-breakdown-value-absolute')
+      .should('have.text', `${absoluteChange > 0 ? '+' : ''}${absoluteChange}`);
+    this._getSliCell(sliName, columnName)
+      .byTestId('ktb-sli-breakdown-value-relative')
+      .should('have.text', `${relativeChange > 0 ? '+' : ''}${relativeChange}% `);
+    this._getSliCell(sliName, columnName)
+      .byTestId('ktb-sli-breakdown-value-compared')
+      .should('have.text', comparedValue);
     return this;
   }
 
@@ -311,6 +357,11 @@ class ServicesPage {
     variant: EvaluationBadgeVariant
   ): this {
     this.getStageInTimeline(stage).assertEvaluationBadge(status, score, variant);
+    return this;
+  }
+
+  public assertSliBreakdownLoading(status: boolean): this {
+    cy.byTestId('ktb-sli-breakdown-loading').should(status ? 'exist' : 'not.exist');
     return this;
   }
 }
