@@ -58,18 +58,18 @@ func Validate(e models.KeptnContextExtendedCE) error {
 	return &EventValidationError{Msg: "unknown event type"}
 }
 
-func validate(event models.KeptnContextExtendedCE, allowedKinds []string, validators map[string]validateFn) error {
-	kind, err := v0_2_0.ParseEventKind(*event.Type)
+func validate(event models.KeptnContextExtendedCE, allowedActions []string, validators map[string]validateFn) error {
+	action, err := v0_2_0.ParseEventKind(*event.Type)
 	if err != nil {
 		return err
 	}
-	if !slices.Contains(allowedKinds, kind) {
-		return &EventValidationError{Msg: "kind/action: " + kind}
+	if !slices.Contains(allowedActions, action) {
+		return &EventValidationError{Msg: "unknown event type action: " + action}
 	}
-	if _, ok := validators[kind]; !ok {
+	if _, ok := validators[action]; !ok {
 		return nil
 	}
-	return validators[kind](event)
+	return validators[action](event)
 
 }
 
