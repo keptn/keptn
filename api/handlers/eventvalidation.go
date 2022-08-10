@@ -32,7 +32,10 @@ var taskEventValidators = map[string]validateFn{
 }
 
 // Validate takes a KeptnContextExtendedCE value and validates its content.
+// If the event is valid, the returned error is nil. If it is not valid
+// a EventValidationError is returned
 func Validate(e models.KeptnContextExtendedCE) error {
+	// validate "special" events
 	if *e.Type == "sh.keptn.log.error" || *e.Type == "sh.keptn.events.problem" {
 		//no specific validation
 		return nil
@@ -40,13 +43,18 @@ func Validate(e models.KeptnContextExtendedCE) error {
 	if *e.Type == "sh.keptn.event.monitoring.configure" {
 		return validateMonitoringConfigureEvent(e)
 	}
+
+	// validate events related to sequences
 	if v0_2_0.IsSequenceEventType(*e.Type) {
 		return validate(e, allowedSequenceActions, sequenceEventValidators)
 	}
+
+	// validate events related to tasks
 	if v0_2_0.IsTaskEventType(*e.Type) {
 		return validate(e, allowedTaskActions, taskEventValidators)
 	}
 
+	// received unknown type of event
 	return &EventValidationError{Msg: "unknown event type"}
 }
 
