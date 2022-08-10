@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/sirupsen/logrus"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const uniformCollectionName = "keptnUniform"
@@ -70,6 +72,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration apimodel
 
 	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
 	if integration.Subscriptions == nil {
+		logrus.Warnf("Invalid '%s' integration format during Integration create: 'Subscriptions' field is null", integration.Name)
 		integration.Subscriptions = []apimodels.EventSubscription{}
 	}
 	_, err = collection.InsertOne(ctx, integration)
@@ -88,6 +91,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 
 	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
 	if integration.Subscriptions == nil {
+		logrus.Warnf("Invalid '%s' integration format during Integration update: 'Subscriptions' field is null", integration.Name)
 		integration.Subscriptions = []apimodels.EventSubscription{}
 	}
 
@@ -133,6 +137,12 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"_id", integration.ID}}
 	update := bson.M{"$push": bson.M{"subscriptions": subscription}}
+
+	if integration.Subscriptions == nil {
+		logrus.Warnf("Invalid '%s' integration format during Subscriptions update: 'Subscriptions' field is null", integration.Name)
+		integration.Subscriptions = []apimodels.EventSubscription{subscription}
+		update = bson.M{"$set": integration}
+	}
 
 	if updateExisting {
 		filter = bson.D{{"_id", integration.ID}, {"subscriptions.id", subscription.ID}}
