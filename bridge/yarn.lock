@@ -2623,10 +2623,10 @@
   resolved "https://registry.yarnpkg.com/@discoveryjs/json-ext/-/json-ext-0.5.7.tgz#1d572bfbbe14b7704e0ba0f39b74815b84870d70"
   integrity sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==
 
-"@dynatrace/barista-components@10.7.5":
-  version "10.7.5"
-  resolved "https://registry.yarnpkg.com/@dynatrace/barista-components/-/barista-components-10.7.5.tgz#311d3005ed158161c015c15096a3f1e1ae4c943b"
-  integrity sha512-iE1fOZ1eQI0C2T8KpGRHEeFbOWOerpmZodAMEGd+WnDTNNnJS3QzSWr4rFAKnh75I8ryx/0KEPYKrd6Inty8Dg==
+"@dynatrace/barista-components@10.7.7":
+  version "10.7.7"
+  resolved "https://registry.yarnpkg.com/@dynatrace/barista-components/-/barista-components-10.7.7.tgz#9442c403bec08431740368eefab44d23805429ae"
+  integrity sha512-pm4YjUeZUnaj1h4q/YeCHfu4Bhovs1pVe30h5M9peCeLlM7ql48UOPzugAwxOOsz+xzKCPO/yLRBQN7JJjgkIQ==
   dependencies:
     tslib "^2.0.0"
 
