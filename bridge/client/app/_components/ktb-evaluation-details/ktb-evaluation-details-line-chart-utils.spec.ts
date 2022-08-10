@@ -126,7 +126,7 @@ describe('Line chart utils', () => {
       const data = EvaluationsMock.data.evaluationHistory as Trace[];
 
       // when
-      const labels = createChartXLabels([data[0], data[1], data[2], data[12], data[12]]);
+      const labels = createChartXLabels([data[0], data[1], data[2], data[11], data[11]]);
 
       // then
       expect(labels).toEqual({
@@ -143,7 +143,7 @@ describe('Line chart utils', () => {
       const data = EvaluationsMock.data.evaluationHistory as Trace[];
 
       // when
-      const labels = createChartXLabels([data[0], data[1], data[2], data[12]]);
+      const labels = createChartXLabels([data[0], data[1], data[2], data[11]]);
 
       // then
       expect(labels).toEqual({

@@ -386,6 +386,23 @@ export class ApiServiceMock extends ApiService {
     return of({ keptnContext: '6c98fbb0-4c40-4bff-ba9f-b20556a57c8a' });
   }
 
+  public getTracesByIds(projectName: string, ids: string[]): Observable<EventResult> {
+    return of({
+      events: [
+        {
+          data: {
+            project: 'myProject',
+            stage: 'myStage',
+            service: 'myService',
+          },
+        } as Trace,
+      ],
+      nextPageKey: 0,
+      pageSize: 1,
+      totalCount: 1,
+    });
+  }
+
   public getSequenceExecution(params: {
     project: string;
     stage?: string;

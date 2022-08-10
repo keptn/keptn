@@ -7,8 +7,11 @@ import { IndicatorResult } from '../../../../shared/interfaces/indicator-result'
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
 import { parse as parseYaml } from 'yaml';
 import { KtbSliBreakdownModule } from './ktb-sli-breakdown.module';
+import { DataService } from '../../_services/data.service';
+import { of } from 'rxjs';
+import { ResultTypes } from '../../../../shared/models/result-types';
 
-describe('KtbSliBreakdownComponent', () => {
+describe(KtbSliBreakdownComponent.name, () => {
   let component: KtbSliBreakdownComponent;
   let fixture: ComponentFixture<KtbSliBreakdownComponent>;
 
@@ -93,6 +96,57 @@ describe('KtbSliBreakdownComponent', () => {
     expect(component.tableEntries.data[0].weight).toBe(1);
   });
 
+  it('should load compared events if compared value is not given', () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    const getTraceByIdSpy = jest.spyOn(dataService, 'getTracesByIds');
+    const newIndicatorResult: IndicatorResult = {
+      keySli: false,
+      score: 1,
+      value: {
+        value: 5.5,
+        success: true,
+        metric: 'score',
+      },
+      status: ResultTypes.PASSED,
+    };
+    getTraceByIdSpy.mockReturnValue(
+      of([
+        {
+          data: {
+            evaluation: {
+              indicatorResults: [newIndicatorResult],
+            },
+          },
+        },
+      ] as Trace[])
+    );
+    component.indicatorResults = [
+      {
+        keySli: false,
+        score: 2,
+        value: {
+          value: 10,
+          success: true,
+          metric: 'score',
+        },
+        status: ResultTypes.PASSED,
+      },
+    ];
+    component.score = 100;
+
+    // when
+    component.fallBackData = {
+      projectName: 'myProjectName',
+      comparedEvents: ['id1'],
+    };
+
+    // then
+    expect(getTraceByIdSpy).toHaveBeenCalledWith('myProjectName', ['id1']);
+    expect(component.fallBackData.comparedIndicatorResults).toEqual([[newIndicatorResult]]);
+    expect(component.tableEntries.data.length).toBe(1);
+  });
+
   function initEvaluation(selectedEvaluationIndex: number): void {
     const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
     component.indicatorResults = selectedEvaluation.data.evaluation?.indicatorResults as IndicatorResult[];
@@ -101,11 +155,15 @@ describe('KtbSliBreakdownComponent', () => {
     component.objectives = sloFileContentParsed.objectives;
     component.score = selectedEvaluation.data.evaluation?.score as number;
 
-    component.comparedIndicatorResults =
-      EvaluationsMock.data.evaluationHistory
-        ?.filter(
-          (evaluation: Trace) => selectedEvaluation.data.evaluation?.comparedEvents?.indexOf(evaluation.id) !== -1
-        )
-        .map((evaluation: Trace) => evaluation.data.evaluation?.indicatorResults as IndicatorResult[]) ?? [];
+    component.fallBackData = {
+      comparedEvents: [],
+      projectName: '',
+      comparedIndicatorResults:
+        EvaluationsMock.data.evaluationHistory
+          ?.filter(
+            (evaluation: Trace) => selectedEvaluation.data.evaluation?.comparedEvents?.indexOf(evaluation.id) !== -1
+          )
+          .map((evaluation: Trace) => evaluation.data.evaluation?.indicatorResults as IndicatorResult[]) ?? [],
+    };
   }
 });
