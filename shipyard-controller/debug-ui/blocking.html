@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="./favicon.png" />
 
     <link rel="stylesheet" href="index.css" />
-    <script src="./fetch_blockingsequences.js"></script>
+    <script src="//fetch_blockingsequences.js"></script>
   </head>
   <body>
     <ul class="header">
@@ -28,9 +28,9 @@
 
       document.getElementById("titlecontext").innerHTML = context;
 
-      let blockingSequenceList = document.getElementById("blockingSequenceList");
+      let targetHTML_list = document.getElementById("blockingSequenceList");
 
-      fetchBlockingSequences(projectname, context, stage, blockingSequenceList);
+      fetchBlockingSequences(projectname, context, stage, targetHTML_list);
     </script>
 
   </body>

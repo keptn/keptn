@@ -184,7 +184,7 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 
 // GetBlockingSequences godoc
 // @Summary      Get all blocking sequences for specific sequence
-// @Description  Get all the sequences which block a specific sequence
+// @Description  Get all the sequences that are blocking a sequence from being run
 // @Tags         Sequence
 // @Param        project			  path      string                    			true "The name of the project"
 // @Param        shkeptncontext       path      string                    			true "The Context of the sequence"

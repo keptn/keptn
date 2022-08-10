@@ -94,8 +94,7 @@ func (dm *DebugManager) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
 
 func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
 
-	_, err := dm.projectRepo.GetProject(projectName)
-	if err != nil {
+	if _, err := dm.projectRepo.GetProject(projectName); err != nil {
 		return nil, err
 	}
 
@@ -117,12 +116,16 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 		return nil, common.ErrSequenceNotFound
 	}
 
+	sort.Slice(sequences, func(i, j int) bool {
+		return sequences[i].TriggeredAt.After(sequences[j].TriggeredAt)
+	})
+
 	sequence := sequences[0]
 
 	blockingSequencesStarted, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
-				Project: projectName,
+				Project: sequence.Scope.Project,
 				Stage:   sequence.Scope.Stage,
 				Service: sequence.Scope.Service,
 			},
@@ -137,7 +140,7 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 	blockingSequencesTriggered, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
 			EventData: keptnv2.EventData{
-				Project: projectName,
+				Project: sequence.Scope.Project,
 				Stage:   sequence.Scope.Stage,
 				Service: sequence.Scope.Service,
 			},

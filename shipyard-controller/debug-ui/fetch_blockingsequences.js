@@ -2,13 +2,13 @@ function fetchBlockingSequences(
   project,
   context,
   stage,
-  blockingSequencesList
+  targetHTML_list
 ) {
   if (
     project == null ||
     context == null ||
     stage == null ||
-    blockingSequencesList == null
+    targetHTML_list == null
   ) {
     console.log("fetchBlockingSequences() invalid parameters");
     return;
@@ -28,7 +28,7 @@ function fetchBlockingSequences(
         if (blockingSequence.scope !== null) {
           let li = document.createElement("li");
           li.innerHTML = blockingSequence.scope.keptnContext;
-          blockingSequencesList.append(li);
+          targetHTML_list.append(li);
         }
       });
     }).catch(err => {
