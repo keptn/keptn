@@ -77,6 +77,10 @@ spec:
               value: "{{ ((.Values.features).oauth).prefix | default "keptn:" }}"
             - name: HIDE_DEPRECATED
               value: "{{ ((.Values.features).swagger).hideDeprecated | default false }}"
+            - name: EVENT_VALIDATION_ENABLED
+              value: {{ (.Values.apiService.eventValidation).enabled | default true | quote }}
+            - name: MAX_EVENT_SIZE_KB
+              value: '{{ (.Values.apiService.eventValidation).maxEventSizeKB | default "64"}}'
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           volumeMounts:
             - mountPath: /data/import-scratch

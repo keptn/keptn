@@ -175,6 +175,9 @@ apiService:
     enabled: true
     requestsPerSecond: "1.0"
     requestBurst: "2"
+  eventValidation:
+    enabled: true
+    maxEventSizeKB: "64"
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
