@@ -38,6 +38,7 @@ const envVarLogLevel = "LOG_LEVEL"
 type EnvConfig struct {
 	HideDeprecated            bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
 	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
+	EventValidationEnabled    bool    `envconfig:"EVENT_VALIDATION_ENABLED" default:"true"`
 	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
@@ -99,7 +100,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 		},
 	)
 
-	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
+	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc(env.EventValidationEnabled))
 	// api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Metadata endpoint

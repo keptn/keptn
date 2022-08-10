@@ -32,21 +32,26 @@ const defaultEventSource = "https://github.com/keptn/keptn/api"
 var eventHandlerInstance *EventHandler
 
 type EventHandler struct {
-	EventPublisher eventPublisher
+	EventPublisher         eventPublisher
+	EventValidationEnabled bool
 }
 
-func GetEventHandlerInstance() (*EventHandler, error) {
+func GetEventHandlerInstance(eventValidation bool) *EventHandler {
 	if eventHandlerInstance == nil {
-		conn := nats.NewFromEnv()
-		eventHandlerInstance = &EventHandler{EventPublisher: conn}
+		eventHandlerInstance = &EventHandler{
+			EventPublisher:         nats.NewFromEnv(),
+			EventValidationEnabled: eventValidation,
+		}
 	}
-	return eventHandlerInstance, nil
+	return eventHandlerInstance
 }
 
 func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.EventContext, error) {
 	logger.Info("API received a keptn event")
-	if err := Validate(event); err != nil {
-		return nil, err
+	if eh.EventValidationEnabled {
+		if err := Validate(event); err != nil {
+			return nil, err
+		}
 	}
 
 	// create or reuse context id
@@ -82,21 +87,18 @@ func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.
 	return eventContext, nil
 }
 
-// PostEventHandlerFunc forwards an event to the event broker
-func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
-	eh, err := GetEventHandlerInstance()
-	if err != nil {
-		return sendInternalErrorForPost(err)
-	}
-	keptnContext, err := eh.PostEvent(*params.Body)
-	if err != nil {
-		if errors.As(err, &EventValidationError{}) {
-			return sendBadRequestErrorForPost(err)
-		} else {
-			return sendInternalErrorForPost(err)
+func PostEventHandlerFunc(eventValidation bool) func(event.PostEventParams, *models.Principal) middleware.Responder {
+	return func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
+		keptnContext, err := GetEventHandlerInstance(eventValidation).PostEvent(*params.Body)
+		if err != nil {
+			if errors.As(err, &EventValidationError{}) {
+				return sendBadRequestErrorForPost(err)
+			} else {
+				return sendInternalErrorForPost(err)
+			}
 		}
+		return event.NewPostEventOK().WithPayload(keptnContext)
 	}
-	return event.NewPostEventOK().WithPayload(keptnContext)
 }
 
 func createOrApplyKeptnContext(eventKeptnContext string) string {

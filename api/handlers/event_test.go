@@ -129,7 +129,7 @@ func TestPostEventHandlerFunc(t *testing.T) {
 		},
 	}
 
-	got := PostEventHandlerFunc(params, nil)
+	got := PostEventHandlerFunc(false)(params, nil)
 
 	verifyHTTPResponse(got, http.StatusOK, t)
 
@@ -155,7 +155,7 @@ func TestPostEventHandlerFunc_NoNatsConnection(t *testing.T) {
 		},
 	}
 
-	got := PostEventHandlerFunc(params, nil)
+	got := PostEventHandlerFunc(false)(params, nil)
 
 	verifyHTTPResponse(got, http.StatusInternalServerError, t)
 }
@@ -238,7 +238,8 @@ func TestEventHandler_ReceivingInvalidEvents(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			eh := &EventHandler{
-				EventPublisher: tt.fields.EventPublisher,
+				EventPublisher:         tt.fields.EventPublisher,
+				EventValidationEnabled: true,
 			}
 			got, err := eh.PostEvent(tt.args.event)
 			if !tt.wantErr(t, err, fmt.Sprintf("PostEvent(%v)", tt.args.event)) {
