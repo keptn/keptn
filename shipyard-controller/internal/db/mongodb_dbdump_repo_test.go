@@ -10,7 +10,9 @@ import (
 func TestMongoDBDumpRepo_GetDump(t *testing.T) {
 	repo := db.NewMongoDBDumpRepo(db.GetMongoDBConnectionInstance())
 
-	_, err := repo.GetDump("test")
+	projectNames, err := repo.ListAllCollections()
+	require.NotEmpty(t, projectNames)
 
+	_, err = repo.GetDump("test")
 	require.Nil(t, err)
 }
