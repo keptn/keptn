@@ -290,6 +290,7 @@ jobs:
 
       - name: UI-Test
         if: matrix.config.docker-test-target == 'builder-test-ui'
+        working-directory: bridge
         run: |
          ./cypress/run-tests.sh   
 
