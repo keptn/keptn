@@ -17,7 +17,7 @@ func (e EventValidationError) Unwrap() error { return e }
 type validateFn func(models.KeptnContextExtendedCE) error
 
 // allow only "sh.keptn.event.<task>.<started|finished>" events
-var allowedTaskActions = []string{"started", "finished"}
+var allowedTaskActions = []string{"started", "finished", "invalidated"}
 
 // allow only "sh.keptn.event.<sequence>.triggered" events
 var allowedSequenceActions = []string{"triggered"}
@@ -33,15 +33,20 @@ var taskEventValidators = map[string]validateFn{
 
 // Validate takes a KeptnContextExtendedCE value and validates its content.
 func Validate(e models.KeptnContextExtendedCE) error {
+	if *e.Type == "sh.keptn.log.error" || *e.Type == "sh.keptn.events.problem" {
+		//no specific validation
+		return nil
+	}
+	if *e.Type == "sh.keptn.event.monitoring.configure" {
+		return validateMonitoringConfigureEvent(e)
+	}
 	if v0_2_0.IsSequenceEventType(*e.Type) {
 		return validate(e, allowedSequenceActions, sequenceEventValidators)
 	}
 	if v0_2_0.IsTaskEventType(*e.Type) {
 		return validate(e, allowedTaskActions, taskEventValidators)
 	}
-	if *e.Type == "sh.keptn.log.error" {
-		return validateErrorLogEvent(e)
-	}
+
 	return &EventValidationError{Msg: "unknown event type"}
 }
 
@@ -117,8 +122,20 @@ func validateSequenceTriggeredEvent(e models.KeptnContextExtendedCE) error {
 	return nil
 }
 
-// validateErrorLogEvent contains logic that validates a "sh.keptn.log.error" event
-func validateErrorLogEvent(event models.KeptnContextExtendedCE) error {
-	// no validation logic yet
+func validateMonitoringConfigureEvent(e models.KeptnContextExtendedCE) error {
+	type data struct {
+		v0_2_0.EventData
+		Type string `json:"type,omitempty"`
+	}
+
+	var eventData data
+	if err := v0_2_0.Decode(e.Data, &eventData); err != nil {
+		return &EventValidationError{Msg: "could not parse common event data"}
+	}
+
+	if eventData.Project == "" || eventData.Service == "" || eventData.Type == "" {
+		return &EventValidationError{Msg: "mandatory fields(s) 'project', 'service' or 'type' missing"}
+	}
+
 	return nil
 }
