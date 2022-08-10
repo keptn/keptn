@@ -119,7 +119,7 @@ describe('Sequences', () => {
         events: [],
       },
     });
-    interceptSequenceExecution(project, blockingContext, 'dev', 'carts-db');
+    interceptSequenceExecution(project, blockingContext, 'production', 'carts-db');
 
     sequencePage
       .visit(project)

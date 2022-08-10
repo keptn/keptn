@@ -304,11 +304,25 @@ describe('KtbSequenceViewComponent', () => {
     const state = await firstValueFrom(component.state$);
 
     // when
-    component.navigateToBlockingSequence(SequencesMock[0], state);
+    component.navigateToBlockingSequence(SequencesMock[1], state);
 
     // then
     expect(spySelectSequence).toHaveBeenCalled();
     expect(spyLoadTraces).toHaveBeenCalled();
+  });
+
+  it('should select update sequence if getSequenceExecution returns the sequence itself', async () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    const spyUpdateSequence = jest.spyOn(dataService, 'updateSequence');
+    const state = await firstValueFrom(component.state$);
+
+    // when
+    // currentSequence and returned sequence are the same
+    component.navigateToBlockingSequence(SequencesMock[0], state);
+
+    // then
+    expect(spyUpdateSequence).toHaveBeenCalled();
   });
 
   it("should call loadUntilRoot if sequence isn't loaded", () => {
