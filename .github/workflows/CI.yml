@@ -313,10 +313,9 @@ jobs:
       - name: Upload Test Screenshots
         if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
         uses: actions/upload-artifact@v3
-        working-directory: bridge
         with:
           name: bridge-e2e-screenshots
-          path: ./shared/screenshots
+          path: /shared/screenshots
 
     # REPORT COVERAGE
       - name: Report test coverage for ${{ matrix.config.artifact }}
