@@ -315,7 +315,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: bridge-e2e-screenshots
-          path: /shared/screenshots
+          path: ./bridge/shared/screenshots
 
     # REPORT COVERAGE
       - name: Report test coverage for ${{ matrix.config.artifact }}
