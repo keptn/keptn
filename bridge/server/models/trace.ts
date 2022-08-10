@@ -1,5 +1,7 @@
 import { Trace as ts } from '../../shared/models/trace';
 import { ResultTypes } from '../../shared/models/result-types';
+import { KeptnService } from '../../shared/models/keptn-service';
+import { EventTypes } from '../../shared/interfaces/event-types';
 
 export class Trace extends ts {
   traces: Trace[] = [];
@@ -48,5 +50,13 @@ export class Trace extends ts {
       }
     }
     return message;
+  }
+  public getEvaluationFinishedEvent(stage?: string): Trace | undefined {
+    return this.findTrace(
+      (trace) =>
+        trace.source === KeptnService.LIGHTHOUSE_SERVICE &&
+        trace.type.endsWith(EventTypes.EVALUATION_FINISHED) &&
+        (!stage || trace.data.stage === stage)
+    );
   }
 }

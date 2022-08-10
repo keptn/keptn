@@ -73,7 +73,7 @@ export function createChartXLabels(evaluationHistory: Trace[]): Record<number, s
   const mapEvaluationToLabel = (evaluation: Trace): string => evaluation.getChartLabel();
   const mapDatesToDuplicateCounterAndSetOccurrences =
     (dict: Record<string, number | undefined>): FuncDateToDict =>
-    (date) => {
+    (date): number | undefined => {
       dict[date] = (dict[date] ?? 0) + 1;
       return dict[date];
     };

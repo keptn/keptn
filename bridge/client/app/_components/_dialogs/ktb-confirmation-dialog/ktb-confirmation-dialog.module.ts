@@ -7,7 +7,6 @@ import { FlexLayoutModule } from '@angular/flex-layout';
 
 @NgModule({
   declarations: [KtbConfirmationDialogComponent],
-  entryComponents: [KtbConfirmationDialogComponent],
   imports: [
     CommonModule,
     DtButtonModule,

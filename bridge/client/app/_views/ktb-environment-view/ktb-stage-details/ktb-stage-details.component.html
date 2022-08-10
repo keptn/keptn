@@ -207,10 +207,8 @@
                   >
                     <ktb-loading-spinner aria-label="Action is running..."></ktb-loading-spinner>
                   </button>
-                  <ng-container
-                    *ngIf="remediationSequence.getEvaluationTrace(service.stage)?.getFinishedEvent() as evaluation"
-                  >
-                    <ktb-evaluation-info [evaluation]="evaluation"></ktb-evaluation-info>
+                  <ng-container *ngIf="getEvaluationFinished(remediationSequence, service.stage) as evaluationRem">
+                    <ktb-evaluation-info [evaluation]="evaluationRem"></ktb-evaluation-info>
                   </ng-container>
                 </div>
               </ng-container>

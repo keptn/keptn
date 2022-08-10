@@ -77,7 +77,6 @@ const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, Kt
   declarations: [AppComponent, NotFoundComponent, KtbRootComponent],
   // Move KtbChartModule to the page module, where it is needed
   imports: [...angularModules, ...dtModules, ...ktbModules, AppRouting, FlexModule, MomentModule, KtbChartModule],
-  entryComponents: [],
   providers: [
     EventService,
     AppInitService,
@@ -109,7 +108,7 @@ const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, Kt
     },
     {
       provide: POLLING_INTERVAL_MILLIS,
-      useValue: environment.pollingIntervalMillis ?? 30_000,
+      useValue: environment.pollingIntervalMillis ?? 30000,
     },
     {
       provide: RETRY_ON_HTTP_ERROR,

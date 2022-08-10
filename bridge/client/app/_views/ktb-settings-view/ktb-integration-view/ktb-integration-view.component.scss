@@ -1,5 +1,5 @@
 @import '../../../../variables';
-@import '~@dynatrace/barista-components/core/src/style/variables';
+@import '@dynatrace/barista-components/core/src/style/variables';
 
 .container > div:first-of-type {
   border-top: 1px solid $gray-200;

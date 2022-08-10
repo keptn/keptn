@@ -123,7 +123,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
   }
 
   constructor(private route: ActivatedRoute) {
-    this.webhookConfigForm.statusChanges.subscribe((status: 'INVALID' | 'VALID') => {
+    this.webhookConfigForm.statusChanges.subscribe((status) => {
       this.validityChanged.next(status === 'VALID');
     });
   }

@@ -240,11 +240,11 @@ export class KtbChartComponent implements AfterViewInit, OnChanges {
   }
 
   public showTooltip(visible: boolean): () => void {
-    return () => this.tooltipState.next({ ...this.tooltipState.getValue(), visible });
+    return (): void => this.tooltipState.next({ ...this.tooltipState.getValue(), visible });
   }
 
   public onMousemove(): (event: MouseEvent, data: BarPoint) => void {
-    return (event, data) => {
+    return (event, data): void => {
       const xValue = data[0];
       const elements = document.elementsFromPoint(event.clientX, event.clientY);
       const barArea = elements.filter((e) => e.tagName === 'rect' && e.classList.contains('area'))[0];

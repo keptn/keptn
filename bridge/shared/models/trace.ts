@@ -1,11 +1,17 @@
 import { EventTypes } from '../interfaces/event-types';
 import { ResultTypes } from './result-types';
 import { IndicatorResult } from '../interfaces/indicator-result';
-import { ProblemStates } from './problem-states';
 import { ApprovalStates } from './approval-states';
-import { KeptnService } from './keptn-service';
 import { DateUtil } from '../utils/date.utils';
 import { ISloObjectives } from '../interfaces/slo-config';
+import {
+  isApprovalFinished,
+  isFaulty,
+  isFinishedEvent,
+  isProblemResolvedOrClosed,
+  isStartedEvent,
+  isSuccessfulRemediation,
+} from './trace.utils';
 
 /* eslint-disable @typescript-eslint/naming-convention */
 export interface IEvaluationData {
@@ -102,14 +108,27 @@ export interface TraceData {
   State?: string;
 }
 
-export class Trace {
+export interface ITrace {
+  id: string;
+  shkeptncontext: string;
+  triggeredid?: string;
+  type: EventTypes | string;
+  time?: string; // 2021-10-29T08:43:11.702Z
+  data: TraceData;
+}
+
+export interface ICombinedTrace extends ITrace {
+  traces: ICombinedTrace[];
+}
+
+export class Trace implements ICombinedTrace {
   id!: string;
   shkeptncontext!: string;
   triggeredid?: string;
   type!: EventTypes | string;
   time?: string; // 2021-10-29T08:43:11.702Z
   data!: TraceData;
-  traces: Trace[] = [];
+  traces: ICombinedTrace[] = [];
   finished?: boolean;
   source?: string;
   label?: string;
@@ -167,9 +186,9 @@ export class Trace {
         (acc: T | undefined, r: T) => acc || r.findTrace((t) => t.id === trace.triggeredid),
         undefined
       );
-    } else if (trace.isProblem() && trace.isProblemResolvedOrClosed()) {
+    } else if (trace.isProblem() && isProblemResolvedOrClosed(trace)) {
       trigger = traces.reduce(
-        (acc: T | undefined, r: T) => acc || r.findTrace((t) => t.isProblem() && !t.isProblemResolvedOrClosed()),
+        (acc: T | undefined, r: T) => acc || r.findTrace((t) => t.isProblem() && !isProblemResolvedOrClosed(t)),
         undefined
       );
     } else if (trace.isFinished()) {
@@ -197,14 +216,6 @@ export class Trace {
     return this.type === EventTypes.PROBLEM_DETECTED || this.type === EventTypes.PROBLEM_OPEN;
   }
 
-  public isProblemResolvedOrClosed(): boolean {
-    if (!this.traces || this.traces.length === 0) {
-      return this.data.State === ProblemStates.RESOLVED || this.data.State === ProblemStates.CLOSED;
-    } else {
-      return this.traces.some((t) => t.isProblem() && t.isProblemResolvedOrClosed());
-    }
-  }
-
   public isSequence(): boolean {
     return this.type.split('.').length === 6 && !!this.data.stage && this.type.includes(this.data.stage);
   }
@@ -214,10 +225,10 @@ export class Trace {
       if (!this.traces || this.traces.length === 0) {
         this.finished = this.isFinishedEvent();
       } else if (this.isProblem()) {
-        this.finished = this.isProblemResolvedOrClosed();
+        this.finished = isProblemResolvedOrClosed(this);
       } else {
-        const countStarted = this.traces.filter((t) => t.isStartedEvent()).length;
-        const countFinished = this.traces.filter((t) => t.isFinishedEvent()).length;
+        const countStarted = this.traces.filter((t) => isStartedEvent(t)).length;
+        const countFinished = this.traces.filter((t) => isFinishedEvent(t)).length;
         this.finished = countFinished >= countStarted && countFinished !== 0;
       }
     }
@@ -228,7 +239,7 @@ export class Trace {
   public isFaulty(stageName?: string): boolean {
     let result = false;
     if (this.data) {
-      if (this.isFailed() || this.traces.some((t) => t.isFaulty())) {
+      if (this.isFailed() || this.traces.some((t) => isFaulty(t))) {
         result = stageName ? this.data.stage === stageName : true;
       }
     }
@@ -239,7 +250,7 @@ export class Trace {
     if (!this.traces || this.traces.length === 0) {
       return this.type.endsWith(EventTypes.REMEDIATION_FINISHED_SUFFIX) && this.data.result !== ResultTypes.FAILED;
     } else {
-      return this.traces.some((t) => t.isSuccessfulRemediation());
+      return this.traces.some((t) => isSuccessfulRemediation(t));
     }
   }
 
@@ -253,8 +264,8 @@ export class Trace {
     );
   }
 
-  public getFinishedEvent<T extends Trace>(this: T): T | undefined {
-    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent())) as T;
+  public getFinishedEvent<T extends ICombinedTrace>(this: T): T | undefined {
+    return (isFinishedEvent(this) ? this : this.traces.find((t) => isFinishedEvent(t))) as T;
   }
 
   private isDeclined(): boolean {
@@ -273,23 +284,10 @@ export class Trace {
     return result;
   }
 
-  public getEvaluation<T extends Trace>(this: T, stageName: string): T | undefined {
-    return this.findTrace((t) => !!t.isEvaluation() && t.data.stage === stageName);
-  }
-
   public isEvaluation(): string | undefined {
     return this.type.endsWith(EventTypes.EVALUATION_TRIGGERED_SUFFIX) && !this.isSequence()
       ? this.data.stage
       : undefined;
-  }
-
-  public getEvaluationFinishedEvent<T extends Trace>(this: T, stage?: string): T | undefined {
-    return this.findTrace(
-      (trace) =>
-        trace.source === KeptnService.LIGHTHOUSE_SERVICE &&
-        trace.type.endsWith(EventTypes.EVALUATION_FINISHED) &&
-        (!stage || trace.data.stage === stage)
-    );
   }
 
   public getLabel(): string {
@@ -317,7 +315,7 @@ export class Trace {
   public isApprovalPending(): boolean {
     let pending = true;
     for (let i = 0; i < this.traces.length && pending; ++i) {
-      if (this.traces[i].isApprovalFinished()) {
+      if (isApprovalFinished(this.traces[i])) {
         pending = false;
       }
     }

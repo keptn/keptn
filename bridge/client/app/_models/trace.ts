@@ -5,6 +5,8 @@ import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EVENT_ICONS } from './event-icons';
 import { Trace as ts, TraceData } from '../../../shared/models/trace';
 import { DtIconType } from '@dynatrace/barista-icons';
+import { isProblemResolvedOrClosed } from 'shared/models/trace.utils';
+import { KeptnService } from '../../../shared/models/keptn-service';
 
 class Trace extends ts {
   traces: Trace[] = [];
@@ -89,7 +91,7 @@ class Trace extends ts {
     if (
       (this.isFinished() && this.getFinishedEvent()?.data.result === ResultTypes.PASSED) ||
       (this.isApprovalFinished() && this.isApproved()) ||
-      (this.isProblem() && this.isProblemResolvedOrClosed()) ||
+      (this.isProblem() && isProblemResolvedOrClosed(this)) ||
       this.isSuccessfulRemediation()
     ) {
       result = stageName ? this.data.stage === stageName : true;
@@ -193,6 +195,15 @@ class Trace extends ts {
 
   getProblemDetails(): string | undefined {
     return this.data.problem?.ImpactedEntity || this.data.problem?.ProblemTitle;
+  }
+
+  public getEvaluationFinishedEvent(stage?: string): Trace | undefined {
+    return this.findTrace(
+      (trace) =>
+        trace.source === KeptnService.LIGHTHOUSE_SERVICE &&
+        trace.type.endsWith(EventTypes.EVALUATION_FINISHED) &&
+        (!stage || trace.data.stage === stage)
+    );
   }
 }
 

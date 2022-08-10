@@ -99,7 +99,7 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
   public dataPointChanged(identifier: string): void {
     const mapComparedEventsToEvaluations =
       (history: Trace[]): FuncEventIdToEvaluation =>
-      (eventId: string) =>
+      (eventId: string): Trace | undefined =>
         history.find((e) => e.id === eventId);
     const filterOutUndefinedEvaluations = (evaluation?: Trace): evaluation is Trace => !!evaluation;
     const mapEvaluationToIndicatorResult = (evaluation: Trace): IndicatorResult[] =>
@@ -125,7 +125,7 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
     }
     const filterOutNotFoundEvaluations =
       (history: Trace[]): FuncEventIdExists =>
-      (eventId: string) =>
+      (eventId: string): boolean =>
         history.some((historyEvaluation) => historyEvaluation.id === eventId);
 
     const comparedEventsCount = evaluation.data.evaluation.comparedEvents.length;

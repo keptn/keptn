@@ -1,5 +1,5 @@
 @import '../../../../variables';
-@import '~@dynatrace/barista-components/core/src/style/variables';
+@import '@dynatrace/barista-components/core/src/style/variables';
 
 :host ::ng-deep {
   ktb-notification-bar > div.page-note {
