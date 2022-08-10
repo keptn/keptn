@@ -52,7 +52,7 @@ func Test_ImportCorrectManifest(t *testing.T) {
 	require.NotContains(t, getServiceResponse, fmt.Sprintf("No services %s found in project", serviceName))
 
 	// Check if secret exists
-	err = checkIfSecretExists("slack-webhook")
+	err = checkIfSecretExists("slack-webhook", GetKeptnNameSpaceFromEnv())
 	require.NoError(t, err)
 
 	// Validate webhook

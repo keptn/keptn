@@ -1218,13 +1218,13 @@ func createZipFileFromDirectory(source, target string, needBaseDir bool) error {
 	return err
 }
 
-func checkIfSecretExists(secretName string) error {
+func checkIfSecretExists(secretName, namespace string) error {
 	clientset, err := kubeutils.GetClientSet(false)
 	if err != nil {
 		return err
 	}
 
-	_, err = clientset.CoreV1().Secrets(GetKeptnNameSpaceFromEnv()).Get(context.TODO(), secretName, v1.GetOptions{})
+	_, err = clientset.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, v1.GetOptions{})
 	if err != nil {
 		return err
 	}
