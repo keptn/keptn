@@ -33,7 +33,7 @@ func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 
 	dbdump := apiGroup.Group("/dbdump")
 	{
-		dbdump.GET("/listall", controller.DebugHandler.ListAllCollections)
+		dbdump.GET("/listcollections", controller.DebugHandler.ListAllCollections)
 		dbdump.GET("/collection/:collectionName", controller.DebugHandler.GetDatabaseDump)
 	}
 }

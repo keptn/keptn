@@ -249,7 +249,7 @@ func (dh *DebugHandler) GetDatabaseDump(c *gin.Context) {
 // @Tags         Collection
 // @Success      200                  {object}			[]string							"ok"
 // @Failure      500                  {object}			models.Error              			"Internal error"
-// @Router       /dbdump/listall [get]
+// @Router       /dbdump/listcollections [get]
 func (dh *DebugHandler) ListAllCollections(c *gin.Context) {
 	collections, err := dh.DebugManager.ListAllCollections()
 

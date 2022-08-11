@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,21 +23,15 @@ func (mdbrepo *MongoDBDumpRepo) GetDump(collectionName string) ([]bson.M, error)
 	}
 	defer cancel()
 
-	cursor, err := collection.Aggregate(ctx, bson.D{})
+	cursor, err := collection.Find(ctx, bson.D{})
 
 	if err != nil {
 		return nil, err
 	}
 
-	var result []bson.M
-	for cursor.Next(ctx) {
-		var document bson.M
-		err = cursor.Decode(&document)
-		if err != nil {
-			log.Println(err)
-		}
-		result = append(result, document)
-	}
+	var result = []bson.M{}
+
+	cursor.All(ctx, &result)
 
 	return result, err
 }
@@ -52,7 +45,7 @@ func (mdbrepo *MongoDBDumpRepo) ListAllCollections() ([]string, error) {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	result, err := mdbrepo.DbConnection.Client.Database(getDatabaseName()).ListCollectionNames(ctx, bson.D{})
 
-	return result, nil
+	return result, err
 }
 
 func (mdbrepo *MongoDBDumpRepo) getCollectionAndContext(collectionName string) (*mongo.Collection, context.Context, context.CancelFunc, error) {

@@ -52,11 +52,7 @@
       <li>
         <select id="collectionSelector" onChange="updateDumpButton()"></select>
 
-        <a
-          id="adownload"
-          href="/dbdump/collection/keptn-stats"
-          download="dump.json"
-        >
+        <a id="adownload" href="#" download="dump.json">
           <button>Download</button>
         </a>
       </li>
@@ -114,6 +110,9 @@
           });
 
           updateDumpButton();
+        })
+        .catch((err) => {
+          console.log(e);
         });
 
       function updateDumpButton() {

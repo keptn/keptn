@@ -697,7 +697,7 @@ func TestDebughandlerListAllCollections(t *testing.T) {
 					},
 				},
 			},
-			request:      httptest.NewRequest("GET", "/dbdump/listall", nil),
+			request:      httptest.NewRequest("GET", "/dbdump/listcollections", nil),
 			wantResponse: expected,
 			wantStatus:   http.StatusOK,
 		},
@@ -710,7 +710,7 @@ func TestDebughandlerListAllCollections(t *testing.T) {
 					},
 				},
 			},
-			request:      httptest.NewRequest("GET", "/dbdump/listall", nil),
+			request:      httptest.NewRequest("GET", "/dbdump/listcollections", nil),
 			wantResponse: nil,
 			wantStatus:   http.StatusInternalServerError,
 		},
@@ -720,7 +720,7 @@ func TestDebughandlerListAllCollections(t *testing.T) {
 		dh := handler.NewDebugHandler(tt.fields.DebugManager)
 
 		router := gin.Default()
-		router.GET("/dbdump/listall", func(c *gin.Context) {
+		router.GET("/dbdump/listcollections", func(c *gin.Context) {
 			dh.ListAllCollections(c)
 		})
 
