@@ -359,16 +359,11 @@ func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUnifo
 	return result, nil
 }
 
-func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionName string) error {
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
-	if err != nil {
-		return err
-	}
-	defer cancel()
+func (mdbrepo *MongoDBUniformRepo) DeleteFromSubscriptions(searchParams models.GetUniformIntegrationsParams) error {
 
-	filter := bson.D{{"subscriptions.filter.services", subscriptionName}}
-
-	cur, err := collection.Find(ctx, filter)
+	collection, ctx, _, err := mdbrepo.getCollectionAndContext()
+	searchOptions := mdbrepo.getSearchOptions(searchParams)
+	cur, err := collection.Find(ctx, searchOptions)
 	defer closeCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
@@ -387,7 +382,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionNa
 			subscription := &integration.Subscriptions[i]
 			newServices := []string{}
 
-			//remove subscription if it concerns only the deleted service
+			//remove subscription if it concerns only the deleted project stage and service
 			if len(subscription.Filter.Services) == 1 && subscription.Filter.Services[0] == subscriptionName {
 				copy(integration.Subscriptions[i:], integration.Subscriptions[i+1:])
 				integration.Subscriptions[totalSub-1] = apimodels.EventSubscription{}
