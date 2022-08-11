@@ -20,6 +20,8 @@ import { KtbUniformRegistrationLogsModule } from '../../../_components/ktb-unifo
 import { KtbUniformSubscriptionsModule } from '../../../_components/ktb-uniform-subscriptions/ktb-uniform-subscriptions.module';
 import { KtbIntegrationViewComponent } from './ktb-integration-view.component';
 import { KtbModifyUniformSubscriptionComponent } from './ktb-modify-uniform-subscription/ktb-modify-uniform-subscription.component';
+import { DtConfirmationDialogModule } from '@dynatrace/barista-components/confirmation-dialog';
+import { KtbDangerZoneModule } from '../../../_components/ktb-danger-zone/ktb-danger-zone.module';
 
 @NgModule({
   declarations: [KtbIntegrationViewComponent, KtbModifyUniformSubscriptionComponent],
@@ -45,6 +47,8 @@ import { KtbModifyUniformSubscriptionComponent } from './ktb-modify-uniform-subs
     KtbWebhookSettingsModule,
     KtbLoadingModule,
     KtbIntegrationViewRoutingModule,
+    DtConfirmationDialogModule,
+    KtbDangerZoneModule,
   ],
 })
 export class KtbIntegrationViewModule {}

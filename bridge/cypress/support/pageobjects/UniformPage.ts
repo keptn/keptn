@@ -62,6 +62,19 @@ class UniformPage {
     return this;
   }
 
+  public openDeletionDialog(): this {
+    cy.byTestId('ktb-danger-subscription-button').click();
+    return this;
+  }
+
+  public deleteSubscriptionFromEditPage(): this {
+    this.openDeletionDialog();
+    cy.byTestId('keptn-deletion-dialog-button')
+      .contains('I understand the consequences, delete this subscription')
+      .click();
+    return this;
+  }
+
   public assertIsUpdateButtonEnabled(isEnabled: boolean): this {
     cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'be.enabled' : 'be.disabled');
     return this;
@@ -350,6 +363,61 @@ class UniformPage {
 
   public assertHeaderValue(index: number, content: string): this {
     cy.byTestId(this.EDIT_WEBHOOK_FIELD_HEADER_VALUE_ID).find('input').eq(index).should('have.value', content);
+    return this;
+  }
+
+  public assertSecretCreationLink(): this {
+    cy.byTestId('ktb-webhook-secret-selector').first().click();
+    cy.byTestId('ktb-webhook-secret-creation-link').should('exist');
+    return this;
+  }
+
+  public navigateToSecretCreationPage(overridePendingChangeGuard = false): this {
+    this.assertSecretCreationLink();
+    cy.byTestId('ktb-webhook-secret-creation-link').click();
+    if (overridePendingChangeGuard) {
+      cy.get('dt-confirmation-dialog-state').contains('Discard changes and leave page').click();
+    }
+    return this;
+  }
+
+  public waitForJmeterInfoRequest(): this {
+    cy.wait('@jmeterUniformInfo');
+    return this;
+  }
+
+  public assertSubscriptionAddPath(projectName: string, integrationId: string): this {
+    cy.location('pathname').should(
+      'eq',
+      `/project/${projectName}/settings/uniform/integrations/${integrationId}/subscriptions/add`
+    );
+    return this;
+  }
+
+  public assertIntegrationPath(projectName: string, integrationId: string): this {
+    cy.location('pathname').should('eq', `/project/${projectName}/settings/uniform/integrations/${integrationId}`);
+    return this;
+  }
+
+  public assertOnChangeDialog(open = true): this {
+    cy.get('dt-confirmation-dialog-state')
+      .contains('You have pending changes. Are you sure you want to leave this page?')
+      .should(open ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public closeOnChangeDialog(): this {
+    cy.get('dt-confirmation-dialog-state').contains('Stay').click();
+    return this;
+  }
+
+  public assertDangerZoneExists(status: boolean): this {
+    cy.get('ktb-danger-zone').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertDeletionDialogExists(status: boolean): this {
+    cy.get('ktb-deletion-dialog').should(status ? 'exist' : 'not.exist');
     return this;
   }
 }

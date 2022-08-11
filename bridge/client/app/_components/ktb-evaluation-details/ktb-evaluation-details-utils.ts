@@ -6,6 +6,14 @@ import { parse as parseYaml } from 'yaml';
 import { SloConfig } from '../../../../shared/interfaces/slo-config';
 import { IEvaluationData } from '../../../../shared/models/trace';
 
+export interface IEvaluationSelectionData {
+  shouldSelect: boolean;
+  evaluation?: Trace;
+}
+export type TChartType = 'heatmap' | 'chart';
+export type FuncEventIdToEvaluation = (eventId: string) => Trace | undefined;
+export type FuncEventIdExists = (eventId: string) => boolean;
+
 export type SliInfo = {
   score: number;
   warningCount: number;
@@ -73,7 +81,7 @@ export function indicatorResultToDataPoint(
     const metricScore = totalScore === 0 ? 0 : (indicatorResult.score / totalScore) * (scoreValue ?? 1);
     const color = indicatorResult.value.success ? indicatorResult.status : EvaluationResultTypeExtension.INFO;
     return {
-      xElement: evaluation.getHeatmapLabel(),
+      xElement: evaluation.getChartLabel(),
       yElement: indicatorResult.displayName || indicatorResult.value.metric,
       color,
       identifier: evaluation.id,
@@ -90,10 +98,10 @@ export function indicatorResultToDataPoint(
   };
 }
 
-export function evaluationToDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
+export function evaluationToScoreDataPoint(evaluation: Trace, scoreValue: number): IDataPoint {
   const resultInfo = getSliResultInfo(evaluation.data.evaluation?.indicatorResults ?? []);
   return {
-    xElement: evaluation.getHeatmapLabel(),
+    xElement: evaluation.getChartLabel(),
     yElement: 'Score',
     color: evaluation.data.evaluation?.result ?? EvaluationResultTypeExtension.INFO,
     identifier: evaluation.id,
@@ -117,7 +125,7 @@ const addEvaluationToDataPoints = (points: IDataPoint[], evaluation: Trace): IDa
   const results: IDataPoint[] = evaluation.data.evaluation?.indicatorResults
     ? evaluation.data.evaluation?.indicatorResults.map(indicatorResultToDataPoint(evaluation, scoreValue))
     : [];
-  const score: IDataPoint = evaluationToDataPoint(evaluation, scoreValue);
+  const score: IDataPoint = evaluationToScoreDataPoint(evaluation, scoreValue);
   return [...points, ...results, score];
 };
 

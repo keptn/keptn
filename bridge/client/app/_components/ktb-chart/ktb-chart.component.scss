@@ -1,0 +1,84 @@
+:host ::ng-deep {
+  .axis {
+    path.domain, line {
+      stroke: #c5c5c5 !important;
+    }
+  }
+
+  svg text {
+    font-size: 12px;
+  }
+
+  rect.area:hover {
+    fill: rgba(0, 0, 0, 0.05);
+  }
+}
+
+.ktb-chart-container {
+  display: flex;
+  flex-direction: column;
+
+  .ktb-chart {
+    flex: 0 0 auto;
+  }
+
+  .ktb-chart-legend-container {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: center;
+    align-content: flex-start;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+  }
+}
+
+.ktb-chart-legend-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+
+  &:hover span {
+    text-decoration: underline;
+    color: black;
+  }
+
+  &.invisible {
+
+    span {
+      color: #cccccc;
+
+      &:hover {
+        color: inherit;
+      }
+    }
+  }
+
+  span {
+    margin-left: 3px;
+  }
+
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 1070;
+  pointer-events: none;
+  display: inline-block;
+}
+
+.tooltip-container {
+  font-family: BerninaSansWeb, OpenSans, sans-serif;
+  font-weight: 400;
+  line-height: 1.6;
+  background-color: #fff;
+  border: 1px solid var(--dt-theme-main-default-color);
+  border-radius: 4px;
+  font-size: 14px;
+  color: #454646;
+  padding: 12px;
+  max-width: 620px;
+
+  h4 {
+    margin: 5px 0;
+  }
+}

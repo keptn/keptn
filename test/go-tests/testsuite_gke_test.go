@@ -6,7 +6,6 @@ import (
 
 func Test_GKE(t *testing.T) {
 	// Shut DownTests
-
 	t.Run("Test_BackupRestore", Test_BackupRestore)
 	// Common Tests
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
@@ -26,14 +25,12 @@ func Test_GKE(t *testing.T) {
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)
-	t.Run("Test_QualityGates_SLIWrongFinishedPayloadSend", Test_QualityGates_SLIWrongFinishedPayloadSend)
-	t.Run("Test_QualityGates_AbortedFinishedPayloadSend", Test_QualityGates_AbortedFinishedPayloadSend)
-	t.Run("Test_QualityGates_ErroredFinishedPayloadSend", Test_QualityGates_ErroredFinishedPayloadSend)
 	t.Run("Test_DeliveryAssistant", Test_DeliveryAssistant)
-	t.Run("Test_CustomUserManagedEndpointsTest", Test_CustomUserManagedEndpointsTest)
-	t.Run("Test_ContinuousDelivery", Test_ContinuousDelivery)
 	t.Run("Test_UniformRegistration_TestAPI", Test_UniformRegistration_TestAPI)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
+	t.Run("Test_ImportCorrectManifest", Test_ImportCorrectManifest)
+	t.Run("Test_ImportCorrectManifestNonExistingProject", Test_ImportCorrectManifestNonExistingProject)
+	t.Run("Test_ImportMalformedZipFileCorrectName", Test_ImportMalformedZipFileCorrectName)
 }

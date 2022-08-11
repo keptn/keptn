@@ -1,0 +1,9 @@
+{
+    "event": "sh.keptn.test.api.task.render",
+    "filter": {
+        "projects": ["some-project"],
+        "services": ["some-super-secret-hush-hush-service"],
+        "stages": ["dev"]
+    }
+  }
+

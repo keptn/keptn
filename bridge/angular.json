@@ -107,6 +107,10 @@
             },
             "test": {
               "browserTarget": "bridge:build:test"
+            },
+            "dev": {
+              "browserTarget": "bridge:build",
+              "proxyConfig": "proxy.config.json"
             }
           }
         },
@@ -170,6 +174,22 @@
             }
           }
         }
+      }
+    },
+    "storybook": {
+      "projectType": "application",
+      "root": "stories",
+      "builder": "@storybook/angular:start-storybook",
+      "options": {
+        "browserTarget": "angular-cli:build",
+        "port": 6006
+      }
+    },
+    "build-storybook": {
+      "root": "stories",
+      "builder": "@storybook/angular:build-storybook",
+      "options": {
+        "browserTarget": "angular-cli:build"
       }
     }
   },

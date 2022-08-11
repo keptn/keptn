@@ -273,6 +273,63 @@ describe('Trigger an evaluation sequence', () => {
       .assertTriggerSequenceEnabled(false);
   });
 
+  it('should have correct enabled status for calendar submit button', () => {
+    const variations = [
+      {
+        hours: '10',
+        minutes: '10',
+        seconds: '10',
+        expected: true,
+      },
+      {
+        hours: '10',
+        minutes: '10',
+        expected: false,
+      },
+      {
+        hours: '10',
+        seconds: '10',
+        expected: false,
+      },
+      {
+        minutes: '10',
+        seconds: '10',
+        expected: false,
+      },
+      {
+        minutes: '10',
+        expected: false,
+      },
+      {
+        seconds: '10',
+        expected: false,
+      },
+      {
+        hours: '10',
+        expected: false,
+      },
+      {
+        expected: true,
+      },
+    ];
+    triggerSequencePage.selectEvaluationEndDate().clickStartTime().assertIsCalenderSubmitButtonEnabled(true);
+    for (const variation of variations) {
+      if (variation.hours) {
+        triggerSequencePage.typeCalendarHours(variation.hours).assertIsCalenderSubmitButtonEnabled(false);
+      }
+      if (variation.minutes) {
+        triggerSequencePage.typeCalendarMinutes(variation.minutes).assertIsCalenderSubmitButtonEnabled(false);
+      }
+      if (variation.seconds) {
+        triggerSequencePage
+          .typeCalendarSeconds(variation.seconds)
+          .assertIsCalenderSubmitButtonEnabled(variation.expected);
+      }
+
+      triggerSequencePage.clearCalendarHours().clearCalendarMinutes().clearCalendarSeconds();
+    }
+  });
+
   it('should not show date error if invalid end date is changed to valid end date', () => {
     const currentDate = new Date();
     const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
@@ -351,7 +408,7 @@ describe('Trigger an evaluation sequence', () => {
       .assertTriggerSequenceEnabled(false);
   });
 
-  it.only('should preselect date if date was already selected before', () => {
+  it('should preselect date if date was already selected before', () => {
     const currentDate = new Date();
     const currentMonthFormatted = (currentDate.getMonth() + 1).toString().padStart(2, '0');
 

@@ -1,73 +1,44 @@
-import { AfterContentInit, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
 import { Project } from '../../../_models/project';
 import { Stage } from '../../../_models/stage';
-import { DataService } from '../../../_services/data.service';
 import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { ApiService } from '../../../_services/api.service';
 import { Service } from '../../../_models/service';
 import { DtAutoComplete, DtFilter, DtFilterArray } from '../../../_models/dt-filter';
-import { distinctUntilChanged, filter, map, switchMap, takeUntil, withLatestFrom } from 'rxjs/operators';
-import { ActivatedRoute, Router } from '@angular/router';
-import { combineLatest, Subject } from 'rxjs';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { ServiceFilterType } from '../ktb-stage-details/ktb-stage-details.component';
+import { ISelectedStageInfo } from '../ktb-environment-view.component';
 
 @Component({
   selector: 'ktb-stage-overview',
   templateUrl: './ktb-stage-overview.component.html',
   styleUrls: ['./ktb-stage-overview.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
+export class KtbStageOverviewComponent {
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public filter: DtFilterArray[] = [];
-  public isTriggerSequenceOpen: boolean;
   private filteredServices: string[] = [];
   private globalFilter: { [projectName: string]: { services: string[] } } = {};
-  private unsubscribe$: Subject<void> = new Subject<void>();
+  private _project?: Project;
 
-  public project$ = this.route.params.pipe(
-    map((params) => params.projectName),
-    filter((projectName): projectName is string => !!projectName),
-    distinctUntilChanged(),
-    switchMap((projectName) => this.dataService.getProject(projectName)),
-    filter((project): project is Project => !!project)
-  );
+  @Input() selectedStageInfo?: ISelectedStageInfo;
+  @Input() isTriggerSequenceOpen = false;
 
-  public readonly selectedStageName$ = this.route.paramMap.pipe(
-    map((params) => params.get('stageName')),
-    withLatestFrom(this.project$),
-    filter(([stageName, project]) => Boolean(stageName && project)),
-    map(([stageName]) => stageName)
-  );
+  @Input() set project(project: Project | undefined) {
+    if (project) {
+      this.setFilter(project, this._project?.projectName !== project.projectName);
+    }
+    this._project = project;
+  }
+  get project(): Project | undefined {
+    return this._project;
+  }
 
-  private readonly paramFilterType$ = this.route.queryParamMap.pipe(map((params) => params.get('filterType')));
-
-  @Output() selectedStageChange: EventEmitter<{ stage: Stage; filterType: ServiceFilterType }> = new EventEmitter();
+  @Output() selectedStageInfoChange: EventEmitter<ISelectedStageInfo> = new EventEmitter();
   @Output() filteredServicesChange: EventEmitter<string[]> = new EventEmitter<string[]>();
 
-  constructor(
-    private dataService: DataService,
-    private apiService: ApiService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    this.isTriggerSequenceOpen = this.dataService.isTriggerSequenceOpen;
-    this.dataService.isTriggerSequenceOpen = false;
-  }
-
-  ngAfterContentInit(): void {
-    combineLatest([this.selectedStageName$, this.paramFilterType$, this.project$])
-      .pipe(takeUntil(this.unsubscribe$))
-      .subscribe(([stageName, filterType, project]) => {
-        const stage = project.stages.find((s) => s.stageName === stageName);
-        if (stage) {
-          this.selectedStageChange.emit({ stage: stage, filterType: (filterType as ServiceFilterType) ?? undefined });
-        }
-      });
-    this.project$.pipe(takeUntil(this.unsubscribe$)).subscribe((project) => {
-      this.setFilter(project, true);
-    });
-  }
+  constructor(private apiService: ApiService) {}
 
   private setFilter(project: Project | undefined, projectChanged: boolean): void {
     this._dataSource.data = {
@@ -106,10 +77,10 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public filterChanged(project: Project, event: DtFilterFieldChangeEvent<any>): void {
+  public filterChanged(projectName: string, event: DtFilterFieldChangeEvent<any>): void {
     // can't set another type because of "is not assignable to..."
     this.filteredServices = this.getServicesOfFilter(event);
-    this.globalFilter[project.projectName] = { services: this.filteredServices };
+    this.globalFilter[projectName] = { services: this.filteredServices };
 
     this.apiService.environmentFilter = this.globalFilter;
     this.filteredServicesChange.emit(this.filteredServices);
@@ -133,15 +104,8 @@ export class KtbStageOverviewComponent implements AfterContentInit, OnDestroy {
     return stage?.toString();
   }
 
-  public selectStage($event: MouseEvent, project: Project, stage: Stage, filterType?: ServiceFilterType): void {
-    this.router.navigate(['/project', project.projectName, 'environment', 'stage', stage.stageName], {
-      queryParams: { filterType: filterType },
-    });
+  public selectStage($event: MouseEvent, stage: Stage, filterType?: ServiceFilterType): void {
     $event.stopPropagation();
-  }
-
-  public ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
+    this.selectedStageInfoChange.emit({ stage, filterType });
   }
 }

@@ -162,7 +162,7 @@ kubectl delete -f deploy/service.yaml
    set API_URL=http://keptn.127.0.0.1.nip.io/api
    set API_TOKEN=1234-exam-ple
    ```
-4. Run `yarn start:dev` from bridge root level to start the express server and the Angular app.
+4. Run `yarn start:dev` from bridge root level to start the express server on port 3001 and the Angular app on port 3000.
 5. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ### UI testing with Cypress
@@ -177,7 +177,7 @@ To test your UI tests locally, use following commands:
 - `yarn cypress:open` (Linux, macOS), `yarn cypress:open:win32` (Windows) - Used for the local development of tests.<br/>This opens a browser, where you can run your tests and inspect them. The tests will re-run automatically on every code change made on the `*.spec.ts` files.
 - or `yarn test:ui` (Linux, macOS), `yarn test:ui:win32` (Windows) - This starts the headless browser mode that is also used in CI.<br/>This will just run the tests on a headless browser without the possibility to inspect them.
 
-Both commands serve Angular on port 3000 with no live reload - this will also ensure that no API connection is made.
+Both commands serve Angular on port 5000 with no live reload - this will also ensure that no API connection is made.
 
 #### Known issues
 
@@ -187,6 +187,12 @@ Both commands serve Angular on port 3000 with no live reload - this will also en
 ### Bundle Size Report
 
 The Keptn Bridge is bundled with the Angular CLI. To analyze the current bundle size, first run `yarn build:stats`, to generate the [`stats.json`](https://webpack.js.org/api/stats/) file. Then run the [Webpack Bundle Analyzer](https://github.com/webpack-contrib/webpack-bundle-analyzer) with `yarn bundle-report` to create an interactive treemap visualization of the contents of all your bundles.
+
+### Storybook
+
+For development of new components outside of the context of the actual app Storybook is a good option. It allows to only show a single component with arbitrary inputs that you define in a user story. It's also pretty simple to write multiple user stories with different inputs, showing all possible states of your component. 
+
+`yarn storybook` will start the Storybook development server and open the endpoint in a browser. The user stories can be found in the `bridge/stories` directory.
 
 ## IDE Setup
 

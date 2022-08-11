@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, forkJoin, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, debounceTime, forkJoin, Observable, of, Subject } from 'rxjs';
 import { catchError, map, mergeMap, take, tap } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
@@ -57,7 +57,6 @@ export class DataService {
   private readonly DEFAULT_NEXT_SEQUENCE_PAGE_SIZE = 10;
   private _isQualityGatesOnly = new BehaviorSubject<boolean>(false);
   private _evaluationResults = new Subject<EvaluationHistory>();
-
   public isTriggerSequenceOpen = false;
 
   constructor(private apiService: ApiService) {}
@@ -91,7 +90,10 @@ export class DataService {
   }
 
   get hasUnreadUniformRegistrationLogs(): Observable<boolean> {
-    return this._hasUnreadUniformRegistrationLogs.asObservable();
+    // There could be a case where a component is changing the value upon rendering the page
+    // The debounceTime will reduce to many emitted values in that time frame
+    // Not using debounceTime can lead to an Angular "ExpressionChangedError"
+    return this._hasUnreadUniformRegistrationLogs.asObservable().pipe(debounceTime(500));
   }
 
   public getSequences(projectName: string): Observable<ISequenceStateInfo | undefined> {
@@ -509,6 +511,12 @@ export class DataService {
       map((response) => response.body?.events || []),
       map((traces) => traces.map((trace) => Trace.fromJSON(trace)))
     );
+  }
+
+  public getTracesByIds(projectName: string, ids: string[]): Observable<Trace[]> {
+    return this.apiService
+      .getTracesByIds(projectName, ids)
+      .pipe(map((traces) => traces.events.map((trace) => Trace.fromJSON(trace))));
   }
 
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {

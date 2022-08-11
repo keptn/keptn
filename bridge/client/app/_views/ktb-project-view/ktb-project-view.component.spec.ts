@@ -9,6 +9,7 @@ import { ApiServiceMock } from '../../_services/api.service.mock';
 import { KtbProjectViewCommonModule } from './ktb-project-view-common.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { DataService } from '../../_services/data.service';
 
 describe('ProjectBoardComponent', () => {
   let component: KtbProjectViewComponent;
@@ -38,6 +39,7 @@ describe('ProjectBoardComponent', () => {
     fixture = TestBed.createComponent(KtbProjectViewComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
+    TestBed.inject(DataService).loadProjects();
   });
 
   it('should have "project" error when project can not be found', (done) => {

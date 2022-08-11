@@ -40,12 +40,24 @@ export function setUniqueHeaders(
         duplicatesDict[uniqueHeader] = {};
       }
       if (duplicatesDict[uniqueHeader][compareWith] === undefined) {
-        duplicatesDict[uniqueHeader][compareWith] = 0;
+        duplicatesDict[uniqueHeader][compareWith] = 1;
       }
       ++duplicatesDict[uniqueHeader][compareWith];
+      // occurrence is 1 but since it is the next element after the first found duplicate it's +1
       uniqueHeader = `${dataPoint[key]} (${duplicatesDict[uniqueHeader][compareWith]})`;
     }
     dataPoint[key] = uniqueHeader;
+  });
+
+  // if there are duplicates set the first occurrence to (1)
+  dataPoints.forEach((dataPoint) => {
+    const uniqueHeader = dataPoint[key];
+    const compareWith = dataPoint[compare];
+
+    // if there are duplicates the counter is at least set to 2
+    if (duplicatesDict[uniqueHeader]?.[compareWith]) {
+      dataPoint[key] = `${dataPoint[key]} (1)`;
+    }
   });
 }
 

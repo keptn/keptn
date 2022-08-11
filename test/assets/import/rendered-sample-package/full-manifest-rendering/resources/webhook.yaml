@@ -1,0 +1,11 @@
+apiVersion: webhookconfig.keptn.sh/v1alpha1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: sh.keptn.event.evaluation.triggered
+      requests:
+        - curl --request POST https://slack.com/api/full-manifest-test/{{ .secret.slack-webhook.token }} # Note: this must not be replaced by us, but by webhook-service
+      subscriptionID: e6c6700b-6f1a-489f-a309-fba8d40fcca1
+      sendFinished: true

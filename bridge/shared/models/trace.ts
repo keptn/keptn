@@ -22,7 +22,6 @@ export interface IEvaluationData {
   score_state?: string;
   compare_with?: string;
   include_result_with_score?: string;
-  number_of_missing_comparison_results?: number;
   sloFileContentParsed?: true; // can be undefined (default) or true
   sloObjectives?: ISloObjectives[];
 }
@@ -64,8 +63,8 @@ export interface TraceData {
     token: string;
   };
   configurationChange?: {
-    values: {
-      image: unknown;
+    values?: {
+      image?: unknown;
     };
   };
 
@@ -128,7 +127,7 @@ export class Trace {
   }
 
   public getConfigurationChangeImage(): string | undefined {
-    return typeof this.data.configurationChange?.values.image === 'string'
+    return typeof this.data.configurationChange?.values?.image === 'string'
       ? this.data.configurationChange.values.image.split('/').pop()
       : undefined;
   }

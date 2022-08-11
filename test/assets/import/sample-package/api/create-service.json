@@ -1,0 +1,3 @@
+{
+    "serviceName": "[[ .Context.service ]]"
+}

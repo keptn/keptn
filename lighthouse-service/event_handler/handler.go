@@ -3,8 +3,10 @@ package event_handler
 import (
 	"context"
 	"fmt"
-	"github.com/keptn/go-utils/pkg/sdk/connector/types"
 	"net/http"
+
+	"github.com/keptn/go-utils/pkg/sdk/connector/types"
+	"k8s.io/client-go/kubernetes"
 
 	keptnapi "github.com/keptn/go-utils/pkg/api/utils"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
@@ -21,7 +23,9 @@ type EvaluationEventHandler interface {
 	HandleEvent(ctx context.Context) error
 }
 
-func NewEventHandler(ctx context.Context, event cloudevents.Event) (EvaluationEventHandler, error) {
+type EventStoreProvider func(k *keptnv2.Keptn) EventStore
+
+func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kubernetes.Interface, es EventStoreProvider) (EvaluationEventHandler, error) {
 	logger.Debug("Received event: " + event.Type())
 
 	eventSender, ok := ctx.Value(types.EventSenderKey).(controlplane.EventSender)
@@ -45,7 +49,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event) (EvaluationEv
 		return &StartEvaluationHandler{
 			Event:             event,
 			KeptnHandler:      keptnHandler,
-			SLIProviderConfig: K8sSLIProviderConfig{},
+			SLIProviderConfig: NewSLIProviderConfig(kubeAPI),
 			SLOFileRetriever: SLOFileRetriever{
 				ResourceHandler: resourceHandler,
 				ServiceHandler:  serviceHandler,
@@ -60,10 +64,10 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event) (EvaluationEv
 				ResourceHandler: resourceHandler,
 				ServiceHandler:  serviceHandler,
 			},
-			EventStore: keptnHandler.EventHandler,
+			EventStore: es(keptnHandler),
 		}, nil
 	case keptn.ConfigureMonitoringEventType:
-		return NewConfigureMonitoringHandler(event, logger.StandardLogger())
+		return NewConfigureMonitoringHandler(event, logger.StandardLogger(), WithK8sClient(kubeAPI))
 	default:
 		logger.Info("received unhandled event type")
 		return nil, nil

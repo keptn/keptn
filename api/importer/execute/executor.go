@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"k8s.io/utils/strings/slices"
 	"net/http"
 
 	"github.com/keptn/keptn/api/importer/model"
@@ -71,7 +72,7 @@ func newKeptnExecutor(kep KeptnEndpointProvider, hd httpdoer) *KeptnAPIExecutor 
 }
 
 func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
-	kae.endpointMappings["keptn-api-v1-create-service"] = &defaultEndpointHandler{
+	kae.endpointMappings[model.CreateServiceAction] = &defaultEndpointHandler{
 		requestFactory: &projectRenderRequestFactory{
 			httpMethod: http.MethodPost,
 			path:       `/v1/project/[[project]]/service`,
@@ -79,12 +80,17 @@ func (kae *KeptnAPIExecutor) registerEndpoints(kep KeptnEndpointProvider) {
 		endpoint: kep.GetControlPlaneEndpoint(),
 	}
 
-	kae.endpointMappings["keptn-api-v1-uniform-create-secret"] = &defaultEndpointHandler{
+	kae.endpointMappings[model.CreateSecretAction] = &defaultEndpointHandler{
 		requestFactory: &projectRenderRequestFactory{
 			httpMethod: http.MethodPost,
 			path:       "/v1/secret",
 		},
 		endpoint: kep.GetSecretsServiceEndpoint(),
+	}
+
+	kae.endpointMappings["keptn-api-v1-uniform-create-webhook-subscription"] = &defaultEndpointHandler{
+		requestFactory: NewWebhookSubscriptionHandler(NewKeptnIntegrationIdRetriever(kep)),
+		endpoint:       kep.GetControlPlaneEndpoint(),
 	}
 }
 
@@ -103,4 +109,12 @@ func (kae *KeptnAPIExecutor) PushResource(rp model.ResourcePush) (any, error) {
 		return kae.resourcePusher.PushToStage(rp.Context.Project, rp.Stage, rp.Content, rp.ResourceURI)
 	}
 	return kae.resourcePusher.PushToService(rp.Context.Project, rp.Stage, rp.Service, rp.Content, rp.ResourceURI)
+}
+
+func (kae *KeptnAPIExecutor) ActionSupported(actionName string) bool {
+	if !slices.Contains(model.AllActions, actionName) {
+		return false
+	}
+
+	return true
 }

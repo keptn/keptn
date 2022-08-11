@@ -2,6 +2,7 @@ package importer
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -30,6 +31,9 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
 	}
 
 	stageRetriever := &fake.MockStageRetriever{}
@@ -42,8 +46,11 @@ func TestImportPackageEmptyManifestRetrievedAndPackageClosed(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	require.NoError(t, err)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -66,6 +73,9 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
 	}
 
 	stageRetriever := &fake.MockStageRetriever{}
@@ -85,8 +95,11 @@ func TestErrorImportPackageWhenManifestCannotBeRetrieved(t *testing.T) {
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, errorManifestAccess)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -110,6 +123,9 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
 	}
 
 	stageRetriever := &fake.MockStageRetriever{}
@@ -122,8 +138,11 @@ func TestErrorImportPackageWhenManifestCannotBeParsed(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, parsingError)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -140,7 +159,7 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 	const missingFileName = "non-existing-file.json"
 	taskWithMissingResource := &model.ManifestTask{
 		APITask: &model.APITask{
-			Action:      "test-missing-resource",
+			Action:      "keptn-api-v1-uniform-create-webhook-subscription",
 			PayloadFile: missingFileName,
 		},
 		ResourceTask: nil,
@@ -164,6 +183,9 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			return nil, nil
 		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
 	}
 
 	stageRetriever := &fake.MockStageRetriever{}
@@ -182,8 +204,11 @@ func TestErrorImportPackageWhenManifestResourceNotFound(t *testing.T) {
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, resourceError)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -232,8 +257,11 @@ func TestErrorImportPackageWhenUnknownManifestTaskType(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorContains(t, err, "task of type weirdunknowntasktype not implemented")
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
 	assert.ElementsMatch(
@@ -250,7 +278,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	firstTask := &model.ManifestTask{
 		// random filler task to check that we execute in order until the failure
 		APITask: &model.APITask{
-			Action:      "success ✌",
+			Action:      "keptn-api-v1-create-service",
 			PayloadFile: "okfile/someok.json",
 		},
 		ResourceTask: nil,
@@ -261,7 +289,7 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 
 	failingTask := &model.ManifestTask{
 		APITask: &model.APITask{
-			Action:      "fail",
+			Action:      "keptn-api-v1-uniform-create-webhook-subscription",
 			PayloadFile: "somefile/somewhere.json",
 		},
 		ResourceTask: nil,
@@ -272,7 +300,10 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 
 	neverExecutedTask := &model.ManifestTask{
 		// random filler task to check that we stop executing at the first failure
-		APITask:      &model.APITask{},
+		APITask: &model.APITask{
+			Action:      "keptn-api-v1-uniform-create-webhook-subscription",
+			PayloadFile: "somefile/somewhere.json",
+		},
 		ResourceTask: nil,
 		ID:           "neverexecuted",
 		Type:         "api",
@@ -299,11 +330,14 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 	taskExecutor := &fake.TaskExecutorMock{
 		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
 			apiTasksExecuted = append(apiTasksExecuted, ate.Context.Task.ID)
-			if ate.Context.Task.Type == "api" && ate.Context.Task.APITask.Action == "fail" {
+			if ate.Context.Task.Type == "api" && ate.Context.Task.APITask.Action == "keptn-api-v1-uniform-create-webhook-subscription" {
 				return nil, taskError
 			}
 
 			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
 		},
 	}
 
@@ -317,8 +351,11 @@ func TestErrorImportPackageWhenTaskFails(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
-	err := sut.Process("project", importPackageMock)
+	_, err := sut.Process("project", importPackageMock)
 	assert.ErrorIs(t, err, taskError)
 	assert.ErrorContains(t, err, "execution of task sometask failed")
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
@@ -346,7 +383,7 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -396,9 +433,12 @@ func TestImportPackageProcessor_Process_ResourceTask(t *testing.T) {
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.NoError(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
@@ -423,7 +463,7 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 			Stage:     "",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -466,9 +506,12 @@ func TestImportPackageProcessor_Process_ResourceTask_AllStages(t *testing.T) {
 		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.NoError(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), len(stages))
@@ -497,8 +540,8 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 	const resourceFileName = "webhook.yaml"
 
 	const rawWebhookConfigResourceFile = "../test/data/import/sample-package/resources/webhook.yaml"
-	const webhookConfigResourceRenderContext = "../test/data/import/rendered-sample-package/resources/webhook.context.yaml"
-	const renderedWebhookConfigResourceFile = "../test/data/import/rendered-sample-package/resources/webhook.yaml"
+	const webhookConfigResourceRenderContext = "../test/data/import/rendered-sample-package/simple-task-rendering/resources/webhook.context.yaml"
+	const renderedWebhookConfigResourceFile = "../test/data/import/rendered-sample-package/simple-task-rendering/resources/webhook.yaml"
 
 	context := map[string]string{}
 
@@ -515,7 +558,7 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:      "res-task",
+		ID:      "res_task",
 		Type:    "resource",
 		Name:    "ResTask",
 		Context: context,
@@ -566,9 +609,12 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 			}
 			return os.Open(resourceName)
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
 
-	err = sut.Process(project, importPackageMock)
+	_, err = sut.Process(project, importPackageMock)
 
 	assert.NoError(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
@@ -588,7 +634,7 @@ func TestImportPackageProcessor_Process_WebhookConfigWithTemplating(t *testing.T
 func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 
 	const rawPayloadDir = "../test/data/import/sample-package/api/"
-	const renderedPayloadDir = "../test/data/import/rendered-sample-package/api/"
+	const renderedPayloadDir = "../test/data/import/rendered-sample-package/simple-task-rendering/api/"
 
 	tests := []struct {
 		name                     string
@@ -606,7 +652,7 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 			name:                     "Template create-subscription request",
 			rawPayloadFile:           "create-subscription.json",
 			payloadRenderContextFile: "create-subscription.context.yaml",
-			action:                   "keptn-api-v1-create-subscription",
+			action:                   "keptn-api-v1-uniform-create-webhook-subscription",
 		},
 	}
 
@@ -623,7 +669,7 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 
 				rawPayloadFullPath := path.Join(rawPayloadDir, tt.rawPayloadFile)
 				apiTask := &model.ManifestTask{
-					ID:      fmt.Sprintf("api-task-%d", i),
+					ID:      fmt.Sprintf("api_task_%d", i),
 					Type:    "api",
 					Name:    fmt.Sprintf("API Task No. %d", i),
 					Context: context,
@@ -663,6 +709,9 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
 						return nil, nil
 					},
+					ActionSupportedFunc: func(actionName string) bool {
+						return true
+					},
 				}
 
 				stageRetriever := &fake.MockStageRetriever{}
@@ -678,9 +727,12 @@ func TestImportPackageProcessor_Process_APITaskWithTemplating(t *testing.T) {
 						}
 						return os.Open(resourceName)
 					},
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
+					},
 				}
 
-				err = sut.Process(project, importPackageMock)
+				_, err = sut.Process(project, importPackageMock)
 
 				assert.NoError(t, err)
 				assert.Len(t, taskExecutor.ExecuteAPICalls(), 1)
@@ -710,7 +762,7 @@ func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *test
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -744,9 +796,12 @@ func TestImportPackageProcessor_ProcessResourceTask_ErrorGettingResource(t *test
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.Error(t, err)
 	assert.Len(t, importPackageMock.CloseCalls(), 1)
@@ -770,7 +825,7 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 			Stage:     "dev",
 			Service:   "service",
 		},
-		ID:   "res-task",
+		ID:   "res_task",
 		Type: "resource",
 		Name: "ResTask",
 	}
@@ -811,9 +866,12 @@ func TestImportPackageProcessor_Process_ResourceTask_ErrorExecutingTask(t *testi
 
 			return io.NopCloser(bytes.NewReader([]byte{})), nil
 		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
 	}
 
-	err := sut.Process(project, importPackageMock)
+	_, err := sut.Process(project, importPackageMock)
 
 	assert.Error(t, err)
 	assert.Len(t, taskExecutor.PushResourceCalls(), 1)
@@ -837,7 +895,7 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 			name: "malformed resource task",
 			task: &model.ManifestTask{
 				ResourceTask: nil,
-				ID:           "res-task",
+				ID:           "res_task",
 				Type:         "resource",
 				Name:         "ResTask",
 			},
@@ -846,7 +904,7 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 			name: "malformed api task",
 			task: &model.ManifestTask{
 				APITask: nil,
-				ID:      "api-task",
+				ID:      "api_task",
 				Type:    "api",
 				Name:    "APITask",
 			},
@@ -878,12 +936,764 @@ func TestImportPackageProcessor_Process_ErrorMalformedTasks(t *testing.T) {
 					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
 						return io.NopCloser(bytes.NewReader([]byte{})), nil
 					},
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
+					},
 				}
 
-				err := sut.Process("test-project", importPackageMock)
+				_, err := sut.Process("test-project", importPackageMock)
 				assert.Error(t, err)
-				assert.ErrorContains(t, err, fmt.Sprintf("malformed task of type %s", tt.task.Type))
+				assert.ErrorContains(t, err, fmt.Sprintf("empty %s definition not supported", tt.task.Type))
 			},
 		)
+	}
+}
+
+func TestImportPackageProcessor_Process_ErrorRenderingContext(t *testing.T) {
+
+	tests := []struct {
+		name string
+		task *model.ManifestTask
+	}{
+		{
+			name: "Error rendering context for api task",
+			task: &model.ManifestTask{
+				ID:      "api_task",
+				Type:    "api",
+				Name:    "API Task",
+				Context: map[string]string{"foo": "bar"},
+				APITask: &model.APITask{
+					Action:      "keptn-api-v1-uniform-create-webhook-subscription",
+					PayloadFile: "payload.json",
+				},
+			},
+		},
+		{
+			// this will fail during content rendering because there is no key in context ;)
+			name: "Error rendering payload for api task",
+			task: &model.ManifestTask{
+				ID:      "api_task",
+				Type:    "api",
+				Name:    "API Task",
+				Context: map[string]string{},
+				APITask: &model.APITask{
+					Action:      "keptn-api-v1-uniform-create-webhook-subscription",
+					PayloadFile: "payload.json",
+				},
+			},
+		},
+		{
+			name: "Error rendering context for resource task",
+			task: &model.ManifestTask{
+				ResourceTask: &model.ResourceTask{
+					File:      "somefile.json",
+					RemoteURI: "somefile.json",
+					Stage:     "dev",
+				},
+				ID:      "res_task",
+				Type:    "resource",
+				Name:    "Resource Task",
+				Context: map[string]string{"foo": "bar"},
+			},
+		},
+		{
+			// this will fail during content rendering because there is no key in context ;)
+			name: "Error rendering content for resource task",
+			task: &model.ManifestTask{
+				ResourceTask: &model.ResourceTask{
+					File:      "somefile.json",
+					RemoteURI: "somefile.json",
+					Stage:     "dev",
+				},
+				ID:      "res_task",
+				Type:    "resource",
+				Name:    "Resource Task",
+				Context: map[string]string{},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				const renderErrorMessage = "error rendering some weird template"
+				renderer := &fake.MockRenderer{
+					RenderStringFunc: func(raw string, context any) (string, error) {
+						return "", errors.New(renderErrorMessage)
+					},
+					RenderContentFunc: func(raw io.ReadCloser, context any) (io.ReadCloser, error) {
+						return nil, errors.New(renderErrorMessage)
+					},
+				}
+
+				task := tt.task
+
+				parserMock := &fake.ManifestParserMock{
+					ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+						return &model.ImportManifest{
+							ApiVersion: "v1beta1",
+							Tasks: []*model.ManifestTask{
+								task,
+							},
+						}, nil
+					},
+				}
+
+				taskExecutor := &fake.TaskExecutorMock{
+					ActionSupportedFunc: func(actionName string) bool {
+						return true
+					},
+				}
+				stageRetriever := &fake.MockStageRetriever{}
+				sut := newImportPackageProcessor(parserMock, taskExecutor, stageRetriever, renderer)
+
+				importPackageMock := &fake.ImportPackageMock{
+					CloseFunc: func() error {
+						return nil
+					},
+					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+						return io.NopCloser(bytes.NewReader([]byte{})), nil
+					},
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
+					},
+				}
+
+				_, err := sut.Process("test-project", importPackageMock)
+				assert.Error(t, err)
+				assert.ErrorContains(t, err, renderErrorMessage)
+			},
+		)
+	}
+}
+
+// This test is written as a "component" (not really but close enough) test for the import core business logic
+// (everything is the real thing except interaction with external systems which relies on canned responses through
+// mocks). This is by necessity unwieldy and more complicated than a regular unit test,
+// however it still delivers valuable information on import package behavior and it can be used as a testbed for
+// manifest processing/rendering verification. Match of api and resource tasks is based on action and remoteURI,
+// content/payload is checked against expectation and a not empty response is returned if defined, nil otherwise.
+// The inputs, expectations and canned responses are defined in a .yaml file like
+// ../../test/data/import/rendered-sample-package/input.yaml
+func TestImportPackageProcessor_Process_FullManifestRendering(t *testing.T) {
+
+	type apiCallExpectation struct {
+		Action   string `yaml:"action"`
+		Expected string `yaml:"expected"`
+		Response string `yaml:"response"`
+	}
+
+	type resourceUploadExpectation struct {
+		ResourceURI string `yaml:"uri"`
+		Expected    string `yaml:"expected"`
+	}
+
+	type testData struct {
+		API      map[string][]apiCallExpectation        `yaml:"api"`
+		Resource map[string][]resourceUploadExpectation `yaml:"resource"`
+	}
+
+	type testInput struct {
+		Project  string   `yaml:"project"`
+		TestData testData `yaml:"test-data"`
+	}
+
+	const rawPackageDir = "../test/data/import/sample-package/"
+	const renderedPackageDir = "../test/data/import/rendered-sample-package/full-manifest-rendering/"
+
+	tests := []struct {
+		name               string
+		rawPackageDir      string
+		renderedPackageDir string
+		testInput          string
+	}{
+		{
+			name:               "Template sample package",
+			rawPackageDir:      rawPackageDir,
+			renderedPackageDir: renderedPackageDir,
+			testInput:          "input.yaml",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+
+				inputFile, err := os.Open(path.Join(tt.renderedPackageDir, tt.testInput))
+				require.NoError(t, err)
+				defer inputFile.Close()
+
+				inputs := testInput{}
+				decoder := yaml.NewDecoder(inputFile)
+				decoder.KnownFields(true)
+				err = decoder.Decode(&inputs)
+				require.NoError(t, err)
+
+				taskExecutor := &fake.TaskExecutorMock{
+					ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+						t.Logf("Handling API execution %+v", ate)
+						expectations, ok := inputs.TestData.API[ate.EndpointID]
+						if !ok || len(expectations) == 0 {
+							t.Fatalf("API call %+v has no expectations available in inputs %+v", ate, inputs)
+						}
+						inputs.TestData.API[ate.EndpointID] = expectations[1:]
+						expectation := expectations[0]
+						t.Logf("Consuming expectation %+v", expectation)
+						assert.NotNil(t, ate.Payload)
+						defer ate.Payload.Close()
+
+						renderedBytes, err := io.ReadAll(ate.Payload)
+						require.NoError(t, err)
+
+						expectedRenderedBytes, err := ioutil.ReadFile(
+							path.Join(
+								tt.renderedPackageDir, expectation.Expected,
+							),
+						)
+						require.NoError(t, err)
+
+						assert.Equal(t, string(expectedRenderedBytes), string(renderedBytes))
+						// For debugging purposes it may be easier to look at the YAML/JSON comparison
+						// assert.YAMLEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						var retval any
+						if expectation.Response != "" {
+							err = json.Unmarshal([]byte(expectation.Response), &retval)
+							require.NoErrorf(
+								t, err, "canned response for %s is not parseable JSON: %s",
+								expectation.Action, expectation.Response,
+							)
+						}
+						return retval, nil
+					},
+					PushResourceFunc: func(rp model.ResourcePush) (any, error) {
+						t.Logf("Handling resource push %+v", rp)
+						expectations, ok := inputs.TestData.Resource[rp.ResourceURI]
+						if !ok || len(expectations) == 0 {
+							t.Fatalf("Resource upload %+v has no expectations available in inputs %+v", rp, inputs)
+						}
+						inputs.TestData.Resource[rp.ResourceURI] = expectations[1:]
+						expectation := expectations[0]
+
+						t.Logf("Consuming expectation %+v", expectation)
+
+						assert.NotNil(t, rp.Content)
+						defer rp.Content.Close()
+
+						renderedBytes, err := io.ReadAll(rp.Content)
+						require.NoError(t, err)
+
+						expectedRenderedBytes, err := ioutil.ReadFile(
+							path.Join(
+								tt.renderedPackageDir, expectation.Expected,
+							),
+						)
+						require.NoError(t, err)
+
+						assert.Equal(t, string(expectedRenderedBytes), string(renderedBytes))
+						// For debugging purposes it may be easier to look at the YAML/JSON comparison
+						// assert.YAMLEq(t, string(expectedRenderedBytes), string(renderedBytes))
+						// assert.JSONEq(t, string(expectedRenderedBytes), string(renderedBytes))
+
+						return nil, nil
+					},
+					ActionSupportedFunc: func(actionName string) bool {
+						return true
+					},
+				}
+
+				stageRetriever := &fake.MockStageRetriever{}
+				parser := &model.YAMLManifestUnMarshaler{}
+				sut := NewImportPackageProcessor(parser, taskExecutor, stageRetriever)
+
+				importPackageMock := &fake.ImportPackageMock{
+					CloseFunc: func() error {
+						return nil
+					},
+					GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+						return os.Open(path.Join(tt.rawPackageDir, resourceName))
+					},
+					ResourceExistsFunc: func(resourceName string) (bool, error) {
+						return true, nil
+					},
+				}
+
+				_, err = sut.Process(inputs.Project, importPackageMock)
+
+				assert.NoError(t, err)
+				assert.Len(t, importPackageMock.CloseCalls(), 1)
+			},
+		)
+	}
+}
+
+func TestPackageValidationEmptyId(t *testing.T) {
+	manifest := &model.ImportManifest{
+		ApiVersion: "v1beta1",
+		Tasks: []*model.ManifestTask{
+			{
+				ID:      "",
+				Type:    "api",
+				Context: nil,
+				APITask: &model.APITask{
+					Action:      "keptn-api-v1-create-service",
+					PayloadFile: "",
+				},
+			},
+		},
+	}
+
+	expectedErrorMsg := "task id cannot be empty"
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	err := sut.validateManifest(manifest, importPackageMock)
+
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}
+
+func TestPackageValidationIdAlphaNumeric(t *testing.T) {
+	manifests := []model.ImportManifest{
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "valid_id",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "invalid-id",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "invalid~char#",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+				},
+			},
+		},
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	tests := []struct {
+		name               string
+		manifest           model.ImportManifest
+		expectedErrMessage string
+		expectError        bool
+	}{
+		{
+			name:        "valid id",
+			manifest:    manifests[0],
+			expectError: false,
+		},
+		{
+			name:               "containing invalid dash",
+			manifest:           manifests[1],
+			expectedErrMessage: fmt.Sprintf("task id %s can only consist of alphnumeric characters and underscores", manifests[1].Tasks[0].ID),
+			expectError:        true,
+		},
+		{
+			name:               "containing invalid character",
+			manifest:           manifests[2],
+			expectedErrMessage: fmt.Sprintf("task id %s can only consist of alphnumeric characters and underscores", manifests[2].Tasks[0].ID),
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				err := sut.validateManifest(&tt.manifest, importPackageMock)
+				if tt.expectError {
+					assert.EqualErrorf(t, err, tt.expectedErrMessage, "Error should be: %v, got: %v", tt.expectedErrMessage, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+	}
+
+}
+
+func TestPackageValidationInvalidType(t *testing.T) {
+	manifest := &model.ImportManifest{
+		ApiVersion: "v1beta1",
+		Tasks: []*model.ManifestTask{
+			{
+				ID:      "testing_invalid_type",
+				Type:    "invalid",
+				Context: nil,
+				APITask: &model.APITask{
+					Action:      "keptn-api-v1-create-service",
+					PayloadFile: "",
+				},
+			},
+		},
+	}
+
+	expectedErrorMsg := fmt.Sprintf("task of type %s not implemented", manifest.Tasks[0].Type)
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	err := sut.validateManifest(manifest, importPackageMock)
+
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}
+
+func TestPackageValidationApiAndResourceTaskNotBothSet(t *testing.T) {
+	manifests := []model.ImportManifest{
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "validate_resource_task_set_on_api_task",
+					Type:    "api",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+					ResourceTask: &model.ResourceTask{
+						File:      "./capture.pcap",
+						RemoteURI: "/wireshark/capture.pcap",
+						Stage:     "dev",
+						Service:   "service",
+					},
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "validate_api_task_set_on_resource_task",
+					Type:    "resource",
+					Context: nil,
+					APITask: &model.APITask{
+						Action:      "keptn-api-v1-create-service",
+						PayloadFile: "",
+					},
+					ResourceTask: &model.ResourceTask{
+						File:      "./capture.pcap",
+						RemoteURI: "/wireshark/capture.pcap",
+						Stage:     "dev",
+						Service:   "service",
+					},
+				},
+			},
+		},
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	tests := []struct {
+		name               string
+		manifest           model.ImportManifest
+		expectedErrMessage string
+		expectError        bool
+	}{
+		{
+			name:               "validate_resource_task_set_on_api_task",
+			manifest:           manifests[0],
+			expectedErrMessage: "cannot set resource task fields on API task",
+			expectError:        true,
+		},
+		{
+			name:               "validate_api_task_set_on_resource_task",
+			manifest:           manifests[1],
+			expectedErrMessage: "cannot set API task fields on resource task",
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				err := sut.validateManifest(&tt.manifest, importPackageMock)
+				if tt.expectError {
+					assert.EqualErrorf(t, err, tt.expectedErrMessage, "Error should be: %v, got: %v", tt.expectedErrMessage, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
+	}
+
+}
+
+func TestPackageValidationResourceUriEmpty(t *testing.T) {
+	manifest := &model.ImportManifest{
+		ApiVersion: "v1beta1",
+		Tasks: []*model.ManifestTask{
+			{
+				ID:      "resource_uri_empty",
+				Type:    "resource",
+				Context: nil,
+				ResourceTask: &model.ResourceTask{
+					File:      "./capture.pcap",
+					RemoteURI: "",
+					Stage:     "dev",
+					Service:   "service",
+				},
+			},
+		},
+	}
+
+	expectedErrorMsg := fmt.Sprintf("resourceUri %s cannot be empty for resource task type", manifest.Tasks[0].ResourceTask.RemoteURI)
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	err := sut.validateManifest(manifest, importPackageMock)
+
+	assert.EqualErrorf(t, err, expectedErrorMsg, "Error should be: %v, got: %v", expectedErrorMsg, err)
+}
+
+func TestPackageValidationEmptyTaskNotAllowed(t *testing.T) {
+	manifests := []model.ImportManifest{
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "empty_api_task_not_allowed",
+					Type:    "api",
+					Context: nil,
+				},
+			},
+		},
+		{
+			ApiVersion: "v1beta1",
+			Tasks: []*model.ManifestTask{
+				{
+					ID:      "empty_resource_task_not_allowed",
+					Type:    "resource",
+					Context: nil,
+				},
+			},
+		},
+	}
+
+	parserMock := &fake.ManifestParserMock{
+		ParseFunc: func(input io.Reader) (*model.ImportManifest, error) {
+			return new(model.ImportManifest), nil
+		},
+	}
+
+	taskExecutor := &fake.TaskExecutorMock{
+		ExecuteAPIFunc: func(ate model.APITaskExecution) (any, error) {
+			return nil, nil
+		},
+		ActionSupportedFunc: func(actionName string) bool {
+			return true
+		},
+	}
+
+	importPackageMock := &fake.ImportPackageMock{
+		CloseFunc: func() error {
+			return nil
+		},
+		GetResourceFunc: func(resourceName string) (io.ReadCloser, error) {
+			return io.NopCloser(bytes.NewReader([]byte{})), nil
+		},
+		ResourceExistsFunc: func(resourceName string) (bool, error) {
+			return true, nil
+		},
+	}
+
+	stageRetriever := &fake.MockStageRetriever{}
+	sut := NewImportPackageProcessor(parserMock, taskExecutor, stageRetriever)
+
+	tests := []struct {
+		name               string
+		manifest           model.ImportManifest
+		expectedErrMessage string
+		expectError        bool
+	}{
+		{
+			name:               "empty_api_task_not_allowed",
+			manifest:           manifests[0],
+			expectedErrMessage: "empty api definition not supported",
+			expectError:        true,
+		},
+		{
+			name:               "empty_resource_task_not_allowed",
+			manifest:           manifests[1],
+			expectedErrMessage: "empty resource definition not supported",
+			expectError:        true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				err := sut.validateManifest(&tt.manifest, importPackageMock)
+				if tt.expectError {
+					assert.EqualErrorf(t, err, tt.expectedErrMessage, "Error should be: %v, got: %v", tt.expectedErrMessage, err)
+				} else {
+					require.NoError(t, err)
+				}
+			})
 	}
 }

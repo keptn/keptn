@@ -5,6 +5,7 @@ import {
   interceptSequencesPage,
   interceptSequencesPageWithSequenceThatIsNotLoaded,
 } from '../intercept';
+import { EvaluationBadgeVariant } from '../../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 type EFilterGroup = 'Service' | 'Stage' | 'Sequence' | 'Status';
 
@@ -344,7 +345,9 @@ export class SequencesPage {
   }
 
   public assertApprovalEvaluationBubble(score: number, status: 'warning' | 'error' | 'success'): this {
-    cy.byTestId('ktb-approval-evaluation-bubble').should('have.class', status).should('have.text', score);
+    cy.byTestId('ktb-approval-evaluation-bubble')
+      .parent()
+      .assertEvaluationBadge(status, score, EvaluationBadgeVariant.FILL);
     return this;
   }
 
@@ -366,5 +369,24 @@ export class SequencesPage {
   public assertEventLabelCount(uitestIdOfExpandableTile: string, count: number): this {
     cy.byTestId(uitestIdOfExpandableTile).find('dt-tag-list').first().children().should('have.length', count);
     return this;
+  }
+
+  public assertSequenceEvaluationBadge(
+    keptnContext: string,
+    stage: string,
+    status: 'success' | 'error' | 'warning' | undefined,
+    score: number | '-',
+    variant: EvaluationBadgeVariant
+  ): this {
+    this.getStageBadgeOfSequence(keptnContext, stage).assertEvaluationBadge(status, score, variant);
+    return this;
+  }
+
+  private getStageBadgeOfSequence(keptnContext: string, stage: string): Cypress.Chainable<JQuery> {
+    return cy
+      .byTestId(`keptn-root-events-list-${keptnContext}`)
+      .find('ktb-stage-badge')
+      .contains(stage)
+      .parentsUntil('ktb-stage-badge');
   }
 }

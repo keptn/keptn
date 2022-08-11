@@ -1,45 +1,51 @@
-import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../_services/data.service';
 import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
 import { catchError, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
-import { Project } from '../../../../_models/project';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
-import { EventTypes } from '../../../../../../shared/interfaces/event-types';
-import { UniformRegistration } from '../../../../_models/uniform-registration';
-import { AppUtils } from '../../../../_utils/app.utils';
-import { IWebhookConfigClient, PreviousWebhookConfig } from '../../../../../../shared/interfaces/webhook-config';
-import { NotificationsService } from '../../../../_services/notifications.service';
-import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
-import { NotificationType } from '../../../../_models/notification';
-import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-scope';
-import { EventState } from '../../../../../../shared/models/event-state';
-import { Trace } from '../../../../_models/trace';
-import { HttpErrorResponse } from '@angular/common/http';
+import { IWebhookConfigClient, PreviousWebhookConfig } from 'shared/interfaces/webhook-config';
+import { ISequencesFilter } from '../../../../../../shared/interfaces/sequencesFilter';
 import { IClientSecret } from '../../../../../../shared/interfaces/secret';
+import { EventState } from '../../../../../../shared/models/event-state';
+import { AppUtils } from '../../../../_utils/app.utils';
+import { NotificationsService } from '../../../../_services/notifications.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { NotificationType } from '../../../../_models/notification';
+import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
+import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-scope';
+import { EventTypes } from '../../../../../../shared/interfaces/event-types';
+import { Trace } from '../../../../_models/trace';
+import { PendingChangesComponent } from '../../../../_guards/pending-changes.guard';
+import { DeleteResult, DeleteType, DeletionProgressEvent } from '../../../../_interfaces/delete';
+import { EventService } from '../../../../_services/event.service';
+import { handleDeletionError } from '../../../../_components/ktb-danger-zone/ktb-danger-zone.utils';
+
+export interface SubscriptionState {
+  projectName: string;
+  taskNames: string[];
+  subscription: UniformSubscription;
+  filter: ISequencesFilter;
+  integrationId: string;
+  webhook?: IWebhookConfigClient;
+  webhookSecrets?: IClientSecret[];
+}
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
   templateUrl: './ktb-modify-uniform-subscription.component.html',
   styleUrls: ['./ktb-modify-uniform-subscription.component.scss'],
 })
-export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
+export class KtbModifyUniformSubscriptionComponent implements OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
   private taskControl = new FormControl('', [Validators.required]);
   public eventPayload: Record<string, unknown> | undefined;
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<{
-    taskNames: string[];
-    subscription: UniformSubscription;
-    project: Project;
-    integrationId: string;
-    webhook?: IWebhookConfigClient;
-    webhookSecrets?: IClientSecret[];
-  }>;
+  public data$: Observable<SubscriptionState>;
   public _dataSource = new DtFilterFieldDefaultDataSource();
   public editMode = false;
   public updating = false;
@@ -49,8 +55,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     isGlobal: this.isGlobalControl,
   });
   private _previousFilter?: PreviousWebhookConfig;
-  public uniformRegistration?: UniformRegistration;
   public isWebhookFormValid = true;
+  public webhookFormDirty = false;
   public isWebhookService = false;
   public suffixes: { value: string; displayValue: string }[] = [
     {
@@ -72,11 +78,20 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   ];
   public errorMessage?: string;
 
+  private pendingChangesSubject = new Subject<boolean>();
+  public dialogLabel = 'Pending Changes dialog';
+  public message = 'You have pending changes. Are you sure you want to leave this page?';
+  public unsavedDialogState: null | 'unsaved' = null;
+  private isFilterDirty = false;
+
+  public deleteType = DeleteType.SUBSCRIPTION;
+
   constructor(
     private route: ActivatedRoute,
     private dataService: DataService,
     private router: Router,
     private notificationsService: NotificationsService,
+    private eventService: EventService,
     private _changeDetectorRef: ChangeDetectorRef
   ) {
     const subscription$ = this.route.paramMap.pipe(
@@ -152,10 +167,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       }),
       take(1)
     );
-    const project$ = projectName$.pipe(
-      switchMap((projectName) => this.dataService.getProject(projectName)),
-      filter((project?: Project): project is Project => !!project)
-    );
 
     const webhook$ = forkJoin({
       subscription: subscription$,
@@ -196,21 +207,67 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       })
     );
 
-    this.data$ = combineLatest([taskNames$, subscription$, project$, integrationId$, webhook$, webhookSecrets$]).pipe(
-      map(([taskNames, subscription, project, integrationId, webhook, webhookSecrets]) => {
+    const filter$ = projectName$.pipe(switchMap((projectName) => this.dataService.getSequenceFilter(projectName)));
+
+    this.data$ = combineLatest([
+      projectName$,
+      taskNames$,
+      subscription$,
+      filter$,
+      integrationId$,
+      webhook$,
+      webhookSecrets$,
+    ]).pipe(
+      map(([projectName, taskNames, subscription, filterData, integrationId, webhook, webhookSecrets]) => {
         return {
           taskNames,
           subscription,
-          project,
+          filter: filterData,
+          projectName,
           integrationId,
           webhook,
           webhookSecrets,
         };
       }),
       tap((data) => {
-        this.updateDataSource(data.project, data.subscription);
+        this.updateDataSource(data.filter.stages, data.filter.services, data.subscription);
       })
     );
+
+    this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
+      if (data.type === DeleteType.SUBSCRIPTION && data.context) {
+        this.deleteSubscription(data.context as SubscriptionState);
+      }
+    });
+  }
+
+  public deleteSubscription(data: SubscriptionState): void {
+    if (!data.subscription.id) return;
+    this.eventService.deletionProgressEvent.next({ isInProgress: true });
+
+    this.dataService
+      .deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService)
+      .pipe(
+        map((): DeletionProgressEvent => {
+          return { isInProgress: false, result: DeleteResult.SUCCESS };
+        }),
+        catchError(handleDeletionError('Subscription'))
+      )
+      .subscribe((progressEvent) => {
+        this.eventService.deletionProgressEvent.next(progressEvent);
+        if (progressEvent.result === DeleteResult.SUCCESS) {
+          this.resetForms();
+          this.router.navigate([
+            '/',
+            'project',
+            data.projectName,
+            'settings',
+            'uniform',
+            'integrations',
+            data.integrationId,
+          ]);
+        }
+      });
   }
 
   private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
@@ -234,16 +291,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
     window.location.reload();
   }
 
-  private updateDataSource(project: Project, subscription: UniformSubscription): void {
-    const stages: { name: string }[] = project.stages.map((stage) => ({
-      name: stage.stageName,
-    }));
-    const services: { name: string }[] = project.getServices().map((service) => ({
-      name: service.serviceName,
-    }));
-    const availableServices = subscription.filter.services?.filter((service) =>
-      services.some((s) => s.name === service)
-    );
+  private updateDataSource(stages: string[], services: string[], subscription: UniformSubscription): void {
+    const availableServices = subscription.filter.services?.filter((service) => services.some((s) => s === service));
 
     // check if services have been deleted
     if (availableServices && availableServices?.length !== subscription.filter.services?.length) {
@@ -253,11 +302,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       autocomplete: [
         {
           name: 'Stage',
-          autocomplete: stages,
+          autocomplete: stages.map((name) => ({ name })),
         },
         {
           name: 'Service',
-          autocomplete: services,
+          autocomplete: services.map((name) => ({ name })),
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;
@@ -294,6 +343,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
       () => {
         this.updating = false;
         this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
+        this.resetForms();
         this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
       },
       () => {
@@ -317,6 +367,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   }
 
   public subscriptionFilterChanged(subscription: UniformSubscription, projectName: string): void {
+    this.isFilterDirty = !!subscription.filter.stages?.length || !!subscription.filter.services?.length;
     this.updateIsGlobalCheckbox(subscription);
     this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
   }
@@ -346,6 +397,47 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy {
   public webhookFormValidityChanged(isValid: boolean): void {
     this.isWebhookFormValid = isValid;
     this._changeDetectorRef.detectChanges();
+  }
+
+  // @HostListener allows us to also guard against browser refresh, close, etc.
+  @HostListener('window:beforeunload', ['$event'])
+  public canDeactivate(_$event?: BeforeUnloadEvent): Observable<boolean> {
+    if (this.subscriptionForm.dirty || this.webhookFormDirty || this.isFilterDirty) {
+      this.showNotification();
+      return this.pendingChangesSubject.asObservable();
+    }
+    return of(true);
+  }
+
+  public resetForms(): void {
+    this.subscriptionForm.reset();
+    this.webhookFormDirty = false;
+    this.isFilterDirty = false;
+  }
+
+  public reject(): void {
+    this.pendingChangesSubject.next(false);
+    this.hideNotification();
+  }
+
+  public reset(): void {
+    this.pendingChangesSubject.next(true);
+    this.hideNotification();
+  }
+
+  public showNotification(): void {
+    this.unsavedDialogState = 'unsaved';
+
+    const dialog = document.querySelector(`div[aria-label="${this.dialogLabel}"]`);
+
+    if (!dialog) return;
+
+    dialog.classList.add('shake');
+    setTimeout(() => dialog.classList.remove('shake'), 500);
+  }
+
+  public hideNotification(): void {
+    this.unsavedDialogState = null;
   }
 
   public ngOnDestroy(): void {
