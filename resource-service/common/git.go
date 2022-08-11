@@ -560,7 +560,12 @@ func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, err
 	}
 	def := repoConfig.Init.DefaultBranch
 	if def == "" {
-		def = "master"
+		head, err := r.Head()
+		if err != nil {
+			logger.Errorf("unable to get git repository HEAD for project %s: %s. Defaulting to 'master'", gitContext.Project, err.Error())
+			return "master", nil
+		}
+		return string(head.Name()), nil
 	}
 	return def, err
 }
