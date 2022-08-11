@@ -5,7 +5,7 @@ describe('Create project https', () => {
   const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
-    createProjectPage.intercept(true).visit();
+    createProjectPage.intercept().visit();
   });
 
   it('should not show "Set Git upstream" button', () => {
@@ -147,7 +147,7 @@ describe('Create project ssh', () => {
   const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
-    createProjectPage.intercept(true).visit().selectSshForm();
+    createProjectPage.intercept().visit().selectSshForm();
   });
 
   it('should have enabled button if form is valid', () => {
@@ -212,7 +212,7 @@ describe('Create project ssh and https', () => {
   const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
-    createProjectPage.intercept(true).visit();
+    createProjectPage.intercept().visit();
   });
 
   it('should only show https or ssh', () => {
@@ -279,19 +279,11 @@ describe('Create project ssh and https', () => {
   });
 });
 
-describe('Create project while resource service is disabled', () => {
-  const createProjectPage = new ProjectSettingsPage();
-
-  it('should show an error if the resource service is disabled', () => {
-    createProjectPage.intercept(false).visit().assertConfigurationServiceErrorExists(true);
-  });
-});
-
 describe('Create project with automatic provisioned git upstream', () => {
   const createProjectPage = new ProjectSettingsPage();
 
   beforeEach(() => {
-    createProjectPage.intercept(true, true).visit();
+    createProjectPage.intercept(true).visit();
   });
 
   it('should show the no upstream option as default', () => {
@@ -336,7 +328,6 @@ describe('Automatic provisioning message', () => {
     authType: 'OAUTH',
     user: 'claus.keptn-dev@ruxitlabs.com',
     featureFlags: {
-      RESOURCE_SERVICE_ENABLED: true,
       D3_ENABLED: false,
     },
   };

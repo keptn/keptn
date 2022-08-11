@@ -1,7 +1,6 @@
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 
 const featureFlags: IClientFeatureFlags = {
-  RESOURCE_SERVICE_ENABLED: false,
   D3_ENABLED: false,
 };
 
