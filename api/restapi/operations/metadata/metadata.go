@@ -35,6 +35,9 @@ func NewMetadata(ctx *middleware.Context, handler MetadataHandler) *Metadata {
 
 Get keptn installation metadata
 
+<span class="oauth-scopes">Required OAuth scopes: ${prefix}metadata:read</span>
+
+
 */
 type Metadata struct {
 	Context *middleware.Context

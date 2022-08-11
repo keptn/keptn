@@ -35,6 +35,9 @@ func NewPostEvent(ctx *middleware.Context, handler PostEventHandler) *PostEvent 
 
 Forwards the received event
 
+<span class="oauth-scopes">Required OAuth scopes: ${prefix}events:write</span>
+
+
 */
 type PostEvent struct {
 	Context *middleware.Context
