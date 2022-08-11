@@ -98,20 +98,20 @@ defaults:
   run:
     shell: bash
 jobs:
-#  calculate-queue-time:
-#    name: "Calculate Queue Time"
-#    uses: ./.github/workflows/pipeline-queuetime.yml
-#    with:
-#      workflow_name: "CI"
-#    secrets:
-#      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-#      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+  calculate-queue-time:
+    name: "Calculate Queue Time"
+    uses: ./.github/workflows/pipeline-queuetime.yml
+    with:
+      workflow_name: "CI"
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
 
   prepare_ci_run:
     name: Prepare CI Run
     # Prepare CI Run looks at what has been changed in this commit/PR/... and determines which artifacts should be
     # built afterwards (in other jobs that depend on this one).
-#    needs: calculate-queue-time
+    needs: calculate-queue-time
     runs-on: ubuntu-20.04
     outputs: # declare what this job outputs (so it can be re-used for other jobs)
       # build config
@@ -358,7 +358,7 @@ jobs:
             version=${{ env.VERSION }}
             buildTime=${{ needs.prepare_ci_run.outputs.DATETIME }}
             gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-          push: false #${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
+          push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
           pull: true
           builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=gha, scope=${{ github.workflow }}
@@ -473,23 +473,23 @@ jobs:
         git commit --signoff -m "Keptn Dev Version $RELEASE_TAG"
         git push
 
-#  calculate-total-runtime:
-#    name: End-of-Pipeline Metrics
-#    if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
-#    needs:
-#      - calculate-queue-time
-#      - prepare_ci_run
-#      - store-output-in-build-config
-#      - unit-tests-and-build
-#      - unit-tests-cli
-#      - build-cli
-#      - helm_charts_build
-#      - helm_charts_upload
-#
-#    uses: ./.github/workflows/end-of-pipeline-metrics.yml
-#    with:
-#      workflow_name: "CI"
-#      branch: ${{ github.ref }}
-#    secrets:
-#      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-#      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
+  calculate-total-runtime:
+    name: End-of-Pipeline Metrics
+    if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
+    needs:
+      - calculate-queue-time
+      - prepare_ci_run
+      - store-output-in-build-config
+      - unit-tests-and-build
+      - unit-tests-cli
+      - build-cli
+      - helm_charts_build
+      - helm_charts_upload
+
+    uses: ./.github/workflows/end-of-pipeline-metrics.yml
+    with:
+      workflow_name: "CI"
+      branch: ${{ github.ref }}
+    secrets:
+      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
+      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
