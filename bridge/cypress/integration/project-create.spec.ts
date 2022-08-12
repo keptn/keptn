@@ -328,7 +328,7 @@ describe('Automatic provisioning message', () => {
     authType: 'OAUTH',
     user: 'claus.keptn-dev@ruxitlabs.com',
     featureFlags: {
-      D3_ENABLED: false,
+      D3_ENABLED: true,
     },
   };
 

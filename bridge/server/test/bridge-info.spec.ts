@@ -41,7 +41,7 @@ describe('Test /bridgeInfo', () => {
       enableVersionCheckFeature: true,
       showApiToken: true,
       featureFlags: {
-        D3_ENABLED: false,
+        D3_ENABLED: true,
       },
       authType: 'NONE',
       automaticProvisioningMsg: provMsg.trim(),
