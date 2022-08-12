@@ -7,7 +7,6 @@ import { PendingChangesGuard } from '../../../_guards/pending-changes.guard';
 import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { DataService } from '../../../_services/data.service';
-import { TestUtils } from '../../../_utils/test.utils';
 import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
 import { KtbProjectSettingsModule } from './ktb-project-settings.module';
 import { getDefaultSshData } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component.spec';
@@ -389,7 +388,6 @@ describe('KtbProjectSettingsComponent update', () => {
     // given
     const apiService = TestBed.inject(ApiService);
     const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
-    TestUtils.enableResourceService();
     expect(component.isProjectFormTouched).toBe(false);
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     component.projectNameControl.setValue('myProject');
@@ -435,7 +433,6 @@ describe('KtbProjectSettingsComponent update', () => {
     // given
     const apiService = TestBed.inject(ApiService);
     const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
-    TestUtils.enableResourceService();
     expect(component.isProjectFormTouched).toBe(false);
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     component.projectNameControl.setValue('myProject');

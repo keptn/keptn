@@ -41,7 +41,6 @@ standard.args = {
   info: {
     bridgeInfo: {
       featureFlags: {
-        RESOURCE_SERVICE_ENABLED: true,
         D3_ENABLED: true,
       },
       cliDownloadLink: '',

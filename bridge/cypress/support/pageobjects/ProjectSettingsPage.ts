@@ -2,9 +2,7 @@
 
 import {
   interceptCreateProject,
-  interceptMain,
-  interceptMainResourceApEnabled,
-  interceptMainResourceEnabled,
+  interceptMainAutomaticProvisioningEnabled,
   interceptProjectBoard,
   interceptProjectSettings,
 } from '../intercept';
@@ -14,17 +12,11 @@ class ProjectSettingsPage {
   private validCertificateInput = '-----BEGIN CERTIFICATE-----\nmyCertificate\n-----END CERTIFICATE-----';
   private validPrivateKeyInput = '-----BEGIN OPENSSH PRIVATE KEY-----\nmyPrivateKey\n-----END OPENSSH PRIVATE KEY-----';
 
-  public intercept(resourceServiceEnabled = false, automaticProvisioningEnabled = false): this {
-    if (resourceServiceEnabled) {
-      if (!automaticProvisioningEnabled) {
-        interceptMainResourceEnabled();
-      } else {
-        interceptMainResourceApEnabled();
-      }
-    } else {
-      interceptMain();
-    }
+  public intercept(automaticProvisioningEnabled = false): this {
     interceptCreateProject();
+    if (automaticProvisioningEnabled) {
+      interceptMainAutomaticProvisioningEnabled();
+    }
     return this;
   }
 
@@ -35,16 +27,10 @@ class ProjectSettingsPage {
     return this;
   }
 
-  public interceptSettings(resourceServiceEnabled = false, automaticProvisioningEnabled = false): this {
+  public interceptSettings(automaticProvisioningEnabled = false): this {
     interceptProjectBoard();
-    if (resourceServiceEnabled) {
-      if (!automaticProvisioningEnabled) {
-        interceptMainResourceEnabled();
-      } else {
-        interceptMainResourceApEnabled();
-      }
-    } else {
-      interceptMain();
+    if (automaticProvisioningEnabled) {
+      interceptMainAutomaticProvisioningEnabled();
     }
     interceptProjectSettings();
     return this;
@@ -375,11 +361,6 @@ class ProjectSettingsPage {
     return this;
   }
 
-  public assertSshFormExists(status: boolean): this {
-    cy.get('ktb-project-settings-git-ssh').should(status ? 'exist' : 'not.exist');
-    return this;
-  }
-
   public assertHttpsFormExists(status: boolean): this {
     cy.get('ktb-project-settings-git-https').should(status ? 'exist' : 'not.exist');
     return this;
@@ -447,11 +428,6 @@ class ProjectSettingsPage {
 
   public assertErrorVisible(status: boolean): this {
     cy.get('ktb-error-view').should(status ? 'be.visible' : 'not.be.visible');
-    return this;
-  }
-
-  public assertConfigurationServiceErrorExists(status: boolean): this {
-    cy.byTestId('ktb-error-resource-service-enabled').should(status ? 'exist' : 'not.exist');
     return this;
   }
 
