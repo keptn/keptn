@@ -67,7 +67,7 @@ func Test_ImportCorrectManifestNonExistingProject(t *testing.T) {
 	projectName := "keptn-importer-test-non-existing"
 	wrongProjectName := "ketpn-importer-test-non-existing"
 	errorMessage := "project not found"
-	expectedErrorCode := 424
+	expectedErrorCode := 404
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(importerShipyard)
