@@ -1,7 +1,7 @@
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 
 const featureFlags: IClientFeatureFlags = {
-  D3_ENABLED: false,
+  D3_ENABLED: true,
 };
 
 const bridgeInfo = {

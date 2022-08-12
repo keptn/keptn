@@ -29,7 +29,7 @@ describe('FeatureFlagsService', () => {
     dataService.loadKeptnInfo();
     const flags = await firstValueFrom(service.featureFlags$);
     expect(flags).toEqual({
-      D3_ENABLED: false,
+      D3_ENABLED: true,
     });
   });
 });
