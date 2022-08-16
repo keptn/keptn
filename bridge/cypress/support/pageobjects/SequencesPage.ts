@@ -243,7 +243,7 @@ export class SequencesPage {
     return this;
   }
 
-  public assertDtAlert(status: boolean): this {
+  public assertDtAlertExists(status: boolean): this {
     cy.byTestId('keptn-sequence-view-sequenceDetails')
       .find('dt-alert')
       .should(status ? 'exist' : 'not.exist');

@@ -91,7 +91,11 @@ describe('Sequences', () => {
       },
     });
 
-    sequencePage.visit(project).assertIsWaitingSequence(context, true).selectSequence(context).assertDtAlert(true);
+    sequencePage
+      .visit(project)
+      .assertIsWaitingSequence(context, true)
+      .selectSequence(context)
+      .assertDtAlertExists(true);
   });
 
   it('should not show waiting message if sequence is not waiting', () => {
@@ -101,7 +105,7 @@ describe('Sequences', () => {
       fixture: 'sequence.traces.mock.json',
     });
 
-    sequencePage.visit(project).selectSequence(context).assertDtAlert(false);
+    sequencePage.visit(project).selectSequence(context).assertDtAlertExists(false);
   });
 
   it('should navigate to blocking sequence', () => {

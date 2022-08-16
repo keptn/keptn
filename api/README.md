@@ -24,7 +24,7 @@ kubectl delete -f deploy/service.yaml
 
 ## Updating the API specification
 After a modification to the `swagger.yaml`, the generated code can be updated using the command
-NOTE: To avoid re-generating too many files it is recommended to use swagger v0.25.0
+NOTE: To avoid re-generating too many files it is recommended to use [swagger v0.29.0](https://github.com/go-swagger/go-swagger/releases/tag/v0.29.0).
 
 ```console
 swagger generate server -A keptn -P models.Principal -f ./swagger.yaml

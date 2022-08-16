@@ -430,7 +430,6 @@ export class KtbSequenceViewComponent implements OnDestroy {
       )
       .subscribe((sequenceExecutionResult) => {
         if (sequenceExecutionResult.sequenceExecutions.length === 0) {
-          this.navigationToRunningSequenceLoading = false;
           return;
         }
         const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
