@@ -6,7 +6,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { KtbDangerZoneModule } from './ktb-danger-zone.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-describe('KtbDeletionComponent', () => {
+describe('KtbDangerZoneComponent', () => {
   let component: KtbDangerZoneComponent;
   let fixture: ComponentFixture<KtbDangerZoneComponent>;
 

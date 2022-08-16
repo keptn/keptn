@@ -64,20 +64,9 @@ function setEvaluationUrls(project: string, service: string): void {
   }
 }
 
-export function interceptMainResourceEnabled(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-disabled.mock' }).as('metadata');
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
-    'projects'
-  );
-}
-
-export function interceptMainResourceApEnabled(): void {
+export function interceptMainAutomaticProvisioningEnabled(): void {
+  interceptMain();
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
-    'projects'
-  );
 }
 
 export function interceptMain(): void {
@@ -93,6 +82,7 @@ export function interceptFailedMetadata(): void {
 }
 
 export function interceptCreateProject(): void {
+  interceptMain();
   cy.intercept('POST', 'api/controlPlane/v1/project', {
     statusCode: 200,
     body: {},
@@ -408,9 +398,13 @@ export function interceptEvaluationBoardWithoutDeployment(): void {
   });
 }
 
-export function interceptHeatmapComponent(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
+export function interceptD3(): void {
   cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableD3Heatmap.mock.json' });
+}
+
+export function interceptHeatmapComponent(): void {
+  interceptD3();
+  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' });
   cy.intercept('/api/hasUnreadUniformRegistrationLogs', { body: false });
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' });
   cy.intercept('GET', '/api/project/sockshop/serviceStates', {
@@ -449,6 +443,27 @@ export function interceptHeatmapWithKeySLI(): void {
     statusCode: 200,
     fixture: 'get.sockshop.service.carts.evaluations.keysli.mock.json',
   }).as('heatmapEvaluations');
+}
+
+export function interceptSubscription(
+  integrationID: string,
+  subscriptionID: string,
+  projectName?: string,
+  service?: string,
+  stage?: string,
+  event = 'sh.keptn.event.test.finished'
+): void {
+  cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
+    body: {
+      event: event,
+      filter: {
+        projects: [projectName],
+        services: [service],
+        stages: [stage],
+      },
+      id: subscriptionID,
+    },
+  });
 }
 
 export function interceptHeatmapComponentWithScores(score1: number, score2: number): void {

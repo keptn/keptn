@@ -9,7 +9,7 @@ describe('Project delete test', () => {
   it('should delete project and redirect to dashboard', () => {
     dashboardPage.intercept();
     projectSettingsPage
-      .interceptSettings(true)
+      .interceptSettings()
       .visitSettings('sockshop')
       .clickDeleteProjectButton()
       .typeProjectNameToDelete('sockshop')

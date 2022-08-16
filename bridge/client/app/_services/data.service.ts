@@ -513,6 +513,12 @@ export class DataService {
     );
   }
 
+  public getTracesByIds(projectName: string, ids: string[]): Observable<Trace[]> {
+    return this.apiService
+      .getTracesByIds(projectName, ids)
+      .pipe(map((traces) => traces.events.map((trace) => Trace.fromJSON(trace))));
+  }
+
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }

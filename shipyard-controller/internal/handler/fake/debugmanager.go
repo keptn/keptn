@@ -5,13 +5,12 @@ package fake
 
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	scmodels "github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
 	"sync"
 )
 
 // Ensure, that IDebugManagerMock does implement handler.IDebugManager.
 // If this is not the case, regenerate this file with moq.
-//var _ handler.IDebugManager = &IDebugManagerMock{}
 
 // IDebugManagerMock is a mock implementation of handler.IDebugManager.
 //
@@ -25,8 +24,11 @@ import (
 // 			GetAllProjectsFunc: func() ([]*apimodels.ExpandedProject, error) {
 // 				panic("mock out the GetAllProjects method")
 // 			},
-// 			GetAllSequencesForProjectFunc: func(projectName string, paginationParams scmodels.PaginationParams) ([]scmodels.SequenceExecution, *scmodels.PaginationResult, error) {
+// 			GetAllSequencesForProjectFunc: func(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
 // 				panic("mock out the GetAllSequencesForProject method")
+// 			},
+// 			GetBlockingSequencesFunc: func(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
+// 				panic("mock out the GetBlockingSequences method")
 // 			},
 // 			GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetEventByID method")
@@ -48,7 +50,10 @@ type IDebugManagerMock struct {
 	GetAllProjectsFunc func() ([]*apimodels.ExpandedProject, error)
 
 	// GetAllSequencesForProjectFunc mocks the GetAllSequencesForProject method.
-	GetAllSequencesForProjectFunc func(projectName string, paginationParams scmodels.PaginationParams) ([]scmodels.SequenceExecution, *scmodels.PaginationResult, error)
+	GetAllSequencesForProjectFunc func(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error)
+
+	// GetBlockingSequencesFunc mocks the GetBlockingSequences method.
+	GetBlockingSequencesFunc func(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error)
 
 	// GetEventByIDFunc mocks the GetEventByID method.
 	GetEventByIDFunc func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
@@ -73,7 +78,16 @@ type IDebugManagerMock struct {
 			// ProjectName is the projectName argument value.
 			ProjectName string
 			// PaginationParams is the paginationParams argument value.
-			PaginationParams scmodels.PaginationParams
+			PaginationParams models.PaginationParams
+		}
+		// GetBlockingSequences holds details about calls to the GetBlockingSequences method.
+		GetBlockingSequences []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// Shkeptncontext is the shkeptncontext argument value.
+			Shkeptncontext string
+			// Stage is the stage argument value.
+			Stage string
 		}
 		// GetEventByID holds details about calls to the GetEventByID method.
 		GetEventByID []struct {
@@ -95,6 +109,7 @@ type IDebugManagerMock struct {
 	lockGetAllEvents              sync.RWMutex
 	lockGetAllProjects            sync.RWMutex
 	lockGetAllSequencesForProject sync.RWMutex
+	lockGetBlockingSequences      sync.RWMutex
 	lockGetEventByID              sync.RWMutex
 	lockGetSequenceByID           sync.RWMutex
 }
@@ -161,13 +176,13 @@ func (mock *IDebugManagerMock) GetAllProjectsCalls() []struct {
 }
 
 // GetAllSequencesForProject calls GetAllSequencesForProjectFunc.
-func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string, paginationParams scmodels.PaginationParams) ([]scmodels.SequenceExecution, *scmodels.PaginationResult, error) {
+func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error) {
 	if mock.GetAllSequencesForProjectFunc == nil {
 		panic("IDebugManagerMock.GetAllSequencesForProjectFunc: method is nil but IDebugManager.GetAllSequencesForProject was just called")
 	}
 	callInfo := struct {
 		ProjectName      string
-		PaginationParams scmodels.PaginationParams
+		PaginationParams models.PaginationParams
 	}{
 		ProjectName:      projectName,
 		PaginationParams: paginationParams,
@@ -183,15 +198,54 @@ func (mock *IDebugManagerMock) GetAllSequencesForProject(projectName string, pag
 //     len(mockedIDebugManager.GetAllSequencesForProjectCalls())
 func (mock *IDebugManagerMock) GetAllSequencesForProjectCalls() []struct {
 	ProjectName      string
-	PaginationParams scmodels.PaginationParams
+	PaginationParams models.PaginationParams
 } {
 	var calls []struct {
 		ProjectName      string
-		PaginationParams scmodels.PaginationParams
+		PaginationParams models.PaginationParams
 	}
 	mock.lockGetAllSequencesForProject.RLock()
 	calls = mock.calls.GetAllSequencesForProject
 	mock.lockGetAllSequencesForProject.RUnlock()
+	return calls
+}
+
+// GetBlockingSequences calls GetBlockingSequencesFunc.
+func (mock *IDebugManagerMock) GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
+	if mock.GetBlockingSequencesFunc == nil {
+		panic("IDebugManagerMock.GetBlockingSequencesFunc: method is nil but IDebugManager.GetBlockingSequences was just called")
+	}
+	callInfo := struct {
+		ProjectName    string
+		Shkeptncontext string
+		Stage          string
+	}{
+		ProjectName:    projectName,
+		Shkeptncontext: shkeptncontext,
+		Stage:          stage,
+	}
+	mock.lockGetBlockingSequences.Lock()
+	mock.calls.GetBlockingSequences = append(mock.calls.GetBlockingSequences, callInfo)
+	mock.lockGetBlockingSequences.Unlock()
+	return mock.GetBlockingSequencesFunc(projectName, shkeptncontext, stage)
+}
+
+// GetBlockingSequencesCalls gets all the calls that were made to GetBlockingSequences.
+// Check the length with:
+//     len(mockedIDebugManager.GetBlockingSequencesCalls())
+func (mock *IDebugManagerMock) GetBlockingSequencesCalls() []struct {
+	ProjectName    string
+	Shkeptncontext string
+	Stage          string
+} {
+	var calls []struct {
+		ProjectName    string
+		Shkeptncontext string
+		Stage          string
+	}
+	mock.lockGetBlockingSequences.RLock()
+	calls = mock.calls.GetBlockingSequences
+	mock.lockGetBlockingSequences.RUnlock()
 	return calls
 }
 

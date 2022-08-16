@@ -1403,7 +1403,7 @@ const evaluationData = {
         type: 'sh.keptn.event.evaluation.finished',
         shkeptncontext: '468286b0-9ea8-450e-800d-51897947c668',
         triggeredid: '7a718389-0c3a-4997-a917-9112df3f8c2a',
-        heatmapLabel: '2021-04-08 17:47',
+        // time removed for testing
       },
     ],
   },

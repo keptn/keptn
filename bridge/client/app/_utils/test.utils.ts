@@ -1,9 +1,5 @@
-import { ComponentFixture, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, tick } from '@angular/core/testing';
 import { Trace } from '../_models/trace';
-import { ApiService } from '../_services/api.service';
-import { BridgeInfoResponseMock } from '../_services/_mockData/api-responses/bridgeInfo-response.mock';
-import { of } from 'rxjs';
-import { DataService } from '../_services/data.service';
 import Mock = jest.Mock;
 
 export class TestUtils {
@@ -53,20 +49,6 @@ export class TestUtils {
         return file;
       },
     };
-  }
-
-  public static enableResourceService(): void {
-    const apiService = TestBed.inject(ApiService);
-    const dataService = TestBed.inject(DataService);
-    const mock = {
-      ...BridgeInfoResponseMock,
-      featureFlags: {
-        RESOURCE_SERVICE_ENABLED: true,
-        D3_ENABLED: false,
-      },
-    };
-    jest.spyOn(apiService, 'getKeptnInfo').mockReturnValue(of(mock));
-    dataService.loadKeptnInfo();
   }
 
   public static mockWindowMatchMedia(): void {

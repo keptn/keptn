@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"github.com/keptn/keptn/shipyard-controller/internal/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/internal/provisioner"
 	fake2 "github.com/keptn/keptn/shipyard-controller/internal/provisioner/fake"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 
@@ -520,6 +521,40 @@ func TestCreateProject(t *testing.T) {
 					},
 				},
 				RemoteURLValidator: remoteURLValidator,
+			},
+			jsonPayload:          exampleProvisioningPayload,
+			expectHttpStatus:     http.StatusOK,
+			projectNameParam:     "my-project",
+			expectRollbackCalled: false,
+		},
+		{
+			name: "Create project with provisioning - validator should not be called",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 20, AutomaticProvisioningURL: "http://some-valid.url"},
+				RepositoryProvisioner: &fake2.IRepositoryProvisionerMock{
+					ProvideRepositoryFunc: func(projectName, namespace string) (*models.ProvisioningData, error) {
+						return &models.ProvisioningData{
+							GitRemoteURL: "http://some-valid-url.com",
+							GitToken:     "user",
+							GitUser:      "token",
+						}, nil
+					},
+				},
+				RemoteURLValidator: fake2.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
 			},
 			jsonPayload:          exampleProvisioningPayload,
 			expectHttpStatus:     http.StatusOK,

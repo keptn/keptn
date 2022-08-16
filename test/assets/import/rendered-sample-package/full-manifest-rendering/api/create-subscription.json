@@ -1,0 +1,9 @@
+{
+    "event": "sh.keptn.event.evaluation.triggered",
+    "filter": {
+        "projects": ["full-manifest-test"],
+        "services": ["my-service-name"],
+        "stages": ["dev"]
+    }
+  }
+

@@ -62,6 +62,19 @@ class UniformPage {
     return this;
   }
 
+  public openDeletionDialog(): this {
+    cy.byTestId('ktb-danger-subscription-button').click();
+    return this;
+  }
+
+  public deleteSubscriptionFromEditPage(): this {
+    this.openDeletionDialog();
+    cy.byTestId('keptn-deletion-dialog-button')
+      .contains('I understand the consequences, delete this subscription')
+      .click();
+    return this;
+  }
+
   public assertIsUpdateButtonEnabled(isEnabled: boolean): this {
     cy.byTestId(this.UPDATE_SUBSCRIPTION_BUTTON_ID).should(isEnabled ? 'be.enabled' : 'be.disabled');
     return this;
@@ -381,6 +394,11 @@ class UniformPage {
     return this;
   }
 
+  public assertIntegrationPath(projectName: string, integrationId: string): this {
+    cy.location('pathname').should('eq', `/project/${projectName}/settings/uniform/integrations/${integrationId}`);
+    return this;
+  }
+
   public assertOnChangeDialog(open = true): this {
     cy.get('dt-confirmation-dialog-state')
       .contains('You have pending changes. Are you sure you want to leave this page?')
@@ -390,6 +408,16 @@ class UniformPage {
 
   public closeOnChangeDialog(): this {
     cy.get('dt-confirmation-dialog-state').contains('Stay').click();
+    return this;
+  }
+
+  public assertDangerZoneExists(status: boolean): this {
+    cy.get('ktb-danger-zone').should(status ? 'exist' : 'not.exist');
+    return this;
+  }
+
+  public assertDeletionDialogExists(status: boolean): this {
+    cy.get('ktb-deletion-dialog').should(status ? 'exist' : 'not.exist');
     return this;
   }
 }

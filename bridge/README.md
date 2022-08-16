@@ -162,7 +162,7 @@ kubectl delete -f deploy/service.yaml
    set API_URL=http://keptn.127.0.0.1.nip.io/api
    set API_TOKEN=1234-exam-ple
    ```
-4. Run `yarn start:dev` from bridge root level to start the express server and the Angular app.
+4. Run `yarn start:dev` from bridge root level to start the express server on port 3001 and the Angular app on port 3000.
 5. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ### UI testing with Cypress
@@ -177,7 +177,7 @@ To test your UI tests locally, use following commands:
 - `yarn cypress:open` (Linux, macOS), `yarn cypress:open:win32` (Windows) - Used for the local development of tests.<br/>This opens a browser, where you can run your tests and inspect them. The tests will re-run automatically on every code change made on the `*.spec.ts` files.
 - or `yarn test:ui` (Linux, macOS), `yarn test:ui:win32` (Windows) - This starts the headless browser mode that is also used in CI.<br/>This will just run the tests on a headless browser without the possibility to inspect them.
 
-Both commands serve Angular on port 3000 with no live reload - this will also ensure that no API connection is made.
+Both commands serve Angular on port 5000 with no live reload - this will also ensure that no API connection is made.
 
 #### Known issues
 

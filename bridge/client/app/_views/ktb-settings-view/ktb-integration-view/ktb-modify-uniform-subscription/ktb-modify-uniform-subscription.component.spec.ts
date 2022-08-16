@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { KtbModifyUniformSubscriptionComponent } from './ktb-modify-uniform-subscription.component';
+import { KtbModifyUniformSubscriptionComponent, SubscriptionState } from './ktb-modify-uniform-subscription.component';
 import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/router';
 import { UniformRegistrationsMock } from '../../../../_services/_mockData/uniform-registrations.mock';
 import { BehaviorSubject, of, throwError } from 'rxjs';
@@ -16,6 +16,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewComponent } from '../ktb-integration-view.component';
 import { IWebhookConfigClient } from '../../../../../../shared/interfaces/webhook-config';
 import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
+import { EventService } from '../../../../_services/event.service';
+import { DeleteResult } from '../../../../_interfaces/delete';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -36,6 +38,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
         RouterTestingModule.withRoutes([
           {
             path: 'project/:projectName/settings/uniform/integrations/:integrationId',
+            component: KtbIntegrationViewComponent,
+          },
+          {
+            path: 'project/:projectName/settings/uniform/integrations/',
             component: KtbIntegrationViewComponent,
           },
         ]),
@@ -329,6 +335,56 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
 
     // then
     expect(component.canDeactivate()).not.toEqual(true);
+  });
+
+  it('should delete a subscription and navigate to integration page', () => {
+    // given
+    setSubscription(2, 0);
+    const router = TestBed.inject(Router);
+    const routeSpy = jest.spyOn(router, 'navigate');
+    fixture.detectChanges();
+
+    // when
+    component.deleteSubscription({
+      projectName: 'sockshop',
+      integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+      subscription: { id: '0' },
+    } as SubscriptionState);
+
+    // then
+    expect(routeSpy).toHaveBeenCalledWith([
+      '/',
+      'project',
+      'sockshop',
+      'settings',
+      'uniform',
+      'integrations',
+      'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+    ]);
+  });
+
+  it('should try to delete a subscription and throw an error', () => {
+    // given
+    setSubscription(2, 0);
+    const dataService = TestBed.inject(DataService);
+    const eventService = TestBed.inject(EventService);
+    const progressSpy = jest.spyOn(eventService.deletionProgressEvent, 'next');
+    jest.spyOn(dataService, 'deleteSubscription').mockReturnValue(throwError(() => new Error('my error')));
+    fixture.detectChanges();
+
+    // when
+    component.deleteSubscription({
+      projectName: 'sockshop',
+      integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+      subscription: { id: '0' },
+    } as SubscriptionState);
+
+    // then
+    expect(progressSpy).toHaveBeenCalledWith({
+      error: 'Subscription could not be deleted: my error',
+      isInProgress: false,
+      result: DeleteResult.ERROR,
+    });
   });
 
   function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {

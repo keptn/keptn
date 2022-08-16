@@ -16,7 +16,7 @@
 
 <ng-template #overlay let-data>
   <ktb-evaluation-details
-    [evaluationData]="((data | toType: TraceClass) || evaluation).getEvaluationFinishedEvent()"
+    [evaluation]="((data | toType: TraceClass) || evaluation).getEvaluationFinishedEvent()"
     [showChart]="false"
   ></ktb-evaluation-details>
 </ng-template>
