@@ -228,7 +228,7 @@ func checkStarted(startedSequenceExecutions []models.SequenceExecution, event mo
 		for _, otherSequence := range startedSequenceExecutions {
 			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
-					return errors.New(fmt.Sprint(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
+					return errors.New(fmt.Sprintf(OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}
 			}
 		}
