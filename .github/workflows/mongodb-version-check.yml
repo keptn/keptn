@@ -4,8 +4,12 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron: '0 0 1 */2 *' # run check at midnight, at the first day of the month, every two months
 
-  push # TODO: remove push action trigger
-defaults:
+  push:  # TODO: delete this
+    branches:
+      - '*'
+  pull_request:  # TODO: delete this
+    branches:
+      - '*'
   run:
     shell: bash
 jobs:
