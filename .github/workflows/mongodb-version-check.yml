@@ -10,6 +10,7 @@ on:
   pull_request:  # TODO: delete this
     branches:
       - '*'
+defaults:
   run:
     shell: bash
 jobs:
