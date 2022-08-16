@@ -1,35 +1,63 @@
+## @section Global values
 global:
   keptn:
+    ## @param global.keptn.registry Global Docker image registry
     registry: docker.io/keptn
+    ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
 
+## @section MongoDB
 mongo:
+  ## @param mongo.enabled
   enabled: true
+  ## @param mongo.host
   host: mongodb:27017
+  ## @param mongo.architecture
   architecture: standalone
   service:
+    ## @param mongo.service.nameOverride
     nameOverride: 'mongo'
+    ## @param mongo.service.port
     port: 27017
   auth:
+    ## @param mongo.auth.enabled
     enabled: true
+    ## @param mongo.auth.databases
     databases:
       - 'keptn'
+    ## @param mongo.auth.existingSecret
     existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
+    ## @param mongo.auth.usernames
     usernames:
       - 'keptn'
+    ## @param mongo.auth.password
     password: null
+    ## @param mongo.auth.rootUser
     rootUser: 'admin'
+    ## @param mongo.auth.rootPassword
     rootPassword: null
+    ## @param mongo.auth.bridgeAuthDatabase
     bridgeAuthDatabase: 'keptn'
   external:
+    ## @param mongo.external.connectionString
     connectionString:
+  ## @param mongo.containerSecurityContext Container Security Context that should be used for all MongoDB pods
+  ## @skip mongo.containerSecurityContext.allowPrivilegeEscalation
+  ## @skip mongo.containerSecurityContext.capabilities
+  ## @skip mongo.containerSecurityContext.capabilities.drop
   containerSecurityContext:
     allowPrivilegeEscalation: false
     capabilities:
       drop:
         - ALL
   serviceAccount:
+    ## @param mongo.serviceAccount.automountServiceAccountToken
     automountServiceAccountToken: false
+  ## @param resources Define resources for MongoDB
+  ## @skip mongo.resources.requests.cpu
+  ## @skip mongo.resources.requests.memory
+  ## @skip mongo.resources.limits.cpu
+  ## @skip mongo.resources.limits.memory
   resources:
     requests:
       cpu: 200m
@@ -42,31 +70,54 @@ prefixPath: ""
 
 keptnSpecVersion: latest
 
+## @section Keptn Features
 features:
   automaticProvisioning:
+    ## @param features.automaticProvisioning.serviceURL
     serviceURL: ""
+    ## @param features.automaticProvisioning.message
     message: ""
   swagger:
+    ## @param features.swagger.hideDeprecated
     hideDeprecated: false
   oauth:
+    ## @param features.oauth.enabled Enable OAuth for Keptn
     enabled: false
+    ## @param features.oauth.prefix
     prefix: "keptn:"
   git:
+    ## @param features.git.remoteURLDenyList
     remoteURLDenyList: ""
 
+## @section NATS
 nats:
+  ## @param nats.nameOverride
   nameOverride: keptn-nats
+  ## @param nats.fullnameOverride
   fullnameOverride: keptn-nats
   cluster:
+    ## @param nats.cluster.enabled Enable NATS clustering
     enabled: false
+    ## @param nats.cluster.replicas Define the NATS cluster size
     replicas: 3
+    ## @param nats.cluster.name Define the NATS cluster name
     name: nats
+  ## @param nats.securityContext Define security context settings for NATS
+  ## @skip nats.securityContext.runAsNonRoot
+  ## @skip nats.securityContext.runAsUser
+  ## @skip nats.securityContext.fsGroup
   securityContext:
     runAsNonRoot: true
     runAsUser: 10001
     fsGroup: 10001
   nats:
+    ## @param nats.nats.automountServiceAccountToken
     automountServiceAccountToken: false
+    ## @param nats.nats.resources Define resources for NATS
+    ## @skip nats.nats.resources.requests.cpu
+    ## @skip nats.nats.resources.requests.memory
+    ## @skip nats.nats.resources.limits.cpu
+    ## @skip nats.nats.resources.limits.memory
     resources:
       requests:
         cpu: 200m
@@ -76,19 +127,36 @@ nats:
         memory: 1Gi
     healthcheck:
       startup:
+        ## @param nats.nats.healthcheck.startup.enabled Enable NATS startup probe
+        ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
         enabled: false
     jetstream:
+      ## @param nats.nats.jetstream.enabled
       enabled: true
 
+      ## @param nats.nats.jetstream.memStorage.enabled Enable memory storage for NATS Jetstream
+      ## @param nats.nats.jetstream.memStorage.size Define the memory storage size for NATS Jetstream
       memStorage:
         enabled: true
         size: 500Mi
 
+      ## @param nats.nats.jetstream.fileStorage.enabled
+      ## @param nats.nats.jetstream.fileStorage.size
+      ## @param nats.nats.jetstream.fileStorage.storageDirectory
+      ## @param nats.nats.jetstream.fileStorage.storageClassName
       fileStorage:
         enabled: true
         size: 5Gi
         storageDirectory: /data/
         storageClassName: ""
+    ## @param nats.nats.securityContext Define the container security context for NATS
+    ## @skip nats.nats.securityContext.readOnlyRootFilesystem
+    ## @skip nats.nats.securityContext.allowPrivilegeEscalation
+    ## @skip nats.nats.securityContext.privileged
+    ## @skip nats.nats.securityContext.runAsNonRoot
+    ## @skip nats.nats.securityContext.runAsUser
+    ## @skip nats.nats.securityContext.capabilities
+    ## @skip nats.nats.securityContext.capabilities.drop
     securityContext:
       readOnlyRootFilesystem: true
       allowPrivilegeEscalation: false
@@ -100,21 +168,43 @@ nats:
           - ALL
 
   natsbox:
+    ## @param nats.natsbox.enabled Enable NATS Box utility container
     enabled: false
+  ## @param reloader
   reloader:
+    ## @param nats.reloader.enabled Enable NATS Config Reloader sidecar to reload configuration during runtime
     enabled: false
   exporter:
+    ## @param nats.exporter.enabled Enable NATS Prometheus Exporter sidecar to emit prometheus metrics
     enabled: false
 
+## @section API Gateway NginX
 apiGatewayNginx:
+  ## @param apiGatewayNginx.type
   type: ClusterIP
+  ## @param apiGatewayNginx.port
   port: 80
+  ## @param apiGatewayNginx.targetPort
   targetPort: 8080
+  ## @param apiGatewayNginx.nodePort
   nodePort: 31090
+  ## @param podSecurityContext Define a pod security context for the API Gateway
+  ## @skip apiGatewayNginx.podSecurityContext.enabled
+  ## @skip apiGatewayNginx.podSecurityContext.defaultSeccompProfile
+  ## @skip apiGatewayNginx.podSecurityContext.fsGroup
   podSecurityContext:
     enabled: true
     defaultSeccompProfile: true
     fsGroup: 101
+  ## @param containerSecurityContext Define a container security context for the API Gateway
+  ## @skip apiGatewayNginx.containerSecurityContext.enabled
+  ## @skip apiGatewayNginx.containerSecurityContext.runAsNonRoot
+  ## @skip apiGatewayNginx.containerSecurityContext.runAsUser
+  ## @skip apiGatewayNginx.containerSecurityContext.readOnlyRootFilesystem
+  ## @skip apiGatewayNginx.containerSecurityContext.allowPrivilegeEscalation
+  ## @skip apiGatewayNginx.containerSecurityContext.privileged
+  ## @skip apiGatewayNginx.containerSecurityContext.capabilities
+  ## @skip apiGatewayNginx.containerSecurityContext.capabilities.drop
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true
@@ -126,16 +216,31 @@ apiGatewayNginx:
       drop:
         - ALL
   image:
-    registry: "docker.io/nginxinc"           # Container Registry
-    repository: "nginx-unprivileged"         # Container Image Name
-    tag: "1.22.0-alpine"                     # Container Tag
+    ## @param apiGatewayNginx.image.registry API Gateway image registry
+    registry: "docker.io/nginxinc"
+    ## @param apiGatewayNginx.image.repository API Gateway image repository
+    repository: "nginx-unprivileged"
+    ## @param apiGatewayNginx.image.tag API Gateway image tag
+    tag: "1.22.0-alpine"
+  ## @param apiGatewayNginx.nodeSelector
   nodeSelector: {}
+  ## @param apiGatewayNginx.gracePeriod
   gracePeriod: 60
+  ## @param apiGatewayNginx.preStopHookTime
   preStopHookTime: 20
+  ## @param apiGatewayNginx.clientMaxBodySize
   clientMaxBodySize: "5m"
+  ## @param apiGatewayNginx.sidecars Add additional sidecar containers to the API Gateway
   sidecars: []
+  ## @param apiGatewayNginx.extraVolumeMounts Add additional volume mounts to the API Gateway
   extraVolumeMounts: []
+  ## @param apiGatewayNginx.extraVolumes Add additional volumes to the API Gateway
   extraVolumes: []
+  ## @param resources Define resources for the API Gateway
+  ## @skip apiGatewayNginx.resources.requests.cpu
+  ## @skip apiGatewayNginx.resources.requests.memory
+  ## @skip apiGatewayNginx.resources.limits.cpu
+  ## @skip apiGatewayNginx.resources.limits.memory
   resources:
     requests:
       memory: "64Mi"
