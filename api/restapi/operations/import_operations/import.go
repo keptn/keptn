@@ -33,9 +33,9 @@ func NewImport(ctx *middleware.Context, handler ImportHandler) *Import {
 
 /* Import swagger:route POST /import Import import
 
-Alpha: Import a zip package
+Import a zip package
 
-This API is still in alpha state and we do not recommend its usage outside of testing purposes
+Import a zip package to create services, secrets and webhook subscriptions, as well as add resources to Keptn
 
 */
 type Import struct {
