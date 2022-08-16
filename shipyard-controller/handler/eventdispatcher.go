@@ -167,12 +167,12 @@ func (e *EventDispatcher) dispatchEvents() {
 		}
 
 		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce, TimeStamp: time.Now().UTC()}); err != nil {
-			log.Errorf("could not send CloudEvent: %s", err.Error())
+			log.Errorf("could not send CloudEvent: %s for event with ID: %s ", err.Error(), queueItem.EventID)
 			continue
 		}
 
 		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
-			log.Errorf("could not delete event from event queue: %s", err.Error())
+			log.Errorf("could not delete event from event queue: %s for event with ID: %s ", err.Error(), queueItem.EventID)
 			continue
 		}
 	}
@@ -190,9 +190,11 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		},
 	)
 	if err != nil {
+		log.Errorf("could not get sequence executions: %s", err.Error())
 		return err
 	}
 	if len(sequenceExecutions) == 0 {
+		log.Errorf("could not find sequence in queue for event with ID: %s ", event.Event.ID())
 		return ErrSequenceNotFound
 	}
 
@@ -201,6 +203,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
 				Stage:   eventScope.Stage,
+				Service: eventScope.Service,
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},
