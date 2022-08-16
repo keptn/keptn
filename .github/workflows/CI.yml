@@ -244,14 +244,13 @@ jobs:
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-      fail-fast: false # TODO remove this after all test pass
     env:
       BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
       VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
       DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
-      - name: Check out code.
+      - name: Check out code
         uses: actions/checkout@v3
 
       - name: Set up Go 1.x
@@ -264,12 +263,12 @@ jobs:
         if: matrix.config.artifact != 'bridge2'
         run: go install gotest.tools/gotestsum@v1.8.1
 
-      - name: Test ${{ matrix.config.artifact }} # TODO add back -race
+      - name: Test ${{ matrix.config.artifact }} # TODO add --race #8486 
         if: matrix.config.artifact != 'bridge2' && ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
         working-directory: ./${{ matrix.config.artifact}}
         run: |
           go mod download
-          gotestsum --no-color=false --format=testname -- -v ./... 
+          gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
     #######################################################################
           # TESTS FOR BRIDGE
