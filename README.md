@@ -56,7 +56,7 @@ Please follow the instructions printed by the CLI to connect to your Keptn insta
 Note: This will install a potentially unstable version of Keptn.
 
 If you want to install the latest master version of Keptn onto your cluster you can do that by using the development helm charts repository located at https://charts-dev.keptn.sh .
-By default, the docker registry used is ´keptn´, so you will need to override it.
+By default, the global registry used is ´docker.io/keptn´, so you will need to override it.
 
 ```console
 helm repo add keptn-dev https://charts-dev.keptn.sh    # Add the keptn-dev helm repo
