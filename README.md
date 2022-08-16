@@ -65,7 +65,7 @@ helm search repo keptn-dev --devel --versions          # List all versions prese
 
 # Select a chart version from the previous command that you want to install
 
-helm install -n keptn-dev keptn keptn-dev/keptn --set=global.keptn.registry=docker.io/keptn-dev --create-namespace --version "<the-version-you-selected-previously>"
+helm install -n keptn-dev keptn keptn-dev/keptn --set=global.keptn.registry=docker.io/keptndev --create-namespace --version "<the-version-you-selected-previously>"
 ```
 
 You can find more information in our [docs](docs/).
