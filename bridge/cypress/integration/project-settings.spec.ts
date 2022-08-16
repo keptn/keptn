@@ -7,36 +7,6 @@ import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 describe('Git upstream extended settings project https test', () => {
   const projectSettingsPage = new ProjectSettingsPage();
 
-  it('should not show https or ssh form if resource service is disabled', () => {
-    const project: IProject = {
-      projectName: 'sockshop',
-      stages: [],
-      gitCredentials: {
-        user: 'myGitUser',
-        remoteURL: 'https://myGitURL.com',
-        https: {
-          insecureSkipTLS: true,
-          token: '',
-          proxy: {
-            scheme: 'https',
-            url: 'myProxyUrl:5000',
-            user: 'myProxyUser',
-          },
-        },
-      },
-      shipyardVersion: '0.14',
-      creationDate: '',
-      shipyard: '',
-    };
-
-    projectSettingsPage
-      .interceptSettings()
-      .interceptProject(project)
-      .visitSettings('sockshop')
-      .assertSshFormExists(false)
-      .assertHttpsFormExists(false);
-  });
-
   it('should select HTTPS and fill out inputs', () => {
     const project: IProject = {
       projectName: 'sockshop',
@@ -60,7 +30,7 @@ describe('Git upstream extended settings project https test', () => {
     };
 
     projectSettingsPage
-      .interceptSettings(true)
+      .interceptSettings()
       .interceptProject(project)
       .visitSettings('sockshop')
       .assertGitUsername('myGitUser')
@@ -90,7 +60,7 @@ describe('Git upstream extended settings project https test', () => {
     };
 
     projectSettingsPage
-      .interceptSettings(true)
+      .interceptSettings()
       .interceptProject(project)
       .visitSettings('sockshop')
       .typeGitToken('myToken')
@@ -113,11 +83,7 @@ describe('Git upstream extended settings project https test', () => {
       shipyard: '',
     };
 
-    projectSettingsPage
-      .interceptSettings(true)
-      .interceptProject(project)
-      .visitSettings('sockshop')
-      .typeGitToken('myToken');
+    projectSettingsPage.interceptSettings().interceptProject(project).visitSettings('sockshop').typeGitToken('myToken');
     projectBoardPage.goToServicesPage();
     projectSettingsPage.clickSaveChangesPopup();
     basePage.notificationSuccessVisible('The Git upstream was changed successfully.');
@@ -138,7 +104,7 @@ describe('Git upstream extended settings project https test', () => {
     };
 
     projectSettingsPage
-      .interceptSettings(true)
+      .interceptSettings()
       .interceptProject(project)
       .visitSettings('sockshop')
       .typeValidSshPrivateKey()
@@ -160,7 +126,7 @@ describe('Git upstream extended settings project https test', () => {
     };
 
     projectSettingsPage
-      .interceptSettings(true)
+      .interceptSettings()
       .interceptProject(project)
       .visitSettings('sockshop')
       .assertSshFormVisible(true)
@@ -169,25 +135,6 @@ describe('Git upstream extended settings project https test', () => {
 
   it('should show "Set Git upstream" button', () => {
     projectSettingsPage.assertUpdateButtonExists(true);
-  });
-});
-
-describe('Project settings with resource service disabled', () => {
-  const projectSettingsPage = new ProjectSettingsPage();
-  it('should show an error if the resource service is not enabled', () => {
-    const project: IProject = {
-      projectName: 'sockshop',
-      stages: [],
-      shipyardVersion: '0.14',
-      creationDate: '',
-      shipyard: '',
-    };
-
-    projectSettingsPage
-      .interceptSettings(false)
-      .interceptProject(project)
-      .visitSettings('sockshop')
-      .assertConfigurationServiceErrorExists(true);
   });
 });
 
@@ -206,7 +153,7 @@ describe('Project settings with invalid metadata', () => {
       shipyard: '',
     };
 
-    projectSettingsPage.interceptSettings(true).interceptProject(project);
+    projectSettingsPage.interceptSettings().interceptProject(project);
     interceptFailedMetadata();
     projectSettingsPage.visitSettings('sockshop').assertErrorVisible(true);
   });
@@ -216,7 +163,7 @@ describe('Project settings with automatic provisioning', () => {
   const projectSettingsPage = new ProjectSettingsPage();
 
   it('should select NO_UPSTREAM when creating a project', () => {
-    projectSettingsPage.interceptSettings(true, true).visit();
+    projectSettingsPage.interceptSettings(true).visit();
     projectSettingsPage.assertNoUpstreamSelected(true);
   });
 
@@ -234,7 +181,7 @@ describe('Project settings with automatic provisioning', () => {
       shipyard: '',
     };
 
-    projectSettingsPage.interceptSettings(true, true).interceptProject(project);
+    projectSettingsPage.interceptSettings(true).interceptProject(project);
     projectSettingsPage
       .visitSettings('sockshop')
       .assertHttpsSelected(true)

@@ -6,7 +6,6 @@ import { DtToast } from '@dynatrace/barista-components/toast';
 import { combineLatest, Observable, of, Subject } from 'rxjs';
 import { catchError, filter, finalize, map, mergeMap, startWith, takeUntil } from 'rxjs/operators';
 import { IGitDataExtended } from 'shared/interfaces/project';
-import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { PendingChangesComponent } from '../../../_guards/pending-changes.guard';
 import { DeleteData, DeleteResult, DeleteType, DeletionProgressEvent } from '../../../_interfaces/delete';
 import { KeptnInfo } from '../../../_models/keptn-info';
@@ -15,7 +14,6 @@ import { Project } from '../../../_models/project';
 import { ServerErrors } from '../../../_models/server-error';
 import { DataService } from '../../../_services/data.service';
 import { EventService } from '../../../_services/event.service';
-import { FeatureFlagsService } from '../../../_services/feature-flags.service';
 import { NotificationsService } from '../../../_services/notifications.service';
 import { FormUtils } from '../../../_utils/form.utils';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
@@ -32,7 +30,6 @@ enum ProjectSettingsStatus {
 
 interface ProjectSettingsState {
   projectName?: string;
-  resourceServiceEnabled?: boolean;
   gitUpstreamRequired?: boolean;
   gitInputDataExtended?: IGitDataExtended;
   automaticProvisioningMessage?: string;
@@ -65,10 +62,6 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
   public message = 'You have pending changes. Make sure to save your data before you continue.';
   public unsavedDialogState: DialogState = null;
 
-  public resourceServiceEnabled$ = this.featureFlagService.featureFlags$.pipe(
-    map((featureFlags: IClientFeatureFlags) => featureFlags.RESOURCE_SERVICE_ENABLED)
-  );
-
   public projectName$: Observable<string | null> = this.route.paramMap.pipe(map((params) => params.get('projectName')));
 
   public gitInputDataExtended$: Observable<IGitDataExtended | undefined> = this.projectName$.pipe(
@@ -87,46 +80,33 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.dataService.keptnInfo.pipe(filter((info): info is KeptnInfo => !!info)),
     this.dataService.keptnMetadata,
     this.projectName$.pipe(map((projectName) => projectName ?? undefined)),
-    this.resourceServiceEnabled$,
     this.gitInputDataExtended$,
     this.projectNames$,
     this.projectCreated$,
   ]).pipe(
-    map(
-      ([
-        keptnInfo,
-        metadata,
-        projectName,
-        resourceServiceEnabled,
-        gitInputDataExtended,
-        projectNames,
-        projectCreated,
-      ]) => {
-        if (projectName && projectCreated) {
-          this.showCreateNotificationAndRedirect(projectName);
-        }
-
-        if (projectNames) {
-          this.projectNameControl.setValidators([
-            Validators.required,
-            FormUtils.nameExistsValidator(projectNames),
-            Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
-          ]);
-        }
-
-        return {
-          projectName,
-          resourceServiceEnabled,
-          gitUpstreamRequired: !metadata?.automaticprovisioning,
-          gitInputDataExtended,
-          automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
-          state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
-        };
+    map(([keptnInfo, metadata, projectName, gitInputDataExtended, projectNames, projectCreated]) => {
+      if (projectName && projectCreated) {
+        this.showCreateNotificationAndRedirect(projectName);
       }
-    ),
+
+      if (projectNames) {
+        this.projectNameControl.setValidators([
+          Validators.required,
+          FormUtils.nameExistsValidator(projectNames),
+          Validators.pattern('[a-z]([a-z]|[0-9]|-)*'),
+        ]);
+      }
+
+      return {
+        projectName,
+        gitUpstreamRequired: !metadata?.automaticprovisioning,
+        gitInputDataExtended,
+        automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
+        state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
+      };
+    }),
     startWith({
       projectName: undefined,
-      resourceServiceEnabled: undefined,
       gitUpstreamRequired: undefined,
       gitInputDataExtended: undefined,
       automaticProvisioningMessage: undefined,
@@ -141,8 +121,7 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     private toast: DtToast,
     private router: Router,
     private notificationsService: NotificationsService,
-    private eventService: EventService,
-    private featureFlagService: FeatureFlagsService
+    private eventService: EventService
   ) {}
 
   public ngOnInit(): void {

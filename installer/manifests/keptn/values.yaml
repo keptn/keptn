@@ -232,7 +232,7 @@ bridge:
     mongoConnectionString: ""
   authMsg: ""
   d3:
-    enabled: false
+    enabled: true
   nodeSelector: {}
   sidecars: []
   extraVolumeMounts: []
