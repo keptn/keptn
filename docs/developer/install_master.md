@@ -19,9 +19,9 @@ helm repo add keptn-dev https://charts-dev.keptn.sh
 8. The global registry for dev images is docker.io/keptndev so this value should be overwritten in the helm chart as shown below
 9. To install version 0.16.0-dev-PR-1234
 ``` 
-helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=global.keptn.registry=docker.io/keptndev --wait --version 0.16.0-dev-PR-1234
-helm upgrade --install jmeter-service keptn-dev/jmeter-service -n keptn --set=global.keptn.registry=docker.io/keptndev --wait --version 0.16.0-dev-PR-1234
-helm upgrade --install helm-service keptn-dev/helm-service -n keptn --set=global.keptn.registry=docker.io/keptndev --wait --version 0.16.0-dev-PR-1234
+helm upgrade --install keptn keptn-dev/keptn -n keptn --create-namespace --set=global.keptn.registry=docker.io/keptn-dev --wait --version 0.16.0-dev-PR-1234
+helm upgrade --install jmeter-service keptn-dev/jmeter-service -n keptn --set=global.keptn.registry=docker.io/keptn-dev --wait --version 0.16.0-dev-PR-1234
+helm upgrade --install helm-service keptn-dev/helm-service -n keptn --set=global.keptn.registry=docker.io/keptn-dev --wait --version 0.16.0-dev-PR-1234
 
 ```
 7. Since this is a dev version, check the deployments, if needed, kill pods that are stuck.
