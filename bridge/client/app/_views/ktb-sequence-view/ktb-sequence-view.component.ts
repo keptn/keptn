@@ -401,6 +401,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     );
     this.location.go(routeUrl.toString());
     this.selectedStage = stageName;
+    this.loadTraces(this.currentSequence, undefined, this.selectedStage);
   }
 
   public navigateToTriggerSequence(projectName: string): void {

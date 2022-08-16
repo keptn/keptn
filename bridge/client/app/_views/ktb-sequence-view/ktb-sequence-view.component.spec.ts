@@ -360,6 +360,18 @@ describe('KtbSequenceViewComponent', () => {
     expect(spyLoadUntilRoot).not.toHaveBeenCalled();
   });
 
+  it('should call setTraces with correct stage if stage is switched using selectStage', () => {
+    // given
+    const spyLoadTraces = jest.spyOn(component, 'loadTraces');
+    component.selectSequence({ sequence: SequencesMock[0] });
+
+    // when
+    component.selectStage('staging');
+
+    // then
+    expect(spyLoadTraces).toHaveBeenCalledWith(component.currentSequence, undefined, 'staging');
+  });
+
   function getServiceFilter(): { autocomplete: { name: string; value: string }[] } {
     return (component._filterDataSource.data as DtQuickFilterDefaultDataSourceAutocomplete)
       .autocomplete[0] as unknown as {
