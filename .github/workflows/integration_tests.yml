@@ -727,7 +727,7 @@ jobs:
 
       - name: Generate Markdown Test Report
         run: |
-          npx tablemark-cli@v2.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
+          npx tablemark-cli@v3.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
 
       - name: Upload final JSON test report as an artifact
         if: always()
