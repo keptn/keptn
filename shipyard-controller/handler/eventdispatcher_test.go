@@ -357,7 +357,7 @@ func Test_DispatcherEventFilterContainsService_EventIsSentImmediately(t *testing
 			//return an event only if the filter has the service
 			if filter.Scope.Service == "my-service" {
 				return []models.SequenceExecution{
-					{
+					{Scope: filter.Scope,
 						Status: models.SequenceExecutionStatus{
 							State: apimodels.SequenceStartedState,
 						},
@@ -386,6 +386,18 @@ func Test_DispatcherEventFilterContainsService_EventIsSentImmediately(t *testing
 	require.Nil(t, err)
 	require.Equal(t, 0, len(eventSender.SentEvents))
 	require.Equal(t, 1, len(eventQueueRepo.QueueEventCalls()))
+	require.Equal(t, 2, len(sequenceExecutionRepo.GetCalls()))
+	require.Equal(t, "my-project", sequenceExecutionRepo.GetCalls()[0].Filter.Scope.Project)
+	require.Equal(t, "my-stage", sequenceExecutionRepo.GetCalls()[0].Filter.Scope.Stage)
+	require.Equal(t, "my-service", sequenceExecutionRepo.GetCalls()[0].Filter.Scope.Service)
+
+	require.Equal(t, "my-project", sequenceExecutionRepo.GetCalls()[1].Filter.Scope.Project)
+	require.Equal(t, "my-stage", sequenceExecutionRepo.GetCalls()[1].Filter.Scope.Stage)
+	require.Equal(t, "my-service", sequenceExecutionRepo.GetCalls()[1].Filter.Scope.Service)
+
+	require.Equal(t, "my-project", eventQueueRepo.QueueEventCalls()[0].Item.Scope.Project)
+	require.Equal(t, "my-service", eventQueueRepo.QueueEventCalls()[0].Item.Scope.Service)
+	require.Equal(t, "my-stage", eventQueueRepo.QueueEventCalls()[0].Item.Scope.Stage)
 
 }
 
