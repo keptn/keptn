@@ -170,9 +170,21 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		return false, err
 	}
 
-	_, err = clone.Head()
+	head, err := clone.Head()
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
+	}
+
+	cfg, err := clone.Config()
+	if err != nil {
+		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "get config", gitContext.Project, err)
+	}
+
+	cfg.Init.DefaultBranch = head.Name().String()
+
+	err = clone.SetConfig(cfg)
+	if err != nil {
+		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "set config", gitContext.Project, err)
 	}
 	return true, nil
 }
