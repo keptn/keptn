@@ -301,7 +301,7 @@ class ServicesPage {
   }
 
   clickViewServiceDetails(): this {
-    cy.get('.highcharts-plot-background').should('be.visible');
+    cy.get('ktb-heatmap .heatmap-container').should('be.visible');
     cy.contains('View service details').click();
     return this;
   }
@@ -318,7 +318,7 @@ class ServicesPage {
 
   verifyCurrentOpenServiceNameEvaluationPanel(serviceName: string): this {
     cy.get('div.service-title > span').should('have.text', serviceName);
-    cy.get('.highcharts-plot-background').should('be.visible');
+    cy.get('ktb-heatmap .heatmap-container').should('be.visible');
     return this;
   }
 

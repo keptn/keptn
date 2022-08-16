@@ -64,20 +64,9 @@ function setEvaluationUrls(project: string, service: string): void {
   }
 }
 
-export function interceptMainResourceEnabled(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-disabled.mock' }).as('metadata');
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
-    'projects'
-  );
-}
-
-export function interceptMainResourceApEnabled(): void {
+export function interceptMainAutomaticProvisioningEnabled(): void {
+  interceptMain();
   cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
-  cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
-    'projects'
-  );
 }
 
 export function interceptMain(): void {
@@ -93,6 +82,7 @@ export function interceptFailedMetadata(): void {
 }
 
 export function interceptCreateProject(): void {
+  interceptMain();
   cy.intercept('POST', 'api/controlPlane/v1/project', {
     statusCode: 200,
     body: {},
