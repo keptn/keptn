@@ -1,6 +1,10 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.5 as builder-base
+FROM golang:1.18.5 as builder
+
+ARG version=develop
+# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
+ARG SKAFFOLD_GO_GCFLAGS
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
@@ -24,19 +28,6 @@ RUN go mod download
 
 # Copy local code to the container image.
 COPY . .
-
-FROM builder-base as builder-test
-ENV GOTESTSUM_FORMAT=testname
-
-RUN go install gotest.tools/gotestsum@v1.7.0
-CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
-
-FROM builder-base as builder
-ARG version=develop
-
-
-# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
-ARG SKAFFOLD_GO_GCFLAGS
 
 # generate swagger docs
 RUN GOOS=linux swag init --parseDependency
