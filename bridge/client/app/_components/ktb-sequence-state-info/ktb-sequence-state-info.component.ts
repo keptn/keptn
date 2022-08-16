@@ -1,6 +1,6 @@
 import { Component, EventEmitter, HostBinding, Input, Output, ViewEncapsulation } from '@angular/core';
-import { ISequence } from '../../../../shared/interfaces/sequence';
-import { createSequenceStateInfo, getLastStageName, getStageNames } from '../../_models/sequence';
+import { ISequenceState } from '../../../../shared/interfaces/sequence';
+import { createSequenceStateInfo, getLastStageName, getStageNames } from '../../_models/sequenceState';
 import { EvaluationBadgeVariant } from '../ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 @Component({
@@ -11,20 +11,20 @@ import { EvaluationBadgeVariant } from '../ktb-evaluation-badge/ktb-evaluation-b
 })
 export class KtbSequenceStateInfoComponent {
   @HostBinding('class') cls = 'ktb-sequence-state-info';
-  private _sequence?: ISequence;
+  private _sequence?: ISequenceState;
   private _showStages = true;
   public EvaluationBadgeVariant = EvaluationBadgeVariant;
   createSequenceStateInfo = createSequenceStateInfo;
   getStageNames = getStageNames;
 
-  @Output() readonly stageClicked = new EventEmitter<{ sequence: ISequence; stage?: string }>();
+  @Output() readonly stageClicked = new EventEmitter<{ sequence: ISequenceState; stage?: string }>();
 
   @Input()
-  get sequence(): ISequence | undefined {
+  get sequence(): ISequenceState | undefined {
     return this._sequence;
   }
 
-  set sequence(sequence: ISequence | undefined) {
+  set sequence(sequence: ISequenceState | undefined) {
     if (this._sequence !== sequence) {
       this._sequence = sequence;
     }
@@ -41,7 +41,7 @@ export class KtbSequenceStateInfoComponent {
     }
   }
 
-  getServiceLink(sequence: ISequence): (string | undefined)[] {
+  getServiceLink(sequence: ISequenceState): (string | undefined)[] {
     return [
       '/project',
       sequence.project,
@@ -54,11 +54,11 @@ export class KtbSequenceStateInfoComponent {
     ];
   }
 
-  getSequenceLink(sequence: ISequence): (string | undefined)[] {
+  getSequenceLink(sequence: ISequenceState): (string | undefined)[] {
     return ['/project', sequence.project, 'sequence', sequence.shkeptncontext, 'stage', getLastStageName(sequence)];
   }
 
-  stageClick(sequence: ISequence, stage: string): void {
+  stageClick(sequence: ISequenceState, stage: string): void {
     this.stageClicked.emit({ sequence, stage });
   }
 }

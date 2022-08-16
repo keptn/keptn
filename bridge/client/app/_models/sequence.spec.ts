@@ -1,10 +1,10 @@
-import { createSequenceStateInfo, Sequence } from './sequence';
+import { createSequenceStateInfo, SequenceState } from './sequenceState';
 import {
   SequenceResponseMock,
   SequenceResponseWithDevAndStagingMock,
   SequenceResponseWithoutFailing,
 } from '../_services/_mockData/sequences.mock';
-import { SequenceState } from '../../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
 import { EvaluationTraceResponse } from '../_services/_mockData/evaluations.mock';
 import { Trace } from './trace';
 import { EventState } from '../../../shared/models/event-state';
@@ -56,11 +56,11 @@ const stagingTrace = Trace.fromJSON(stagingTraceObj);
 describe('Sequence', () => {
   it('should correctly create new class', () => {
     const sequence = getDefaultSequence();
-    expect(sequence).toBeInstanceOf(Sequence);
+    expect(sequence).toBeInstanceOf(SequenceState);
   });
 
   it('should correctly create new class with extended properties', () => {
-    const sequence = Sequence.fromJSON(getSequenceObjectWithEvaluationAndRemediation());
+    const sequence = SequenceState.fromJSON(getSequenceObjectWithEvaluationAndRemediation());
     expect(sequence.stages[0].latestEvaluationTrace).toBeInstanceOf(Trace);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
@@ -68,12 +68,12 @@ describe('Sequence', () => {
   });
 
   it('should return short type delivery', () => {
-    expect(Sequence.getShortType('sh.keptn.event.dev.delivery.finished')).toBe('delivery');
-    expect(Sequence.getShortType('sh.keptn.event.delivery.finished')).toBe('delivery');
+    expect(SequenceState.getShortType('sh.keptn.event.dev.delivery.finished')).toBe('delivery');
+    expect(SequenceState.getShortType('sh.keptn.event.delivery.finished')).toBe('delivery');
   });
 
   it('should return full type if type is invalid', () => {
-    expect(Sequence.getShortType('sh.keptn.event.dev.delivery.finished.finished')).toBe(
+    expect(SequenceState.getShortType('sh.keptn.event.dev.delivery.finished.finished')).toBe(
       'sh.keptn.event.dev.delivery.finished.finished'
     );
   });
@@ -81,10 +81,10 @@ describe('Sequence', () => {
   it('should be finished if it is aborted, finished, succeeded or timed out', () => {
     const sequence = getDefaultSequence();
     for (const state of [
-      SequenceState.ABORTED,
-      SequenceState.FINISHED,
-      SequenceState.TIMEDOUT,
-      SequenceState.SUCCEEDED,
+      SequenceStatus.ABORTED,
+      SequenceStatus.FINISHED,
+      SequenceStatus.TIMEDOUT,
+      SequenceStatus.SUCCEEDED,
     ]) {
       sequence.state = state;
       const actual = createSequenceStateInfo(sequence);
@@ -95,7 +95,7 @@ describe('Sequence', () => {
 
   it('should not be finished', () => {
     const sequence = getDefaultSequence();
-    const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceState;
+    const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceStatus;
     for (const state of Object.values(states)) {
       sequence.state = state;
       const actual = createSequenceStateInfo(sequence);
@@ -107,10 +107,10 @@ describe('Sequence', () => {
   it('should be finished stage if it is aborted, finished, succeeded or timed out', () => {
     const sequence = getDefaultSequence();
     for (const state of [
-      SequenceState.ABORTED,
-      SequenceState.FINISHED,
-      SequenceState.TIMEDOUT,
-      SequenceState.SUCCEEDED,
+      SequenceStatus.ABORTED,
+      SequenceStatus.FINISHED,
+      SequenceStatus.TIMEDOUT,
+      SequenceStatus.SUCCEEDED,
     ]) {
       sequence.stages[0].state = state;
       const actual = createSequenceStateInfo(sequence, 'dev');
@@ -121,7 +121,7 @@ describe('Sequence', () => {
 
   it('should not be finished stage', () => {
     const sequence = getDefaultSequence();
-    const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceState;
+    const { ABORTED, FINISHED, TIMEDOUT, SUCCEEDED, ...states } = SequenceStatus;
     for (const state of Object.values(states)) {
       sequence.stages[0].state = state;
       const actual = createSequenceStateInfo(sequence, 'dev');
@@ -170,7 +170,7 @@ describe('Sequence', () => {
 
   it('should be faulty if it timed out', () => {
     const sequence = getSequenceWithTwoStages();
-    sequence.state = SequenceState.TIMEDOUT;
+    sequence.state = SequenceStatus.TIMEDOUT;
     const actual = createSequenceStateInfo(sequence);
     expect(sequence.isFaulty()).toBe(true);
     expect(actual.faulty).toBe(true);
@@ -178,7 +178,7 @@ describe('Sequence', () => {
 
   it('should have faulty stage if it timed out', () => {
     const sequence = getSequenceWithTwoStages();
-    sequence.stages[0].state = SequenceState.TIMEDOUT;
+    sequence.stages[0].state = SequenceStatus.TIMEDOUT;
     const actual = createSequenceStateInfo(sequence, 'dev');
     expect(sequence.isFaulty('dev')).toBe(true);
     expect(actual.faulty).toBe(true);
@@ -412,7 +412,7 @@ describe('Sequence', () => {
 
   it('should be unknown state', () => {
     const sequence = getDefaultSequence();
-    sequence.state = SequenceState.UNKNOWN;
+    sequence.state = SequenceStatus.UNKNOWN;
     expect(sequence.isUnknownState()).toBe(true);
   });
 
@@ -611,8 +611,8 @@ describe('Sequence', () => {
 
   it('should set state', () => {
     const sequence = getDefaultSequence();
-    sequence.setState(SequenceState.TIMEDOUT);
-    expect(sequence.state).toBe(SequenceState.TIMEDOUT);
+    sequence.setState(SequenceStatus.TIMEDOUT);
+    expect(sequence.state).toBe(SequenceStatus.TIMEDOUT);
   });
 
   it('should return the start time of a stage', () => {
@@ -638,24 +638,24 @@ describe('Sequence', () => {
     expect(actual.icon).toBe('pause');
   });
 
-  function getDefaultSequence(): Sequence {
-    return Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[1]));
+  function getDefaultSequence(): SequenceState {
+    return SequenceState.fromJSON(AppUtils.copyObject(SequenceResponseMock[1]));
   }
 
-  function getSequenceWithTwoStages(): Sequence {
-    return Sequence.fromJSON(SequenceResponseWithDevAndStagingMock);
+  function getSequenceWithTwoStages(): SequenceState {
+    return SequenceState.fromJSON(SequenceResponseWithDevAndStagingMock);
   }
 
-  function getEvaluationSequenceWithoutFailing(): Sequence {
-    return Sequence.fromJSON(SequenceResponseWithoutFailing);
+  function getEvaluationSequenceWithoutFailing(): SequenceState {
+    return SequenceState.fromJSON(SequenceResponseWithoutFailing);
   }
 
-  function getSequenceWithEvaluationAndRemediation(): Sequence {
-    return Sequence.fromJSON(getSequenceObjectWithEvaluationAndRemediation());
+  function getSequenceWithEvaluationAndRemediation(): SequenceState {
+    return SequenceState.fromJSON(getSequenceObjectWithEvaluationAndRemediation());
   }
 
-  function getSequenceWithTraces(): Sequence {
-    const sequence = Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
+  function getSequenceWithTraces(): SequenceState {
+    const sequence = SequenceState.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
     sequence.traces = [
       Trace.fromJSON(AppUtils.copyObject(devTraceObj)),
       Trace.fromJSON(AppUtils.copyObject(stagingTraceObj)),
@@ -663,8 +663,8 @@ describe('Sequence', () => {
     return sequence;
   }
 
-  function getSequenceWithMultipleTracesPerStage(): Sequence {
-    const sequence = Sequence.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
+  function getSequenceWithMultipleTracesPerStage(): SequenceState {
+    const sequence = SequenceState.fromJSON(AppUtils.copyObject(SequenceResponseMock[0]));
     sequence.traces = [
       Trace.fromJSON({
         data: {
@@ -712,7 +712,7 @@ describe('Sequence', () => {
     return sequence;
   }
 
-  function getEvaluationSequenceWarning(): Sequence {
+  function getEvaluationSequenceWarning(): SequenceState {
     const sequence = {
       ...SequenceResponseWithoutFailing,
       stages: [
@@ -725,18 +725,18 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getTriggeredSequence(): Sequence {
+  function getTriggeredSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
       stages: [],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getEvaluationSequenceWarningFailed(): Sequence {
+  function getEvaluationSequenceWarningFailed(): SequenceState {
     const sequence = {
       ...SequenceResponseWithoutFailing,
       stages: [
@@ -754,10 +754,10 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getSequenceWithApproval(): Sequence {
+  function getSequenceWithApproval(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
       stages: [
@@ -772,13 +772,13 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getPausedSequence(): Sequence {
+  function getPausedSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.PAUSED,
+      state: SequenceStatus.PAUSED,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
@@ -791,17 +791,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getFailedSequence(): Sequence {
+  function getFailedSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.FINISHED,
+      state: SequenceStatus.FINISHED,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.FINISHED,
+          state: SequenceStatus.FINISHED,
           latestFailedEvent: {
             id: 'my Id',
             time: '',
@@ -810,17 +810,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getSucceededSequence(): Sequence {
+  function getSucceededSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.FINISHED,
+      state: SequenceStatus.FINISHED,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.SUCCEEDED,
+          state: SequenceStatus.SUCCEEDED,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -830,17 +830,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getSucceededFailedSequence(): Sequence {
+  function getSucceededFailedSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.FINISHED,
+      state: SequenceStatus.FINISHED,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.SUCCEEDED,
+          state: SequenceStatus.SUCCEEDED,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -854,17 +854,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getWaitingSequence(): Sequence {
+  function getWaitingSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.WAITING,
+      state: SequenceStatus.WAITING,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.WAITING,
+          state: SequenceStatus.WAITING,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -874,17 +874,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getLoadingSequence(): Sequence {
+  function getLoadingSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.STARTED,
+      state: SequenceStatus.STARTED,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.STARTED,
+          state: SequenceStatus.STARTED,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -894,17 +894,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getUnknownSequence(): Sequence {
+  function getUnknownSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: 'unknown' as SequenceState,
+      state: 'unknown' as SequenceStatus,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: 'unknown' as SequenceState,
+          state: 'unknown' as SequenceStatus,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -914,17 +914,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getTimedOutSequence(): Sequence {
+  function getTimedOutSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.TIMEDOUT,
+      state: SequenceStatus.TIMEDOUT,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.TIMEDOUT,
+          state: SequenceStatus.TIMEDOUT,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -934,17 +934,17 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getAbortedSequence(): Sequence {
+  function getAbortedSequence(): SequenceState {
     const sequence = {
       ...SequenceResponseMock[0],
-      state: SequenceState.ABORTED,
+      state: SequenceStatus.ABORTED,
       stages: [
         {
           ...SequenceResponseMock[0].stages[0],
-          state: SequenceState.ABORTED,
+          state: SequenceStatus.ABORTED,
           latestEvent: {
             id: 'my Id',
             time: '',
@@ -953,11 +953,11 @@ describe('Sequence', () => {
         },
       ],
     };
-    return Sequence.fromJSON(sequence);
+    return SequenceState.fromJSON(sequence);
   }
 
-  function getSequenceObjectWithEvaluationAndRemediation(): Sequence {
-    const seq = <Sequence>AppUtils.copyObject(SequenceResponseMock[0]);
+  function getSequenceObjectWithEvaluationAndRemediation(): SequenceState {
+    const seq = <SequenceState>AppUtils.copyObject(SequenceResponseMock[0]);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     seq.stages[0].latestEvaluationTrace = EvaluationTraceResponse.data.evaluationHistory[0];

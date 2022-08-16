@@ -1,12 +1,12 @@
-import { ISequence, SequenceStage, SequenceState } from '../interfaces/sequence';
+import { ISequenceState, SequenceStage, SequenceStatus } from '../interfaces/sequence';
 import { IRemediationAction } from './remediation-action';
 
-export class Remediation implements ISequence {
+export class Remediation implements ISequenceState {
   name!: string;
   project!: string;
   service!: string;
   shkeptncontext!: string;
-  state!: SequenceState;
+  state!: SequenceStatus;
   time!: string;
 
   stages: (SequenceStage & {

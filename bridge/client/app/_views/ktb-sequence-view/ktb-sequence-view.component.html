@@ -113,8 +113,26 @@
               [textContent]="currentSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats(false, true)"
             ></span>
           </p>
-          <dt-alert class="mt-1" *ngIf="currentSequence.isWaiting()" severity="warning">
-            Sequence is waiting for previous sequences to finish.
+          <dt-alert
+            class="mt-1"
+            *ngIf="currentSequence.isWaiting()"
+            severity="warning"
+            uitestid="keptn-sequence-view-blocked-message"
+          >
+            Sequence is blocked by another running sequence.
+            <button
+              dt-button
+              variant="secondary"
+              uitestid="keptn-blocking-sequence-navigation"
+              [disabled]="navigationToRunningSequenceLoading"
+              (click)="navigateToBlockingSequence(currentSequence, state)"
+            >
+              <ktb-loading-spinner
+                *ngIf="navigationToRunningSequenceLoading"
+                aria-label="Action is running..."
+              ></ktb-loading-spinner>
+              Go to running sequence
+            </button>
           </dt-alert>
         </dt-info-group>
       </div>

@@ -10,8 +10,8 @@ import {
 } from '@angular/core';
 import { DateUtil } from '../../../_utils/date.utils';
 import { Project } from '../../../_models/project';
-import { Sequence } from '../../../_models/sequence';
-import { ISequence } from '../../../../../shared/interfaces/sequence';
+import { SequenceState } from '../../../_models/sequenceState';
+import { ISequenceState } from '../../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-root-events-list',
@@ -24,17 +24,17 @@ import { ISequence } from '../../../../../shared/interfaces/sequence';
 export class KtbRootEventsListComponent {
   @HostBinding('class') cls = 'ktb-root-events-list';
   public project?: Project;
-  public _events: Sequence[] = [];
-  public _selectedEvent?: Sequence;
+  public _events: SequenceState[] = [];
+  public _selectedEvent?: SequenceState;
 
-  @Output() readonly selectedEventChange = new EventEmitter<{ sequence: Sequence; stage?: string }>();
+  @Output() readonly selectedEventChange = new EventEmitter<{ sequence: SequenceState; stage?: string }>();
 
   @Input()
-  get events(): Sequence[] {
+  get events(): SequenceState[] {
     return this._events;
   }
 
-  set events(value: Sequence[]) {
+  set events(value: SequenceState[]) {
     if (this._events !== value) {
       this._events = value;
       this._changeDetectorRef.markForCheck();
@@ -42,11 +42,11 @@ export class KtbRootEventsListComponent {
   }
 
   @Input()
-  get selectedEvent(): Sequence | undefined {
+  get selectedEvent(): SequenceState | undefined {
     return this._selectedEvent;
   }
 
-  set selectedEvent(value: Sequence | undefined) {
+  set selectedEvent(value: SequenceState | undefined) {
     if (this._selectedEvent !== value) {
       this._selectedEvent = value;
       this._changeDetectorRef.markForCheck();
@@ -55,18 +55,18 @@ export class KtbRootEventsListComponent {
 
   constructor(private _changeDetectorRef: ChangeDetectorRef, public dateUtil: DateUtil) {}
 
-  selectEvent(sequence: ISequence, stage?: string): void {
+  selectEvent(sequence: ISequenceState, stage?: string): void {
     // Refactor without using cast to Sequence
     // use ISequence instead
-    this.selectedEvent = <Sequence>sequence;
-    this.selectedEventChange.emit({ sequence: <Sequence>sequence, stage });
+    this.selectedEvent = <SequenceState>sequence;
+    this.selectedEventChange.emit({ sequence: <SequenceState>sequence, stage });
   }
 
-  identifyEvent(_index: number, item: Sequence): string | undefined {
+  identifyEvent(_index: number, item: SequenceState): string | undefined {
     return item?.time;
   }
 
   public getShortType(type: string | undefined): string | undefined {
-    return type ? Sequence.getShortType(type) : undefined;
+    return type ? SequenceState.getShortType(type) : undefined;
   }
 }

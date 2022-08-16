@@ -1,7 +1,7 @@
 import { Component, Input, OnDestroy } from '@angular/core';
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../../_utils/date.utils';
-import { Sequence } from '../../../_models/sequence';
+import { SequenceState } from '../../../_models/sequenceState';
 import { takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
@@ -9,7 +9,7 @@ import { SubSequence } from '../../../../../shared/interfaces/deployment';
 import { EVENT_ICONS } from '../../../_models/event-icons';
 import { DtIconType } from '@dynatrace/barista-icons';
 import { ResultTypes } from '../../../../../shared/models/result-types';
-import { SequenceState } from '../../../../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../../../../shared/interfaces/sequence';
 
 @Component({
   selector: 'ktb-sequence-list',
@@ -17,13 +17,13 @@ import { SequenceState } from '../../../../../shared/interfaces/sequence';
   styleUrls: [],
 })
 export class KtbSequenceListComponent implements OnDestroy {
-  public dataSource: DtTableDataSource<SubSequence | Sequence> = new DtTableDataSource();
+  public dataSource: DtTableDataSource<SubSequence | SequenceState> = new DtTableDataSource();
   private unsubscribe$: Subject<void> = new Subject<void>();
   private _sequences: SubSequence[] = [];
-  private _remediations: Sequence[] = [];
+  private _remediations: SequenceState[] = [];
   private projectName?: string;
   public ResultTypes = ResultTypes;
-  public SequenceState = SequenceState;
+  public SequenceState = SequenceStatus;
 
   @Input() stage?: string;
   @Input() shkeptncontext?: string;
@@ -38,10 +38,10 @@ export class KtbSequenceListComponent implements OnDestroy {
     }
   }
   @Input()
-  get remediations(): Sequence[] {
+  get remediations(): SequenceState[] {
     return this._remediations;
   }
-  set remediations(remediations: Sequence[]) {
+  set remediations(remediations: SequenceState[]) {
     if (this._remediations !== remediations) {
       this._remediations = remediations;
       this.updateDataSource();
@@ -57,15 +57,15 @@ export class KtbSequenceListComponent implements OnDestroy {
     this.dataSource.data = [...this.remediations, ...this.sequences];
   }
 
-  public isRemediation(row: Sequence | SubSequence): Sequence | null {
-    return row instanceof Sequence ? row : null;
+  public isRemediation(row: SequenceState | SubSequence): SequenceState | null {
+    return row instanceof SequenceState ? row : null;
   }
 
-  public isSubsequence(row: Sequence | SubSequence): SubSequence | null {
-    return row instanceof Sequence ? null : row;
+  public isSubsequence(row: SequenceState | SubSequence): SubSequence | null {
+    return row instanceof SequenceState ? null : row;
   }
 
-  public getRemediationLink(remediation: Sequence): string[] {
+  public getRemediationLink(remediation: SequenceState): string[] {
     const eventId = this.stage ? remediation.getStage(this.stage)?.latestEvent?.id : undefined;
     return this.projectName && this.stage && eventId
       ? ['/', 'project', this.projectName, 'sequence', remediation.shkeptncontext, 'event', eventId]
@@ -79,7 +79,7 @@ export class KtbSequenceListComponent implements OnDestroy {
   }
 
   public getEventIcon(subSequence: SubSequence): DtIconType {
-    return subSequence.state === SequenceState.FINISHED
+    return subSequence.state === SequenceStatus.FINISHED
       ? EVENT_ICONS[subSequence.name] ?? EVENT_ICONS.default
       : EVENT_ICONS.approval;
   }

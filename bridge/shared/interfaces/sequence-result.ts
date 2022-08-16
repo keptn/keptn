@@ -1,8 +1,8 @@
-import { ISequence } from './sequence';
+import { ISequenceState } from './sequence';
 
 export interface SequenceResult {
   nextPageKey?: number;
   pageSize?: number;
   totalCount?: number;
-  states: ISequence[];
+  states: ISequenceState[];
 }

@@ -1,4 +1,4 @@
-import { Sequence } from '../../_models/sequence';
+import { SequenceState } from '../../_models/sequenceState';
 
 export enum SequencesState {
   LOAD_UNTIL_ROOT,
@@ -7,7 +7,7 @@ export enum SequencesState {
 
 export interface ISequenceStateInfo {
   allSequencesLoaded: boolean;
-  sequences: Sequence[];
+  sequences: SequenceState[];
   state: SequencesState;
 }
 

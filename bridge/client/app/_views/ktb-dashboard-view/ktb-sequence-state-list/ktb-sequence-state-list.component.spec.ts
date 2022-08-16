@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { ResultTypes } from '../../../../../shared/models/result-types';
-import { Sequence } from '../../../_models/sequence';
+import { SequenceState } from '../../../_models/sequenceState';
 import { KtbSequenceStateListComponent } from './ktb-sequence-state-list.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { KtbDashboardViewModule } from '../ktb-dashboard-view.module';
@@ -27,7 +27,7 @@ describe('KtbSequenceStateListComponent', () => {
   it('should set datasource', () => {
     // given
     component.sequenceStates = [
-      Sequence.fromJSON({
+      SequenceState.fromJSON({
         name: 'delivery',
         service: 'carts',
         project: 'sockshop',

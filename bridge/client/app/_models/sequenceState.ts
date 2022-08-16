@@ -3,13 +3,18 @@ import { EventTypes } from '../../../shared/interfaces/event-types';
 import { EvaluationResult } from '../../../shared/interfaces/evaluation-result';
 import { EVENT_ICONS } from './event-icons';
 import { RemediationAction } from '../../../shared/models/remediation-action';
-import { ISequence, SequenceEvent, SequenceStage, SequenceState } from '../../../shared/interfaces/sequence';
+import { ISequenceState, SequenceEvent, SequenceStage, SequenceStatus } from '../../../shared/interfaces/sequence';
 import { DtIconType } from '@dynatrace/barista-icons';
 import { ResultTypes } from '../../../shared/models/result-types';
 
 const pendingApprovalTypes = [EventTypes.APPROVAL_TRIGGERED, EventTypes.APPROVAL_STARTED];
-const finishedStates = [SequenceState.FINISHED, SequenceState.TIMEDOUT, SequenceState.ABORTED, SequenceState.SUCCEEDED];
-const startedStates = [SequenceState.TRIGGERED, SequenceState.STARTED];
+const finishedStates = [
+  SequenceStatus.FINISHED,
+  SequenceStatus.TIMEDOUT,
+  SequenceStatus.ABORTED,
+  SequenceStatus.SUCCEEDED,
+];
+const startedStates = [SequenceStatus.TRIGGERED, SequenceStatus.STARTED];
 
 type SeqStage = SequenceStage & {
   latestEvaluationTrace?: Trace;
@@ -50,36 +55,36 @@ function getStatusText(
   return status;
 }
 
-function getIcon(state: SequenceState | undefined, stage: SequenceStage): DtIconType {
-  if (state === SequenceState.PAUSED) return EVENT_ICONS.pause;
+function getIcon(state: SequenceStatus | undefined, stage: SequenceStage): DtIconType {
+  if (state === SequenceStatus.PAUSED) return EVENT_ICONS.pause;
 
   return stage?.latestEvent?.type
     ? EVENT_ICONS[getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default
     : EVENT_ICONS.default;
 }
 
-export function isSequenceStarted(state: SequenceState): boolean {
+export function isSequenceStarted(state: SequenceStatus): boolean {
   return startedStates.includes(state);
 }
 
-export function isSequenceLoading(sequenceState: SequenceState, stageState?: SequenceState): boolean {
+export function isSequenceLoading(sequenceState: SequenceStatus, stageState?: SequenceStatus): boolean {
   return isSequenceStarted(sequenceState) && (!stageState || !isFinished(stageState));
 }
 
-export function isSequenceAborted(state: SequenceState): boolean {
-  return state === SequenceState.ABORTED;
+export function isSequenceAborted(state: SequenceStatus): boolean {
+  return state === SequenceStatus.ABORTED;
 }
 
-export function createSequenceStateInfo(sequence: ISequence, stageName?: string): SequenceStateInfo {
+export function createSequenceStateInfo(sequence: ISequenceState, stageName?: string): SequenceStateInfo {
   const stage = getStage(sequence, stageName);
   const latestStage = stage ? stage : sequence.stages[sequence.stages.length - 1];
   const stages = stage ? [stage] : sequence.stages;
   const state = stageName ? stage?.state : sequence.state;
   const finished = !!state && isFinished(state);
   const loading = isSequenceLoading(sequence.state, stage?.state);
-  const waiting = state === SequenceState.WAITING;
+  const waiting = state === SequenceStatus.WAITING;
   const aborted = !!state && isSequenceAborted(state);
-  const timedOut = state === SequenceState.TIMEDOUT;
+  const timedOut = state === SequenceStatus.TIMEDOUT;
   const faulty = stages.some((s) => s.latestFailedEvent) || timedOut;
   const warning = !faulty && stages.some((s) => s.latestEvaluation?.result === ResultTypes.WARNING);
   const successful = finished && !faulty && !warning && !aborted;
@@ -105,19 +110,19 @@ export function createSequenceStateInfo(sequence: ISequence, stageName?: string)
   };
 }
 
-export function getStage(sequence: ISequence, stageName?: string): SeqStage | undefined {
+export function getStage(sequence: ISequenceState, stageName?: string): SeqStage | undefined {
   return sequence.stages.find((stage) => stage.name === stageName);
 }
 
-export function getStageNames(sequence: ISequence): string[] {
+export function getStageNames(sequence: ISequenceState): string[] {
   return sequence.stages.map((stage) => stage.name);
 }
 
-export function getLastStageName(sequence: ISequence): string | undefined {
+export function getLastStageName(sequence: ISequenceState): string | undefined {
   return sequence.stages[sequence.stages.length - 1]?.name;
 }
 
-export function isFinished(state: SequenceState): boolean {
+export function isFinished(state: SequenceStatus): boolean {
   return finishedStates.includes(state);
 }
 
@@ -132,18 +137,18 @@ export function getShortType(type: string): string {
   }
 }
 
-export class Sequence implements ISequence {
+export class SequenceState implements ISequenceState {
   name!: string;
   project!: string;
   service!: string;
   shkeptncontext!: string;
-  state!: SequenceState;
+  state!: SequenceStatus;
   time!: string;
   stages!: SeqStage[];
   problemTitle?: string;
   traces: Trace[] = [];
 
-  public static fromJSON(data: unknown): Sequence {
+  public static fromJSON(data: unknown): SequenceState {
     const sequence = Object.assign(new this(), data);
     for (const stage of sequence.stages) {
       stage.actions = stage.actions?.map((s) => RemediationAction.fromJSON(s)) ?? [];
@@ -154,7 +159,7 @@ export class Sequence implements ISequence {
     return sequence;
   }
 
-  public static isFinished(state: SequenceState): boolean {
+  public static isFinished(state: SequenceStatus): boolean {
     return isFinished(state);
   }
 
@@ -188,7 +193,7 @@ export class Sequence implements ISequence {
 
   public isFinished(stageName?: string): boolean {
     const state = stageName ? this.getStage(stageName)?.state : this.state;
-    return !!state && Sequence.isFinished(state);
+    return !!state && SequenceState.isFinished(state);
   }
 
   public getEvaluation(stage: string): EvaluationResult | undefined {
@@ -212,7 +217,7 @@ export class Sequence implements ISequence {
 
   public getStatus(): string {
     let status: string = this.state;
-    if (this.state === SequenceState.FINISHED) {
+    if (this.state === SequenceStatus.FINISHED) {
       if (this.stages.some((stage) => stage.latestFailedEvent)) {
         status = 'failed';
       } else {
@@ -229,7 +234,7 @@ export class Sequence implements ISequence {
   }
 
   public isLoading(stageName?: string): boolean {
-    const isStarted = this.state === SequenceState.TRIGGERED || this.state === SequenceState.STARTED;
+    const isStarted = this.state === SequenceStatus.TRIGGERED || this.state === SequenceStatus.STARTED;
     return isStarted && (!stageName || !this.isFinished(stageName));
   }
 
@@ -252,7 +257,7 @@ export class Sequence implements ISequence {
   }
 
   public isWaiting(): boolean {
-    return this.state === SequenceState.WAITING;
+    return this.state === SequenceStatus.WAITING;
   }
 
   public isRemediation(): boolean {
@@ -260,19 +265,19 @@ export class Sequence implements ISequence {
   }
 
   public isPaused(): boolean {
-    return this.state === SequenceState.PAUSED;
+    return this.state === SequenceStatus.PAUSED;
   }
 
   public isUnknownState(): boolean {
-    return this.state === SequenceState.UNKNOWN;
+    return this.state === SequenceStatus.UNKNOWN;
   }
 
   public isAborted(stageName?: string): boolean {
-    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.ABORTED;
+    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceStatus.ABORTED;
   }
 
   public isTimedOut(stageName?: string): boolean {
-    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceState.TIMEDOUT;
+    return (stageName ? this.getStage(stageName)?.state : this.state) === SequenceStatus.TIMEDOUT;
   }
 
   public getLatestEvent(): SequenceEvent | undefined {
@@ -283,7 +288,7 @@ export class Sequence implements ISequence {
     const stage = stageName ? this.getStage(stageName) : this.stages[this.stages.length - 1];
     if (this.isPaused()) return EVENT_ICONS.pause;
     return stage?.latestEvent?.type
-      ? EVENT_ICONS[Sequence.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default
+      ? EVENT_ICONS[SequenceState.getShortType(stage?.latestEvent?.type)] || EVENT_ICONS.default
       : EVENT_ICONS.default;
   }
 
@@ -319,7 +324,7 @@ export class Sequence implements ISequence {
     return this.stages[0]?.actions ?? [];
   }
 
-  public setState(state: SequenceState): void {
+  public setState(state: SequenceStatus): void {
     this.state = state;
   }
 }
