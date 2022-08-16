@@ -52,31 +52,31 @@ jobs:
     needs: check-mongodb-versions
     steps:
     - name: Formulate bug issue
-        if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
-        id: formulate_bug_issue
-        env:
-          KEPTN_VERSION : ${{ needs.check-mongodb-versions.outputs.KEPTN_VERSION }}
-          BITNAMI_VERSION : ${{ needs.check-mongodb-versions.outputs.BITNAMI_VERSION }}
-        run: |
-          # create a markdown file that contains details about the error
-          echo "---" > mongodb-version-changed.md
-          echo "title: MongoDB - Bitnami version differs from version used by Keptn" >> mongodb-version-changed.md
-          echo "labels: type:critical, area:core" >> mongodb-version-changed.md
-          echo "---" >> mongodb-version-changed.md
-          echo "" >> mongodb-version-changed.md
-          echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> mongodb-version-changed.md
-          echo "* Version Bitnami: $BITNAMI_VERSION" >> mongodb-version-changed.md
-          echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
-          echo "* Branch: $BRANCH" >> mongodb-version-changed.md
-          echo "* Version: $VERSION" >> mongodb-version-changed.md
-          echo "* Datetime: $DATETIME" >> mongodb-version-changed.md
-          echo "* Commit: $GIT_SHA" >> mongodb-version-changed.md
-          echo "" >> mongodb-version-changed.md
+      if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
+      id: formulate_bug_issue
+      env:
+        KEPTN_VERSION : ${{ needs.check-mongodb-versions.outputs.KEPTN_VERSION }}
+        BITNAMI_VERSION : ${{ needs.check-mongodb-versions.outputs.BITNAMI_VERSION }}
+      run: |
+        # create a markdown file that contains details about the error
+        echo "---" > mongodb-version-changed.md
+        echo "title: MongoDB - Bitnami version differs from version used by Keptn" >> mongodb-version-changed.md
+        echo "labels: type:critical, area:core" >> mongodb-version-changed.md
+        echo "---" >> mongodb-version-changed.md
+        echo "" >> mongodb-version-changed.md
+        echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> mongodb-version-changed.md
+        echo "* Version Bitnami: $BITNAMI_VERSION" >> mongodb-version-changed.md
+        echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
+        echo "* Branch: $BRANCH" >> mongodb-version-changed.md
+        echo "* Version: $VERSION" >> mongodb-version-changed.md
+        echo "* Datetime: $DATETIME" >> mongodb-version-changed.md
+        echo "* Commit: $GIT_SHA" >> mongodb-version-changed.md
+        echo "" >> mongodb-version-changed.md
 
     - name: Create issue if versions differ
-        if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
-        uses: JasonEtco/create-an-issue@v2.6
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          filename: mongodb-version-changed.md
+      if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
+      uses: JasonEtco/create-an-issue@v2.6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        filename: mongodb-version-changed.md
