@@ -4,12 +4,6 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron: '0 0 1 */2 *' # run check at midnight, at the first day of the month, every two months
 
-  push:  # TODO: delete this
-    branches:
-      - '*'
-  pull_request:  # TODO: delete this
-    branches:
-      - '*'
 defaults:
   run:
     shell: bash
@@ -78,12 +72,6 @@ jobs:
         echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
         echo "Note: This issue was auto-generated from [mongodb-version-check.yml](.github/workflows/mongodb-version-check.yml)" >> mongodb-version-changed.md
-
-    - name: Upload issue markdown
-      uses: actions/upload-artifact@v3
-      with:
-        name: mongodb-version-changed.md
-        path: ./mongodb-version-changed.md
 
     - name: Create issue if versions differ
       if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
