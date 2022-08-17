@@ -592,7 +592,10 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 	if g.ProjectRepoExists(gitContext.Project) {
 		return true
 	}
-	clone, _ := g.CloneRepo(gitContext)
+	clone, err := g.CloneRepo(gitContext)
+	if err != nil {
+		logger.Errorf("Could not check for project availability: %v", err)
+	}
 	return clone
 }
 
