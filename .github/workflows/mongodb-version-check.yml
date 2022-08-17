@@ -4,7 +4,7 @@ on:
     # * is a special character in YAML so you have to quote this string
     - cron: '0 0 1 */2 *' # run check at midnight, at the first day of the month, every two months
   
-  workflow_dispatch: # run integration tests only when triggered manually
+  workflow_dispatch: # run workflow only when triggered manually
 
 defaults:
   run:
