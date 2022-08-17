@@ -787,8 +787,6 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		sequence_execution_queue = append(sequence_execution_queue, event)
 		return nil
 	}
-	done := false
-
 	commitID := "my-commit-id"
 	commitID2 := "my-commit-id2"
 	// STEP 1
@@ -820,10 +818,8 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+
 	require.Equal(t, commitID, triggeredEvents[0].GitCommitID)
 	triggeredID := triggeredEvents[0].ID
 
@@ -860,10 +856,8 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		Service: common.Stringp("carts2"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	done = fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
-	if done {
-		return
-	}
+	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+
 	triggeredID2 := triggeredEvents[0].ID
 	require.Equal(t, commitID2, triggeredEvents[0].GitCommitID)
 	// STEP 2.b
@@ -883,7 +877,7 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 
 	// STEP 3
 	// send deployment.finished event
-	triggeredID, done = sendAndVerifyFinishedEvent(
+	triggeredID = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", "carts", triggeredID, "test-source", keptnv2.ResultPass),
@@ -892,13 +886,10 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		"",
 		"carts",
 	)
-	if done {
-		return
-	}
 
 	// STEP 3.b
 	// send deployment.finished event
-	triggeredID2, done = sendAndVerifyFinishedEvent(
+	triggeredID2 = sendAndVerifyFinishedEvent(
 		t,
 		sc,
 		getDeploymentFinishedEvent("dev", "carts2", triggeredID2, "test-source", keptnv2.ResultPass),
@@ -907,9 +898,6 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		"",
 		"carts2",
 	)
-	if done {
-		return
-	}
 
 }
 
