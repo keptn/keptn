@@ -212,11 +212,11 @@ apiGatewayNginx:
     repository: "nginx-unprivileged"
     ## @param apiGatewayNginx.image.tag API Gateway image tag
     tag: "1.22.0-alpine"
-  ## @param apiGatewayNginx.nodeSelector
+  ## @param apiGatewayNginx.nodeSelector API Gateway node labels for pod assignment
   nodeSelector: {}
-  ## @param apiGatewayNginx.gracePeriod
+  ## @param apiGatewayNginx.gracePeriod API Gateway termination grace period
   gracePeriod: 60
-  ## @param apiGatewayNginx.preStopHookTime
+  ## @param apiGatewayNginx.preStopHookTime API Gateway pre stop timeout
   preStopHookTime: 20
   ## @param apiGatewayNginx.clientMaxBodySize
   clientMaxBodySize: "5m"
@@ -238,6 +238,7 @@ apiGatewayNginx:
       cpu: "100m"
 
 remediationService:
+  ## @param remediationService.enabled Enable Remediation Service
   enabled: true
   image:
     ## @param remediationService.image.registry Remediation Service image registry
@@ -246,8 +247,11 @@ remediationService:
     repository: "remediation-service"
     ## @param remediationService.image.tag Remediation Service image tag
     tag: ""
+  ## @param remediationService.nodeSelector Remediation Service node labels for pod assignment
   nodeSelector: {}
+  ## @param remediationService.gracePeriod Remediation Service termination grace period
   gracePeriod: 60
+  ## @param remediationService.preStopHookTime Remediation Service pre stop timeout
   preStopHookTime: 5
   ## @param remediationService.sidecars Add additional sidecar containers to the Remediation Service
   sidecars: []
@@ -279,8 +283,11 @@ apiService:
     enabled: true
     requestsPerSecond: "1.0"
     requestBurst: "2"
+  ## @param apiService.nodeSelector API Service node labels for pod assignment
   nodeSelector: {}
+  ## @param apiService.gracePeriod API Service termination grace period
   gracePeriod: 60
+  ## @param apiService.preStopHookTime API Service pre stop timeout
   preStopHookTime: 5
   ## @param apiService.sidecars Add additional sidecar containers to the API Service
   sidecars: []
@@ -346,6 +353,7 @@ bridge:
   authMsg: ""
   d3:
     enabled: true
+  ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
   ## @param bridge.sidecars Add additional sidecar containers to the Bridge
   sidecars: []
@@ -423,8 +431,11 @@ shipyardController:
       # and helm releases have a maximum length of 53 characters. Therefore, we use this value as a default.
       # If the helm chart generation for blue/green deployments is not needed, and this value is too small, it can be adapted here
       serviceNameMaxSize: 43
+  ## @param shipyardController.nodeSelector Shipyard Controller node labels for pod assignment
   nodeSelector: {}
+  ## @param shipyardController.gracePeriod Shipyard Controller termination grace period
   gracePeriod: 60
+  ## @param shipyardController.preStopHookTime Shipyard Controller pre stop timeout
   preStopHookTime: 15
   ## @param shipyardController.sidecars Add additional sidecar containers to Shipyard Controller
   sidecars: []
@@ -451,8 +462,11 @@ secretService:
     repository: "secret-service"     
     ## @param secretService.image.tag Secret Service image tag
     tag: ""
+  ## @param secretService.nodeSelector Secret Service node labels for pod assignment
   nodeSelector: {}
+  ## @param secretService.gracePeriod Secret Service termination grace period
   gracePeriod: 60
+  ## @param secretService.preStopHookTime Secret Service pre stop timeout
   preStopHookTime: 20
   ## @param secretService.sidecars Add additional sidecar containers to the Secret Service
   sidecars: []
@@ -472,6 +486,7 @@ secretService:
       cpu: "200m"
 
 resourceService:
+  ## @param resourceService.replicas Number of replicas of Resource Service
   replicas: 1
   image:
     ## @param resourceService.image.registry Resource Service image registry
@@ -481,12 +496,19 @@ resourceService:
     ## @param resourceService.image.tag Resource Service image tag
     tag: ""
   env:
+    ## @param resourceService.env.GIT_KEPTN_USER Default git username for the Keptn configuration git repository
     GIT_KEPTN_USER: "keptn"
+    ## @param resourceService.env.GIT_KEPTN_EMAIL Default git email address for the Keptn configuration git repository
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
+    ## @param resourceService.env.DIRECTORY_STAGE_STRUCTURE Enable directory based structure in the Keptn configuration git repository
     DIRECTORY_STAGE_STRUCTURE: "false"
+  ## @param resourceService.nodeSelector Resource Service node labels for pod assignment
   nodeSelector: {}
+  ## @param resourceService.gracePeriod Resource Service termination grace period
   gracePeriod: 60
+  ## @param resourceService.fsGroup Configure file system group ID to be used in Resource Service
   fsGroup: 1001
+  ## @param resourceService.preStopHookTime Resource Service pre stop timeout
   preStopHookTime: 20
   ## @param resourceService.sidecars Add additional sidecar containers to the Resource Service
   sidecars: []
@@ -513,8 +535,11 @@ mongodbDatastore:
     repository: "mongodb-datastore"  
     ## @param mongodbDatastore.image.tag MongoDB Datastore image tag
     tag: ""
+  ## @param mongodbDatastore.nodeSelector MongoDB Datastore node labels for pod assignment
   nodeSelector: {}
+  ## @param mongodbDatastore.gracePeriod MongoDB Datastore termination grace period
   gracePeriod: 60
+  ## @param mongodbDatastore.preStopHookTime MongoDB Datastore pre stop timeout
   preStopHookTime: 20
   ## @param mongodbDatastore.sidecars Add additional sidecar containers to the MongoDB Datastore
   sidecars: []
@@ -534,6 +559,7 @@ mongodbDatastore:
       cpu: "300m"
 
 lighthouseService:
+  ## @param lighthouseService.enabled Enable Lighthouse Service
   enabled: true
   image:
     ## @param lighthouseService.image.registry Lighthouse Service image registry
@@ -542,8 +568,11 @@ lighthouseService:
     repository: "lighthouse-service" 
     ## @param lighthouseService.image.tag Lighthouse Service image tag
     tag: ""
+  ## @param lighthouseService.nodeSelector Lighthouse Service node labels for pod assignment
   nodeSelector: {}
+  ## @param lighthouseService.gracePeriod Lighthouse Service termination grace period
   gracePeriod: 60
+  ## @param lighthouseService.preStopHookTime Lighthouse Service pre stop timeout
   preStopHookTime: 20
   ## @param lighthouseService.sidecars Add additional sidecar containers to the Lighthouse Service
   sidecars: []
@@ -563,6 +592,7 @@ lighthouseService:
       cpu: "200m"
 
 statisticsService:
+  ## @param statisticsService.enabled Enable Statistics Service
   enabled: true
   image:
     ## @param statisticsService.image.registry Statistics Service image registry
@@ -571,8 +601,11 @@ statisticsService:
     repository: "statistics-service" 
     ## @param statisticsService.image.tag Statistics Service image tag
     tag: ""
+  ## @param statisticsService.nodeSelector Statistics Service node labels for pod assignment
   nodeSelector: {}
+  ## @param statisticsService.gracePeriod Statistics Service termination grace period
   gracePeriod: 60
+  ## @param statisticsService.preStopHookTime Statistics Service pre stop timeout
   preStopHookTime: 20
   ## @param statisticsService.sidecars Add additional sidecar containers to the Statistics Service
   sidecars: []
@@ -592,6 +625,7 @@ statisticsService:
       cpu: "100m"
 
 approvalService:
+  ## @param approvalService.enabled Enable Approval Service
   enabled: true
   image:
     ## @param approvalService.image.registry Approval Service image registry
@@ -600,8 +634,11 @@ approvalService:
     repository: "approval-service"   
     ## @param approvalService.image.tag Approval Service image tag
     tag: ""
+  ## @param approvalService.nodeSelector Approval Service node labels for pod assignment
   nodeSelector: {}
+  ## @param approvalService.gracePeriod Approval Service termination grace period
   gracePeriod: 60
+  ## @param approvalService.preStopHookTime Approval Service pre stop timeout
   preStopHookTime: 5
   ## @param approvalService.sidecars Add additional sidecar containers to the Approval Service
   sidecars: []
@@ -620,7 +657,9 @@ approvalService:
       memory: "128Mi"
       cpu: "100m"
 
+## @section Webhook Service
 webhookService:
+  ## @param webhookService.enabled Enable Webhook Service
   enabled: true
   image:
     ## @param webhookService.image.registry Webhook Service image registry
@@ -629,8 +668,11 @@ webhookService:
     repository: "webhook-service"    
     ## @param webhookService.image.tag Webhook Service image tag
     tag: ""
+  ## @param webhookService.nodeSelector Webhook Service node labels for pod assignment
   nodeSelector: {}
+  ## @param webhookService.gracePeriod Webhook Service termination grace period
   gracePeriod: 60
+  ## @param webhookService.preStopHookTime Webhook Service pre stop timeout
   preStopHookTime: 20
   ## @param webhookService.sidecars Add additional sidecar containers to the Webhook Service
   sidecars: []
@@ -651,41 +693,67 @@ webhookService:
 
 ## @section Ingress
 ingress:
+  ## @param ingress.enabled Enable ingress configuration for Keptn
   enabled: false
+  ## @param ingress.annotations Keptn Ingress annotations
   annotations: {}
+  ## @param ingress.host Keptn Ingress host URL
   host: {}
+  ## @param ingress.path Keptn Ingress host path
   path: /
+  ## @param ingress.pathType Keptn Ingress path type
   pathType: Prefix
+  ## @param ingress.className Keptn Ingress class name
   className: ""
+  ## @param ingress.tls Keptn Ingress TLS configuration
   tls:
     []
 
 ## @section Common settings
+## @param logLevel Global log level for all Keptn services
 logLevel: "info"
 
-## @param prefixPath
+## @param prefixPath URL prefix for all Keptn URLs
 prefixPath: ""
 
-## @param keptnSpecVersion
+## @param keptnSpecVersion Version of the Keptn Spec definitions to be used
 keptnSpecVersion: latest
 
 strategy:
+  ## @param strategy.type Strategy to use to replace existing Keptn pods
   type: RollingUpdate
   rollingUpdate:
+    ## @param strategy.rollingUpdate.maxSurge Maximum number of additional pods to be spun up during rolling updates
     maxSurge: 1
+    ## @param strategy.rollingUpdate.maxUnavailable Maximum number of unavailable pods during rolling updates
     maxUnavailable: 0
+
+## @extra Set the default pod security context for all pods
 podSecurityContext:
+  ## @param podSecurityContext.enabled Enable the default pod security context for all pods
   enabled: true
+  ## @skip podSecurityContext.defaultSeccompProfile
   defaultSeccompProfile: true
+  ## @skip podSecurityContext.fsGroup
   fsGroup: 65532
+
+## @extra Set the default container security context for all containers
 containerSecurityContext:
+  ## @param containerSecurityContext.enabled Enable the default container security context for all containers
   enabled: true
+  ## @skip containerSecurityContext.runAsNonRoot
   runAsNonRoot: true
+  ## @skip containerSecurityContext.runAsUser
   runAsUser: 65532
+  ## @skip containerSecurityContext.readOnlyRootFilesystem
   readOnlyRootFilesystem: true
+  ## @skip containerSecurityContext.allowPrivilegeEscalation
   allowPrivilegeEscalation: false
+  ## @skip containerSecurityContext.privileged
   privileged: false
+  ## @skip containerSecurityContext.capabilities
   capabilities:
     drop:
       - ALL
+## @param nodeSelector Default node labels for pod assignment
 nodeSelector: {}
