@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../_services/data.service';
 import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
-import { catchError, filter, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { catchError, filter, finalize, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -15,7 +15,6 @@ import { AppUtils } from '../../../../_utils/app.utils';
 import { NotificationsService } from '../../../../_services/notifications.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NotificationType } from '../../../../_models/notification';
-import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
 import { SecretScopeDefault } from '../../../../../../shared/interfaces/secret-scope';
 import { EventTypes } from '../../../../../../shared/interfaces/event-types';
 import { Trace } from '../../../../_models/trace';
@@ -33,6 +32,9 @@ export interface SubscriptionState {
   webhook?: IWebhookConfigClient;
   webhookSecrets?: IClientSecret[];
 }
+
+type Suffix = { value: string; displayValue: string };
+type NotificationResult = { type: NotificationType; message: string };
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -58,7 +60,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   public isWebhookFormValid = true;
   public webhookFormDirty = false;
   public isWebhookService = false;
-  public suffixes: { value: string; displayValue: string }[] = [
+  public suffixes: Suffix[] = [
     {
       value: '>',
       displayValue: '*',
@@ -163,38 +165,24 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       catchError((err: HttpErrorResponse) => {
         this.errorMessage = err.error;
         this.notificationsService.addNotification(NotificationType.ERROR, err.error);
-        return throwError(err);
+        return throwError(() => err);
       }),
       take(1)
     );
 
-    const webhook$ = forkJoin({
-      subscription: subscription$,
-      projectName: projectName$,
-      integrationInfo: integrationInfo$,
-    }).pipe(
-      switchMap(
-        (data: {
-          subscription: UniformSubscription;
-          projectName: string;
-          integrationInfo: UniformRegistrationInfo;
-        }) => {
-          let webhook: Observable<IWebhookConfigClient | undefined>;
-          if (data.integrationInfo.isWebhookService && this.editMode && data.subscription.id) {
-            const stage: string | undefined = data.subscription.filter?.stages?.[0];
-            const services: string | undefined = data.subscription.filter?.services?.[0];
-            webhook = this.dataService.getWebhookConfig(data.subscription.id, data.projectName, stage, services);
-            this.updateEventPayload(
-              data.projectName,
-              data.subscription.filter?.stages ?? [],
-              data.subscription.filter?.services ?? []
-            );
-          } else {
-            webhook = of(undefined);
-          }
-          return webhook;
+    const webhook$ = forkJoin([subscription$, projectName$, integrationInfo$]).pipe(
+      switchMap(([subscription, projectName, integrationInfo]) => {
+        let webhook: Observable<IWebhookConfigClient | undefined>;
+        if (integrationInfo.isWebhookService && this.editMode && subscription.id) {
+          const stage: string | undefined = subscription.filter?.stages?.[0];
+          const services: string | undefined = subscription.filter?.services?.[0];
+          webhook = this.dataService.getWebhookConfig(subscription.id, projectName, stage, services);
+          this.updateEventPayload(projectName, subscription.filter?.stages ?? [], subscription.filter?.services ?? []);
+        } else {
+          webhook = of(undefined);
         }
-      ),
+        return webhook;
+      }),
       take(1)
     );
 
@@ -248,9 +236,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     this.dataService
       .deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService)
       .pipe(
-        map((): DeletionProgressEvent => {
-          return { isInProgress: false, result: DeleteResult.SUCCESS };
-        }),
+        map((): DeletionProgressEvent => ({ isInProgress: false, result: DeleteResult.SUCCESS })),
         catchError(handleDeletionError('Subscription'))
       )
       .subscribe((progressEvent) => {
@@ -271,20 +257,19 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
-    if (this.isWebhookService && this.taskControl.value && this.taskSuffixControl.value) {
-      this.eventPayload = undefined;
-      this.dataService
-        .getIntersectedEvent(
-          `${EventTypes.PREFIX}${this.taskControl.value}`,
-          this.taskSuffixControl.value,
-          projectName,
-          stages,
-          services
-        )
-        .subscribe((event: Record<string, unknown>) => {
-          this.eventPayload = Object.keys(event).length ? event : Trace.defaultTrace;
-        });
+    const shouldUpdateEventPayload = this.isWebhookService && this.taskControl.value && this.taskSuffixControl.value;
+    if (!shouldUpdateEventPayload) {
+      return;
     }
+
+    const event = `${EventTypes.PREFIX}${this.taskControl.value}`;
+    const eventSuffix = this.taskSuffixControl.value;
+    this.eventPayload = undefined;
+    this.dataService
+      .getIntersectedEvent(event, eventSuffix, projectName, stages, services)
+      .subscribe((intersectedEvent: Record<string, unknown>) => {
+        this.eventPayload = Object.keys(intersectedEvent).length ? intersectedEvent : Trace.defaultTrace;
+      });
   }
 
   public reloadPage(): void {
@@ -319,13 +304,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     webhookConfig?: IWebhookConfigClient
   ): void {
     this.updating = true;
-    let update;
-
-    if (this.taskControl.value === EventTypes.PREFIX_SHORT && this.taskSuffixControl.value === '>') {
-      subscription.event = `${this.taskControl.value}.${this.taskSuffixControl.value}`;
-    } else {
-      subscription.event = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
-    }
+    const isShortPrefix = this.taskControl.value === EventTypes.PREFIX_SHORT && this.taskSuffixControl.value === '>';
+    subscription.event = isShortPrefix
+      ? `${this.taskControl.value}.${this.taskSuffixControl.value}`
+      : `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
     subscription.setIsGlobal(this.isGlobalControl.value, projectName);
 
     if (webhookConfig) {
@@ -333,24 +315,31 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       webhookConfig.prevConfiguration = this._previousFilter;
     }
 
-    if (this.editMode) {
-      update = this.dataService.updateUniformSubscription(integrationId, subscription, webhookConfig);
-    } else {
-      update = this.dataService.createUniformSubscription(integrationId, subscription, webhookConfig);
-    }
+    const update$ = this.editMode
+      ? this.dataService.updateUniformSubscription(integrationId, subscription, webhookConfig)
+      : this.dataService.createUniformSubscription(integrationId, subscription, webhookConfig);
 
-    update.subscribe(
-      () => {
-        this.updating = false;
-        this.notificationsService.addNotification(NotificationType.SUCCESS, 'Subscription successfully created!');
-        this.resetForms();
-        this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
-      },
-      () => {
-        this.notificationsService.addNotification(NotificationType.ERROR, 'The subscription could not be updated');
-        this.updating = false;
-      }
-    );
+    update$
+      .pipe(
+        map(() => ({
+          type: NotificationType.SUCCESS,
+          message: 'Subscription successfully created!',
+        })),
+        catchError(() =>
+          of({
+            type: NotificationType.ERROR,
+            message: 'The subscription could not be updated',
+          })
+        ),
+        finalize(() => (this.updating = false))
+      )
+      .subscribe((notificationResult: NotificationResult) => {
+        this.notificationsService.addNotification(notificationResult.type, notificationResult.message);
+        if (notificationResult.type === NotificationType.SUCCESS) {
+          this.resetForms();
+          this.router.navigate(['/', 'project', projectName, 'settings', 'uniform', 'integrations', integrationId]);
+        }
+      });
   }
 
   public isFormValid(subscription: UniformSubscription): boolean {
@@ -382,16 +371,12 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   public getSelectedTask(): string | undefined {
-    let type: string | undefined;
-    if (this.taskControl.value) {
-      if (this.taskSuffixControl.value && this.taskSuffixControl.value !== this.suffixes[0].value) {
-        type = `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
-      } else {
-        type = `${EventTypes.PREFIX}${this.taskControl.value}.triggered`;
-      }
+    if (!this.taskControl.value) {
+      return undefined;
     }
-
-    return type;
+    const suffixDiffers = this.taskSuffixControl.value && this.taskSuffixControl.value !== this.suffixes[0].value;
+    const suffix = suffixDiffers ? this.taskSuffixControl.value : 'triggered';
+    return `${EventTypes.PREFIX}${this.taskControl.value}.${suffix}`;
   }
 
   public webhookFormValidityChanged(isValid: boolean): void {
@@ -401,6 +386,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
   // @HostListener allows us to also guard against browser refresh, close, etc.
   @HostListener('window:beforeunload', ['$event'])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public canDeactivate(_$event?: BeforeUnloadEvent): Observable<boolean> {
     if (this.subscriptionForm.dirty || this.webhookFormDirty || this.isFilterDirty) {
       this.showNotification();
@@ -427,11 +413,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
   public showNotification(): void {
     this.unsavedDialogState = 'unsaved';
-
     const dialog = document.querySelector(`div[aria-label="${this.dialogLabel}"]`);
-
     if (!dialog) return;
-
     dialog.classList.add('shake');
     setTimeout(() => dialog.classList.remove('shake'), 500);
   }
