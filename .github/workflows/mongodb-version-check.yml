@@ -3,6 +3,8 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: '0 0 1 */2 *' # run check at midnight, at the first day of the month, every two months
+  
+  workflow_dispatch: # run workflow only when triggered manually
 
 defaults:
   run:
@@ -63,6 +65,11 @@ jobs:
         echo "---" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
         echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> mongodb-version-changed.md
+        if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
+          echo "* Triggered by: Scheduled build" >> mongodb-version-changed.md
+        else
+          echo "* Triggered by: @$GITHUB_ACTOR" >> mongodb-version-changed.md
+        fi
         echo "* Version Bitnami: $BITNAMI_VERSION" >> mongodb-version-changed.md
         echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
