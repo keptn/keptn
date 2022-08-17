@@ -246,9 +246,9 @@ apiGatewayNginx:
 remediationService:
   enabled: true
   image:
-    registry: ""                             # Container Registry
-    repository: "remediation-service"        # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "remediation-service"
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
@@ -266,9 +266,9 @@ remediationService:
 apiService:
   tokenSecretName:
   image:
-    registry: ""                             # Container Registry
-    repository: "api"                        # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "api"    
+    tag: ""
   maxAuth:
     enabled: true
     requestsPerSecond: "1.0"
@@ -289,9 +289,9 @@ apiService:
 
 bridge:
   image:
-    registry: ""                             # Container Registry
-    repository: "bridge2"                    # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "bridge2"
+    tag: ""
   cliDownloadLink: null
   secret:
     enabled: true
@@ -348,9 +348,9 @@ distributor:
     hostname:
     namespace:
   image:
-    registry: ""                             # Container Registry
-    repository: "distributor"                # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "distributor"
+    tag: ""
   config:
     proxy:
       httpTimeout: "30"
@@ -373,9 +373,9 @@ distributor:
 
 shipyardController:
   image:
-    registry: ""                             # Container Registry
-    repository: "shipyard-controller"        # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "shipyard-controller"
+    tag: ""
   config:
     taskStartedWaitDuration: "10m"
     uniformIntegrationTTL: "48h"
@@ -409,9 +409,9 @@ shipyardController:
 
 secretService:
   image:
-    registry: ""                             # Container Registry
-    repository: "secret-service"             # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "secret-service"     
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
@@ -429,9 +429,9 @@ secretService:
 resourceService:
   replicas: 1
   image:
-    registry: ""                             # Container Registry
-    repository: "resource-service"           # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "resource-service"   
+    tag: ""
   env:
     GIT_KEPTN_USER: "keptn"
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
@@ -453,9 +453,9 @@ resourceService:
 
 mongodbDatastore:
   image:
-    registry: ""                             # Container Registry
-    repository: "mongodb-datastore"          # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "mongodb-datastore"  
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
@@ -473,9 +473,9 @@ mongodbDatastore:
 lighthouseService:
   enabled: true
   image:
-    registry: ""                             # Container Registry
-    repository: "lighthouse-service"         # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "lighthouse-service" 
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
@@ -493,9 +493,9 @@ lighthouseService:
 statisticsService:
   enabled: true
   image:
-    registry: ""                             # Container Registry
-    repository: "statistics-service"         # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "statistics-service" 
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
@@ -513,9 +513,9 @@ statisticsService:
 approvalService:
   enabled: true
   image:
-    registry: ""                             # Container Registry
-    repository: "approval-service"           # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "approval-service"   
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
@@ -533,9 +533,9 @@ approvalService:
 webhookService:
   enabled: true
   image:
-    registry: ""                             # Container Registry
-    repository: "webhook-service"            # Container Image Name
-    tag: ""                                  # Container Tag
+    registry: ""
+    repository: "webhook-service"    
+    tag: ""
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
