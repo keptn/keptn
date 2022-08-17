@@ -70,7 +70,19 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 	}
 
 	if skipQueue {
-		return e.eventSender.Send(context.TODO(), event.Event)
+		if err := e.eventSender.Send(context.TODO(), event.Event); err != nil {
+			return err
+		}
+		log.
+			WithFields(log.Fields{
+				"source":       eventScope.EventSource,
+				"keptncontext": eventScope.KeptnContext,
+				"project":      eventScope.Project,
+				"service":      eventScope.Service,
+				"stage":        eventScope.Stage,
+			}).
+			Infof("[DISPATCHED]Event '%s' was dispatched", eventScope.EventType)
+		return nil
 	}
 	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
 		// try to send event immediately
@@ -82,15 +94,37 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 				return err
 			}
 		} else {
+			log.
+				WithFields(log.Fields{
+					"source":       eventScope.EventSource,
+					"keptncontext": eventScope.KeptnContext,
+					"project":      eventScope.Project,
+					"service":      eventScope.Service,
+					"stage":        eventScope.Stage,
+				}).
+				Infof("[DISPATCHED]Event '%s' was dispatched", eventScope.EventType)
 			return nil
 		}
 	}
 
-	return e.eventQueueRepo.QueueEvent(models.QueueItem{
+	err = e.eventQueueRepo.QueueEvent(models.QueueItem{
 		Scope:     *eventScope,
 		EventID:   event.Event.ID(),
 		Timestamp: event.TimeStamp,
 	})
+	if err != nil {
+		log.
+			WithFields(log.Fields{
+				"source":       eventScope.EventSource,
+				"keptncontext": eventScope.KeptnContext,
+				"project":      eventScope.Project,
+				"service":      eventScope.Service,
+				"stage":        eventScope.Stage,
+			}).
+			Infof("[QUEUED]Event '%s' was queued", eventScope.EventType)
+	}
+	return err
+
 }
 
 func (e *EventDispatcher) OnSequenceAborted(eventScope models.EventScope) {
