@@ -237,6 +237,7 @@ apiGatewayNginx:
       memory: "128Mi"
       cpu: "100m"
 
+## @section Remediation Service
 remediationService:
   ## @param remediationService.enabled Enable Remediation Service
   enabled: true
@@ -270,7 +271,9 @@ remediationService:
       memory: "1Gi"
       cpu: "200m"
 
+## @section API Service
 apiService:
+  ## @param apiService.tokenSecretName K8s secret to be used as API token in the API Service
   tokenSecretName:
   image:
     ## @param apiService.image.registry API Service image registry
@@ -280,8 +283,11 @@ apiService:
     ## @param apiService.image.tag API Service image tag
     tag: ""
   maxAuth:
+    ## @param apiService.maxAuth.enabled Enable API authentication rate limiting
     enabled: true
+    ## @param apiService.maxAuth.requestsPerSecond API authentication rate limiting requests per second
     requestsPerSecond: "1.0"
+    ## @param apiService.maxAuth.requestBurst API authentication rate limiting requests burst
     requestBurst: "2"
   ## @param apiService.nodeSelector API Service node labels for pod assignment
   nodeSelector: {}
@@ -306,6 +312,7 @@ apiService:
       memory: "64Mi"
       cpu: "100m"
 
+## @section Bridge
 bridge:
   image:
     ## @param bridge.image.registry Bridge image registry
@@ -314,19 +321,37 @@ bridge:
     repository: "bridge2"
     ## @param bridge.image.tag Bridge image tag
     tag: ""
+  ## @param bridge.cliDownloadLink Define an alternative download URL for the Keptn CLI
   cliDownloadLink: null
   secret:
+    ## @param bridge.secret.enabled Enable bridge credentials for HTTP Basic Auth
     enabled: true
   versionCheck:
+    ## @param bridge.versionCheck.enabled Enable check for updated versions of Keptn
     enabled: true
   showApiToken:
+    ## @param bridge.showApiToken.enabled If disabled, the API token will not be shown in the Bridge info
     enabled: true
+  ## @param bridge.installationType Can take the values: `QUALITY_GATES`, `CONTINUOUS_OPERATIONS`, `CONTINUOUS_DELIVERY` and determines the mode in which the Bridge will be started. If only `QUALITY_GATES` is set, only functionalities and data specific for the Quality Gates Only use case will be displayed
   installationType: null
+  ## @param bridge.lookAndFeelUrl Define a different styling for the Bridge by providing a URL to a ZIP archive containing style files. This archive will be downloaded and used upon Bridge startup
   lookAndFeelUrl: null
+  ## @extra bridge.podSecurityContext Define a pod security context for the Bridge
+  ## @skip bridge.podSecurityContext.enabled
+  ## @skip bridge.podSecurityContext.defaultSeccompProfile
+  ## @skip bridge.podSecurityContext.fsGroup
   podSecurityContext:
     enabled: true
     defaultSeccompProfile: true
     fsGroup: 65532
+  ## @extra bridge.containerSecurityContext Define a container security context for the Bridge
+  ## @skip bridge.containerSecurityContext.enabled
+  ## @skip bridge.containerSecurityContext.runAsNonRoot
+  ## @skip bridge.containerSecurityContext.runAsUser
+  ## @skip bridge.containerSecurityContext.readOnlyRootFilesystem
+  ## @skip bridge.containerSecurityContext.allowPrivilegeEscalation
+  ## @skip bridge.containerSecurityContext.privileged
+  ## @skip bridge.containerSecurityContext.capabilities
   containerSecurityContext:
     enabled: true
     runAsNonRoot: true
@@ -337,6 +362,19 @@ bridge:
     capabilities:
       drop:
         - ALL
+  ## @extra bridge.oauth Configure OAuth settings for the Bridge
+  ## @skip bridge.oauth.discovery
+  ## @skip bridge.oauth.secureCookie
+  ## @skip bridge.oauth.trustProxy
+  ## @skip bridge.oauth.sessionTimeoutMin
+  ## @skip bridge.oauth.sessionValidatingTimeoutMin
+  ## @skip bridge.oauth.baseUrl
+  ## @skip bridge.oauth.clientID
+  ## @skip bridge.oauth.clientSecret
+  ## @skip bridge.oauth.IDTokenAlg
+  ## @skip bridge.oauth.scope
+  ## @skip bridge.oauth.userIdentifier
+  ## @skip bridge.oauth.mongoConnectionString
   oauth:
     discovery: ""
     secureCookie: false
@@ -350,8 +388,10 @@ bridge:
     scope: ""
     userIdentifier: ""
     mongoConnectionString: ""
+  ## @param bridge.authMsg
   authMsg: ""
   d3:
+    ## @param bridge.d3.enabled Enable D3 basic heatmaps in the Bridge
     enabled: true
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
@@ -372,9 +412,12 @@ bridge:
       memory: "256Mi"
       cpu: "200m"
 
+## @section Distributor
 distributor:
   metadata:
+    ## @param distributor.metadata.hostname
     hostname:
+    ## @param distributor.metadata.namespace
     namespace:
   image:
     ## @param distributor.image.registry Distributor image registry
@@ -385,15 +428,23 @@ distributor:
     tag: ""
   config:
     proxy:
+      ## @param distributor.config.proxy.httpTimeout
       httpTimeout: "30"
+      ## @param distributor.config.proxy.maxPayloadBytesKB
       maxPayloadBytesKB: "64"
     queueGroup:
+      ## @param distributor.config.queueGroup.enabled Enable queue groups for distibutor
       enabled: true
     oauth:
+      ## @param distributor.config.oauth.clientID
       clientID: ""
+      ## @param distributor.config.oauth.clientSecret
       clientSecret: ""
+      ## @param distributor.config.oauth.discovery
       discovery: ""
+      ## @param distributor.config.oauth.tokenURL
       tokenURL: ""
+      ## @param distributor.config.oauth.scopes
       scopes: ""
   ## @extra distributor.resources Define resources for the Distributor
   ## @skip distributor.resources.requests
@@ -406,6 +457,7 @@ distributor:
       memory: "32Mi"
       cpu: "100m"
 
+## @section Shipyard Controller
 shipyardController:
   image:
     ## @param shipyardController.image.registry Shipyard Controller image registry
@@ -415,17 +467,25 @@ shipyardController:
     ## @param shipyardController.image.tag Shipyard Controller image tag
     tag: ""
   config:
+    ## @param shipyardController.config.taskStartedWaitDuration
     taskStartedWaitDuration: "10m"
+    ## @param shipyardController.config.uniformIntegrationTTL
     uniformIntegrationTTL: "48h"
     leaderElection:
+      ## @param shipyardController.config.leaderElection.enabled Enable leader election when multiple replicas of Shipyard Controller are running
       enabled: false
+    ## @param shipyardController.config.replicas Number of replicas of Shipyard Controller
     replicas: 1
     validation:
+      ## @param shipyardController.config.validation.projectNameMaxSize Maximum number of characters that a Keptn project name can have
+      #
       # On Database level, Keptn creates collections that are named like <PROJECTNAME>-<suffix>
       # Keep in mind that "suffix" can occupy up to 20 characters so that you will eventually
       # hit the database limit for max collection name size when your project name is too long.
       # projectNameMaxSize can be used to forbid project names longer than a certain size in Keptn
       projectNameMaxSize: 200
+      ## @param shipyardController.config.validation.serviceNameMaxSize Maximum number of characters that a service name can have
+      #
       # The limit of 43 characters for a service's name is currently imposed by the helm-service,
       # which, if being used for the CD use case with blue/green deployments generates a helm release called <serviceName>-generated,
       # and helm releases have a maximum length of 53 characters. Therefore, we use this value as a default.
@@ -454,6 +514,7 @@ shipyardController:
       memory: "128Mi"
       cpu: "100m"
 
+## @section Secret Service
 secretService:
   image:
     ## @param secretService.image.registry Secret Service image registry
@@ -485,6 +546,7 @@ secretService:
       memory: "64Mi"
       cpu: "200m"
 
+## @section Resource Service
 resourceService:
   ## @param resourceService.replicas Number of replicas of Resource Service
   replicas: 1
@@ -527,6 +589,7 @@ resourceService:
       memory: "64Mi"
       cpu: "100m"
 
+## @section MongoDB Datastore
 mongodbDatastore:
   image:
     ## @param mongodbDatastore.image.registry MongoDB Datastore image registry
@@ -558,6 +621,7 @@ mongodbDatastore:
       memory: "512Mi"
       cpu: "300m"
 
+## @section Lighthouse Service
 lighthouseService:
   ## @param lighthouseService.enabled Enable Lighthouse Service
   enabled: true
@@ -591,6 +655,7 @@ lighthouseService:
       memory: "1Gi"
       cpu: "200m"
 
+## @section Statistics Service
 statisticsService:
   ## @param statisticsService.enabled Enable Statistics Service
   enabled: true
@@ -624,6 +689,7 @@ statisticsService:
       memory: "64Mi"
       cpu: "100m"
 
+## @section Approval Service
 approvalService:
   ## @param approvalService.enabled Enable Approval Service
   enabled: true
