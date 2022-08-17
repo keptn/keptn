@@ -233,8 +233,8 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		&git.CommitOptions{
 			All: true,
 			Author: &object.Signature{
-				Name:  gitKeptnUserDefault,
-				Email: gitKeptnEmailDefault,
+				Name:  getGitKeptnUser(),
+				Email: getGitKeptnEmail(),
 				When:  time.Now(),
 			},
 		})
@@ -261,8 +261,8 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 		&git.CommitOptions{
 			All: true,
 			Author: &object.Signature{
-				Name:  gitKeptnUserDefault,
-				Email: gitKeptnEmailDefault,
+				Name:  getGitKeptnUser(),
+				Email: getGitKeptnEmail(),
 				When:  time.Now(),
 			},
 		})
