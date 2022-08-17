@@ -79,6 +79,12 @@ jobs:
         echo "" >> mongodb-version-changed.md
         echo "Note: This issue was auto-generated from [mongodb-version-check.yml](.github/workflows/mongodb-version-check.yml)" >> mongodb-version-changed.md
 
+    - name: Upload issue markdown
+      uses: actions/upload-artifact@v3
+      with:
+        name: mongodb-version-changed.md
+        path: ./mongodb-version-changed.md
+
     - name: Create issue if versions differ
       if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
       uses: JasonEtco/create-an-issue@v2.6
