@@ -72,7 +72,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
     const dataService = TestBed.inject(DataService);
     const updateSpy = jest.spyOn(dataService, 'updateUniformSubscription');
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription);
+    component.updateSubscription(true, 'sockshop', UniformRegistrationsMock[2].id, subscription);
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[2].id, subscription, undefined);
@@ -85,10 +85,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     getTaskPrefix().setValue('sh.keptn');
     getTaskSuffix().setValue('>');
     getIsGlobalControl().setValue(true);
-    component.editMode = true;
+    const editMode = true;
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
+    component.updateSubscription(editMode, 'sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
 
     // then
     expect(subscription.event).toEqual('sh.keptn.>');
@@ -100,10 +100,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     getTaskPrefix().setValue('deployment');
     getTaskSuffix().setValue('>');
     getIsGlobalControl().setValue(true);
-    component.editMode = true;
+    const editMode = true;
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
+    component.updateSubscription(editMode, 'sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
 
     // then
     expect(subscription.event).toEqual('sh.keptn.event.deployment.>');
@@ -126,7 +126,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     };
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
+    component.updateSubscription(true, 'sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
     fixture.detectChanges();
 
     webhookConfig.type = subscription.event;
@@ -147,7 +147,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription);
+    component.updateSubscription(true, 'sockshop', UniformRegistrationsMock[2].id, subscription);
 
     // then
     expect(component.updating).toEqual(false);
@@ -168,7 +168,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     taskSuffixControl.setValue('triggered');
     const isGlobalControl = getIsGlobalControl();
     isGlobalControl.setValue(true);
-    component.updateSubscription('sockshop', UniformRegistrationsMock[1].id, subscription);
+    component.updateSubscription(false, 'sockshop', UniformRegistrationsMock[1].id, subscription);
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(
@@ -345,11 +345,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.deleteSubscription({
-      projectName: 'sockshop',
-      integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
-      subscription: { id: '0' },
-    } as SubscriptionState);
+    component.deleteSubscription(
+      {
+        projectName: 'sockshop',
+        integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+        editMode: true,
+      },
+      {
+        subscription: { id: '0' },
+      } as SubscriptionState
+    );
 
     // then
     expect(routeSpy).toHaveBeenCalledWith([
@@ -373,11 +378,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.deleteSubscription({
-      projectName: 'sockshop',
-      integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
-      subscription: { id: '0' },
-    } as SubscriptionState);
+    component.deleteSubscription(
+      {
+        projectName: 'sockshop',
+        integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+        editMode: true,
+      },
+      {
+        subscription: { id: '0' },
+      } as SubscriptionState
+    );
 
     // then
     expect(progressSpy).toHaveBeenCalledWith({

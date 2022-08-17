@@ -1,8 +1,8 @@
 import { ChangeDetectorRef, Component, HostListener, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../_services/data.service';
-import { combineLatest, forkJoin, Observable, of, Subject, throwError } from 'rxjs';
-import { catchError, filter, finalize, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import { combineLatest, EMPTY, mergeMap, Observable, of, shareReplay, Subject, throwError } from 'rxjs';
+import { catchError, finalize, map, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { UniformSubscription } from '../../../../_models/uniform-subscription';
 import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
@@ -24,15 +24,15 @@ import { EventService } from '../../../../_services/event.service';
 import { handleDeletionError } from '../../../../_components/ktb-danger-zone/ktb-danger-zone.utils';
 
 export interface SubscriptionState {
-  projectName: string;
   taskNames: string[];
   subscription: UniformSubscription;
   filter: ISequencesFilter;
-  integrationId: string;
+  isWebhookService: boolean;
   webhook?: IWebhookConfigClient;
   webhookSecrets?: IClientSecret[];
 }
 
+export type Params = { projectName: string; integrationId: string; subscriptionId?: string; editMode: boolean };
 type Suffix = { value: string; displayValue: string };
 type NotificationResult = { type: NotificationType; message: string };
 
@@ -43,23 +43,23 @@ type NotificationResult = { type: NotificationType; message: string };
 })
 export class KtbModifyUniformSubscriptionComponent implements OnDestroy, PendingChangesComponent {
   private readonly unsubscribe$: Subject<void> = new Subject<void>();
+
   private taskControl = new FormControl('', [Validators.required]);
-  public eventPayload: Record<string, unknown> | undefined;
   public taskSuffixControl = new FormControl('', [Validators.required]);
   private isGlobalControl = new FormControl();
-  public data$: Observable<SubscriptionState>;
-  public _dataSource = new DtFilterFieldDefaultDataSource();
-  public editMode = false;
-  public updating = false;
   public subscriptionForm = new FormGroup({
     taskPrefix: this.taskControl,
     taskSuffix: this.taskSuffixControl,
     isGlobal: this.isGlobalControl,
   });
+
+  public data$: Observable<SubscriptionState>;
+  public _dataSource = new DtFilterFieldDefaultDataSource();
+  public updating = false;
+  public eventPayload: Record<string, unknown> | undefined;
   private _previousFilter?: PreviousWebhookConfig;
   public isWebhookFormValid = true;
   public webhookFormDirty = false;
-  public isWebhookService = false;
   public suffixes: Suffix[] = [
     {
       value: '>',
@@ -88,6 +88,24 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
   public deleteType = DeleteType.SUBSCRIPTION;
 
+  public params$ = this.route.paramMap.pipe(
+    mergeMap((paramMap) => {
+      const projectName = paramMap.get('projectName');
+      const integrationId = paramMap.get('integrationId');
+      const subscriptionId = paramMap.get('subscriptionId');
+      if (projectName && integrationId) {
+        return of({
+          projectName,
+          integrationId,
+          subscriptionId: subscriptionId ?? undefined,
+          editMode: !!subscriptionId,
+        } as Params);
+      }
+      return EMPTY;
+    }),
+    shareReplay(1)
+  );
+
   constructor(
     private route: ActivatedRoute,
     private dataService: DataService,
@@ -96,26 +114,15 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     private eventService: EventService,
     private _changeDetectorRef: ChangeDetectorRef
   ) {
-    const subscription$ = this.route.paramMap.pipe(
-      map((paramMap) => ({
-        integrationId: paramMap.get('integrationId'),
-        subscriptionId: paramMap.get('subscriptionId'),
-        projectName: paramMap.get('projectName'),
-      })),
-      filter(
-        (params): params is { integrationId: string; subscriptionId: string | null; projectName: string } =>
-          !!(params.integrationId && params.projectName)
-      ),
+    const subscription$ = this.params$.pipe(
       switchMap((params) => {
-        this.editMode = !!params.subscriptionId;
         if (params.subscriptionId) {
           return this.dataService.getUniformSubscription(params.integrationId, params.subscriptionId);
-        } else {
-          return of(new UniformSubscription(params.projectName));
         }
+        return of(new UniformSubscription(params.projectName));
       }),
       tap((subscription) => {
-        if (this.editMode) {
+        if (subscription.id) {
           this._previousFilter = {
             filter: AppUtils.copyObject(subscription.filter),
             type: subscription.event,
@@ -124,66 +131,57 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         this.taskControl.setValue(subscription.prefix);
         this.taskSuffixControl.setValue(subscription.suffix);
         this.isGlobalControl.setValue(subscription.isGlobal);
-
         this.updateIsGlobalCheckbox(subscription);
       }),
-      take(1)
+      shareReplay(1)
     );
 
-    const integrationId$ = this.route.paramMap.pipe(
-      map((paramMap) => paramMap.get('integrationId')),
-      filter((integrationId: string | null): integrationId is string => !!integrationId),
-      take(1)
-    );
-
-    const integrationInfo$ = integrationId$.pipe(
-      switchMap((integrationId) => this.dataService.getUniformRegistrationInfo(integrationId)),
-      take(1),
-      takeUntil(this.unsubscribe$)
-    );
-
-    integrationInfo$.subscribe((info) => {
-      if (!info.isControlPlane) {
+    const integrationInfo$ = this.params$.pipe(
+      switchMap((params) => this.dataService.getUniformRegistrationInfo(params.integrationId)),
+      tap((info) => {
+        if (info.isControlPlane) {
+          return;
+        }
         this.suffixes = [
           {
             value: EventState.TRIGGERED,
             displayValue: EventState.TRIGGERED,
           },
         ];
-      }
-      this.isWebhookService = info.isWebhookService;
-    });
-
-    const projectName$ = this.route.paramMap.pipe(
-      map((paramMap) => paramMap.get('projectName')),
-      filter((projectName: string | null): projectName is string => !!projectName),
-      take(1)
+      }),
+      shareReplay(1)
     );
 
-    const taskNames$ = projectName$.pipe(
-      switchMap((projectName) => this.dataService.getTaskNames(projectName)),
+    const isWebhookService$ = integrationInfo$.pipe(map((info) => info.isWebhookService));
+
+    const taskNames$ = this.params$.pipe(
+      switchMap((params) => this.dataService.getTaskNames(params.projectName)),
       catchError((err: HttpErrorResponse) => {
         this.errorMessage = err.error;
         this.notificationsService.addNotification(NotificationType.ERROR, err.error);
         return throwError(() => err);
-      }),
-      take(1)
+      })
     );
 
-    const webhook$ = forkJoin([subscription$, projectName$, integrationInfo$]).pipe(
-      switchMap(([subscription, projectName, integrationInfo]) => {
-        let webhook: Observable<IWebhookConfigClient | undefined>;
-        if (integrationInfo.isWebhookService && this.editMode && subscription.id) {
+    const webhook$: Observable<IWebhookConfigClient | undefined> = combineLatest([
+      this.params$,
+      subscription$,
+      integrationInfo$,
+    ]).pipe(
+      switchMap(([params, subscription, integrationInfo]) => {
+        if (integrationInfo.isWebhookService && params.editMode && subscription.id) {
           const stage: string | undefined = subscription.filter?.stages?.[0];
           const services: string | undefined = subscription.filter?.services?.[0];
-          webhook = this.dataService.getWebhookConfig(subscription.id, projectName, stage, services);
-          this.updateEventPayload(projectName, subscription.filter?.stages ?? [], subscription.filter?.services ?? []);
-        } else {
-          webhook = of(undefined);
+          this.updateEventPayload(
+            params.projectName,
+            subscription.filter?.stages ?? [],
+            subscription.filter?.services ?? [],
+            integrationInfo.isWebhookService
+          );
+          return this.dataService.getWebhookConfig(subscription.id, params.projectName, stage, services);
         }
-        return webhook;
-      }),
-      take(1)
+        return of(undefined);
+      })
     );
 
     const webhookSecrets$ = integrationInfo$.pipe(
@@ -195,24 +193,15 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       })
     );
 
-    const filter$ = projectName$.pipe(switchMap((projectName) => this.dataService.getSequenceFilter(projectName)));
+    const filter$ = this.params$.pipe(switchMap((params) => this.dataService.getSequenceFilter(params.projectName)));
 
-    this.data$ = combineLatest([
-      projectName$,
-      taskNames$,
-      subscription$,
-      filter$,
-      integrationId$,
-      webhook$,
-      webhookSecrets$,
-    ]).pipe(
-      map(([projectName, taskNames, subscription, filterData, integrationId, webhook, webhookSecrets]) => {
+    this.data$ = combineLatest([taskNames$, subscription$, filter$, isWebhookService$, webhook$, webhookSecrets$]).pipe(
+      map(([taskNames, subscription, filterData, isWebhookService, webhook, webhookSecrets]) => {
         return {
           taskNames,
           subscription,
           filter: filterData,
-          projectName,
-          integrationId,
+          isWebhookService,
           webhook,
           webhookSecrets,
         };
@@ -224,17 +213,18 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.SUBSCRIPTION && data.context) {
-        this.deleteSubscription(data.context as SubscriptionState);
+        const contextArray = data.context as unknown[];
+        this.deleteSubscription(contextArray[0] as Params, contextArray[1] as SubscriptionState);
       }
     });
   }
 
-  public deleteSubscription(data: SubscriptionState): void {
+  public deleteSubscription(params: Params, data: SubscriptionState): void {
     if (!data.subscription.id) return;
     this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
     this.dataService
-      .deleteSubscription(data.integrationId, data.subscription.id, this.isWebhookService)
+      .deleteSubscription(params.integrationId, data.subscription.id, data.isWebhookService)
       .pipe(
         map((): DeletionProgressEvent => ({ isInProgress: false, result: DeleteResult.SUCCESS })),
         catchError(handleDeletionError('Subscription'))
@@ -246,18 +236,23 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
           this.router.navigate([
             '/',
             'project',
-            data.projectName,
+            params.projectName,
             'settings',
             'uniform',
             'integrations',
-            data.integrationId,
+            params.integrationId,
           ]);
         }
       });
   }
 
-  private updateEventPayload(projectName: string, stages: string[], services: string[]): void {
-    const shouldUpdateEventPayload = this.isWebhookService && this.taskControl.value && this.taskSuffixControl.value;
+  private updateEventPayload(
+    projectName: string,
+    stages: string[],
+    services: string[],
+    isWebhookService: boolean
+  ): void {
+    const shouldUpdateEventPayload = isWebhookService && this.taskControl.value && this.taskSuffixControl.value;
     if (!shouldUpdateEventPayload) {
       return;
     }
@@ -298,6 +293,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   public updateSubscription(
+    editMode: boolean,
     projectName: string,
     integrationId: string,
     subscription: UniformSubscription,
@@ -315,7 +311,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       webhookConfig.prevConfiguration = this._previousFilter;
     }
 
-    const update$ = this.editMode
+    const update$ = editMode
       ? this.dataService.updateUniformSubscription(integrationId, subscription, webhookConfig)
       : this.dataService.createUniformSubscription(integrationId, subscription, webhookConfig);
 
@@ -351,14 +347,28 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     );
   }
 
-  public selectedTaskChanged(projectName: string, subscription: UniformSubscription): void {
-    this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
+  public selectedTaskChanged(projectName: string, subscription: UniformSubscription, isWebhookService: boolean): void {
+    this.updateEventPayload(
+      projectName,
+      subscription.filter.stages ?? [],
+      subscription.filter.services ?? [],
+      isWebhookService
+    );
   }
 
-  public subscriptionFilterChanged(subscription: UniformSubscription, projectName: string): void {
+  public subscriptionFilterChanged(
+    subscription: UniformSubscription,
+    projectName: string,
+    isWebhookService: boolean
+  ): void {
     this.isFilterDirty = !!subscription.filter.stages?.length || !!subscription.filter.services?.length;
     this.updateIsGlobalCheckbox(subscription);
-    this.updateEventPayload(projectName, subscription.filter.stages ?? [], subscription.filter.services ?? []);
+    this.updateEventPayload(
+      projectName,
+      subscription.filter.stages ?? [],
+      subscription.filter.services ?? [],
+      isWebhookService
+    );
   }
 
   public updateIsGlobalCheckbox(subscription: UniformSubscription): void {
