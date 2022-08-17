@@ -246,9 +246,15 @@ remediationService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
+  ## @param remediationService.sidecars Add additional sidecar containers to the Remediation Service
   sidecars: []
+  ## @param remediationService.extraVolumeMounts Add additional volume mounts to the Remediation Service
   extraVolumeMounts: []
+  ## @param remediationService.extraVolumes Add additional volumes to the Remediation Service
   extraVolumes: []
+  ## @extra remediationService.resources Define resources for the Remediation Service
+  ## @skip remediationService.resources.requests
+  ## @skip remediationService.resources.limits
   resources:
     requests:
       memory: "64Mi"
@@ -270,9 +276,15 @@ apiService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
+  ## @param apiService.sidecars Add additional sidecar containers to the API Service
   sidecars: []
+  ## @param apiService.extraVolumeMounts Add additional volume mounts to the API Service
   extraVolumeMounts: []
+  ## @param apiService.extraVolumes Add additional volumes to the API Service
   extraVolumes: []
+  ## @extra apiService.resources Define resources for the API Service
+  ## @skip apiService.resources.requests
+  ## @skip apiService.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -326,9 +338,15 @@ bridge:
   d3:
     enabled: true
   nodeSelector: {}
+  ## @param bridge.sidecars Add additional sidecar containers to the Bridge
   sidecars: []
+  ## @param bridge.extraVolumeMounts Add additional volume mounts to the Bridge
   extraVolumeMounts: []
+  ## @param bridge.extraVolumes Add additional volumes to the Bridge
   extraVolumes: []
+  ## @extra bridge.resources Define resources for the Bridge
+  ## @skip bridge.resources.requests
+  ## @skip bridge.resources.limits
   resources:
     requests:
       memory: "64Mi"
@@ -357,6 +375,9 @@ distributor:
       discovery: ""
       tokenURL: ""
       scopes: ""
+  ## @extra distributor.resources Define resources for the Distributor
+  ## @skip distributor.resources.requests
+  ## @skip distributor.resources.limits
   resources:
     requests:
       memory: "16Mi"
@@ -390,9 +411,15 @@ shipyardController:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 15
+  ## @param shipyardController.sidecars Add additional sidecar containers to Shipyard Controller
   sidecars: []
+  ## @param shipyardController.extraVolumeMounts Add additional volume mounts to Shipyard Controller
   extraVolumeMounts: []
+  ## @param shipyardController.extraVolumes Add additional volumes to Shipyard Controller
   extraVolumes: []
+  ## @extra shipyardController.resources Define resources for Shipyard Controller
+  ## @skip shipyardController.resources.requests
+  ## @skip shipyardController.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -409,9 +436,15 @@ secretService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
+  ## @param secretService.sidecars Add additional sidecar containers to the Secret Service
   sidecars: []
+  ## @param secretService.extraVolumeMounts Add additional volume mounts to the Secret Service
   extraVolumeMounts: []
+  ## @param secretService.extraVolumes Add additional volumes to the Secret Service
   extraVolumes: []
+  ## @extra secretService.resources Define resources for the Secret Service
+  ## @skip secretService.resources.requests
+  ## @skip secretService.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -434,9 +467,15 @@ resourceService:
   gracePeriod: 60
   fsGroup: 1001
   preStopHookTime: 20
+  ## @param resourceService.sidecars Add additional sidecar containers to the Resource Service
   sidecars: []
+  ## @param resourceService.extraVolumeMounts Add additional volume mounts to the Resource Service
   extraVolumeMounts: []
+  ## @param resourceService.extraVolumes Add additional volumes to the Resource Service
   extraVolumes: []
+  ## @extra resourceService.resources Define resources for the Resource Service
+  ## @skip resourceService.resources.requests
+  ## @skip resourceService.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -453,9 +492,15 @@ mongodbDatastore:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
+  ## @param mongodbDatastore.sidecars Add additional sidecar containers to the MongoDB Datastore
   sidecars: []
+  ## @param mongodbDatastore.extraVolumeMounts Add additional volume mounts to the MongoDB Datastore
   extraVolumeMounts: []
+  ## @param mongodbDatastore.extraVolumes Add additional volumes to the MongoDB Datastore
   extraVolumes: []
+  ## @extra mongodbDatastore.resources Define resources for the MongoDB Datastore
+  ## @skip mongodbDatastore.resources.requests
+  ## @skip mongodbDatastore.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -473,9 +518,15 @@ lighthouseService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
+  ## @param lighthouseService.sidecars Add additional sidecar containers to the Lighthouse Service
   sidecars: []
+  ## @param lighthouseService.extraVolumeMounts Add additional volume mounts to the Lighthouse Service
   extraVolumeMounts: []
+  ## @param lighthouseService.extraVolumes Add additional volumes to the Lighthouse Service
   extraVolumes: []
+  ## @extra lighthouseService.resources Define resources for the Lighthouse Service
+  ## @skip lighthouseService.resources.requests
+  ## @skip lighthouseService.resources.limits
   resources:
     requests:
       memory: "128Mi"
@@ -493,9 +544,15 @@ statisticsService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
+  ## @param statisticsService.sidecars Add additional sidecar containers to the Statistics Service
   sidecars: []
+  ## @param statisticsService.extraVolumeMounts Add additional volume mounts to the Statistics Service
   extraVolumeMounts: []
+  ## @param statisticsService.extraVolumes Add additional volumes to the Statistics Service
   extraVolumes: []
+  ## @extra statisticsService.resources Define resources for the Statistics Service
+  ## @skip statisticsService.resources.requests
+  ## @skip statisticsService.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -513,9 +570,15 @@ approvalService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 5
+  ## @param approvalService.sidecars Add additional sidecar containers to the Approval Service
   sidecars: []
+  ## @param approvalService.extraVolumeMounts Add additional volume mounts to the Approval Service
   extraVolumeMounts: []
+  ## @param approvalService.extraVolumes Add additional volumes to the Approval Service
   extraVolumes: []
+  ## @extra approvalService.resources Define resources for the Approval Service
+  ## @skip approvalService.resources.requests
+  ## @skip approvalService.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -533,9 +596,15 @@ webhookService:
   nodeSelector: {}
   gracePeriod: 60
   preStopHookTime: 20
+  ## @param webhookService.sidecars Add additional sidecar containers to the Webhook Service
   sidecars: []
+  ## @param webhookService.extraVolumeMounts Add additional volume mounts to the Webhook Service
   extraVolumeMounts: []
+  ## @param webhookService.extraVolumes Add additional volumes to the Webhook Service
   extraVolumes: []
+  ## @extra webhookService.resources Define resources for the Webhook Service
+  ## @skip webhookService.resources.requests
+  ## @skip webhookService.resources.limits
   resources:
     requests:
       memory: "32Mi"
@@ -544,6 +613,7 @@ webhookService:
       memory: "64Mi"
       cpu: "100m"
 
+## @section Ingress
 ingress:
   enabled: false
   annotations: {}
@@ -554,6 +624,7 @@ ingress:
   tls:
     []
 
+## @section Common settings
 logLevel: "info"
 
 ## @param prefixPath
