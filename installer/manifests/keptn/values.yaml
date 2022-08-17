@@ -794,7 +794,7 @@ strategy:
     ## @param strategy.rollingUpdate.maxUnavailable Maximum number of unavailable pods during rolling updates
     maxUnavailable: 0
 
-## @extra Set the default pod security context for all pods
+## @extra podSecurityContext Set the default pod security context for all pods
 podSecurityContext:
   ## @param podSecurityContext.enabled Enable the default pod security context for all pods
   enabled: true
@@ -803,7 +803,7 @@ podSecurityContext:
   ## @skip podSecurityContext.fsGroup
   fsGroup: 65532
 
-## @extra Set the default container security context for all containers
+## @extra containerSecurityContext Set the default container security context for all containers
 containerSecurityContext:
   ## @param containerSecurityContext.enabled Enable the default container security context for all containers
   enabled: true
