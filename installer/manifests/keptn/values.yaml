@@ -240,8 +240,11 @@ apiGatewayNginx:
 remediationService:
   enabled: true
   image:
+    ## @param remediationService.image.registry Remediation Service image registry
     registry: ""
+    ## @param remediationService.image.repository Remediation Service image repository
     repository: "remediation-service"
+    ## @param remediationService.image.tag Remediation Service image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
@@ -266,8 +269,11 @@ remediationService:
 apiService:
   tokenSecretName:
   image:
+    ## @param apiService.image.registry API Service image registry
     registry: ""
+    ## @param apiService.image.repository API Service image repository
     repository: "api"    
+    ## @param apiService.image.tag API Service image tag
     tag: ""
   maxAuth:
     enabled: true
@@ -295,8 +301,11 @@ apiService:
 
 bridge:
   image:
+    ## @param bridge.image.registry Bridge image registry
     registry: ""
+    ## @param bridge.image.repository Bridge image repository
     repository: "bridge2"
+    ## @param bridge.image.tag Bridge image tag
     tag: ""
   cliDownloadLink: null
   secret:
@@ -360,8 +369,11 @@ distributor:
     hostname:
     namespace:
   image:
+    ## @param distributor.image.registry Distributor image registry
     registry: ""
+    ## @param distributor.image.repository Distributor image repository
     repository: "distributor"
+    ## @param distributor.image.tag Distributor image tag
     tag: ""
   config:
     proxy:
@@ -388,8 +400,11 @@ distributor:
 
 shipyardController:
   image:
+    ## @param shipyardController.image.registry Shipyard Controller image registry
     registry: ""
+    ## @param shipyardController.image.repository Shipyard Controller image repository
     repository: "shipyard-controller"
+    ## @param shipyardController.image.tag Shipyard Controller image tag
     tag: ""
   config:
     taskStartedWaitDuration: "10m"
@@ -430,8 +445,11 @@ shipyardController:
 
 secretService:
   image:
+    ## @param secretService.image.registry Secret Service image registry
     registry: ""
+    ## @param secretService.image.repository Secret Service image repository
     repository: "secret-service"     
+    ## @param secretService.image.tag Secret Service image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
@@ -456,8 +474,11 @@ secretService:
 resourceService:
   replicas: 1
   image:
+    ## @param resourceService.image.registry Resource Service image registry
     registry: ""
+    ## @param resourceService.image.repository Resource Service image repository
     repository: "resource-service"   
+    ## @param resourceService.image.tag Resource Service image tag
     tag: ""
   env:
     GIT_KEPTN_USER: "keptn"
@@ -486,8 +507,11 @@ resourceService:
 
 mongodbDatastore:
   image:
+    ## @param mongodbDatastore.image.registry MongoDB Datastore image registry
     registry: ""
+    ## @param mongodbDatastore.image.repository MongoDB Datastore image repository
     repository: "mongodb-datastore"  
+    ## @param mongodbDatastore.image.tag MongoDB Datastore image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
@@ -512,8 +536,11 @@ mongodbDatastore:
 lighthouseService:
   enabled: true
   image:
+    ## @param lighthouseService.image.registry Lighthouse Service image registry
     registry: ""
+    ## @param lighthouseService.image.repository Lighthouse Service image repository
     repository: "lighthouse-service" 
+    ## @param lighthouseService.image.tag Lighthouse Service image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
@@ -538,8 +565,11 @@ lighthouseService:
 statisticsService:
   enabled: true
   image:
+    ## @param statisticsService.image.registry Statistics Service image registry
     registry: ""
+    ## @param statisticsService.image.repository Statistics Service image repository
     repository: "statistics-service" 
+    ## @param statisticsService.image.tag Statistics Service image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
@@ -564,8 +594,11 @@ statisticsService:
 approvalService:
   enabled: true
   image:
+    ## @param approvalService.image.registry Approval Service image registry
     registry: ""
+    ## @param approvalService.image.repository Approval Service image repository
     repository: "approval-service"   
+    ## @param approvalService.image.tag Approval Service image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
@@ -590,8 +623,11 @@ approvalService:
 webhookService:
   enabled: true
   image:
+    ## @param webhookService.image.registry Webhook Service image registry
     registry: ""
+    ## @param webhookService.image.repository Webhook Service image repository
     repository: "webhook-service"    
+    ## @param webhookService.image.tag Webhook Service image tag
     tag: ""
   nodeSelector: {}
   gracePeriod: 60
