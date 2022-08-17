@@ -61,6 +61,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   private _previousFilter?: PreviousWebhookConfig;
   public isWebhookFormValid = true;
   public webhookFormDirty = false;
+  private isFilterDirty = false;
   public suffixes: Suffix[] = [
     {
       value: '>',
@@ -81,10 +82,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   ];
 
   public errorMessage?: string;
-  private pendingChangesSubject = new Subject<boolean>();
-  private isFilterDirty = false;
   public deleteType = DeleteType.SUBSCRIPTION;
 
+  private pendingChangesSubject = new Subject<boolean>();
   public readonly dialog: Dialog = {
     label: 'Pending Changes dialog',
     message: 'You have pending changes. Are you sure you want to leave this page?',
@@ -95,16 +95,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     mergeMap((paramMap) => {
       const projectName = paramMap.get('projectName');
       const integrationId = paramMap.get('integrationId');
-      const subscriptionId = paramMap.get('subscriptionId');
-      if (projectName && integrationId) {
-        return of({
-          projectName,
-          integrationId,
-          subscriptionId: subscriptionId ?? undefined,
-          editMode: !!subscriptionId,
-        } as Params);
-      }
-      return EMPTY;
+      const subscriptionId = paramMap.get('subscriptionId') ?? undefined;
+      const editMode = !!subscriptionId;
+      return projectName && integrationId
+        ? of({ projectName, integrationId, subscriptionId, editMode } as Params)
+        : EMPTY;
     }),
     shareReplay(1)
   );

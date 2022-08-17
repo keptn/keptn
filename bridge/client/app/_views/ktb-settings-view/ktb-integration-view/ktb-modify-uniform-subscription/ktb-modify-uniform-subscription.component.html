@@ -87,6 +87,7 @@
         ></ktb-payload-viewer>
         <ktb-webhook-settings
           *ngIf="data.isWebhookService"
+          [project]="params.projectName"
           [(webhook)]="data.webhook"
           [secrets]="data.webhookSecrets"
           [eventPayload]="eventPayload"
