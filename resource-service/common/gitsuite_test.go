@@ -352,18 +352,73 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 		}
 		if tt.doCommit {
 			c.Assert(id, Not(Equals), "")
-			s.checkCommit(c, r, id)
+			s.checkCommit(c, r, id, "", "")
 			// make sure there is a new commit
 			c.Assert(originalId, Not(Equals), id)
 			b, err := g.GetFileRevision(tt.gitContext, id, "foo/file.txt")
 			c.Assert(err, IsNil)
 			c.Assert("anycontent", Equals, string(b))
 		}
-
 	}
 }
 
-func (s *BaseSuite) checkCommit(c *C, r *git.Repository, id string) {
+func (s *BaseSuite) TestGit_StageAndCommitAll_OverrideUserAndEmail(c *C) {
+
+	tests := []struct {
+		name        string
+		gitContext  common_models.GitContext
+		commitUser  string
+		commitEmail string
+		message     string
+		wantErr     bool
+		doCommit    bool
+	}{
+
+		{
+			name:        "commit  new file",
+			gitContext:  s.NewGitContext(),
+			commitUser:  "my-user",
+			commitEmail: "my-email@keptn.sh",
+			message:     "my commit",
+			wantErr:     false,
+			doCommit:    true,
+		},
+	}
+	for _, tt := range tests {
+		os.Setenv(gitKeptnUserEnvVar, tt.commitUser)
+		os.Setenv(gitKeptnEmailEnvVar, tt.commitEmail)
+		c.Log("Test " + tt.name)
+		g := NewGit(GogitReal{})
+		r := s.Repository
+
+		//get current commit
+		h, err := r.Head()
+		c.Assert(err, IsNil)
+		originalId := h.Hash().String()
+
+		if tt.doCommit {
+			w, err := r.Worktree()
+			c.Assert(err, IsNil)
+			err = write("foo/file.txt", "anycontent", c, w)
+			c.Assert(err, IsNil)
+		}
+		id, err := g.StageAndCommitAll(tt.gitContext, tt.message)
+		if (err != nil) != tt.wantErr {
+			c.Errorf("StageAndCommitAll() error = %v, wantErr %v", err, tt.wantErr)
+		}
+		if tt.doCommit {
+			c.Assert(id, Not(Equals), "")
+			s.checkCommit(c, r, id, tt.commitUser, tt.commitEmail)
+			// make sure there is a new commit
+			c.Assert(originalId, Not(Equals), id)
+			b, err := g.GetFileRevision(tt.gitContext, id, "foo/file.txt")
+			c.Assert(err, IsNil)
+			c.Assert("anycontent", Equals, string(b))
+		}
+	}
+}
+
+func (s *BaseSuite) checkCommit(c *C, r *git.Repository, id string, user string, email string) {
 	head, err := r.Head()
 	c.Assert(err, IsNil)
 	// check local changes
@@ -374,6 +429,13 @@ func (s *BaseSuite) checkCommit(c *C, r *git.Repository, id string) {
 	nrh, err := newRepo.Head()
 	c.Assert(err, IsNil)
 	c.Assert(nrh.Hash().String(), Equals, id)
+
+	if user != "" && email != "" {
+		commit, err := newRepo.CommitObject(nrh.Hash())
+		c.Assert(err, IsNil)
+		c.Assert(commit.Committer.Name, Equals, user)
+		c.Assert(commit.Committer.Email, Equals, email)
+	}
 }
 
 func (s *BaseSuite) TestGit_Push(c *C) {
@@ -434,7 +496,7 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
 		}
 		if tt.push {
-			s.checkCommit(c, r, h.String())
+			s.checkCommit(c, r, h.String(), "", "")
 		}
 
 	}
