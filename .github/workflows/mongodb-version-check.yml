@@ -64,8 +64,8 @@ jobs:
       run: |
         # create a markdown file that contains details about the error
         echo "---" > mongodb-version-changed.md
-        echo "title: Bitnami/MongoDB version changed" >> mongodb-version-changed.md
-        #echo "labels: type:critical, area:core" >> mongodb-version-changed.md
+        echo "title: 'Bitnami/MongoDB version changed'" >> mongodb-version-changed.md
+        echo "labels: 'type:critical', 'area:core'" >> mongodb-version-changed.md
         echo "---" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
         echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> mongodb-version-changed.md
