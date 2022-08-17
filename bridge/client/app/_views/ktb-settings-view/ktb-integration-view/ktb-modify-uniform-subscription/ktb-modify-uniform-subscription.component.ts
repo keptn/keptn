@@ -32,9 +32,10 @@ export interface SubscriptionState {
   webhookSecrets?: IClientSecret[];
 }
 
-export type Params = { projectName: string; integrationId: string; subscriptionId?: string; editMode: boolean };
+type Params = { projectName: string; integrationId: string; subscriptionId?: string; editMode: boolean };
 type Suffix = { value: string; displayValue: string };
 type NotificationResult = { type: NotificationType; message: string };
+type Dialog = { label: string; message: string; unsavedState: null | 'unsaved' };
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -78,15 +79,17 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       displayValue: EventState.FINISHED,
     },
   ];
+
   public errorMessage?: string;
-
   private pendingChangesSubject = new Subject<boolean>();
-  public dialogLabel = 'Pending Changes dialog';
-  public message = 'You have pending changes. Are you sure you want to leave this page?';
-  public unsavedDialogState: null | 'unsaved' = null;
   private isFilterDirty = false;
-
   public deleteType = DeleteType.SUBSCRIPTION;
+
+  public readonly dialog: Dialog = {
+    label: 'Pending Changes dialog',
+    message: 'You have pending changes. Are you sure you want to leave this page?',
+    unsavedState: null,
+  };
 
   public params$ = this.route.paramMap.pipe(
     mergeMap((paramMap) => {
@@ -115,12 +118,11 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     private _changeDetectorRef: ChangeDetectorRef
   ) {
     const subscription$ = this.params$.pipe(
-      switchMap((params) => {
-        if (params.subscriptionId) {
-          return this.dataService.getUniformSubscription(params.integrationId, params.subscriptionId);
-        }
-        return of(new UniformSubscription(params.projectName));
-      }),
+      switchMap((params) =>
+        params.subscriptionId
+          ? this.dataService.getUniformSubscription(params.integrationId, params.subscriptionId)
+          : of(new UniformSubscription(params.projectName))
+      ),
       tap((subscription) => {
         if (subscription.id) {
           this._previousFilter = {
@@ -185,12 +187,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     );
 
     const webhookSecrets$ = integrationInfo$.pipe(
-      switchMap((info) => {
-        if (info.isWebhookService) {
-          return this.dataService.getSecretsForScope(SecretScopeDefault.WEBHOOK);
-        }
-        return of(undefined);
-      })
+      switchMap((info) =>
+        info.isWebhookService ? this.dataService.getSecretsForScope(SecretScopeDefault.WEBHOOK) : of(undefined)
+      )
     );
 
     const filter$ = this.params$.pipe(switchMap((params) => this.dataService.getSequenceFilter(params.projectName)));
@@ -220,7 +219,9 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   public deleteSubscription(params: Params, data: SubscriptionState): void {
-    if (!data.subscription.id) return;
+    if (!data.subscription.id) {
+      return;
+    }
     this.eventService.deletionProgressEvent.next({ isInProgress: true });
 
     this.dataService
@@ -422,15 +423,17 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   public showNotification(): void {
-    this.unsavedDialogState = 'unsaved';
-    const dialog = document.querySelector(`div[aria-label="${this.dialogLabel}"]`);
-    if (!dialog) return;
+    this.dialog.unsavedState = 'unsaved';
+    const dialog = document.querySelector(`div[aria-label="${this.dialog.label}"]`);
+    if (!dialog) {
+      return;
+    }
     dialog.classList.add('shake');
     setTimeout(() => dialog.classList.remove('shake'), 500);
   }
 
   public hideNotification(): void {
-    this.unsavedDialogState = null;
+    this.dialog.unsavedState = null;
   }
 
   public ngOnDestroy(): void {

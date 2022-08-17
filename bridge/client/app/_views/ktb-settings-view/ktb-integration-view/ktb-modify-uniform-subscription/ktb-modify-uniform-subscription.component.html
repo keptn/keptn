@@ -134,12 +134,12 @@
 
   <dt-confirmation-dialog
     id="unsavedDataDialog"
-    [state]="unsavedDialogState"
-    [aria-label]="dialogLabel"
+    [state]="dialog.unsavedState"
+    [aria-label]="dialog.label"
     uitestid="ktb-uniform-subscription-confirmation-dialog"
   >
     <dt-confirmation-dialog-state name="unsaved">
-      <p [textContent]="message"></p>
+      <p [textContent]="dialog.message"></p>
       <dt-confirmation-dialog-actions>
         <button dt-button variant="secondary" (click)="reject()">Stay</button>
         <button
