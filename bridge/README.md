@@ -6,7 +6,7 @@ Note that yarn dependencies are separated into two parts. The root level `packag
 
 ## Installation
 
-The Keptn bridge is installed as a part of [Keptn](https://keptn.sh). To get started with Keptn, please follow the [documentation](https://keptn.sh/docs/install/). If you want to install the most recent development version, follow the ["Install master branch" guide](https://github.com/keptn/keptn/blob/master/docs/developer/install_master.md).
+The Keptn Bridge is installed as a part of [Keptn](https://keptn.sh). To get started with Keptn, please follow the [documentation](https://keptn.sh/docs/install/). If you want to install the most recent development version, follow the ["Install master branch" guide](https://github.com/keptn/keptn/blob/master/docs/developer/install_master.md).
 
 ### Environment variables
 - `ENABLE_VERSION_CHECK` - If disabled, versions.json is not loaded and the version info will not be displayed.
@@ -16,7 +16,7 @@ The Keptn bridge is installed as a part of [Keptn](https://keptn.sh). To get sta
 
 ### Setting up Basic Authentication
 
-Keptn Bridge comes with a straightforward basic authentication feature, which can be controlled by setting the following two environment variables:
+Keptn Bridge can use [basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication), the following two environment variables define the values:
 
 - `BASIC_AUTH_USERNAME` - username
 - `BASIC_AUTH_PASSWORD` - password
@@ -77,7 +77,7 @@ To set up a login via OpenID you have to register an application with the identi
 After this is done, the following environment variables have to be set:
 
 - `OAUTH_ENABLED` - Flag to enable login via OpenID. To enable it set it to `true`.
-- `OAUTH_BASE_URL` - URL of the bridge (e.g. `http://localhost:3000` or `https://myBridgeInstallation.com`).
+- `OAUTH_BASE_URL` - URL of the Bridge (e.g. `http://localhost:3000` or `https://myBridgeInstallation.com`).
 - `OAUTH_DISCOVERY` - Discovery URL of the identity provider (e.g. https://api.login.yahoo.com/.well-known/openid-configuration).
 - `OAUTH_CLIENT_ID` - Client ID.
 - `OAUTH_ID_TOKEN_ALG` (optional) - Algorithm that is used to verify the ID token (e.g. `ES256`). Default is `RS256`.
@@ -104,9 +104,9 @@ data:
 
 - Make sure you add the redirect URI `https://${yourDomain}/${pathToBridge}/oauth/redirect` to your identity provider.
 - The identity provider has to support the grant types `authorization_code` and `refresh_token` and provide the endpoints `authorization_endpoint`, `token_endpoint` and `jwks_uri`.
-- The refresh of the token is done by the bridge server on demand.
+- The refresh of the token is done by the Bridge server on demand.
 - If the identity provider provides the endpoint `end_session_endpoint`, it will be used for the logout.
-- The bridge server itself is a confidential client.
+- The Bridge server itself is a confidential client.
 
 ### Custom Look And Feel
 
@@ -178,7 +178,7 @@ For the development of new components outside of the actual app's context, Story
 
 ### Create workspace
 
-Before creating the workspace, make sure that you have already cloned the keptn/keptn repository to your local file system. For IntelliJ, we would recommend cloning the entire repository to the `Idea Projects` folder as it is easier to import modules.
+Before creating the workspace, make sure that you already have cloned the keptn/keptn repository to your local file system. For IntelliJ, we would recommend cloning the entire repository to the `Idea Projects` folder as it is easier to import modules.
 
 #### IntelliJ
 
