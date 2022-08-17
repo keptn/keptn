@@ -1,0 +1,77 @@
+name: MongoDB Chart Version Check
+on:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: '0 0 1 */2 *' # run check at midnight, at the first day of the month, every two months
+
+defaults:
+  run:
+    shell: bash
+jobs:
+  check-mongodb-versions:
+    name: Check MongoDB chart versions
+    runs-on: ubuntu-20.04
+    outputs:
+      CREATE_ISSUE: ${{ steps.compare_mongodb_versions.outputs.CREATE_ISSUE }}
+      BITNAMI_VERSION: ${{ steps.get_bitnami_mongodb_version.outputs.MONGODB_VERSION }}
+      KEPTN_VERSION: ${{ steps.get_keptn_mongodb_version.outputs.MONGODB_VERSION }}
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Get Keptn MongoDB version
+      id: get_keptn_mongodb_version
+      run: |
+        MONGODB_VERSION=$(cd ./installer/manifests/keptn/ && helm dependency list | grep -e "mongodb" | awk '{print $2}')
+        echo "::set-output name=MONGODB_VERSION::$MONGODB_VERSION"
+  
+    - name: "Get latest Bitnami/MongoDB version"
+      id: get_bitnami_mongodb_version
+      run: |
+        helm repo add bitnami https://charts.bitnami.com/bitnami
+        MONGODB_VERSION=$(helm search repo bitnami | grep -e "mongodb " | awk '{print $2}')
+        echo "::set-output name=MONGODB_VERSION::$MONGODB_VERSION"
+
+    - name: "Compare MongoDB Chart versions"
+      id: compare_mongodb_versions
+      env:
+        KEPTN_VERSION: ${{ steps.get_keptn_mongodb_version.outputs.MONGODB_VERSION }}
+        BITNAMI_VERSION: ${{ steps.get_bitnami_mongodb_version.outputs.MONGODB_VERSION }}
+      run: |
+        CREATE_ISSUE=false
+        if [[ "$KEPTN_VERSION" != "$BITNAMI_VERSION" ]]; then
+          CREATE_ISSUE=true
+        fi
+        echo "::set-output name=CREATE_ISSUE::$CREATE_ISSUE"
+
+  create_issue:
+    name: Create GitHub Issue
+    runs-on: ubuntu-20.04
+    needs: check-mongodb-versions
+    steps:
+    - name: Formulate bug issue
+      if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
+      id: formulate_bug_issue
+      env:
+        KEPTN_VERSION : ${{ needs.check-mongodb-versions.outputs.KEPTN_VERSION }}
+        BITNAMI_VERSION : ${{ needs.check-mongodb-versions.outputs.BITNAMI_VERSION }}
+      run: |
+        # create a markdown file that contains details about the error
+        echo "---" > mongodb-version-changed.md
+        echo "title: 'Bitnami/MongoDB version changed'" >> mongodb-version-changed.md
+        echo "labels: ['type:critical', 'area:core']" >> mongodb-version-changed.md
+        echo "---" >> mongodb-version-changed.md
+        echo "" >> mongodb-version-changed.md
+        echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> mongodb-version-changed.md
+        echo "* Version Bitnami: $BITNAMI_VERSION" >> mongodb-version-changed.md
+        echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
+        echo "" >> mongodb-version-changed.md
+        echo "Note: This issue was auto-generated from [mongodb-version-check.yml](.github/workflows/mongodb-version-check.yml)" >> mongodb-version-changed.md
+
+    - name: Create issue if versions differ
+      if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
+      uses: JasonEtco/create-an-issue@v2.6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        filename: mongodb-version-changed.md
