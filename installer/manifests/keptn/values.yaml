@@ -64,12 +64,6 @@ mongo:
       cpu: 1000m
       memory: 500Mi
 
-## @param prefixPath
-prefixPath: ""
-
-## @param keptnSpecVersion
-keptnSpecVersion: latest
-
 ## @section Keptn Features
 features:
   automaticProvisioning:
@@ -561,6 +555,12 @@ ingress:
     []
 
 logLevel: "info"
+
+## @param prefixPath
+prefixPath: ""
+
+## @param keptnSpecVersion
+keptnSpecVersion: latest
 
 strategy:
   type: RollingUpdate

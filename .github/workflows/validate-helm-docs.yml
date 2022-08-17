@@ -40,6 +40,7 @@ jobs:
       - name: Execute diff
         working-directory: current
         run: |
+          # TODO change path back to ../master/installer/manifests/keptn/README.md
           cp ../master/installer/README.md ./installer/manifests/keptn/README-old.md
           cd ./installer/manifests/keptn
           readme-generator --values=./values.yaml --readme=./README.md
