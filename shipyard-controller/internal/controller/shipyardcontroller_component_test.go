@@ -774,7 +774,7 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 
 	mockDispatcher := sc.eventDispatcher.(*fake.IEventDispatcherMock)
 	mockDispatcher.AddFunc = func(event models.DispatcherEvent, skipQueue bool) error {
-		e := fake.EventScope{}
+		e := EventScope{}
 		event.Event.DataAs(&e)
 		for _, s := range sequence_execution_queue {
 			eventData := keptnv2.EventData{}
@@ -818,7 +818,7 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		Service: common.Stringp("carts"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 
 	require.Equal(t, commitID, triggeredEvents[0].GitCommitID)
 	triggeredID := triggeredEvents[0].ID
@@ -856,7 +856,7 @@ func Test_shipyardController_Scenario8(t *testing.T) {
 		Service: common.Stringp("carts2"),
 		Source:  common.Stringp("shipyard-controller"),
 	}, common.TriggeredEvent)
-	fake.ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
+	ShouldContainEvent(t, triggeredEvents, keptnv2.GetTriggeredEventType(keptnv2.DeploymentTaskName), "", nil)
 
 	triggeredID2 := triggeredEvents[0].ID
 	require.Equal(t, commitID2, triggeredEvents[0].GitCommitID)
