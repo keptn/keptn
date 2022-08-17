@@ -41,7 +41,7 @@ mongo:
   external:
     ## @param mongo.external.connectionString
     connectionString:
-  ## @param mongo.containerSecurityContext Container Security Context that should be used for all MongoDB pods
+  ## @extra mongo.containerSecurityContext Container Security Context that should be used for all MongoDB pods
   ## @skip mongo.containerSecurityContext.allowPrivilegeEscalation
   ## @skip mongo.containerSecurityContext.capabilities
   ## @skip mongo.containerSecurityContext.capabilities.drop
@@ -53,11 +53,9 @@ mongo:
   serviceAccount:
     ## @param mongo.serviceAccount.automountServiceAccountToken
     automountServiceAccountToken: false
-  ## @param resources Define resources for MongoDB
-  ## @skip mongo.resources.requests.cpu
-  ## @skip mongo.resources.requests.memory
-  ## @skip mongo.resources.limits.cpu
-  ## @skip mongo.resources.limits.memory
+  ## @extra mongo.resources Define resources for MongoDB
+  ## @skip mongo.resources.requests
+  ## @skip mongo.resources.limits
   resources:
     requests:
       cpu: 200m
@@ -66,8 +64,10 @@ mongo:
       cpu: 1000m
       memory: 500Mi
 
+## @param prefixPath
 prefixPath: ""
 
+## @param keptnSpecVersion
 keptnSpecVersion: latest
 
 ## @section Keptn Features
@@ -102,7 +102,7 @@ nats:
     replicas: 3
     ## @param nats.cluster.name Define the NATS cluster name
     name: nats
-  ## @param nats.securityContext Define security context settings for NATS
+  ## @extra nats.securityContext Define security context settings for NATS
   ## @skip nats.securityContext.runAsNonRoot
   ## @skip nats.securityContext.runAsUser
   ## @skip nats.securityContext.fsGroup
@@ -113,11 +113,9 @@ nats:
   nats:
     ## @param nats.nats.automountServiceAccountToken
     automountServiceAccountToken: false
-    ## @param nats.nats.resources Define resources for NATS
-    ## @skip nats.nats.resources.requests.cpu
-    ## @skip nats.nats.resources.requests.memory
-    ## @skip nats.nats.resources.limits.cpu
-    ## @skip nats.nats.resources.limits.memory
+    ## @extra nats.nats.resources Define resources for NATS
+    ## @skip nats.nats.resources.requests
+    ## @skip nats.nats.resources.limits
     resources:
       requests:
         cpu: 200m
@@ -149,7 +147,7 @@ nats:
         size: 5Gi
         storageDirectory: /data/
         storageClassName: ""
-    ## @param nats.nats.securityContext Define the container security context for NATS
+    ## @extra nats.nats.securityContext Define the container security context for NATS
     ## @skip nats.nats.securityContext.readOnlyRootFilesystem
     ## @skip nats.nats.securityContext.allowPrivilegeEscalation
     ## @skip nats.nats.securityContext.privileged
@@ -170,7 +168,6 @@ nats:
   natsbox:
     ## @param nats.natsbox.enabled Enable NATS Box utility container
     enabled: false
-  ## @param reloader
   reloader:
     ## @param nats.reloader.enabled Enable NATS Config Reloader sidecar to reload configuration during runtime
     enabled: false
@@ -188,15 +185,14 @@ apiGatewayNginx:
   targetPort: 8080
   ## @param apiGatewayNginx.nodePort
   nodePort: 31090
-  ## @param podSecurityContext Define a pod security context for the API Gateway
-  ## @skip apiGatewayNginx.podSecurityContext.enabled
-  ## @skip apiGatewayNginx.podSecurityContext.defaultSeccompProfile
-  ## @skip apiGatewayNginx.podSecurityContext.fsGroup
   podSecurityContext:
+    ## @param apiGatewayNginx.podSecurityContext.enabled Enable the pod security context for the API Gateway
     enabled: true
+    ## @param apiGatewayNginx.podSecurityContext.defaultSeccompProfile Use the default seccomp profile for the API Gateway
     defaultSeccompProfile: true
+    ## @param apiGatewayNginx.podSecurityContext.fsGroup Filesystem group to be used by the API Gateway
     fsGroup: 101
-  ## @param containerSecurityContext Define a container security context for the API Gateway
+  ## @extra apiGatewayNginx.containerSecurityContext Define a container security context for the API Gateway
   ## @skip apiGatewayNginx.containerSecurityContext.enabled
   ## @skip apiGatewayNginx.containerSecurityContext.runAsNonRoot
   ## @skip apiGatewayNginx.containerSecurityContext.runAsUser
@@ -236,11 +232,9 @@ apiGatewayNginx:
   extraVolumeMounts: []
   ## @param apiGatewayNginx.extraVolumes Add additional volumes to the API Gateway
   extraVolumes: []
-  ## @param resources Define resources for the API Gateway
-  ## @skip apiGatewayNginx.resources.requests.cpu
-  ## @skip apiGatewayNginx.resources.requests.memory
-  ## @skip apiGatewayNginx.resources.limits.cpu
-  ## @skip apiGatewayNginx.resources.limits.memory
+  ## @extra apiGatewayNginx.resources Define resources for the API Gateway
+  ## @skip apiGatewayNginx.resources.requests
+  ## @skip apiGatewayNginx.resources.limits
   resources:
     requests:
       memory: "64Mi"
