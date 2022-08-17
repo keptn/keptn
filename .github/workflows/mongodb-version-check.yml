@@ -76,8 +76,6 @@ jobs:
         fi
         echo "* Version Bitnami: $BITNAMI_VERSION" >> mongodb-version-changed.md
         echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
-        echo "* Branch: $BRANCH" >> mongodb-version-changed.md
-        echo "* Datetime: $DATETIME" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
         echo "Note: This issue was auto-generated from [mongodb-version-check.yml](.github/workflows/mongodb-version-check.yml)" >> mongodb-version-changed.md
 
