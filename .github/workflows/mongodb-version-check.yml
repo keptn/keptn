@@ -64,7 +64,7 @@ jobs:
       run: |
         # create a markdown file that contains details about the error
         echo "---" > mongodb-version-changed.md
-        echo "title: MongoDB - Bitnami version differs from version used by Keptn" >> mongodb-version-changed.md
+        echo "title: Bitnami/MongoDB version changed" >> mongodb-version-changed.md
         echo "labels: type:critical, area:core" >> mongodb-version-changed.md
         echo "---" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
@@ -77,9 +77,7 @@ jobs:
         echo "* Version Bitnami: $BITNAMI_VERSION" >> mongodb-version-changed.md
         echo "* Version Keptn: $KEPTN_VERSION" >> mongodb-version-changed.md
         echo "* Branch: $BRANCH" >> mongodb-version-changed.md
-        echo "* Version: $VERSION" >> mongodb-version-changed.md
         echo "* Datetime: $DATETIME" >> mongodb-version-changed.md
-        echo "* Commit: $GIT_SHA" >> mongodb-version-changed.md
         echo "" >> mongodb-version-changed.md
         echo "Note: This issue was auto-generated from [mongodb-version-check.yml](.github/workflows/mongodb-version-check.yml)" >> mongodb-version-changed.md
 
