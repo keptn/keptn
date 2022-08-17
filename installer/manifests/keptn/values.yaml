@@ -169,7 +169,7 @@ nats:
     ## @param nats.exporter.enabled Enable NATS Prometheus Exporter sidecar to emit prometheus metrics
     enabled: false
 
-## @section API Gateway NginX
+## @section API Gateway Nginx
 apiGatewayNginx:
   ## @param apiGatewayNginx.type
   type: ClusterIP
@@ -433,7 +433,7 @@ distributor:
       ## @param distributor.config.proxy.maxPayloadBytesKB
       maxPayloadBytesKB: "64"
     queueGroup:
-      ## @param distributor.config.queueGroup.enabled Enable queue groups for distibutor
+      ## @param distributor.config.queueGroup.enabled Enable queue groups for distributor
       enabled: true
     oauth:
       ## @param distributor.config.oauth.clientID
