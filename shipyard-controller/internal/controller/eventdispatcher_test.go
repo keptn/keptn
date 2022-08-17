@@ -314,8 +314,8 @@ func Test_DispatcherEventFilterContainsService_EventIsSentImmediately(t *testing
 	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).WithKeptnContext("my-context").Build()
 	dispatcherEvent1 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event1), TimeStamp: timeNow}
 
-	eventRepo := &dbmock.EventRepoMock{}
-	eventQueueRepo := &dbmock.EventQueueRepoMock{
+	eventRepo := &db_mock.EventRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
 		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
 			return nil, nil
 		},
@@ -345,14 +345,14 @@ func Test_DispatcherEventFilterContainsService_EventIsSentImmediately(t *testing
 
 	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
 		//return an event only if the filter has the service
-		return []apimodels.KeptnContextExtendedCE{{ID: *filter.ID, Specversion: "1.0", Source: stringp("source"), Type: stringp("my-type"), Data: keptnv2.EventData{
+		return []apimodels.KeptnContextExtendedCE{{ID: *filter.ID, Specversion: "1.0", Source: common.Stringp("source"), Type: common.Stringp("my-type"), Data: keptnv2.EventData{
 			Project: "my-project",
 			Stage:   "my-stage",
 			Service: "my-service",
 		}}}, nil
 	}
 
-	sequenceExecutionRepo := &dbmock.SequenceExecutionRepoMock{
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{
 		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
 			//return an event only if the filter has the service
 			if filter.Scope.Service == "my-service" {
