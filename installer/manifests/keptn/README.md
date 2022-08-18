@@ -72,7 +72,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `nats.exporter.enabled`                            | Enable NATS Prometheus Exporter sidecar to emit prometheus metrics         | `false`      |
 
 
-### API Gateway NginX
+### API Gateway Nginx
 
 | Name                                                       | Description                                             | Value                |
 | ---------------------------------------------------------- | ------------------------------------------------------- | -------------------- |
@@ -116,22 +116,24 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### API Service
 
-| Name                                   | Description                                           | Value  |
-| -------------------------------------- | ----------------------------------------------------- | ------ |
-| `apiService.tokenSecretName`           | K8s secret to be used as API token in the API Service | `nil`  |
-| `apiService.image.registry`            | API Service image registry                            | `""`   |
-| `apiService.image.repository`          | API Service image repository                          | `api`  |
-| `apiService.image.tag`                 | API Service image tag                                 | `""`   |
-| `apiService.maxAuth.enabled`           | Enable API authentication rate limiting               | `true` |
-| `apiService.maxAuth.requestsPerSecond` | API authentication rate limiting requests per second  | `1.0`  |
-| `apiService.maxAuth.requestBurst`      | API authentication rate limiting requests burst       | `2`    |
-| `apiService.nodeSelector`              | API Service node labels for pod assignment            | `{}`   |
-| `apiService.gracePeriod`               | API Service termination grace period                  | `60`   |
-| `apiService.preStopHookTime`           | API Service pre stop timeout                          | `5`    |
-| `apiService.sidecars`                  | Add additional sidecar containers to the API Service  | `[]`   |
-| `apiService.extraVolumeMounts`         | Add additional volume mounts to the API Service       | `[]`   |
-| `apiService.extraVolumes`              | Add additional volumes to the API Service             | `[]`   |
-| `apiService.resources`                 | Define resources for the API Service                  |        |
+| Name                                        | Description                                                                                                                                  | Value  |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
+| `apiService.tokenSecretName`                | K8s secret to be used as API token in the API Service                                                                                        | `nil`  |
+| `apiService.image.registry`                 | API Service image registry                                                                                                                   | `""`   |
+| `apiService.image.repository`               | API Service image repository                                                                                                                 | `api`  |
+| `apiService.image.tag`                      | API Service image tag                                                                                                                        | `""`   |
+| `apiService.maxAuth.enabled`                | Enable API authentication rate limiting                                                                                                      | `true` |
+| `apiService.maxAuth.requestsPerSecond`      | API authentication rate limiting requests per second                                                                                         | `1.0`  |
+| `apiService.maxAuth.requestBurst`           | API authentication rate limiting requests burst                                                                                              | `2`    |
+| `apiService.eventValidation.enabled`        | Enable stricter validation of inbound events via public the event endpoint                                                                   | `true` |
+| `apiService.eventValidation.maxEventSizeKB` | specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0 | `64`   |
+| `apiService.nodeSelector`                   | API Service node labels for pod assignment                                                                                                   | `{}`   |
+| `apiService.gracePeriod`                    | API Service termination grace period                                                                                                         | `60`   |
+| `apiService.preStopHookTime`                | API Service pre stop timeout                                                                                                                 | `5`    |
+| `apiService.sidecars`                       | Add additional sidecar containers to the API Service                                                                                         | `[]`   |
+| `apiService.extraVolumeMounts`              | Add additional volume mounts to the API Service                                                                                              | `[]`   |
+| `apiService.extraVolumes`                   | Add additional volumes to the API Service                                                                                                    | `[]`   |
+| `apiService.resources`                      | Define resources for the API Service                                                                                                         |        |
 
 
 ### Bridge
@@ -170,7 +172,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `distributor.image.tag`                      | Distributor image tag                | `""`          |
 | `distributor.config.proxy.httpTimeout`       |                                      | `30`          |
 | `distributor.config.proxy.maxPayloadBytesKB` |                                      | `64`          |
-| `distributor.config.queueGroup.enabled`      | Enable queue groups for distibutor   | `true`        |
+| `distributor.config.queueGroup.enabled`      | Enable queue groups for distributor  | `true`        |
 | `distributor.config.oauth.clientID`          |                                      | `""`          |
 | `distributor.config.oauth.clientSecret`      |                                      | `""`          |
 | `distributor.config.oauth.discovery`         |                                      | `""`          |
