@@ -146,7 +146,7 @@ func (sc ShipyardController) StopDispatchers() {
 }
 
 func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextExtendedCE, waitForCompletion bool) error {
-	statusType, err := ExtractEventKind(event)
+	statusType, commonEventData, err := ExtractEventKind(event)
 	if err != nil {
 		return err
 	}
@@ -156,17 +156,14 @@ func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 		done = make(chan error)
 	}
 
-	eventData := keptnv2.EventData{}
-	keptnv2.Decode(event.Data, &eventData)
-
 	if *event.Source != "shipyard-controller" {
 		log.
 			WithFields(log.Fields{
 				"source":       *event.Source,
 				"keptncontext": event.Shkeptncontext,
-				"project":      eventData.Project,
-				"service":      eventData.Service,
-				"stage":        eventData.Stage,
+				"project":      commonEventData.Project,
+				"service":      commonEventData.Service,
+				"stage":        commonEventData.Stage,
 			}).
 			Infof("[RECEIVED  ]Event '%s' received", *event.Type)
 	}

@@ -6,6 +6,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 )
@@ -482,50 +483,26 @@ func Test_GetTaskSequencesByTrigger(t *testing.T) {
 }
 
 func TestExtractEventKind(t *testing.T) {
-	myType := keptnv2.GetTriggeredEventType("dev.delivery")
-	invalidType := "imnotvalid"
-	type args struct {
-		event apimodels.KeptnContextExtendedCE
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    string
-		wantErr bool
-	}{
-		{
-			name: "get type of valid event",
-			args: args{
-				event: apimodels.KeptnContextExtendedCE{
-					Data: keptnv2.EventData{},
-					Type: &myType,
-				},
-			},
-			want:    "triggered",
-			wantErr: false,
-		},
-		{
-			name: "get error for invalid event type",
-			args: args{
-				event: apimodels.KeptnContextExtendedCE{
-					Data: keptnv2.EventData{},
-					Type: &invalidType,
-				},
-			},
-			want:    "",
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := ExtractEventKind(tt.args.event)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ExtractEventKind() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("ExtractEventKind() got = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Run("valid event type", func(t *testing.T) {
+		eventType := keptnv2.GetTriggeredEventType("dev.delivery")
+		event := apimodels.KeptnContextExtendedCE{
+			Data: keptnv2.EventData{},
+			Type: &eventType,
+		}
+		kind, eventData, err := ExtractEventKind(event)
+		require.Equal(t, "triggered", kind)
+		require.NotNil(t, eventData)
+		require.NoError(t, err)
+	})
+	t.Run("get error for invalid event type", func(t *testing.T) {
+		eventType := "invalid!"
+		event := apimodels.KeptnContextExtendedCE{
+			Data: keptnv2.EventData{},
+			Type: &eventType,
+		}
+		kind, eventData, err := ExtractEventKind(event)
+		require.Empty(t, kind)
+		require.Nil(t, eventData)
+		require.Error(t, err)
+	})
 }

@@ -31,7 +31,7 @@ var ErrSequencePaused = errors.New("sequence is paused")
 
 var ErrSequenceBlocked = errors.New("sequence is currently blocked")
 
-var ErrSequenceBlockedWaiting = errors.New("sequence is currently blocked by waiting for another sequence to end")
+var ErrSequenceBlockedWaiting = errors.New("sequence is blocked by another sequence")
 
 var ErrNoMatchingEvent = errors.New("no matching event found")
 
