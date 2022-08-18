@@ -12,6 +12,9 @@ echo "Checking if readme generator is installed already..."
 if [[ $(npm list -g | grep -c 'readme-generator-for-helm') -eq 0 ]]; then
   echo "Readme Generator not installed, installing now..."
   git clone https://github.com/bitnami-labs/readme-generator-for-helm.git
+  cd ./readme-generator-for-helm || exit
+  npm ci
+  cd ..
   npm install -g ./readme-generator-for-helm
 else
   echo "Readme Generator is already installed, continuing..."

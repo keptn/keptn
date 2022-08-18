@@ -72,7 +72,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `nats.exporter.enabled`                            | Enable NATS Prometheus Exporter sidecar to emit prometheus metrics         | `false`      |
 
 
-### API Gateway NginX
+### API Gateway Nginx
 
 | Name                                                       | Description                                             | Value                |
 | ---------------------------------------------------------- | ------------------------------------------------------- | -------------------- |
@@ -170,7 +170,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `distributor.image.tag`                      | Distributor image tag                | `""`          |
 | `distributor.config.proxy.httpTimeout`       |                                      | `30`          |
 | `distributor.config.proxy.maxPayloadBytesKB` |                                      | `64`          |
-| `distributor.config.queueGroup.enabled`      | Enable queue groups for distibutor   | `true`        |
+| `distributor.config.queueGroup.enabled`      | Enable queue groups for distributor  | `true`        |
 | `distributor.config.oauth.clientID`          |                                      | `""`          |
 | `distributor.config.oauth.clientSecret`      |                                      | `""`          |
 | `distributor.config.oauth.discovery`         |                                      | `""`          |
