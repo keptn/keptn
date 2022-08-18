@@ -1,0 +1,49 @@
+name: Validate Helm Docs
+on:
+  pull_request:
+    branches:
+      - 'master'
+      - '[0-9]+.[1-9][0-9]*.x'
+defaults:
+  run:
+    shell: bash
+jobs:
+  check-helm-docs:
+    name: Check helm documentation values
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          path: 'current'
+
+      - name: Check out code
+        uses: actions/checkout@v3
+        with:
+          ref: 'master'
+          path: 'master'
+
+      - name: Set up Node
+        uses: actions/setup-node@v3.4.1
+        with:
+          node-version: 16
+
+      - name: Install readme generator
+        working-directory: current
+        run: |
+          git clone https://github.com/bitnami-labs/readme-generator-for-helm.git
+          cd ./readme-generator-for-helm
+          npm ci
+          npm install --location=global ./
+          cd ..
+
+      - name: Execute diff
+        working-directory: current
+        run: |
+          cp ../master/installer/manifests/keptn/README.md ./installer/manifests/keptn/README-old.md
+          cd ./installer/manifests/keptn
+          readme-generator --values=./values.yaml --readme=./README.md
+          if ! cmp --quiet ./README-old.md ./README.md; then
+            echo "The Helm values have changes that are not reflected in the readme. Please use ./gh-actions-scripts/generate-helm-docs.sh to re-generate the docs."
+            exit 1
+          fi
