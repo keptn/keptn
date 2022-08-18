@@ -40,5 +40,6 @@ jobs:
             diff ./README-old.md ./README.md
             exit 1
           else
+            echo ""
             echo "Helm values documentation is correct!"
           fi
