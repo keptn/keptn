@@ -129,6 +129,6 @@ func sendInternalErrorForPost(err error) *event.PostEventInternalServerError {
 }
 
 func sendBadRequestErrorForPost(err error) *event.PostEventBadRequest {
-	logger.Error(err.Error())
+	logger.Warn(err.Error())
 	return event.NewPostEventBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 }

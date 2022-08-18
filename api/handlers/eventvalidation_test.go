@@ -448,21 +448,6 @@ func TestValidate(t *testing.T) {
 			},
 		},
 		{
-			name: "monitoring configure - missing service",
-			args: args{
-				e: models.KeptnContextExtendedCE{
-					Contenttype: "application/json",
-					Data:        map[string]interface{}{"project": "prj", "type": "prometheus"},
-					Source:      stringp("test-source"),
-					Specversion: "1.0",
-					Type:        stringp("sh.keptn.event.monitoring.configure"),
-				},
-			},
-			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
-				return assert.ErrorAs(t, err, &EventValidationError{})
-			},
-		},
-		{
 			name: "task invalidated event -generally allowed",
 			args: args{
 				e: models.KeptnContextExtendedCE{

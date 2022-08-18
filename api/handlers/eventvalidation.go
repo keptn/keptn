@@ -84,7 +84,7 @@ func validateTaskStartedEvent(e models.KeptnContextExtendedCE) error {
 	}
 
 	if e.Triggeredid == "" {
-		return &EventValidationError{Msg: "mandatroy field 'triggeredid' missing"}
+		return &EventValidationError{Msg: "mandatory field 'triggeredid' missing"}
 	}
 	return nil
 }
@@ -106,7 +106,7 @@ func validateTaskFinishedEvent(e models.KeptnContextExtendedCE) error {
 	}
 
 	if e.Triggeredid == "" {
-		return &EventValidationError{Msg: "mandatroy field 'triggeredid' missing"}
+		return &EventValidationError{Msg: "mandatory field 'triggeredid' missing"}
 	}
 	return nil
 }
@@ -141,7 +141,7 @@ func validateMonitoringConfigureEvent(e models.KeptnContextExtendedCE) error {
 		return &EventValidationError{Msg: "could not parse common event data"}
 	}
 
-	if eventData.Project == "" || eventData.Service == "" || eventData.Type == "" {
+	if eventData.Project == "" || eventData.Type == "" {
 		return &EventValidationError{Msg: "mandatory fields(s) 'project', 'service' or 'type' missing"}
 	}
 
