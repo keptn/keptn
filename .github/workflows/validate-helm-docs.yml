@@ -45,19 +45,7 @@ jobs:
           readme-generator --values=./values.yaml --readme=./README.md
           if ! cmp --quiet ./README-old.md ./README.md; then
             echo "The Helm values have changes that are not reflected in the readme. Please use ./gh-actions-scripts/generate-helm-docs.sh to re-generate the docs."
+            echo "=========== Diff ==========="
+            diff ./README-old.md ./README.md
             exit 1
           fi
-
-      - name: Upload Readmes
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: readme-master
-          path: master/installer/manifests/keptn/README.md
-
-      - name: Upload Readmes
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: readme-current
-          path: current/installer/manifests/keptn/README.md
