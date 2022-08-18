@@ -490,7 +490,7 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 		EventID: "my-event-id2",
 	}
 	err = sequenceDispatcher.Add(queueItem)
-	require.Equal(t, err.Error(), "sequence is currently blocked by waiting for another sequence to end")
+	require.Equal(t, "sequence is blocked by another sequence", err.Error())
 	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 3)
 
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)
@@ -551,7 +551,7 @@ func TestSequenceDispatcher_QueueIsNotEmpty(t *testing.T) {
 		EventID: "my-event-id2",
 	}
 	err = sequenceDispatcher.Add(queueItem)
-	require.Equal(t, err.Error(), "sequence is currently blocked by waiting for another sequence to end")
+	require.Equal(t, "sequence is blocked by another sequence", err.Error())
 	require.Len(t, mockSequenceExecutionRepo.GetCalls(), 5)
 
 	require.Len(t, mockEventRepo.GetEventsCalls(), 1)

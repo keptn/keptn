@@ -81,7 +81,7 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 				"service":      eventScope.Service,
 				"stage":        eventScope.Stage,
 			}).
-			Infof("[DISPATCHED]Event '%s' was dispatched", eventScope.EventType)
+			Infof("[DISPATCHED] Event '%s'", eventScope.EventType)
 		return nil
 	}
 	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
@@ -102,29 +102,16 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 					"service":      eventScope.Service,
 					"stage":        eventScope.Stage,
 				}).
-				Infof("[DISPATCHED]Event '%s' was dispatched", eventScope.EventType)
+				Infof("[DISPATCHED] Event '%s'", eventScope.EventType)
 			return nil
 		}
 	}
 
-	err = e.eventQueueRepo.QueueEvent(models.QueueItem{
+	return e.eventQueueRepo.QueueEvent(models.QueueItem{
 		Scope:     *eventScope,
 		EventID:   event.Event.ID(),
 		Timestamp: event.TimeStamp,
 	})
-	if err != nil {
-		log.
-			WithFields(log.Fields{
-				"source":       eventScope.EventSource,
-				"keptncontext": eventScope.KeptnContext,
-				"project":      eventScope.Project,
-				"service":      eventScope.Service,
-				"stage":        eventScope.Stage,
-			}).
-			Infof("[QUEUED]Event '%s' was queued", eventScope.EventType)
-	}
-	return err
-
 }
 
 func (e *EventDispatcher) OnSequenceAborted(eventScope models.EventScope) {
@@ -202,12 +189,22 @@ func (e *EventDispatcher) dispatchEvents() {
 		}
 
 		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce, TimeStamp: time.Now().UTC()}); err != nil {
-			log.Errorf("could not send CloudEvent: %s", err.Error())
+			log.Errorf("could not dispatch event with type '%s' and context '%s': %s", eventScope.EventType, eventScope.KeptnContext, err.Error())
 			continue
+		} else {
+			log.
+				WithFields(log.Fields{
+					"source":       eventScope.EventSource,
+					"keptncontext": eventScope.KeptnContext,
+					"project":      eventScope.Project,
+					"service":      eventScope.Service,
+					"stage":        eventScope.Stage,
+				}).
+				Infof("[DISPATCHED] Event '%s'", eventScope.EventType)
 		}
 
 		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
-			log.Errorf("could not delete event from event queue: %s", err.Error())
+			log.Errorf("could not delete event with id %s from event queue: %s", queueItem.EventID, err.Error())
 			continue
 		}
 	}

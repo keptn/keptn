@@ -76,7 +76,7 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 						"service":      queueItem.Scope.Service,
 						"stage":        queueItem.Scope.Stage,
 					}).
-					Infof("[QUEUED    ]Sequence '%s:%s' to be queued: %v", queueItem.Scope.Stage, seqName, err)
+					Infof("[QUEUED    ] Sequence '%s' in stage '%s': %v", seqName, queueItem.Scope.Stage, err)
 				return sd.add(queueItem)
 			} else if errors.Is(err, common.ErrSequenceBlockedWaiting) {
 				//if the sequence is currently blocked and should wait, insert it into the queue
@@ -88,7 +88,7 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 						"service":      queueItem.Scope.Service,
 						"stage":        queueItem.Scope.Stage,
 					}).
-					Infof("[QUEUED    ]Sequence '%s:%s' to be queued: %v", queueItem.Scope.Stage, seqName, err)
+					Infof("[QUEUED    ] Sequence '%s' in stage '%s': %v", seqName, queueItem.Scope.Stage, err)
 				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
 				}
@@ -97,13 +97,6 @@ func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
 				return err
 			}
 		}
-		log.
-			WithFields(log.Fields{
-				"keptncontext": queueItem.Scope.KeptnContext,
-				"project":      queueItem.Scope.Project,
-				"service":      queueItem.Scope.Service,
-				"stage":        queueItem.Scope.Stage,
-			}).Debugf("[DISPATCHED]Sequence '%s' was dispatched", seqName)
 		return nil
 	} else {
 		//if there are multiple shipyard we should only write
@@ -184,7 +177,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 					"service":      queuedSequence.Scope.Service,
 					"stage":        queuedSequence.Scope.Stage,
 				}).
-				Debugf("[DISPATCHED]Sequence '%s' was dispatched", seqName)
+				Infof("[DISPATCHED] Sequence '%s' in stage `%s`", seqName, queuedSequence.Scope.Stage)
 		}
 	}
 }

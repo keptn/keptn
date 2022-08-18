@@ -165,7 +165,7 @@ func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 				"service":      commonEventData.Service,
 				"stage":        commonEventData.Stage,
 			}).
-			Infof("[RECEIVED  ]Event '%s' received", *event.Type)
+			Infof("[RECEIVED  ] Event '%s'", *event.Type)
 	}
 	log.Debugf("Content of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
 	cb := getCompletionCallback(waitForCompletion, done)
