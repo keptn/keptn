@@ -170,11 +170,30 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		return false, err
 	}
 
-	_, err = clone.Head()
+	head, err := clone.Head()
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
 	}
+
+	if err := g.storeDefaultBranchConfig(gitContext, err, clone, head); err != nil {
+		return false, err
+	}
 	return true, nil
+}
+
+func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err error, clone *git.Repository, head *plumbing.Reference) error {
+	cfg, err := clone.Config()
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "get config", gitContext.Project, err)
+	}
+
+	cfg.Init.DefaultBranch = head.Name().String()
+
+	err = clone.SetConfig(cfg)
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "set config", gitContext.Project, err)
+	}
+	return nil
 }
 
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
@@ -553,7 +572,11 @@ func (g *Git) GetDefaultBranch(gitContext common_models.GitContext) (string, err
 	}
 	def := repoConfig.Init.DefaultBranch
 	if def == "" {
-		def = "master"
+		head, err := r.Head()
+		if err != nil {
+			return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetDefBranch, gitContext.Project, err)
+		}
+		return string(head.Name()), nil
 	}
 	return def, err
 }
@@ -562,7 +585,10 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 	if g.ProjectRepoExists(gitContext.Project) {
 		return true
 	}
-	clone, _ := g.CloneRepo(gitContext)
+	clone, err := g.CloneRepo(gitContext)
+	if err != nil {
+		logger.Errorf("Could not check for project availability: %v", err)
+	}
 	return clone
 }
 
