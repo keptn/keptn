@@ -3,8 +3,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { DataService } from '../../../../_services/data.service';
 import { combineLatest, EMPTY, mergeMap, Observable, of, shareReplay, Subject, throwError } from 'rxjs';
 import { catchError, finalize, map, switchMap, takeUntil, tap } from 'rxjs/operators';
-import { UniformSubscription } from '../../../../_models/uniform-subscription';
-import { DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
+import {
+  getFirstService,
+  getFirstStage,
+  getGlobalProjects,
+  getPrefix,
+  getSuffix,
+  hasFilter,
+  isGlobal,
+} from '../../../../_models/uniform-subscription';
+import { DtFilterFieldChangeEvent, DtFilterFieldDefaultDataSource } from '@dynatrace/barista-components/filter-field';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
 import { IWebhookConfigClient, PreviousWebhookConfig } from 'shared/interfaces/webhook-config';
@@ -22,10 +30,15 @@ import { PendingChangesComponent } from '../../../../_guards/pending-changes.gua
 import { DeleteResult, DeleteType, DeletionProgressEvent } from '../../../../_interfaces/delete';
 import { EventService } from '../../../../_services/event.service';
 import { handleDeletionError } from '../../../../_components/ktb-danger-zone/ktb-danger-zone.utils';
+import { DtAutoComplete, DtFilterArray } from '../../../../_models/dt-filter';
+import {
+  IUniformSubscription,
+  IUniformSubscriptionFilter,
+} from '../../../../../../shared/interfaces/uniform-subscription';
 
 export interface SubscriptionState {
   taskNames: string[];
-  subscription: UniformSubscription;
+  subscription: IUniformSubscription;
   filter: ISequencesFilter;
   isWebhookService: boolean;
   webhook?: IWebhookConfigClient;
@@ -83,6 +96,10 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
   public errorMessage?: string;
   public deleteType = DeleteType.SUBSCRIPTION;
+  public hasFilter = hasFilter;
+  public getFirstStage = getFirstStage;
+  public getFirstService = getFirstService;
+  private _filter?: DtFilterArray[];
 
   private pendingChangesSubject = new Subject<boolean>();
   public readonly dialog: Dialog = {
@@ -116,18 +133,21 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       switchMap((params) =>
         params.subscriptionId
           ? this.dataService.getUniformSubscription(params.integrationId, params.subscriptionId)
-          : of(new UniformSubscription(params.projectName))
+          : of({
+              event: '',
+              filter: { projects: [params.projectName], services: [], stages: [] },
+            } as IUniformSubscription)
       ),
-      tap((subscription) => {
+      tap((subscription: IUniformSubscription) => {
         if (subscription.id) {
           this._previousFilter = {
             filter: AppUtils.copyObject(subscription.filter),
             type: subscription.event,
           };
         }
-        this.taskControl.setValue(subscription.prefix);
-        this.taskSuffixControl.setValue(subscription.suffix);
-        this.isGlobalControl.setValue(subscription.isGlobal);
+        this.taskControl.setValue(getPrefix(subscription));
+        this.taskSuffixControl.setValue(getSuffix(subscription));
+        this.isGlobalControl.setValue(isGlobal(subscription.filter));
         this.updateIsGlobalCheckbox(subscription);
       }),
       shareReplay(1)
@@ -267,7 +287,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     window.location.reload();
   }
 
-  private updateDataSource(stages: string[], services: string[], subscription: UniformSubscription): void {
+  private updateDataSource(stages: string[], services: string[], subscription: IUniformSubscription): void {
     const availableServices = subscription.filter.services?.filter((service) => services.some((s) => s === service));
 
     // check if services have been deleted
@@ -286,13 +306,14 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;
+    console.log(this._dataSource.data);
   }
 
   public updateSubscription(
     editMode: boolean,
     projectName: string,
     integrationId: string,
-    subscription: UniformSubscription,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): void {
     this.updating = true;
@@ -300,7 +321,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     subscription.event = isShortPrefix
       ? `${this.taskControl.value}.${this.taskSuffixControl.value}`
       : `${EventTypes.PREFIX}${this.taskControl.value}.${this.taskSuffixControl.value}`;
-    subscription.setIsGlobal(this.isGlobalControl.value, projectName);
+    subscription.filter.projects = getGlobalProjects(subscription.filter, this.isGlobalControl.value, projectName);
 
     if (webhookConfig) {
       webhookConfig.type = subscription.event;
@@ -334,7 +355,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
       });
   }
 
-  public isFormValid(subscription: UniformSubscription): boolean {
+  public isFormValid(subscription: IUniformSubscription): boolean {
     return (
       this.subscriptionForm.valid &&
       (!!subscription.filter.stages?.length || !subscription.filter.services?.length) &&
@@ -343,7 +364,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     );
   }
 
-  public selectedTaskChanged(projectName: string, subscription: UniformSubscription, isWebhookService: boolean): void {
+  public selectedTaskChanged(projectName: string, subscription: IUniformSubscription, isWebhookService: boolean): void {
     this.updateEventPayload(
       projectName,
       subscription.filter.stages ?? [],
@@ -353,7 +374,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
   }
 
   public subscriptionFilterChanged(
-    subscription: UniformSubscription,
+    subscription: IUniformSubscription,
     projectName: string,
     isWebhookService: boolean
   ): void {
@@ -367,12 +388,69 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     );
   }
 
-  public updateIsGlobalCheckbox(subscription: UniformSubscription): void {
-    if (subscription.hasFilter()) {
+  public updateIsGlobalCheckbox(subscription: IUniformSubscription): void {
+    if (hasFilter(subscription.filter)) {
       this.isGlobalControl.disable({ onlySelf: true, emitEvent: false });
       this.isGlobalControl.setValue(false);
     } else {
       this.isGlobalControl.enable({ onlySelf: true, emitEvent: false });
+    }
+  }
+
+  public getFilter(uf: IUniformSubscriptionFilter, data?: DtFilterFieldDefaultDataSourceAutocomplete): DtFilterArray[] {
+    if (data) {
+      const filter = [
+        ...(uf.stages?.map((stage) => [data.autocomplete[0], { name: stage }] as DtFilterArray) ?? []),
+        ...(uf.services?.map((service) => [data.autocomplete[1], { name: service }] as DtFilterArray) ?? []),
+      ];
+      if (filter.length !== this._filter?.length) {
+        this._filter = filter;
+      }
+    } else {
+      this._filter = [];
+    }
+    return this._filter;
+  }
+
+  public getFilter1(
+    uf: IUniformSubscriptionFilter,
+    data?: DtFilterFieldDefaultDataSourceAutocomplete
+  ): DtFilterArray[] {
+    this._filter = this.createFilter(uf, data);
+    return this._filter;
+  }
+
+  private createFilter(
+    uf: IUniformSubscriptionFilter,
+    data?: DtFilterFieldDefaultDataSourceAutocomplete
+  ): DtFilterArray[] {
+    if (!data) return [];
+
+    return [
+      ...(uf.stages?.map((stage) => [data.autocomplete[0], { name: stage }] as DtFilterArray) ?? []),
+      ...(uf.services?.map((service) => [data.autocomplete[1], { name: service }] as DtFilterArray) ?? []),
+    ];
+  }
+
+  public filterChanged(
+    uf: IUniformSubscriptionFilter,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    event: DtFilterFieldChangeEvent<any>,
+    projectName: string
+  ): void {
+    // can't set another type because of "is not assignable to..."
+    const eventCasted = event as DtFilterFieldChangeEvent<DtAutoComplete>;
+    const result = eventCasted.filters.reduce(
+      (filters: { Stage: string[]; Service: string[] }, filter) => {
+        filters[filter[0].name as 'Stage' | 'Service'].push(filter[1].name);
+        return filters;
+      },
+      { Stage: [], Service: [] }
+    );
+    uf.services = result.Service;
+    uf.stages = result.Stage;
+    if (uf.projects?.length && hasFilter(uf)) {
+      uf.projects = getGlobalProjects(uf, false, projectName);
     }
   }
 

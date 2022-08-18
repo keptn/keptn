@@ -12,8 +12,6 @@ import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
-import { UniformRegistration } from '../_models/uniform-registration';
-import { UniformSubscription } from '../_models/uniform-subscription';
 import { SequenceStatus } from '../../../shared/interfaces/sequence';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
@@ -38,6 +36,8 @@ import {
 import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { IGitDataExtended } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
+import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
+import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
 
 @Injectable({
   providedIn: 'root',
@@ -150,40 +150,32 @@ export class DataService {
     return this.apiService.deleteService(projectName, serviceName);
   }
 
-  public getUniformRegistrations(): Observable<UniformRegistration[]> {
-    return this.apiService
-      .getUniformRegistrations(this._uniformDates)
-      .pipe(
-        map((uniformRegistrations) =>
-          uniformRegistrations.map((registration) => UniformRegistration.fromJSON(registration))
-        )
-      );
+  public getUniformRegistrations(): Observable<IUniformRegistration[]> {
+    return this.apiService.getUniformRegistrations(this._uniformDates);
   }
 
   public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
     return this.apiService.getUniformRegistrationInfo(integrationId);
   }
 
-  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
-    return this.apiService
-      .getUniformSubscription(integrationId, subscriptionId)
-      .pipe(map((uniformSubscription) => UniformSubscription.fromJSON(uniformSubscription)));
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<IUniformSubscription> {
+    return this.apiService.getUniformSubscription(integrationId, subscriptionId);
   }
 
   public updateUniformSubscription(
     integrationId: string,
-    subscription: UniformSubscription,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
-    return this.apiService.updateUniformSubscription(integrationId, subscription.reduced, webhookConfig);
+    return this.apiService.updateUniformSubscription(integrationId, subscription, webhookConfig);
   }
 
   public createUniformSubscription(
     integrationId: string,
-    subscription: UniformSubscription,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
-    return this.apiService.createUniformSubscription(integrationId, subscription.reduced, webhookConfig);
+    return this.apiService.createUniformSubscription(integrationId, subscription, webhookConfig);
   }
 
   public getUniformRegistrationLogs(

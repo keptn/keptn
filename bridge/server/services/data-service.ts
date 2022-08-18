@@ -7,7 +7,6 @@ import { Project } from '../models/project';
 import { EventState } from '../../shared/models/event-state';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { ResultTypes } from '../../shared/models/result-types';
-import { UniformRegistration } from '../models/uniform-registration';
 import { parse as parseYaml } from 'yaml';
 import { IShipyardSequence, IShipyardTask, Shipyard } from '../../shared/interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
@@ -44,6 +43,7 @@ import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
 import { EnvType } from '../interfaces/configuration';
 import { IClientSecret } from '../../shared/interfaces/secret';
 import { IServerSequenceStage } from '../interfaces/sequence-stage';
+import { isWebhookService, IUniformRegistration } from '../../shared/interfaces/uniform-registration';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -486,7 +486,7 @@ export class DataService {
   public async getUniformRegistrations(
     accessToken: string | undefined,
     uniformDates: { [key: string]: string }
-  ): Promise<UniformRegistration[]> {
+  ): Promise<IUniformRegistration[]> {
     const response = await this.apiService.getUniformRegistrations(accessToken);
     const registrations = this.getValidRegistrations(response.data);
     for (const registration of registrations) {
@@ -500,9 +500,9 @@ export class DataService {
     return registrations;
   }
 
-  private getValidRegistrations(registrations: UniformRegistration[]): UniformRegistration[] {
+  private getValidRegistrations(registrations: IUniformRegistration[]): IUniformRegistration[] {
     const currentDate = new Date().getTime();
-    const validRegistrations: UniformRegistration[] = [];
+    const validRegistrations: IUniformRegistration[] = [];
     for (const registration of registrations) {
       const diffMins = (currentDate - new Date(registration.metadata.lastseen).getTime()) / 60_000;
       if (diffMins < 2) {
@@ -517,11 +517,11 @@ export class DataService {
     integrationId: string
   ): Promise<UniformRegistrationInfo> {
     const response = await this.apiService.getUniformRegistrations(accessToken, integrationId);
-    const uniformRegistration = UniformRegistration.fromJSON(response.data.shift());
+    const uniformRegistration = response.data.shift();
 
     return {
-      isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-      isWebhookService: uniformRegistration.isWebhookService,
+      isControlPlane: uniformRegistration?.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
+      isWebhookService: uniformRegistration ? isWebhookService(uniformRegistration) : false,
     };
   }
 

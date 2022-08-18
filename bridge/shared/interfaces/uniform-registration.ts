@@ -1,6 +1,11 @@
 import { IUniformSubscription } from './uniform-subscription';
+import { KeptnService } from '../models/keptn-service';
 
-export interface UniformRegistrationResult {
+export function isWebhookService(ur: IUniformRegistration): boolean {
+  return ur.name === KeptnService.WEBHOOK_SERVICE;
+}
+
+export interface IUniformRegistration {
   id: string;
   metadata: {
     deplyomentname: string;

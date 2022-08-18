@@ -4,7 +4,6 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/ro
 import { UniformRegistrationsMock } from '../../../../_services/_mockData/uniform-registrations.mock';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DataService } from '../../../../_services/data.service';
-import { UniformSubscription } from '../../../../_models/uniform-subscription';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { UniformRegistrationLocations } from '../../../../../../shared/interfaces/uniform-registration-locations';
 import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
@@ -18,6 +17,8 @@ import { IWebhookConfigClient } from '../../../../../../shared/interfaces/webhoo
 import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
 import { EventService } from '../../../../_services/event.service';
 import { DeleteResult } from '../../../../_interfaces/delete';
+import { IUniformSubscription } from '../../../../../../shared/interfaces/uniform-subscription';
+import { isWebhookService } from '../../../../../../shared/interfaces/uniform-registration';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -397,18 +398,18 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     });
   });
 
-  function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
+  function setSubscription(integrationIndex: number, subscriptionIndex?: number): IUniformSubscription {
     const dataService = TestBed.inject(DataService);
     const uniformRegistration = UniformRegistrationsMock[integrationIndex];
     const subscription =
       subscriptionIndex !== undefined
         ? uniformRegistration.subscriptions[subscriptionIndex]
-        : new UniformSubscription('sockshop');
+        : ({ event: '', filter: { projects: ['sockshop'] } } as IUniformSubscription);
     dataService.getUniformSubscription = jest.fn().mockReturnValue(of(subscription));
     dataService.getUniformRegistrationInfo = jest.fn().mockReturnValue(
       of({
         isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-        isWebhookService: uniformRegistration.isWebhookService,
+        isWebhookService: isWebhookService(uniformRegistration),
       } as UniformRegistrationInfo)
     );
     paramMap.next(

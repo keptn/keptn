@@ -11,7 +11,7 @@
       <form [formGroup]="subscriptionForm">
         <div class="settings-section">
           <dt-form-field *ngIf="!data.isWebhookService" uitestid="edit-subscription-field-isGlobal">
-            <ng-container [ngTemplateOutlet]="data.subscription.hasFilter() ? showOverlay : isGlobalCheckbox">
+            <ng-container [ngTemplateOutlet]="hasFilter(data.subscription.filter) ? showOverlay : isGlobalCheckbox">
             </ng-container>
 
             <ng-template #showOverlay>
@@ -64,10 +64,13 @@
           <dt-filter-field
             [dataSource]="_dataSource"
             [filters]="
-              data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)
+              getFilter(
+                data.subscription.filter,
+                _dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined
+              )
             "
             (filterChanges)="
-              data.subscription.filterChanged($event, params.projectName);
+              filterChanged(data.subscription.filter, $event, params.projectName);
               subscriptionFilterChanged(data.subscription, params.projectName, data.isWebhookService)
             "
             aria-label="Filter by stage and service"
@@ -82,8 +85,8 @@
           [buttonTitle]="'Show example payload'"
           [type]="getSelectedTask()"
           [project]="params.projectName"
-          [stage]="data.subscription.getFirstStage()"
-          [service]="data.subscription.getFirstService()"
+          [stage]="getFirstStage(data.subscription.filter)"
+          [service]="getFirstService(data.subscription.filter)"
         ></ktb-payload-viewer>
         <ktb-webhook-settings
           *ngIf="data.isWebhookService"
