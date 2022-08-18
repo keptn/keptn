@@ -412,26 +412,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     return this._filter;
   }
 
-  public getFilter1(
-    uf: IUniformSubscriptionFilter,
-    data?: DtFilterFieldDefaultDataSourceAutocomplete
-  ): DtFilterArray[] {
-    this._filter = this.createFilter(uf, data);
-    return this._filter;
-  }
-
-  private createFilter(
-    uf: IUniformSubscriptionFilter,
-    data?: DtFilterFieldDefaultDataSourceAutocomplete
-  ): DtFilterArray[] {
-    if (!data) return [];
-
-    return [
-      ...(uf.stages?.map((stage) => [data.autocomplete[0], { name: stage }] as DtFilterArray) ?? []),
-      ...(uf.services?.map((service) => [data.autocomplete[1], { name: service }] as DtFilterArray) ?? []),
-    ];
-  }
-
   public filterChanged(
     uf: IUniformSubscriptionFilter,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
