@@ -27,6 +27,7 @@ jobs:
         uses: actions/setup-node@v3.4.1
         with:
           node-version: 16
+          cache: 'npm'
 
       - name: Install readme generator
         working-directory: current
