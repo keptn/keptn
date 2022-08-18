@@ -24,7 +24,7 @@ describe('Test /project/:projectName/sequences/filter', () => {
     const response = await request(app).get(`/api/project/${projectName}/sequences/filter`);
     expect(response.body).toEqual({
       services: ['carts', 'carts-db'],
-      stages: ['dev', 'production', 'staging'],
+      stages: ['dev', 'staging', 'production'],
     });
     expect(response.statusCode).toBe(200);
   });

@@ -86,7 +86,7 @@ func init() {
     },
     "/import": {
       "post": {
-        "description": "This API is still in alpha state and we do not recommend its usage outside of testing purposes",
+        "description": "Import a zip package to create services, secrets and webhook subscriptions, as well as add resources to Keptn",
         "consumes": [
           "multipart/form-data"
         ],
@@ -96,7 +96,7 @@ func init() {
         "tags": [
           "Import"
         ],
-        "summary": "Alpha: Import a zip package",
+        "summary": "Import a zip package",
         "operationId": "import",
         "parameters": [
           {
@@ -389,7 +389,7 @@ func init() {
     },
     "/import": {
       "post": {
-        "description": "This API is still in alpha state and we do not recommend its usage outside of testing purposes",
+        "description": "Import a zip package to create services, secrets and webhook subscriptions, as well as add resources to Keptn",
         "consumes": [
           "multipart/form-data"
         ],
@@ -399,7 +399,7 @@ func init() {
         "tags": [
           "Import"
         ],
-        "summary": "Alpha: Import a zip package",
+        "summary": "Import a zip package",
         "operationId": "import",
         "parameters": [
           {

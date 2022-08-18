@@ -4,7 +4,8 @@
   "watch": ["./", "../shared"],
   "exec": "yarn build && node --experimental-specifier-resolution=node dist/server/server.js",
   "env": {
-    "NODE_ENV": "development"
+    "NODE_ENV": "development",
+    "PORT": 3001
   },
   "ext": "ts"
 }

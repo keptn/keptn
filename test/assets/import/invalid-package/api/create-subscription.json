@@ -1,0 +1,9 @@
+{
+    "event": "[[ .context.event ]]",
+    "filter": {
+        "projects": ["[[ .context.project.not-templated ]]"],
+        "services": ["[[ .context.service.invalid "],
+        "stages": ["[[ .context.stages ]]"]
+    }
+  }
+  

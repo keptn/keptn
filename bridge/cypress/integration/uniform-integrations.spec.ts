@@ -1,4 +1,9 @@
-import { interceptIntegrations, interceptNoWebhookSecrets, interceptSecrets } from '../support/intercept';
+import {
+  interceptIntegrations,
+  interceptNoWebhookSecrets,
+  interceptSecrets,
+  interceptSubscription,
+} from '../support/intercept';
 import UniformPage from '../support/pageobjects/UniformPage';
 import SecretsPage from '../support/pageobjects/SecretsPage';
 
@@ -589,6 +594,10 @@ describe('Add control plane subscription default requests', () => {
   it('should not show webhook form', () => {
     cy.get('ktb-webhook-settings').should('not.exist');
   });
+
+  it('should not show danger zone on add page', () => {
+    uniformPage.assertDangerZoneExists(false);
+  });
 });
 
 describe('Add control plane subscription dynamic request', () => {
@@ -670,12 +679,13 @@ describe('Add execution plane subscription', () => {
 });
 
 describe('Edit subscriptions', () => {
-  const subscriptionID = 'mySubscriptionID';
+  const subscriptionID = '0e021b71-1533-4cfe-875a-b756aa6107ba';
   beforeEach(() => {
     interceptIntegrations();
   });
 
   it('should set the right properties and enable the button when a global subscription is set', () => {
+    interceptSubscription(integrationID, subscriptionID);
     cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
       body: {
         event: 'sh.keptn.event.deployment.triggered',
@@ -701,17 +711,7 @@ describe('Edit subscriptions', () => {
     const stage = 'dev';
     const projectName = 'sockshop';
 
-    cy.intercept(`/api/controlPlane/v1/uniform/registration/${integrationID}/subscription/${subscriptionID}`, {
-      body: {
-        event: 'sh.keptn.event.test.finished',
-        filter: {
-          projects: [projectName],
-          services: [service],
-          stages: [stage],
-          id: subscriptionID,
-        },
-      },
-    });
+    interceptSubscription(integrationID, subscriptionID, projectName, service, stage);
 
     uniformPage
       .visitEdit(integrationID, subscriptionID)
@@ -722,5 +722,26 @@ describe('Edit subscriptions', () => {
       .shouldHaveStages([stage])
       .shouldHaveServices([service])
       .assertIsUpdateButtonEnabled(true);
+  });
+
+  it('should show danger zone on edit page', () => {
+    interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
+
+    uniformPage.visitEdit(integrationID, subscriptionID).assertDangerZoneExists(true);
+  });
+
+  it('should show deletion dialog after clicking the deleteSubscription button', () => {
+    interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
+
+    uniformPage.visitEdit(integrationID, subscriptionID).openDeletionDialog().assertDeletionDialogExists(true);
+  });
+
+  it('should delete subscription', () => {
+    interceptSubscription(integrationID, subscriptionID, 'sockshop', 'carts', 'dev');
+
+    uniformPage
+      .visitEdit(integrationID, subscriptionID)
+      .deleteSubscriptionFromEditPage()
+      .assertIntegrationPath('sockshop', integrationID);
   });
 });

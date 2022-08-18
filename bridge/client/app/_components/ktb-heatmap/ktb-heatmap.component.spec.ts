@@ -58,20 +58,20 @@ describe('KtbHeatmapComponent', () => {
     expect(dataPoints).not.toEqual(noRefDataPoints);
     expect(component['groupedData']).toEqual({
       response_time_p0: [
-        mockSliDataPoint('myEvaluation0duplicate00', 'myDate0duplicate0', 'response_time_p0'),
-        mockSliDataPoint('myEvaluation0duplicate01', 'myDate0duplicate0 (1)', 'response_time_p0'),
-        mockSliDataPoint('myEvaluation0duplicate02', 'myDate0duplicate0 (2)', 'response_time_p0'),
-        mockSliDataPoint('myEvaluation0duplicate10', 'myDate0duplicate1', 'response_time_p0'),
-        mockSliDataPoint('myEvaluation0duplicate11', 'myDate0duplicate1 (1)', 'response_time_p0'),
-        mockSliDataPoint('myEvaluation0duplicate12', 'myDate0duplicate1 (2)', 'response_time_p0'),
+        mockSliDataPoint('myEvaluation0duplicate00', 'myDate0duplicate0 (1)', 'response_time_p0'),
+        mockSliDataPoint('myEvaluation0duplicate01', 'myDate0duplicate0 (2)', 'response_time_p0'),
+        mockSliDataPoint('myEvaluation0duplicate02', 'myDate0duplicate0 (3)', 'response_time_p0'),
+        mockSliDataPoint('myEvaluation0duplicate10', 'myDate0duplicate1 (1)', 'response_time_p0'),
+        mockSliDataPoint('myEvaluation0duplicate11', 'myDate0duplicate1 (2)', 'response_time_p0'),
+        mockSliDataPoint('myEvaluation0duplicate12', 'myDate0duplicate1 (3)', 'response_time_p0'),
       ],
       score: [
-        mockScoreDataPoint('myEvaluation0duplicate00', 'myDate0duplicate0'),
-        mockScoreDataPoint('myEvaluation0duplicate01', 'myDate0duplicate0 (1)'),
-        mockScoreDataPoint('myEvaluation0duplicate02', 'myDate0duplicate0 (2)'),
-        mockScoreDataPoint('myEvaluation0duplicate10', 'myDate0duplicate1'),
-        mockScoreDataPoint('myEvaluation0duplicate11', 'myDate0duplicate1 (1)'),
-        mockScoreDataPoint('myEvaluation0duplicate12', 'myDate0duplicate1 (2)'),
+        mockScoreDataPoint('myEvaluation0duplicate00', 'myDate0duplicate0 (1)'),
+        mockScoreDataPoint('myEvaluation0duplicate01', 'myDate0duplicate0 (2)'),
+        mockScoreDataPoint('myEvaluation0duplicate02', 'myDate0duplicate0 (3)'),
+        mockScoreDataPoint('myEvaluation0duplicate10', 'myDate0duplicate1 (1)'),
+        mockScoreDataPoint('myEvaluation0duplicate11', 'myDate0duplicate1 (2)'),
+        mockScoreDataPoint('myEvaluation0duplicate12', 'myDate0duplicate1 (3)'),
       ],
     });
   });

@@ -1,7 +1,7 @@
 import { Trace } from '../_models/trace';
 
 export interface EvaluationHistory {
-  type: string;
+  type: 'evaluationHistory' | 'invalidateEvaluation';
   triggerEvent: Trace;
   traces?: Trace[];
 }

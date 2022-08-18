@@ -19,7 +19,7 @@ import {
   SubSequencesWarningMock,
   UpdatedDeploymentMock,
 } from '../_services/_mockData/deployments.mock';
-import { SequenceState } from '../../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
 
 describe('Deployment', () => {
   it('should correctly create new class', () => {
@@ -177,7 +177,7 @@ describe('Deployment', () => {
   it('should be aborted', () => {
     // given
     const stageDeployment = getStageDeployment();
-    stageDeployment.state = SequenceState.ABORTED;
+    stageDeployment.state = SequenceStatus.ABORTED;
 
     // when
     const info = createStageDeploymentStateInfo(stageDeployment);

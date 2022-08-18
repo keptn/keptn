@@ -2,12 +2,11 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, filter, of, throwError } from 'rxjs';
 import { PendingChangesGuard } from '../../../_guards/pending-changes.guard';
 import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { DataService } from '../../../_services/data.service';
-import { TestUtils } from '../../../_utils/test.utils';
 import { KtbProjectSettingsComponent } from './ktb-project-settings.component';
 import { KtbProjectSettingsModule } from './ktb-project-settings.module';
 import { getDefaultSshData } from './ktb-project-settings-git-extended/ktb-project-settings-git-extended.component.spec';
@@ -17,7 +16,6 @@ import { NotificationsService } from '../../../_services/notifications.service';
 import { NotificationType } from '../../../_models/notification';
 import { KtbProjectCreateMessageComponent } from './ktb-project-create-message/ktb-project-create-message.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { filter } from 'rxjs';
 
 describe('KtbProjectSettingsComponent create', () => {
   let component: KtbProjectSettingsComponent;
@@ -390,7 +388,6 @@ describe('KtbProjectSettingsComponent update', () => {
     // given
     const apiService = TestBed.inject(ApiService);
     const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
-    TestUtils.enableResourceService();
     expect(component.isProjectFormTouched).toBe(false);
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     component.projectNameControl.setValue('myProject');
@@ -436,7 +433,6 @@ describe('KtbProjectSettingsComponent update', () => {
     // given
     const apiService = TestBed.inject(ApiService);
     const createExtendedSpy = jest.spyOn(apiService, 'createProjectExtended');
-    TestUtils.enableResourceService();
     expect(component.isProjectFormTouched).toBe(false);
     component.shipyardFile = new File(['test content'], 'test1.yaml');
     component.projectNameControl.setValue('myProject');

@@ -6,7 +6,7 @@ import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ApiService } from './api.service';
 import moment from 'moment';
-import { Sequence } from '../_models/sequence';
+import { SequenceState } from '../_models/sequenceState';
 import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
 import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
@@ -14,7 +14,7 @@ import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
 import { UniformRegistration } from '../_models/uniform-registration';
 import { UniformSubscription } from '../_models/uniform-subscription';
-import { SequenceState } from '../../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { EvaluationHistory } from '../_interfaces/evaluation-history';
@@ -232,7 +232,7 @@ export class DataService {
     return this.apiService.deleteSubscription(integrationId, id, isWebhookService);
   }
 
-  public getTracesLastUpdated(sequence: Sequence): Date | undefined {
+  public getTracesLastUpdated(sequence: SequenceState): Date | undefined {
     return this._tracesLastUpdated[sequence.shkeptncontext];
   }
 
@@ -357,7 +357,7 @@ export class DataService {
       .subscribe((projects) => this._projects.next(projects));
   }
 
-  public loadSequences(projectName: string, fromTime?: Date, beforeTime?: Date, oldSequence?: Sequence): void {
+  public loadSequences(projectName: string, fromTime?: Date, beforeTime?: Date, oldSequence?: SequenceState): void {
     if (!beforeTime && !fromTime) {
       // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[projectName];
@@ -379,11 +379,11 @@ export class DataService {
         }),
         map((body) => {
           const count = body?.totalCount ?? body?.states.length ?? 0;
-          const sequences = body?.states.map((sequence) => Sequence.fromJSON(sequence)) ?? [];
-          return [sequences, count] as [Sequence[], number];
+          const sequences = body?.states.map((sequence) => SequenceState.fromJSON(sequence)) ?? [];
+          return [sequences, count] as [SequenceState[], number];
         })
       )
-      .subscribe(([sequences, totalCount]: [Sequence[], number]) => {
+      .subscribe(([sequences, totalCount]: [SequenceState[], number]) => {
         const previousSequences = this._sequences.getValue();
         const sequenceData = previousSequences[projectName];
         const newSequences = this.addNewSequences(sequenceData?.sequences ?? [], sequences, !!beforeTime, oldSequence);
@@ -401,10 +401,10 @@ export class DataService {
       });
   }
 
-  public loadLatestSequences(projectName: string, pageSize: number): Observable<Sequence[]> {
+  public loadLatestSequences(projectName: string, pageSize: number): Observable<SequenceState[]> {
     return this.apiService.getSequences(projectName, pageSize).pipe(
       map((response) => response.body),
-      map((body) => body?.states.map((sequence) => Sequence.fromJSON(sequence)) ?? [])
+      map((body) => body?.states.map((sequence) => SequenceState.fromJSON(sequence)) ?? [])
     );
   }
 
@@ -413,12 +413,12 @@ export class DataService {
   }
 
   protected addNewSequences(
-    previousSequences: Sequence[],
-    sequences: Sequence[],
+    previousSequences: SequenceState[],
+    sequences: SequenceState[],
     areOldSequences: boolean,
-    oldSequence?: Sequence
-  ): Sequence[] {
-    let newSequences: Sequence[] = [];
+    oldSequence?: SequenceState
+  ): SequenceState[] {
+    let newSequences: SequenceState[] = [];
     if (areOldSequences) {
       newSequences = [...previousSequences, ...(sequences || []), ...(oldSequence ? [oldSequence] : [])];
     } else {
@@ -452,7 +452,7 @@ export class DataService {
     );
   }
 
-  public loadOldSequences(projectName: string, fromTime?: Date, oldSequence?: Sequence): void {
+  public loadOldSequences(projectName: string, fromTime?: Date, oldSequence?: SequenceState): void {
     const sequences = this._sequences.getValue()[projectName]?.sequences;
     if (!sequences?.length) {
       return;
@@ -487,7 +487,7 @@ export class DataService {
     });
   }
 
-  public getTracesOfSequence(sequence: Sequence): Observable<Trace[]> {
+  public getTracesOfSequence(sequence: SequenceState): Observable<Trace[]> {
     const fromTime: Date = this._tracesLastUpdated[sequence.shkeptncontext];
     return this.apiService.getTraces(sequence.shkeptncontext, sequence.project, fromTime?.toISOString()).pipe(
       map((response) => {
@@ -513,16 +513,22 @@ export class DataService {
     );
   }
 
+  public getTracesByIds(projectName: string, ids: string[]): Observable<Trace[]> {
+    return this.apiService
+      .getTracesByIds(projectName, ids)
+      .pipe(map((traces) => traces.events.map((trace) => Trace.fromJSON(trace))));
+  }
+
   public getEvent(type?: string, project?: string, stage?: string, service?: string): Observable<Trace | undefined> {
     return this.apiService.getEvent(type, project, stage, service).pipe(map((result) => result.events[0]));
   }
 
-  public getSequenceByContext(projectName: string, shkeptncontext: string): Observable<Sequence | undefined> {
+  public getSequenceByContext(projectName: string, shkeptncontext: string): Observable<SequenceState | undefined> {
     return this.apiService
       .getSequences(projectName, 1, undefined, undefined, undefined, undefined, shkeptncontext)
       .pipe(
         map((response) => response.body?.states || []),
-        map((sequences) => sequences.map((sequence) => Sequence.fromJSON(sequence)).shift())
+        map((sequences) => sequences.map((sequence) => SequenceState.fromJSON(sequence)).shift())
       );
   }
 
@@ -612,14 +618,14 @@ export class DataService {
         .subscribe((response) => {
           const seq = response.body?.states[0];
           if (seq) {
-            service.latestSequence = Sequence.fromJSON(seq);
+            service.latestSequence = SequenceState.fromJSON(seq);
           }
         });
     }
   }
 
-  public sendSequenceControl(sequence: Sequence, state: string): void {
-    sequence.setState(SequenceState.UNKNOWN);
+  public sendSequenceControl(sequence: SequenceState, state: string): void {
+    sequence.setState(SequenceStatus.UNKNOWN);
     this.apiService.sendSequenceControl(sequence.project, sequence.shkeptncontext, state).subscribe(() => {
       this.updateSequence(sequence.project, sequence.shkeptncontext);
     });

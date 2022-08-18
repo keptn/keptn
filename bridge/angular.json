@@ -107,6 +107,10 @@
             },
             "test": {
               "browserTarget": "bridge:build:test"
+            },
+            "dev": {
+              "browserTarget": "bridge:build",
+              "proxyConfig": "proxy.config.json"
             }
           }
         },

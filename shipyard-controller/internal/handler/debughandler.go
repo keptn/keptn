@@ -17,6 +17,7 @@ type IDebugHandler interface {
 	GetAllSequencesForProject(context *gin.Context)
 	GetAllEvents(context *gin.Context)
 	GetEventByID(context *gin.Context)
+	GetBlockingSequences(context *gin.Context)
 }
 
 type DebugHandler struct {
@@ -179,4 +180,41 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, event)
+}
+
+// GetBlockingSequences godoc
+// @Summary      Get all blocking sequences for specific sequence
+// @Description  Get all the sequences that are blocking a sequence from being run
+// @Tags         Sequence
+// @Param        project			  path      string                    			true "The name of the project"
+// @Param        shkeptncontext       path      string                    			true "The Context of the sequence"
+// @Param        stage                path     string                    			true "The Stage of the sequences"
+// @Success      200                  {object}  []models.SequenceExecution          "ok"
+// @Failure      404                  {object}  models.Error             			"not found"
+// @Failure      500                  {object}  models.Error              			"Internal error"
+// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/stage/{stage}/blocking [get]
+func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
+
+	shkeptncontext := c.Param("shkeptncontext")
+	projectName := c.Param("project")
+	stage := c.Param("stage")
+
+	sequences, err := dh.DebugManager.GetBlockingSequences(projectName, shkeptncontext, stage)
+
+	if err != nil {
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, shkeptncontext))
+			return
+		}
+
+		if errors.Is(err, common.ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.SequenceNotFoundMsg, shkeptncontext))
+			return
+		}
+
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, sequences)
 }

@@ -406,8 +406,8 @@
                   "violated": true
                 }
               ],
-              "score": 0,
-              "status": "fail",
+              "score": 0.5,
+              "status": "warning",
               "value": {
                 "metric": "http_response_time_seconds_main_page_sum",
                 "success": true,
@@ -417,7 +417,7 @@
                 {
                   "criteria": "<=0.5",
                   "targetValue": 0.5,
-                  "violated": true
+                  "violated": false
                 }
               ]
             },

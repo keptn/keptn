@@ -10,7 +10,6 @@
   "user": "claus.keptn-dev@ruxitlabs.com",
   "authMsg": "Hello handsome",
   "featureFlags": {
-    "RESOURCE_SERVICE_ENABLED": false,
-    "D3_ENABLED": false
+    "D3_ENABLED": true
   }
 }

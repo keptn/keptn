@@ -210,6 +210,7 @@ jobs:
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
     steps:
+
       - name: Create build config file
         env:
           BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
@@ -236,45 +237,70 @@ jobs:
   ############################################################################
   # Unit tests                                                               #
   ############################################################################
-  unit-tests-microservices:
-    name: Unit Tests Microservices
+  unit-tests-and-build:
+    name: Unit Tests and Build
     needs: prepare_ci_run
     runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
+    env:
+      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
+      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
     steps:
-      - name: Checkout Code
+      - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Set up Go 1.x
+        if: matrix.config.artifact != 'bridge2'
+        uses: actions/setup-go@v3
         with:
-          install: true
+          go-version: ${{ env.GO_VERSION }}
 
-      - name: Build ${{ matrix.config.artifact }} test image
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: ${{ matrix.config.artifact }}-test-${{ github.sha }}
-          target: ${{ matrix.config.docker-test-target }}
-          load: true
-          push: false
+      - name: Set up gotestsum
+        if: matrix.config.artifact != 'bridge2'
+        run: go install gotest.tools/gotestsum@v1.8.1
 
-      - name: Test ${{ matrix.config.artifact }}
-        if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        env:
-          IMAGE_NAME: ${{ matrix.config.artifact }}-test-${{ github.sha }}
+      - name: Test ${{ matrix.config.artifact }} # TODO add --race #8486 
+        if: matrix.config.artifact != 'bridge2' && ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
+        working-directory: ./${{ matrix.config.artifact}}
         run: |
-          docker run --rm -v "$PWD/shared:/shared" $IMAGE_NAME
+          go mod download
+          gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
-      - name: Report test coverage for ${{ matrix.config.artifact }}
-        if: matrix.config.should-push-image == 'true'
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: false
-          flags: ${{ matrix.config.artifact }}
+    #######################################################################
+          # TESTS FOR BRIDGE
+    #######################################################################
+      - name: Install yarn
+        if: matrix.config.artifact == 'bridge2'
+        working-directory: bridge
+        run: |
+          if [[ '${{ matrix.config.docker-test-target }}' == 'bridge-server-test' ]]; then
+            cd ./server 
+          fi
+          yarn install --frozen-lockfile 
+
+      - name: Bridge lint checks
+        if: matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-code-style'
+        working-directory: bridge
+        run: yarn prettier:check && yarn lint:check
+
+      - name: UI-Test
+        if: matrix.config.docker-test-target == 'builder-test-ui'
+        working-directory: bridge
+        run: |
+         ./cypress/run-tests.sh   
+
+      - name: Bridge unit test
+        if: matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target != 'builder-test-ui'
+        working-directory: bridge
+        run: |
+          if [[ '${{ matrix.config.docker-test-target }}' == 'bridge-server-test' ]]; then
+            cd ./server 
+          fi
+          yarn test
 
       - name: Report test coverage for bridge-server
         if: matrix.config.should-push-image == 'false' && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'bridge-server-test'
@@ -288,7 +314,54 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: bridge-e2e-screenshots
-          path: ./shared/screenshots
+          path: ./bridge/shared/screenshots
+
+    # REPORT COVERAGE
+      - name: Report test coverage for ${{ matrix.config.artifact }}
+        if: matrix.config.should-push-image == 'true'
+        uses: codecov/codecov-action@v3
+        with:
+            fail_ci_if_error: false
+            flags: ${{ matrix.config.artifact }}
+
+    #######################################################################
+    # BUILD PRODUCTION IMAGES
+    #######################################################################
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+        id: buildx
+        with:
+          install: true
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        # only run docker login on pushes; also for PRs, but only if this is not a fork
+        if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
+        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+        # that's fine, but it means we can't push images to dockerhub
+        with:
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - id: docker_build_image
+        name: "Docker Build keptn/${{ matrix.config.artifact }}"
+        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
+        uses: docker/build-push-action@v3
+        with:
+          context: ${{ matrix.config.working-dir }}
+          tags: |
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
+            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
+          build-args: |
+            version=${{ env.VERSION }}
+            buildTime=${{ needs.prepare_ci_run.outputs.DATETIME }}
+            gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+          push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
+          pull: true
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha, scope=${{ github.workflow }}
+          cache-to: type=gha, scope=${{ github.workflow }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
@@ -306,7 +379,7 @@ jobs:
           fetch-depth: 0
 
       # cache go modules
-      - uses: actions/cache@v3.0.5
+      - uses: actions/cache@v3.0.7
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
@@ -354,7 +427,7 @@ jobs:
 
   helm_charts_upload:
     name: Publish helm charts to dev repo
-    needs: [prepare_ci_run, helm_charts_build, docker_build]
+    needs: [prepare_ci_run, helm_charts_build, unit-tests-and-build]
     if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
     runs-on: ubuntu-20.04
     steps:
@@ -399,54 +472,6 @@ jobs:
         git commit --signoff -m "Keptn Dev Version $RELEASE_TAG"
         git push
 
-  ############################################################################
-  # Build Docker Images                                                      #
-  ############################################################################
-  docker_build:
-    name: Docker Build
-    needs: [prepare_ci_run]
-    runs-on: ubuntu-20.04
-    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
-    strategy:
-      matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-    env:
-      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        # only run docker login on pushes; also for PRs, but only if this is not a fork
-        if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (matrix.config.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
-        # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
-        # that's fine, but it means we can't push images to dockerhub
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        if: matrix.config.should-push-image == 'true' && ( matrix.config.should-run == 'true' || needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true' )
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: |
-            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}
-          build-args: |
-            version=${{ env.VERSION }}
-            buildTime=${{ needs.prepare_ci_run.outputs.DATETIME }}
-            gitSha=${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-          push: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
-          pull: true
-
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
     if: always() && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' ))
@@ -454,12 +479,12 @@ jobs:
       - calculate-queue-time
       - prepare_ci_run
       - store-output-in-build-config
-      - unit-tests-microservices
+      - unit-tests-and-build
       - unit-tests-cli
       - build-cli
       - helm_charts_build
       - helm_charts_upload
-      - docker_build
+
     uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "CI"

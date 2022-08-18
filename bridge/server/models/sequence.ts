@@ -1,12 +1,12 @@
-import { ISequence, SequenceState } from '../../shared/interfaces/sequence';
+import { ISequenceState, SequenceStatus } from '../../shared/interfaces/sequence';
 import { IServerSequenceStage } from '../interfaces/sequence-stage';
 
-export class Sequence implements ISequence {
+export class Sequence implements ISequenceState {
   name!: string;
   project!: string;
   service!: string;
   shkeptncontext!: string;
-  state!: SequenceState;
+  state!: SequenceStatus;
   time!: string;
   stages!: IServerSequenceStage[];
   problemTitle?: string;

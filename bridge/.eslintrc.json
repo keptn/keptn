@@ -25,6 +25,7 @@
         "prettier" // eslint-config-prettier
       ],
       "plugins": [
+        "no-only-tests", // https://github.com/keptn/keptn/issues/8526: disallow only in commits
         "@typescript-eslint", // @typescript-eslint/eslint-plugin
         "import",
         "eslint-comments", // eslint-plugin-eslint-comments
@@ -32,6 +33,12 @@
         "prettier" // eslint-plugin-prettier
       ],
       "rules": {
+        "no-only-tests/no-only-tests": [
+          "error",
+          {
+            "block": ["describe", "it", "cy"]
+          }
+        ],
         "@angular-eslint/component-selector": [
           "error",
           {

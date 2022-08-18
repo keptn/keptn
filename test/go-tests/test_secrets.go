@@ -2,11 +2,13 @@ package go_tests
 
 import (
 	"context"
+	"fmt"
+	"github.com/keptn/go-utils/pkg/common/retry"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,6 +61,12 @@ func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
 	require.Nil(t, err)
 
 	// check if associated role was deleted
-	_, err = k8s.RbacV1().Roles(ns).Get(context.TODO(), "keptn-secrets-default-read", v1.GetOptions{})
-	require.True(t, errors.IsNotFound(err))
+	err = retry.Retry(func() error {
+		_, err := k8s.RbacV1().Roles(ns).Get(context.TODO(), "keptn-secrets-default-read", v1.GetOptions{})
+		if errors.IsNotFound(err) {
+			return nil
+		}
+		return fmt.Errorf("unexpected %w", err)
+	})
+	require.Nil(t, err)
 }

@@ -4,25 +4,19 @@ import { KtbDeletionDialogComponent } from '../_dialogs/ktb-deletion-dialog/ktb-
 import { DeleteData } from '../../_interfaces/delete';
 
 @Component({
-  selector: 'ktb-danger-zone',
+  selector: 'ktb-danger-zone[data]',
   templateUrl: './ktb-danger-zone.component.html',
   styleUrls: ['./ktb-danger-zone.component.scss'],
 })
 export class KtbDangerZoneComponent {
-  @Input() data?: DeleteData;
+  @Input() data!: DeleteData;
 
   constructor(public dialog: MatDialog) {}
 
   public openDeletionDialog(): void {
-    if (this.data) {
-      const data = {
-        type: this.data.type,
-        name: this.data.name,
-      };
-      this.dialog.open(KtbDeletionDialogComponent, {
-        data,
-        autoFocus: false, // else the close icon will be incorrectly selected
-      });
-    }
+    this.dialog.open(KtbDeletionDialogComponent, {
+      data: this.data,
+      autoFocus: false, // else the close icon will be incorrectly selected
+    });
   }
 }

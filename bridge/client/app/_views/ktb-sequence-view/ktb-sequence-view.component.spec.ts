@@ -13,6 +13,7 @@ import { DtQuickFilterDefaultDataSourceAutocomplete } from '@dynatrace/barista-c
 import { KtbSequenceViewModule } from './ktb-sequence-view.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
+import { DataService } from '../../_services/data.service';
 
 describe('KtbSequenceViewComponent', () => {
   let component: KtbSequenceViewComponent;
@@ -294,6 +295,81 @@ describe('KtbSequenceViewComponent', () => {
       projectName
     );
     expect(component.filteredSequences).toEqual([SequencesMock[0]]);
+  });
+
+  it('should select sequence and load traces', async () => {
+    // given
+    const spySelectSequence = jest.spyOn(component, 'selectSequence');
+    const spyLoadTraces = jest.spyOn(component, 'loadTraces');
+    const state = await firstValueFrom(component.state$);
+
+    // when
+    component.navigateToBlockingSequence(SequencesMock[1], state);
+
+    // then
+    expect(spySelectSequence).toHaveBeenCalled();
+    expect(spyLoadTraces).toHaveBeenCalled();
+  });
+
+  it('should select update sequence if getSequenceExecution returns the sequence itself', async () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    const spyUpdateSequence = jest.spyOn(dataService, 'updateSequence');
+    const state = await firstValueFrom(component.state$);
+
+    // when
+    // currentSequence and returned sequence are the same
+    component.navigateToBlockingSequence(SequencesMock[0], state);
+
+    // then
+    expect(spyUpdateSequence).toHaveBeenCalled();
+  });
+
+  it("should call loadUntilRoot if sequence isn't loaded", () => {
+    // given
+    const dataService = TestBed.inject(DataService);
+    const spyLoadUntilRoot = jest.spyOn(dataService, 'loadUntilRoot');
+
+    // when
+    component.navigateToBlockingSequence(SequencesMock[0]);
+
+    // then
+    expect(spyLoadUntilRoot).toHaveBeenCalled();
+  });
+
+  it("should not run data loading or sequence selection if sequence-execution doesn't return anything", () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    jest.spyOn(apiService, 'getSequenceExecution').mockReturnValue(
+      of({
+        sequenceExecutions: [],
+      })
+    );
+
+    const dataService = TestBed.inject(DataService);
+    const spyLoadUntilRoot = jest.spyOn(dataService, 'loadUntilRoot');
+    const spySelectSequence = jest.spyOn(component, 'selectSequence');
+    const spyLoadTraces = jest.spyOn(component, 'loadTraces');
+
+    // when
+    component.navigateToBlockingSequence(SequencesMock[0]);
+
+    // then
+    expect(spySelectSequence).not.toHaveBeenCalled();
+    expect(spyLoadTraces).not.toHaveBeenCalled();
+    expect(spyLoadUntilRoot).not.toHaveBeenCalled();
+  });
+
+  it('should call setTraces with correct stage if stage is switched using selectStage', () => {
+    // given
+    const spyLoadTraces = jest.spyOn(component, 'loadTraces');
+    component.selectSequence({ sequence: SequencesMock[0] });
+
+    // when
+    component.selectStage('staging');
+
+    // then
+    expect(spyLoadTraces).toHaveBeenCalledWith(component.currentSequence, undefined, 'staging');
   });
 
   function getServiceFilter(): { autocomplete: { name: string; value: string }[] } {

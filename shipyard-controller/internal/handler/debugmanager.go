@@ -17,6 +17,7 @@ type IDebugManager interface {
 	GetAllSequencesForProject(projectName string, paginationParams models.PaginationParams) ([]models.SequenceExecution, *models.PaginationResult, error)
 	GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
+	GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error)
 }
 
 type DebugManager struct {
@@ -89,4 +90,70 @@ func (dm *DebugManager) GetEventByID(projectName string, shkeptncontext string, 
 
 func (dm *DebugManager) GetAllProjects() ([]*apimodels.ExpandedProject, error) {
 	return dm.projectRepo.GetProjects()
+}
+
+func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
+
+	if _, err := dm.projectRepo.GetProject(projectName); err != nil {
+		return nil, err
+	}
+
+	sequences, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			KeptnContext: shkeptncontext,
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stage,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(sequences) == 0 {
+		return nil, common.ErrSequenceNotFound
+	}
+
+	sort.Slice(sequences, func(i, j int) bool {
+		return sequences[i].TriggeredAt.After(sequences[j].TriggeredAt)
+	})
+
+	sequence := sequences[0]
+
+	blockingSequencesStarted, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: sequence.Scope.Project,
+				Stage:   sequence.Scope.Stage,
+				Service: sequence.Scope.Service,
+			},
+		},
+		Status: []string{apimodels.SequenceStartedState},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	blockingSequencesTriggered, err := dm.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+		Scope: models.EventScope{
+			EventData: keptnv2.EventData{
+				Project: sequence.Scope.Project,
+				Stage:   sequence.Scope.Stage,
+				Service: sequence.Scope.Service,
+			},
+		},
+		Status:      []string{apimodels.SequenceTriggeredState},
+		TriggeredAt: sequence.TriggeredAt,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	blockingSequences := append(blockingSequencesStarted, blockingSequencesTriggered...)
+
+	return blockingSequences, nil
 }

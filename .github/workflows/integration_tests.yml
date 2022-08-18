@@ -121,7 +121,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.5
+        uses: actions/cache@v3.0.7
         with:
           path: |
             ~/downloads
@@ -176,7 +176,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
+        uses: dawidd6/action-download-artifact@v2.22.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -650,7 +650,7 @@ jobs:
           path: ${{ env.TEST_REPORTS_PATH }}
 
       - name: Build multi-platform test report
-        uses: actions/github-script@v6.1.0
+        uses: actions/github-script@v6.1.1
         env:
           TEST_REPORTS_PATH: ${{ env.TEST_REPORTS_PATH }}
           FINAL_TEST_REPORTS_FOLDER: ${{ env.FINAL_TEST_REPORTS_FOLDER }}
@@ -727,7 +727,7 @@ jobs:
 
       - name: Generate Markdown Test Report
         run: |
-          npx tablemark-cli@v2.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
+          npx tablemark-cli@v3.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
 
       - name: Upload final JSON test report as an artifact
         if: always()
@@ -744,7 +744,7 @@ jobs:
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
+        uses: dawidd6/action-download-artifact@v2.22.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -845,7 +845,7 @@ jobs:
           submodules: 'true'
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
+        uses: dawidd6/action-download-artifact@v2.22.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -925,7 +925,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
+        uses: dawidd6/action-download-artifact@v2.22.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -957,7 +957,7 @@ jobs:
 
       - name: Cache Keptn CLI
         id: keptn-cli-cache
-        uses: actions/cache@v3.0.5
+        uses: actions/cache@v3.0.7
         with:
           path: ~/downloads
           key: ${{ env.META_KEPTN_VERSION }}-cli

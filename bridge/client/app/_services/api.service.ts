@@ -32,6 +32,8 @@ import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
+import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
 
 @Injectable({
   providedIn: 'root',
@@ -343,6 +345,16 @@ export class ApiService {
     return this.http.get<EventResult>(url, { params });
   }
 
+  public getTracesByIds(projectName: string, ids: string[]): Observable<EventResult> {
+    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
+    const params = {
+      filter: `data.project:${projectName} AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND id:${ids.join(',')}`,
+      excludeInvalidated: 'true',
+      limit: ids.length.toString(),
+    };
+    return this.http.get<EventResult>(url, { params });
+  }
+
   public updateGitUpstreamExtended(projectName: string, gitCredentials?: IGitDataExtended): Observable<unknown> {
     const url = `${this._baseUrl}/controlPlane/v1/project`;
     return this.http.put<unknown>(url, {
@@ -491,5 +503,18 @@ export class ApiService {
 
   public getLookAndFeelConfig(): Observable<WindowConfig | undefined> {
     return this.http.get<WindowConfig | undefined>(environment.appConfigUrl);
+  }
+
+  public getSequenceExecution(params: {
+    project: string;
+    stage?: string;
+    service?: string;
+    name?: string;
+    status?: SequenceStatus;
+    keptnContext?: string;
+    pageSize?: number;
+    nextPageKey?: number;
+  }): Observable<SequenceExecutionResult> {
+    return this.http.get<SequenceExecutionResult>(`${this._baseUrl}/controlPlane/v1/sequence-execution`, { params });
   }
 }

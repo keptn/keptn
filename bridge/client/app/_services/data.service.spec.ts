@@ -149,6 +149,12 @@ describe('DataService', () => {
     expect(loadLogSpy).not.toHaveBeenCalled();
   });
 
+  it('should return traces by given ids', async () => {
+    const result = await firstValueFrom(dataService.getTracesByIds('myProject', ['id1', 'id2']));
+
+    expect(result[0]).toBeInstanceOf(Trace);
+  });
+
   function setGetTracesResponse(traces: Trace[]): void {
     const response = new HttpResponse({ body: { events: traces, totalCount: 0, pageSize: 1, nextPageKey: 1 } });
     jest.spyOn(apiService, 'getTraces').mockReturnValue(of(response));
