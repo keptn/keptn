@@ -52,12 +52,12 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: readmes
+          name: readme-master
           path: master/installer/manifests/keptn/README.md
 
       - name: Upload Readmes
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: readmes
+          name: readme-current
           path: current/installer/manifests/keptn/README.md
