@@ -47,3 +47,17 @@ jobs:
             echo "The Helm values have changes that are not reflected in the readme. Please use ./gh-actions-scripts/generate-helm-docs.sh to re-generate the docs."
             exit 1
           fi
+
+      - name: Upload Readmes
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: readmes
+          path: master/installer/manifests/keptn/README.md
+
+      - name: Upload Readmes
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: readmes
+          path: current/installer/manifests/keptn/README.md
