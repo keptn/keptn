@@ -2548,10 +2548,10 @@
     tunnel-agent "^0.6.0"
     uuid "^8.3.2"
 
-"@cypress/schematic@2.0.2":
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/@cypress/schematic/-/schematic-2.0.2.tgz#5efd666361f7f35a43a105f8985c0126c37906e9"
-  integrity sha512-YW8vipiU4sfmSdhCf6++UQZlz0cBMN2ZSTbPcsa29NW89cVtteF068/w/Ocb6jR4aMLiHUE5MdEDhFDkNOfOJw==
+"@cypress/schematic@2.0.3":
+  version "2.0.3"
+  resolved "https://registry.yarnpkg.com/@cypress/schematic/-/schematic-2.0.3.tgz#363d37088ce481e1083b9b7d9da80ab82cfa7a0d"
+  integrity sha512-/ArJlqIHFDchNHSUd51IPhdn98tc16foSDzqhkA4649rvJ4AuAd4Uv6E4FYWBozjRGYjiaYrKbn2CPzCERhfpA==
   dependencies:
     "@angular-devkit/architect" "^0.1401.0"
     "@angular-devkit/core" "^14.1.0"
