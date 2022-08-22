@@ -69,6 +69,12 @@ func init() {
               "$ref": "#/definitions/eventContext"
             }
           },
+          "400": {
+            "description": "Invalid Event Payload Error",
+            "schema": {
+              "$ref": "#/definitions/error"
+            }
+          },
           "500": {
             "description": "Error",
             "schema": {
@@ -364,6 +370,12 @@ func init() {
             "description": "Forwarded",
             "schema": {
               "$ref": "#/definitions/eventContext"
+            }
+          },
+          "400": {
+            "description": "Invalid Event Payload Error",
+            "schema": {
+              "$ref": "#/definitions/error"
             }
           },
           "500": {

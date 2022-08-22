@@ -52,7 +52,7 @@ type ImportPackageMock struct {
 			ResourceName string
 		}
 	}
-	lockClose       sync.RWMutex
+	lockClose          sync.RWMutex
 	lockGetResource    sync.RWMutex
 	lockResourceExists sync.RWMutex
 }

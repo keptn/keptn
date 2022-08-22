@@ -38,12 +38,19 @@ const envVarLogLevel = "LOG_LEVEL"
 type EnvConfig struct {
 	HideDeprecated            bool    `envconfig:"HIDE_DEPRECATED" default:"false"`
 	ImportBasePath            string  `envconfig:"IMPORT_BASE_PATH"`
+	EventValidationEnabled    bool    `envconfig:"EVENT_VALIDATION_ENABLED" default:"true"`
 	MaxAuthEnabled            bool    `envconfig:"MAX_AUTH_ENABLED" default:"true"`
 	MaxAuthRequestsPerSecond  float64 `envconfig:"MAX_AUTH_REQUESTS_PER_SECOND" default:"1"`
 	MaxAuthRequestBurst       int     `envconfig:"MAX_AUTH_REQUESTS_BURST" default:"2"`
 	MaxImportUncompressedSize uint64  `envconfig:"MAX_IMPORT_UNCOMPRESSED_SIZE" default:"52428800"` // 50MB default value
+	MaxEventSizeKB            int64   `envconfig:"MAX_EVENT_SIZE_KB" default:"64"`
 	OAuthEnabled              bool    `envconfig:"OAUTH_ENABLED" default:"false"`
 	OAuthPrefix               string  `envconfig:"OAUTH_PREFIX" default:"keptn:"`
+}
+
+// MaxEventSizeBytes returns MaxEventSizeKB in bytes
+func (e EnvConfig) MaxEventSizeBytes() int64 {
+	return e.MaxEventSizeKB << 10
 }
 
 func configureFlags(api *operations.KeptnAPI) {
@@ -93,7 +100,7 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 		},
 	)
 
-	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc)
+	api.EventPostEventHandler = event.PostEventHandlerFunc(handlers.PostEventHandlerFunc(env.EventValidationEnabled))
 	// api.EventGetEventHandler = event.GetEventHandlerFunc(handlers.GetEventHandlerFunc)
 
 	// Metadata endpoint
@@ -125,6 +132,10 @@ func configureAPI(api *operations.KeptnAPI) http.Handler {
 			env.MaxAuthRequestsPerSecond, env.MaxAuthRequestBurst, tokenValidator, clock.New(),
 		)
 		api.AddMiddlewareFor(http.MethodPost, "/auth", rateLimiter.Handle)
+	}
+
+	if env.EventValidationEnabled && env.MaxEventSizeKB > 0 {
+		api.AddMiddlewareFor(http.MethodPost, "/event", custommiddleware.EnforceMaxEventSize(env.MaxEventSizeBytes()))
 	}
 
 	api.ServerShutdown = func() {}

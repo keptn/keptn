@@ -289,6 +289,11 @@ apiService:
     requestsPerSecond: "1.0"
     ## @param apiService.maxAuth.requestBurst API authentication rate limiting requests burst
     requestBurst: "2"
+  eventValidation:
+    ## @param apiService.eventValidation.enabled Enable stricter validation of inbound events via public the event endpoint
+    enabled: true
+    ## @param apiService.eventValidation.maxEventSizeKB specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0
+    maxEventSizeKB: "64"
   ## @param apiService.nodeSelector API Service node labels for pod assignment
   nodeSelector: {}
   ## @param apiService.gracePeriod API Service termination grace period

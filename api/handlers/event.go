@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"strings"
-	"sync"
 	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -30,25 +30,34 @@ type eventPublisher interface {
 const defaultEventSource = "https://github.com/keptn/keptn/api"
 
 var eventHandlerInstance *EventHandler
-var instanceOnce = sync.Once{}
 
 type EventHandler struct {
-	EventPublisher eventPublisher
+	EventPublisher         eventPublisher
+	EventValidationEnabled bool
 }
 
-func GetEventHandlerInstance() (*EventHandler, error) {
+func GetEventHandlerInstance(eventValidation bool) *EventHandler {
 	if eventHandlerInstance == nil {
-		conn := nats.NewFromEnv()
-		eventHandlerInstance = &EventHandler{EventPublisher: conn}
+		eventHandlerInstance = &EventHandler{
+			EventPublisher:         nats.NewFromEnv(),
+			EventValidationEnabled: eventValidation,
+		}
 	}
-	return eventHandlerInstance, nil
+	return eventHandlerInstance
 }
 
 func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.EventContext, error) {
+	logger.Info("API received a keptn event")
+	if eh.EventValidationEnabled {
+		if err := Validate(event); err != nil {
+			return nil, err
+		}
+	}
+
+	// create or reuse context id
 	keptnContext := createOrApplyKeptnContext(event.Shkeptncontext)
 
-	logger.Info("API received a keptn event")
-
+	// determine source value
 	source := defaultEventSource
 	if event.Source != nil && len(*event.Source) > 0 {
 		sourceURL, err := url.Parse(*event.Source)
@@ -61,7 +70,7 @@ func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.
 
 	outEvent := &apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, outEvent); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not parse event: %w", err)
 	}
 
 	outEvent.Source = &source
@@ -78,17 +87,18 @@ func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.
 	return eventContext, nil
 }
 
-// PostEventHandlerFunc forwards an event to the event broker
-func PostEventHandlerFunc(params event.PostEventParams, principal *models.Principal) middleware.Responder {
-	eh, err := GetEventHandlerInstance()
-	if err != nil {
-		return sendInternalErrorForPost(err)
+func PostEventHandlerFunc(eventValidation bool) func(event.PostEventParams, *models.Principal) middleware.Responder {
+	return func(params event.PostEventParams, principal *models.Principal) middleware.Responder {
+		keptnContext, err := GetEventHandlerInstance(eventValidation).PostEvent(*params.Body)
+		if err != nil {
+			if errors.As(err, &EventValidationError{}) {
+				return sendBadRequestErrorForPost(err)
+			} else {
+				return sendInternalErrorForPost(err)
+			}
+		}
+		return event.NewPostEventOK().WithPayload(keptnContext)
 	}
-	keptnContext, err := eh.PostEvent(*params.Body)
-	if err != nil {
-		return sendInternalErrorForPost(err)
-	}
-	return event.NewPostEventOK().WithPayload(keptnContext)
 }
 
 func createOrApplyKeptnContext(eventKeptnContext string) string {
@@ -116,4 +126,9 @@ func createOrApplyKeptnContext(eventKeptnContext string) string {
 func sendInternalErrorForPost(err error) *event.PostEventInternalServerError {
 	logger.Error(err.Error())
 	return event.NewPostEventInternalServerError().WithPayload(&models.Error{Code: 500, Message: swag.String(err.Error())})
+}
+
+func sendBadRequestErrorForPost(err error) *event.PostEventBadRequest {
+	logger.Warn(err.Error())
+	return event.NewPostEventBadRequest().WithPayload(&models.Error{Code: 400, Message: swag.String(err.Error())})
 }
