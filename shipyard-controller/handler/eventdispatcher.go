@@ -4,10 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"strings"
 	"time"
-
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
 	"github.com/benbjohnson/clock"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -168,12 +167,12 @@ func (e *EventDispatcher) dispatchEvents() {
 		}
 
 		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce, TimeStamp: time.Now().UTC()}); err != nil {
-			log.Errorf("could not send CloudEvent: %s", err.Error())
+			log.Errorf("could not send CloudEvent: %s for event with ID: %s ", err.Error(), queueItem.EventID)
 			continue
 		}
 
 		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
-			log.Errorf("could not delete event from event queue: %s", err.Error())
+			log.Errorf("could not delete event from event queue: %s for event with ID: %s ", err.Error(), queueItem.EventID)
 			continue
 		}
 	}
@@ -194,6 +193,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 		return err
 	}
 	if len(sequenceExecutions) == 0 {
+		log.Errorf("could not find sequence in queue for event with ID: %s ", event.Event.ID())
 		return common.ErrSequenceNotFound
 	}
 
@@ -202,6 +202,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
 				Stage:   eventScope.Stage,
+				Service: eventScope.Service,
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},
@@ -226,7 +227,7 @@ func checkStarted(startedSequenceExecutions []models.SequenceExecution, event mo
 		for _, otherSequence := range startedSequenceExecutions {
 			if otherSequence.Status.CurrentTask.TriggeredID != event.Event.ID() {
 				if !e.isCurrentEventOverrulingOtherEvent(otherSequence, event) {
-					return errors.New(fmt.Sprint(common.OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
+					return errors.New(fmt.Sprintf(common.OtherActiveSequencesRunning, otherSequence.Scope.KeptnContext))
 				}
 			}
 		}
