@@ -11,7 +11,7 @@ require (
 	github.com/nats-io/nats.go v1.16.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c
+	golang.org/x/oauth2 v0.0.0-20220822191816-0ebed06d0094
 )
 
 require (
