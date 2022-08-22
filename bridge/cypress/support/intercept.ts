@@ -168,7 +168,7 @@ export function interceptSequencesPage(): void {
   cy.intercept('/api/project/sockshop/sequences/filter', { fixture: 'sequence.filter.mock' }).as('SequencesMetadata');
   cy.intercept('/api/mongodb-datastore/event?keptnContext=62cca6f3-dc54-4df6-a04c-6ffc894a4b5e&project=sockshop', {
     fixture: 'sequence.traces.mock.json',
-  });
+  }).as('sequenceTraces');
 
   cy.intercept('/api/mongodb-datastore/event?keptnContext=99a20ef4-d822-4185-bbee-0d7a364c213b&project=sockshop', {
     fixture: 'sequence-traces/approval.mock.json',

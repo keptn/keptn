@@ -49,7 +49,7 @@
               uitestid="keptn-sequence-view-roots"
               [events]="filteredSequences"
               [selectedEvent]="currentSequence"
-              (selectedEventChange)="selectSequence($event); loadTraces($event.sequence)"
+              (selectedEventChange)="selectSequence($event); loadTraces($event.sequence, undefined, $event.stage)"
             ></ktb-root-events-list>
             <div fxLayout="row" fxLayoutAlign="center">
               <ktb-loading-distractor *ngIf="loading" uitestid="keptn-loadingOldSequences">
