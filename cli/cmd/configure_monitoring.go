@@ -81,7 +81,7 @@ keptn configure monitoring datadog --project=PROJECTNAME --service=SERVICENAME
 
 		sdkEvent := cloudevents.NewEvent()
 		sdkEvent.SetID(uuid.New().String())
-		sdkEvent.SetType(keptn.ConfigureMonitoringEventType)
+		sdkEvent.SetType(keptnv2.GetTriggeredEventType("configure-monitoring"))
 		sdkEvent.SetSource(source.String())
 		sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
 		sdkEvent.SetData(cloudevents.ApplicationJSON, configureMonitoringEventData)
