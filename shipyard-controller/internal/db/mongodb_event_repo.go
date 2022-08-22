@@ -31,6 +31,7 @@ const (
 
 // ErrNoEventFound indicates that no event could be found
 var ErrNoEventFound = errors.New("no matching event found")
+var ErrEventAlreadyExists = errors.New("event already exists")
 
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
@@ -201,7 +202,7 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event apimodels.Ke
 
 	existingEvent := collection.FindOne(ctx, bson.M{"id": event.ID})
 	if existingEvent.Err() == nil || existingEvent.Err() != mongo.ErrNoDocuments {
-		return errors.New("event with ID " + event.ID + " already exists in collection")
+		return ErrEventAlreadyExists
 	}
 
 	_, err = collection.InsertOne(ctx, eventInterface)
@@ -224,7 +225,7 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status co
 		log.Errorf("Could not delete event %s : %s\n", eventID, err.Error())
 		return err
 	}
-	log.Infof("Deleted event %s", eventID)
+	log.Debugf("Deleted event %s", eventID)
 	return nil
 }
 

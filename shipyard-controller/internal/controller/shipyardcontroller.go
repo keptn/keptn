@@ -146,7 +146,7 @@ func (sc ShipyardController) StopDispatchers() {
 }
 
 func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextExtendedCE, waitForCompletion bool) error {
-	statusType, err := ExtractEventKind(event)
+	statusType, commonEventData, err := ExtractEventKind(event)
 	if err != nil {
 		return err
 	}
@@ -156,11 +156,18 @@ func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 		done = make(chan error)
 	}
 
-	eventData := keptnv2.EventData{}
-	keptnv2.Decode(event.Data, &eventData)
-
-	log.Infof("Received event of type %s from %s for project %s", *event.Type, *event.Source, eventData.Project)
-	log.Debugf("Context of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
+	if *event.Source != "shipyard-controller" {
+		log.
+			WithFields(log.Fields{
+				"source":       *event.Source,
+				"keptncontext": event.Shkeptncontext,
+				"project":      commonEventData.Project,
+				"service":      commonEventData.Service,
+				"stage":        commonEventData.Stage,
+			}).
+			Infof("[RECEIVED  ] Event '%s'", *event.Type)
+	}
+	log.Debugf("Content of event %s, sent by %s: %s", *event.Type, *event.Source, ObjToJSON(event))
 	cb := getCompletionCallback(waitForCompletion, done)
 
 	switch statusType {
@@ -216,7 +223,7 @@ func (sc *ShipyardController) handleSequenceTriggered(event apimodels.KeptnConte
 		return nil
 	}
 
-	log.Infof("Checking if sequence '.triggered' event should start a sequence in project %s", eventScope.Project)
+	log.Debugf("Checking if sequence '.triggered' event should start a sequence in project %s", eventScope.Project)
 	_, taskSequenceName, _, err := keptnv2.ParseSequenceEventType(eventScope.EventType)
 	if err != nil {
 		return fmt.Errorf("unable to parse seuqnce event of type %s: %w", eventScope.EventType, err)
@@ -240,7 +247,9 @@ func (sc *ShipyardController) handleSequenceTriggered(event apimodels.KeptnConte
 
 	sc.appendLatestCommitIDToEvent(*eventScope, &eventScope.WrappedEvent)
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, eventScope.WrappedEvent, common.TriggeredEvent); err != nil {
-		log.Infof("could not store event that triggered task sequence: %s", err.Error())
+		if !errors.Is(err, db.ErrEventAlreadyExists) {
+			log.Errorf("Could not store event that triggered task sequence: %v", err)
+		}
 	}
 
 	inputProperties := map[string]interface{}{}
@@ -765,7 +774,7 @@ func (sc *ShipyardController) completeTaskSequence(eventScope models.EventScope,
 		return err
 	}
 
-	log.Infof("Deleting all task.finished events of task sequence %s with context %s", sequenceExecution.Sequence.Name, sequenceExecution.Scope.KeptnContext)
+	log.Debugf("Deleting all task.finished events of task sequence %s with context %s", sequenceExecution.Sequence.Name, sequenceExecution.Scope.KeptnContext)
 	if err := sc.eventRepo.DeleteAllFinishedEvents(eventScope); err != nil {
 		return err
 	}

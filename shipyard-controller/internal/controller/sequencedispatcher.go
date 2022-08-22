@@ -58,15 +58,37 @@ func NewSequenceDispatcher(
 }
 
 func (sd *SequenceDispatcher) Add(queueItem models.QueueItem) error {
+	_, seqName, _, err := keptnv2.ParseSequenceEventType(queueItem.Scope.EventType)
+	if err != nil {
+		return fmt.Errorf("could not add event to sequence dispatcher: %w", err)
+	}
 	if sd.mode == common.SDModeRW {
 		//if there is only one shipyard we can both read and write,
 		//so we try to dispatch the sequence immediately
 		if err := sd.dispatchSequence(queueItem); err != nil {
 			if errors.Is(err, common.ErrSequenceBlocked) {
 				//if the sequence is currently blocked, insert it into the queue
+				log.
+					WithFields(log.Fields{
+						"source":       queueItem.Scope.EventSource,
+						"keptncontext": queueItem.Scope.KeptnContext,
+						"project":      queueItem.Scope.Project,
+						"service":      queueItem.Scope.Service,
+						"stage":        queueItem.Scope.Stage,
+					}).
+					Infof("[QUEUED    ] Sequence '%s' in stage '%s': %v", seqName, queueItem.Scope.Stage, err)
 				return sd.add(queueItem)
 			} else if errors.Is(err, common.ErrSequenceBlockedWaiting) {
 				//if the sequence is currently blocked and should wait, insert it into the queue
+				log.
+					WithFields(log.Fields{
+						"source":       queueItem.Scope.EventSource,
+						"keptncontext": queueItem.Scope.KeptnContext,
+						"project":      queueItem.Scope.Project,
+						"service":      queueItem.Scope.Service,
+						"stage":        queueItem.Scope.Stage,
+					}).
+					Infof("[QUEUED    ] Sequence '%s' in stage '%s': %v", seqName, queueItem.Scope.Stage, err)
 				if err2 := sd.add(queueItem); err2 != nil {
 					return err2
 				}
@@ -138,15 +160,29 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 	for _, queuedSequence := range queuedSequences {
 		if err := sd.dispatchSequence(queuedSequence); err != nil {
 			if errors.Is(err, common.ErrSequenceBlocked) || errors.Is(err, common.ErrSequenceBlockedWaiting) {
-				log.Infof("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
+				log.Debugf("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
 			} else {
 				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
 			}
+		} else {
+			_, seqName, _, err := keptnv2.ParseSequenceEventType(queuedSequence.Scope.EventType)
+			if err != nil {
+				log.Errorf("could not parse sequence event type: %v", err)
+			}
+			log.
+				WithFields(log.Fields{
+					"source":       queuedSequence.Scope.EventSource,
+					"keptncontext": queuedSequence.Scope.KeptnContext,
+					"project":      queuedSequence.Scope.Project,
+					"service":      queuedSequence.Scope.Service,
+					"stage":        queuedSequence.Scope.Stage,
+				}).
+				Infof("[DISPATCHED] Sequence '%s' in stage `%s`", seqName, queuedSequence.Scope.Stage)
 		}
 	}
 }
 
-func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, error) {
+func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (bool, string, error) {
 	// searching for running sequences
 	startedSequenceExecutions, err := sd.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
 		Scope: models.EventScope{
@@ -160,12 +196,12 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 	})
 	if err != nil {
 		log.Errorf("Could not load started sequences for project %s, service %s, stage %s: %v", queueItem.Scope.Project, queueItem.Scope.Service, queueItem.Scope.Stage, err)
-		return true, err
+		return true, "", err
 	}
 
 	if len(startedSequenceExecutions) > 0 {
-		log.Infof("Sequence with KeptnContext %s blocked due to started sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, startedSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
-		return true, nil
+		log.Debugf("Sequence with KeptnContext %s blocked due to started sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, startedSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
+		return true, startedSequenceExecutions[0].Scope.KeptnContext, nil
 	}
 
 	//searching for triggered sequences which were triggered before the actual sequence
@@ -182,22 +218,22 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 	})
 	if err != nil {
 		log.Errorf("Could not load triggered sequences for project %s, service %s, stage %s: %v", queueItem.Scope.Project, queueItem.Scope.Service, queueItem.Scope.Stage, err)
-		return true, err
+		return true, "", err
 	}
 
 	if len(triggeredSequenceExecutions) == 1 {
 		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
-			log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, triggeredSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
-			return true, nil
+			log.Debugf("Sequence with KeptnContext %s is blocked due to triggered sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, triggeredSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
+			return true, startedSequenceExecutions[0].Scope.KeptnContext, nil
 		}
 	}
 
 	if len(triggeredSequenceExecutions) > 1 {
-		log.Infof("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s with KeptnContext %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage, triggeredSequenceExecutions[0].Scope.KeptnContext)
-		return true, nil
+		log.Debugf("Sequence with KeptnContext %s is blocked due to triggered sequences in stage %s with KeptnContext %s", queueItem.Scope.KeptnContext, queueItem.Scope.Stage, triggeredSequenceExecutions[0].Scope.KeptnContext)
+		return true, triggeredSequenceExecutions[0].Scope.KeptnContext, nil
 	}
 
-	return false, nil
+	return false, "", nil
 }
 
 func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error {
@@ -212,17 +248,17 @@ func (sd *SequenceDispatcher) dispatchSequence(queueItem models.QueueItem) error
 	}
 
 	if sequenceExecution.IsPaused() || sd.sequenceExecutionRepo.IsContextPaused(queueItem.Scope) {
-		log.Infof("Sequence %s is currently paused. Will not start it yet.", queueItem.Scope.KeptnContext)
-		return common.ErrSequenceBlocked
+		//log.Infof("Sequence %s is paused and will not be triggered yet.", queueItem.Scope.KeptnContext)
+		return fmt.Errorf("sequence is paused: %w", common.ErrSequenceBlocked)
 	}
 
-	sequenceBlocked, err := sd.isSequenceBlocked(queueItem)
+	sequenceBlocked, blockingSequenceContext, err := sd.isSequenceBlocked(queueItem)
 	if err != nil {
 		return err
 	}
 
 	if sequenceBlocked {
-		return common.ErrSequenceBlockedWaiting
+		return fmt.Errorf("blocked by context: %s: %w", blockingSequenceContext, common.ErrSequenceBlockedWaiting)
 	}
 
 	events, err := sd.eventRepo.GetEvents(queueItem.Scope.Project, common.EventFilter{

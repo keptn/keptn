@@ -60,10 +60,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event apimodels.Ke
 	}
 
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
-		if errors.Is(err, db.ErrStateAlreadyExists) {
-			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)
-		} else {
-			log.Errorf("could not create task sequence state: %s", err.Error())
+		if !errors.Is(err, db.ErrStateAlreadyExists) {
+			log.Errorf("could not create task sequence state for keptn context %s: %v", eventScope.KeptnContext, err)
 		}
 	}
 }
