@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
-        image: keptndev/shipyard-controller:0.15.1-dev #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
+        image: keptndev/shipyard-controller:0.18.1-dev #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
         env:
           - name: RESOURCE_SERVICE
             value: "http://resource-service:8080"

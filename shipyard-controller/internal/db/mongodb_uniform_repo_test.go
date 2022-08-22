@@ -578,36 +578,6 @@ func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
 	require.Len(t, integrations[0].Subscriptions, 1)
 }
 
-func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
-	testIntegrations := generateIntegrations()
-	wantedSubscriptions := []int{2, 1, 2, 0, 0} //checking that subscriptions with empty services are deleted
-
-	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
-
-	// insert our integration entities
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[0])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[1])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[2])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[3])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[4])
-
-	integrations, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: "sv1"})
-	require.Len(t, integrations, 4)
-
-	err := mdbrepo.DeleteServiceFromSubscriptions("sv1")
-	require.Nil(t, err)
-
-	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: "sv1"})
-	require.Equal(t, 0, len(integrations))
-
-	for i, ti := range testIntegrations {
-		fetchedIntegration, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: ti.ID})
-		require.Equal(t, ti.Name, fetchedIntegration[0].Name)
-		require.Equal(t, wantedSubscriptions[i], len(fetchedIntegration[0].Subscriptions))
-	}
-
-}
-
 func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 	testIntegration := apimodels.Integration{
 		ID:   "i1",
