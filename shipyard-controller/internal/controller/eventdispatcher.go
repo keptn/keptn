@@ -233,6 +233,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
 				Stage:   eventScope.Stage,
+				Service: eventScope.Service,
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},
