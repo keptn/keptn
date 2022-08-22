@@ -43,7 +43,7 @@ import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
 import { EnvType } from '../interfaces/configuration';
 import { IClientSecret } from '../../shared/interfaces/secret';
 import { IServerSequenceStage } from '../interfaces/sequence-stage';
-import { isWebhookService, IUniformRegistration } from '../../shared/interfaces/uniform-registration';
+import { IUniformRegistration } from '../../shared/interfaces/uniform-registration';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -521,7 +521,7 @@ export class DataService {
 
     return {
       isControlPlane: uniformRegistration?.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-      isWebhookService: uniformRegistration ? isWebhookService(uniformRegistration) : false,
+      isWebhookService: uniformRegistration ? uniformRegistration.name === KeptnService.WEBHOOK_SERVICE : false,
     };
   }
 

@@ -1,9 +1,4 @@
 import { IUniformSubscription } from './uniform-subscription';
-import { KeptnService } from '../models/keptn-service';
-
-export function isWebhookService(ur: IUniformRegistration): boolean {
-  return ur.name === KeptnService.WEBHOOK_SERVICE;
-}
 
 export interface IUniformRegistration {
   id: string;

@@ -2,9 +2,9 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@a
 import { ActivatedRoute } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { isWebhookService, IUniformRegistration } from '../../../../shared/interfaces/uniform-registration';
+import { IUniformRegistration } from '../../../../shared/interfaces/uniform-registration';
 import { IUniformSubscription } from '../../../../shared/interfaces/uniform-subscription';
-import { canEditSubscriptions, getSubscriptions } from '../../_models/uniform-registration';
+import { canEditSubscriptions, getSubscriptions, isWebhookService } from '../../_models/uniform-registration';
 
 @Component({
   selector: 'ktb-uniform-subscriptions[uniformRegistration]',

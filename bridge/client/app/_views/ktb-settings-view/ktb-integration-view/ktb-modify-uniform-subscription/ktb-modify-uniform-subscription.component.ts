@@ -228,8 +228,8 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
 
     this.eventService.deletionTriggeredEvent.pipe(takeUntil(this.unsubscribe$)).subscribe((data) => {
       if (data.type === DeleteType.SUBSCRIPTION && data.context) {
-        const contextArray = data.context as unknown[];
-        this.deleteSubscription(contextArray[0] as Params, contextArray[1] as SubscriptionState);
+        const [params, subscriptionState] = data.context as [Params, SubscriptionState];
+        this.deleteSubscription(params, subscriptionState);
       }
     });
   }

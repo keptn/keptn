@@ -18,7 +18,7 @@ import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
 import { EventService } from '../../../../_services/event.service';
 import { DeleteResult } from '../../../../_interfaces/delete';
 import { IUniformSubscription } from '../../../../../../shared/interfaces/uniform-subscription';
-import { isWebhookService } from '../../../../../../shared/interfaces/uniform-registration';
+import { isWebhookService } from '../../../../_models/uniform-registration';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
