@@ -228,6 +228,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			}
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
+			sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 			continue
 		}
 		sliEvaluationResult.Value = (*keptnv2.SLIResult)(result)
