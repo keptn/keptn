@@ -225,6 +225,8 @@ func main() {
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceAbortedHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceFinishedHook(eventDispatcher)
+	shipyardController.AddSequenceAbortedHook(eventDispatcher)
 	shipyardController.AddSequenceTimeoutHook(eventDispatcher)
 	shipyardController.AddSequencePausedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceResumedHook(sequenceStateMaterializedView)
