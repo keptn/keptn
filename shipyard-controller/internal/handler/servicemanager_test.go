@@ -276,10 +276,6 @@ func TestDeleteService_DeleteServiceInConfigurationServiceReturnsServiceNotFound
 		return nil
 	}
 
-	uniformRepo.DeleteServiceFromSubscriptionsFunc = func(subscriptionName string) error {
-		return nil
-	}
-
 	configurationStore.DeleteServiceFunc = func(projectName string, stageName string, serviceName string) error {
 		return common.ErrServiceNotFound
 	}
@@ -289,7 +285,6 @@ func TestDeleteService_DeleteServiceInConfigurationServiceReturnsServiceNotFound
 	assert.Equal(t, 2, len(configurationStore.DeleteServiceCalls()))
 	// in this case we expect the service to be deleted from the database, because it is already gone from the upstream
 	assert.Equal(t, 2, len(projectMVRepo.DeleteServiceCalls()))
-	assert.Equal(t, 2, len(uniformRepo.DeleteServiceFromSubscriptionsCalls()))
 }
 
 func TestDeleteService_DeleteServiceInDBFails(t *testing.T) {
@@ -360,10 +355,6 @@ func TestDeleteService(t *testing.T) {
 		return nil
 	}
 	projectMVRepo.DeleteServiceFunc = func(project string, stage string, service string) error {
-		return nil
-	}
-
-	uniformRepo.DeleteServiceFromSubscriptionsFunc = func(subscriptionName string) error {
 		return nil
 	}
 
