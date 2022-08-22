@@ -10,7 +10,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0
 	github.com/invopop/jsonschema v0.5.0
 	github.com/keptn/go-utils v0.18.0
-	github.com/keptn/keptn/webhook-service v0.0.0-20220801120858-9a5885986ee5
+	github.com/keptn/keptn/webhook-service v0.18.1
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/sirupsen/logrus v1.8.1
