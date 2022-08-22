@@ -49,6 +49,7 @@ type Params = { projectName: string; integrationId: string; subscriptionId?: str
 type Suffix = { value: string; displayValue: string };
 type NotificationResult = { type: NotificationType; message: string };
 type Dialog = { label: string; message: string; unsavedState: null | 'unsaved' };
+type UiFilter = { Stage: string[]; Service: string[] };
 
 @Component({
   selector: 'ktb-modify-uniform-subscription',
@@ -306,7 +307,6 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
         },
       ],
     } as DtFilterFieldDefaultDataSourceAutocomplete;
-    console.log(this._dataSource.data);
   }
 
   public updateSubscription(
@@ -421,7 +421,7 @@ export class KtbModifyUniformSubscriptionComponent implements OnDestroy, Pending
     // can't set another type because of "is not assignable to..."
     const eventCasted = event as DtFilterFieldChangeEvent<DtAutoComplete>;
     const result = eventCasted.filters.reduce(
-      (filters: { Stage: string[]; Service: string[] }, filter) => {
+      (filters: UiFilter, filter) => {
         filters[filter[0].name as 'Stage' | 'Service'].push(filter[1].name);
         return filters;
       },
