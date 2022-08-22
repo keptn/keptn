@@ -104,8 +104,13 @@ export class SequencesPage {
     return this;
   }
 
-  public selectSequence(keptnContext: string): this {
-    cy.byTestId(`keptn-root-events-list-${keptnContext}`).click();
+  public selectSequence(keptnContext: string, stage?: string): this {
+    const rootEvent = cy.byTestId(`keptn-root-events-list-${keptnContext}`);
+    if (stage) {
+      rootEvent.find('dt-tag').contains(stage).parentsUntil('ktb-stage-badge').first().click({ force: true });
+      return this;
+    }
+    rootEvent.click();
     return this;
   }
 

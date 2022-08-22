@@ -412,5 +412,26 @@ describe('Sequences', () => {
       sequencePage.visit('sockshop');
       cy.byTestId('keptn-root-events-list-e28592c6-d857-44fe-aea6-e65de02929bf').assertDtIcon('pause');
     });
+
+    it('should select stage when clicking stage tag', () => {
+      const project = 'sockshop';
+      const stage = 'dev';
+      const keptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
+      sequencePage.visit(project).selectSequence(keptnContext, stage);
+
+      // Wait for loadTraces call
+      cy.wait(100);
+
+      sequencePage.assertSequenceDeepLink(project, keptnContext, stage);
+    });
+
+    it('should select last stage when clicking ktb-selectable-tile', () => {
+      const project = 'sockshop';
+      const keptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
+      sequencePage
+        .visit(project)
+        .selectSequence(keptnContext)
+        .assertSequenceDeepLink(project, keptnContext, 'production');
+    });
   });
 });
