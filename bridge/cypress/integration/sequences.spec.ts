@@ -420,7 +420,7 @@ describe('Sequences', () => {
       sequencePage.visit(project).selectSequence(keptnContext, stage);
 
       // Wait for loadTraces call
-      cy.wait(100);
+      cy.wait('@sequenceTraces');
 
       sequencePage.assertSequenceDeepLink(project, keptnContext, stage);
     });

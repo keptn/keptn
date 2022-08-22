@@ -107,7 +107,7 @@ export class SequencesPage {
   public selectSequence(keptnContext: string, stage?: string): this {
     const rootEvent = cy.byTestId(`keptn-root-events-list-${keptnContext}`);
     if (stage) {
-      rootEvent.find('dt-tag').contains(stage).parentsUntil('ktb-stage-badge').first().click({ force: true });
+      rootEvent.find('dt-tag').contains(stage).parents('ktb-stage-badge').click();
       return this;
     }
     rootEvent.click();
