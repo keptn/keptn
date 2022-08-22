@@ -6,9 +6,7 @@ import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { Project } from '../_models/project';
-import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
-import { UniformSubscription } from '../_models/uniform-subscription';
 import { IWebhookConfigClient, WebhookConfigMethod } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
@@ -45,6 +43,8 @@ import { IGitDataExtended } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
 import { SequenceExecutionResultMock } from './_mockData/sequence-execution-result.mock';
+import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
+import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
 
 @Injectable({
   providedIn: null,
@@ -140,7 +140,7 @@ export class ApiServiceMock extends ApiService {
     return of(result);
   }
 
-  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistrationResult[]> {
+  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<IUniformRegistration[]> {
     return of(UniformRegistrationsMock);
   }
 
@@ -151,8 +151,8 @@ export class ApiServiceMock extends ApiService {
     });
   }
 
-  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
-    const subscription = UniformSubscription.fromJSON({
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<IUniformSubscription> {
+    const subscription: IUniformSubscription = {
       id: 'df9c0116-28ea-4ee2-8ad7-1fa6f03a8655',
       event: 'sh.keptn.event.deployment.triggered',
       filter: {
@@ -160,13 +160,13 @@ export class ApiServiceMock extends ApiService {
         stages: [],
         services: [],
       },
-    });
+    };
     return of(subscription);
   }
 
   public updateUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return of({});
@@ -174,7 +174,7 @@ export class ApiServiceMock extends ApiService {
 
   public createUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     return of({});

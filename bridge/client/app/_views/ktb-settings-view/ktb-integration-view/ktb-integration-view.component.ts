@@ -5,13 +5,15 @@ import { DataService } from '../../../_services/data.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { distinctUntilChanged, finalize, map, startWith, tap } from 'rxjs/operators';
 import { UniformRegistrationLog } from '../../../../../shared/interfaces/uniform-registration-log';
-import { UniformRegistration } from '../../../_models/uniform-registration';
 import { Location } from '@angular/common';
+import { IUniformRegistration } from '../../../../../shared/interfaces/uniform-registration';
+import { getFormattedEvent, hasProject } from '../../../_models/uniform-subscription';
+import { hasSubscriptions, isChangeable } from '../../../_models/uniform-registration';
 
 export type Params = { projectName: string; integrationId?: string };
 export type SelectedId = { id?: string };
 
-const sortConfig: Record<string, (u: UniformRegistration) => string> = {
+const sortConfig: Record<string, (u: IUniformRegistration) => string> = {
   host: (u) => u.metadata.hostname,
   namespace: (u) => u.metadata.kubernetesmetadata.namespace,
   location: (u) => u.metadata.location,
@@ -27,7 +29,9 @@ export class KtbIntegrationViewComponent {
   public isLoadingUniformRegistrations = true;
   public isLoadingLogs = false;
   public lastSeen?: Date;
-  private uniformRegistrations: DtTableDataSource<UniformRegistration> = new DtTableDataSource();
+  private uniformRegistrations: DtTableDataSource<IUniformRegistration> = new DtTableDataSource();
+  public hasSubscriptions = hasSubscriptions;
+  public isChangeable = isChangeable;
 
   public params$ = this.route.paramMap.pipe(
     mergeMap((paramMap) => {
@@ -83,7 +87,7 @@ export class KtbIntegrationViewComponent {
     private location: Location
   ) {}
 
-  public setSelectedUniformRegistration(uniformRegistration: UniformRegistration, projectName: string): void {
+  public setSelectedUniformRegistration(uniformRegistration: IUniformRegistration, projectName: string): void {
     const routeUrl = this.router.createUrlTree([
       '/project',
       projectName,
@@ -96,7 +100,7 @@ export class KtbIntegrationViewComponent {
     this.selectUniformRegistrationId$.next(uniformRegistration.id);
   }
 
-  private updateUniformUnreadCount(uniformRegistration: UniformRegistration): void {
+  private updateUniformUnreadCount(uniformRegistration: IUniformRegistration): void {
     this.lastSeen = this.dataService.getUniformDate(uniformRegistration.id);
     uniformRegistration.unreadEventsCount = 0;
     const noUnreadLogs = this.uniformRegistrations.data.every((r) => r.unreadEventsCount === 0);
@@ -113,14 +117,14 @@ export class KtbIntegrationViewComponent {
     );
   }
 
-  public getSubscriptions(uniformRegistration: UniformRegistration, projectName: string): string[] {
+  public getSubscriptions(uniformRegistration: IUniformRegistration, projectName: string): string[] {
     return uniformRegistration.subscriptions
-      .filter((s) => s.hasProject(projectName, true))
-      .map((s) => s.formattedEvent);
+      .filter((s) => hasProject(s.filter, projectName, true))
+      .map((s) => getFormattedEvent(s));
   }
 
-  public toUniformRegistration(item: unknown): UniformRegistration {
-    return <UniformRegistration>item;
+  public toUniformRegistration(item: unknown): IUniformRegistration {
+    return <IUniformRegistration>item;
   }
 
   private loadLogs(uniformRegistrationId?: string): Observable<UniformRegistrationLog[]> {
@@ -138,11 +142,11 @@ export class KtbIntegrationViewComponent {
 }
 
 export function sortRegistrations(
-  registrations: UniformRegistration[],
+  registrations: IUniformRegistration[],
   column: string,
   ascending: boolean
-): UniformRegistration[] {
-  return [...registrations].sort((a: UniformRegistration, b: UniformRegistration) => {
+): IUniformRegistration[] {
+  return [...registrations].sort((a: IUniformRegistration, b: IUniformRegistration) => {
     const sortBy = sortConfig[column];
     const sortResult = sortBy ? compare(sortBy(a), sortBy(b), ascending) : 0;
     return sortResult || compare(a.name, b.name, ascending);

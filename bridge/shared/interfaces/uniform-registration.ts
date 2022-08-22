@@ -1,6 +1,6 @@
 import { IUniformSubscription } from './uniform-subscription';
 
-export interface UniformRegistrationResult {
+export interface IUniformRegistration {
   id: string;
   metadata: {
     deplyomentname: string;

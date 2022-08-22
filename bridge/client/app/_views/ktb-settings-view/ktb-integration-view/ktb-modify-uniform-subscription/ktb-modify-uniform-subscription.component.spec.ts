@@ -4,7 +4,6 @@ import { ActivatedRoute, convertToParamMap, ParamMap, Router } from '@angular/ro
 import { UniformRegistrationsMock } from '../../../../_services/_mockData/uniform-registrations.mock';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { DataService } from '../../../../_services/data.service';
-import { UniformSubscription } from '../../../../_models/uniform-subscription';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { UniformRegistrationLocations } from '../../../../../../shared/interfaces/uniform-registration-locations';
 import { UniformRegistrationInfo } from '../../../../../../shared/interfaces/uniform-registration-info';
@@ -18,6 +17,8 @@ import { IWebhookConfigClient } from '../../../../../../shared/interfaces/webhoo
 import { KtbIntegrationViewModule } from '../ktb-integration-view.module';
 import { EventService } from '../../../../_services/event.service';
 import { DeleteResult } from '../../../../_interfaces/delete';
+import { IUniformSubscription } from '../../../../../../shared/interfaces/uniform-subscription';
+import { isWebhookService } from '../../../../_models/uniform-registration';
 
 describe('KtbModifyUniformSubscriptionComponent', () => {
   let component: KtbModifyUniformSubscriptionComponent;
@@ -72,7 +73,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
     const dataService = TestBed.inject(DataService);
     const updateSpy = jest.spyOn(dataService, 'updateUniformSubscription');
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription);
+    component.updateSubscription(true, 'sockshop', UniformRegistrationsMock[2].id, subscription);
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(UniformRegistrationsMock[2].id, subscription, undefined);
@@ -85,10 +86,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     getTaskPrefix().setValue('sh.keptn');
     getTaskSuffix().setValue('>');
     getIsGlobalControl().setValue(true);
-    component.editMode = true;
+    const editMode = true;
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
+    component.updateSubscription(editMode, 'sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
 
     // then
     expect(subscription.event).toEqual('sh.keptn.>');
@@ -100,10 +101,10 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     getTaskPrefix().setValue('deployment');
     getTaskSuffix().setValue('>');
     getIsGlobalControl().setValue(true);
-    component.editMode = true;
+    const editMode = true;
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
+    component.updateSubscription(editMode, 'sockshop', UniformRegistrationsMock[2].id, subscription, undefined);
 
     // then
     expect(subscription.event).toEqual('sh.keptn.event.deployment.>');
@@ -126,7 +127,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     };
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
+    component.updateSubscription(true, 'sockshop', UniformRegistrationsMock[10].id, subscription, webhookConfig);
     fixture.detectChanges();
 
     webhookConfig.type = subscription.event;
@@ -147,7 +148,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.updateSubscription('sockshop', UniformRegistrationsMock[2].id, subscription);
+    component.updateSubscription(true, 'sockshop', UniformRegistrationsMock[2].id, subscription);
 
     // then
     expect(component.updating).toEqual(false);
@@ -168,7 +169,7 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     taskSuffixControl.setValue('triggered');
     const isGlobalControl = getIsGlobalControl();
     isGlobalControl.setValue(true);
-    component.updateSubscription('sockshop', UniformRegistrationsMock[1].id, subscription);
+    component.updateSubscription(false, 'sockshop', UniformRegistrationsMock[1].id, subscription);
 
     // then
     expect(updateSpy).toHaveBeenCalledWith(
@@ -345,11 +346,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.deleteSubscription({
-      projectName: 'sockshop',
-      integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
-      subscription: { id: '0' },
-    } as SubscriptionState);
+    component.deleteSubscription(
+      {
+        projectName: 'sockshop',
+        integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+        editMode: true,
+      },
+      {
+        subscription: { id: '0' },
+      } as SubscriptionState
+    );
 
     // then
     expect(routeSpy).toHaveBeenCalledWith([
@@ -373,11 +379,16 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     fixture.detectChanges();
 
     // when
-    component.deleteSubscription({
-      projectName: 'sockshop',
-      integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
-      subscription: { id: '0' },
-    } as SubscriptionState);
+    component.deleteSubscription(
+      {
+        projectName: 'sockshop',
+        integrationId: 'keptn-uniform-jmeter-service-ea9e7b21d21295570fd62adb04592065',
+        editMode: true,
+      },
+      {
+        subscription: { id: '0' },
+      } as SubscriptionState
+    );
 
     // then
     expect(progressSpy).toHaveBeenCalledWith({
@@ -387,18 +398,18 @@ describe('KtbModifyUniformSubscriptionComponent', () => {
     });
   });
 
-  function setSubscription(integrationIndex: number, subscriptionIndex?: number): UniformSubscription {
+  function setSubscription(integrationIndex: number, subscriptionIndex?: number): IUniformSubscription {
     const dataService = TestBed.inject(DataService);
     const uniformRegistration = UniformRegistrationsMock[integrationIndex];
     const subscription =
       subscriptionIndex !== undefined
         ? uniformRegistration.subscriptions[subscriptionIndex]
-        : new UniformSubscription('sockshop');
+        : ({ event: '', filter: { projects: ['sockshop'] } } as IUniformSubscription);
     dataService.getUniformSubscription = jest.fn().mockReturnValue(of(subscription));
     dataService.getUniformRegistrationInfo = jest.fn().mockReturnValue(
       of({
         isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-        isWebhookService: uniformRegistration.isWebhookService,
+        isWebhookService: isWebhookService(uniformRegistration),
       } as UniformRegistrationInfo)
     );
     paramMap.next(

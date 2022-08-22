@@ -1,3 +1,9 @@
+interface IUniformSubscriptionFilterParameter {
+  key: string;
+  value: string;
+  visible: boolean;
+}
+
 export interface IUniformSubscriptionFilter {
   projects: string[] | null;
   stages: string[] | null;
@@ -7,6 +13,6 @@ export interface IUniformSubscriptionFilter {
 export interface IUniformSubscription {
   event: string;
   filter: IUniformSubscriptionFilter;
-  parameters?: { key: string; value: string; visible: boolean }[];
+  parameters?: IUniformSubscriptionFilterParameter[];
   id?: string;
 }

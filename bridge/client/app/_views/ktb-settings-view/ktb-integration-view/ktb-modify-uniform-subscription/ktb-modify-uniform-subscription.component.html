@@ -1,4 +1,4 @@
-<div fxFlexFill class="container">
+<div *ngIf="params$ | async as params" fxFlexFill class="container">
   <ng-container *ngIf="errorMessage">
     <button class="mt-2" dt-button (click)="reloadPage()" uitestid="ktb-modify-subscription-reload-button">
       <dt-icon name="refresh"></dt-icon>
@@ -7,11 +7,11 @@
   </ng-container>
   <ng-container *ngIf="!errorMessage">
     <ng-container *ngIf="data$ | async as data; else loading">
-      <h2>{{ editMode ? 'Edit' : 'Create' }} subscription</h2>
+      <h2>{{ params.editMode ? 'Edit' : 'Create' }} subscription</h2>
       <form [formGroup]="subscriptionForm">
         <div class="settings-section">
-          <dt-form-field *ngIf="!isWebhookService" uitestid="edit-subscription-field-isGlobal">
-            <ng-container [ngTemplateOutlet]="data.subscription.hasFilter() ? showOverlay : isGlobalCheckbox">
+          <dt-form-field *ngIf="!data.isWebhookService" uitestid="edit-subscription-field-isGlobal">
+            <ng-container [ngTemplateOutlet]="hasFilter(data.subscription.filter) ? showOverlay : isGlobalCheckbox">
             </ng-container>
 
             <ng-template #showOverlay>
@@ -37,7 +37,7 @@
               class="mr-2 item"
               placeholder="Choose your task"
               aria-label="Choose your task"
-              (selectionChange)="selectedTaskChanged(data.projectName, data.subscription)"
+              (selectionChange)="selectedTaskChanged(params.projectName, data.subscription, data.isWebhookService)"
             >
               <dt-option *ngFor="let task of data.taskNames" [value]="task" [textContent]="task"></dt-option>
             </dt-select>
@@ -49,7 +49,7 @@
               class="mr-2 item"
               placeholder="Choose your task suffix"
               aria-label="Choose your task suffix"
-              (selectionChange)="selectedTaskChanged(data.projectName, data.subscription)"
+              (selectionChange)="selectedTaskChanged(params.projectName, data.subscription, data.isWebhookService)"
             >
               <dt-option
                 *ngFor="let suffix of suffixes"
@@ -64,11 +64,14 @@
           <dt-filter-field
             [dataSource]="_dataSource"
             [filters]="
-              data.subscription.getFilter(_dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined)
+              getFilter(
+                data.subscription.filter,
+                _dataSource.isAutocomplete(_dataSource.data) ? _dataSource.data : undefined
+              )
             "
             (filterChanges)="
-              data.subscription.filterChanged($event, data.projectName);
-              subscriptionFilterChanged(data.subscription, data.projectName)
+              filterChanged(data.subscription.filter, $event, params.projectName);
+              subscriptionFilterChanged(data.subscription, params.projectName, data.isWebhookService)
             "
             aria-label="Filter by stage and service"
             clearAllLabel="Clear all"
@@ -81,12 +84,13 @@
         <ktb-payload-viewer
           [buttonTitle]="'Show example payload'"
           [type]="getSelectedTask()"
-          [project]="data.projectName"
-          [stage]="data.subscription.getFirstStage()"
-          [service]="data.subscription.getFirstService()"
+          [project]="params.projectName"
+          [stage]="getFirstStage(data.subscription.filter)"
+          [service]="getFirstService(data.subscription.filter)"
         ></ktb-payload-viewer>
         <ktb-webhook-settings
-          *ngIf="isWebhookService"
+          *ngIf="data.isWebhookService"
+          [project]="params.projectName"
           [(webhook)]="data.webhook"
           [secrets]="data.webhookSecrets"
           [eventPayload]="eventPayload"
@@ -99,24 +103,32 @@
             class="mr-2"
             uitestid="updateSubscriptionButton"
             [disabled]="!isFormValid(data.subscription)"
-            (click)="updateSubscription(data.projectName, data.integrationId, data.subscription, data.webhook)"
+            (click)="
+              updateSubscription(
+                params.editMode,
+                params.projectName,
+                params.integrationId,
+                data.subscription,
+                data.webhook
+              )
+            "
             dt-button
           >
             <ktb-loading-spinner
               *ngIf="updating"
-              aria-label="{{ editMode ? 'Updating' : 'Creating' }} subscription"
+              aria-label="{{ params.editMode ? 'Updating' : 'Creating' }} subscription"
             ></ktb-loading-spinner>
-            {{ editMode ? 'Update' : 'Create' }} subscription
+            {{ params.editMode ? 'Update' : 'Create' }} subscription
           </button>
-          <button type="reset" dt-button variant="secondary" [routerLink]="editMode ? '../../../' : '../../'">
+          <button type="reset" dt-button variant="secondary" [routerLink]="params.editMode ? '../../../' : '../../'">
             Cancel
           </button>
         </div>
       </form>
       <div class="mt-2 required-info">fields are required</div>
 
-      <div class="settings-section" *ngIf="editMode">
-        <ktb-danger-zone [data]="{ type: deleteType, context: data }"></ktb-danger-zone>
+      <div class="settings-section" *ngIf="params.editMode">
+        <ktb-danger-zone [data]="{ type: deleteType, context: [params, data] }"></ktb-danger-zone>
       </div>
     </ng-container>
   </ng-container>
@@ -126,12 +138,12 @@
 
   <dt-confirmation-dialog
     id="unsavedDataDialog"
-    [state]="unsavedDialogState"
-    [aria-label]="dialogLabel"
+    [state]="dialog.unsavedState"
+    [aria-label]="dialog.label"
     uitestid="ktb-uniform-subscription-confirmation-dialog"
   >
     <dt-confirmation-dialog-state name="unsaved">
-      <p [textContent]="message"></p>
+      <p [textContent]="dialog.message"></p>
       <dt-confirmation-dialog-actions>
         <button dt-button variant="secondary" (click)="reject()">Stay</button>
         <button

@@ -3,18 +3,18 @@ import { KtbSubscriptionItemComponent } from './ktb-subscription-item.component'
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { UniformSubscription } from '../../_models/uniform-subscription';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { DataService } from '../../_services/data.service';
 import { KtbSubscriptionItemModule } from './ktb-subscription-item.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewModule } from '../../_views/ktb-settings-view/ktb-integration-view/ktb-integration-view.module';
+import { IUniformSubscription } from '../../../../shared/interfaces/uniform-subscription';
 
 describe('KtbSubscriptionItemComponent', () => {
   let component: KtbSubscriptionItemComponent;
   let fixture: ComponentFixture<KtbSubscriptionItemComponent>;
-  let subscription: UniformSubscription;
+  let subscription: IUniformSubscription;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -44,7 +44,7 @@ describe('KtbSubscriptionItemComponent', () => {
     TestBed.inject(DataService).loadProjects();
     fixture.detectChanges();
 
-    subscription = new UniformSubscription('sockshop');
+    subscription = { event: '', filter: { projects: ['sockshop'], stages: [], services: [] } };
     subscription.id = 'mySubscriptionId';
   });
 

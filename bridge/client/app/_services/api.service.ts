@@ -11,10 +11,8 @@ import { UniformRegistrationLogResponse } from '../../../shared/interfaces/unifo
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
-import { UniformSubscription } from '../_models/uniform-subscription';
 import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
-import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { KeptnService } from '../../../shared/models/keptn-service';
 import { ServiceState } from '../../../shared/models/service-state';
@@ -34,6 +32,8 @@ import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
 import { SequenceStatus } from '../../../shared/interfaces/sequence';
+import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
+import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
 
 @Injectable({
   providedIn: 'root',
@@ -176,9 +176,9 @@ export class ApiService {
     return this.http.get<IProjectResult>(url, { params });
   }
 
-  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistrationResult[]> {
+  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<IUniformRegistration[]> {
     const url = `${this._baseUrl}/uniform/registration`;
-    return this.http.post<UniformRegistrationResult[]>(url, uniformDates);
+    return this.http.post<IUniformRegistration[]>(url, uniformDates);
   }
 
   public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
@@ -186,14 +186,14 @@ export class ApiService {
     return this.http.get<UniformRegistrationInfo>(url);
   }
 
-  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<IUniformSubscription> {
     const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
-    return this.http.get<UniformSubscription>(url);
+    return this.http.get<IUniformSubscription>(url);
   }
 
   public updateUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
@@ -202,7 +202,7 @@ export class ApiService {
 
   public createUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription`;

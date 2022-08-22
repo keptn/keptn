@@ -7,9 +7,10 @@ import { ApiService } from '../../../_services/api.service';
 import { ApiServiceMock } from '../../../_services/api.service.mock';
 import { RouterTestingModule } from '@angular/router/testing';
 import { KtbIntegrationViewModule } from './ktb-integration-view.module';
-import { UniformRegistration } from '../../../_models/uniform-registration';
-import { UniformSubscription } from '../../../_models/uniform-subscription';
 import { skip } from 'rxjs/operators';
+import { IUniformRegistration } from '../../../../../shared/interfaces/uniform-registration';
+import { UniformRegistrationsMock } from '../../../_services/_mockData/uniform-registrations.mock';
+import { IUniformSubscription } from '../../../../../shared/interfaces/uniform-subscription';
 
 describe(KtbIntegrationViewComponent.name, () => {
   const projectName = 'sockshop';
@@ -101,7 +102,7 @@ describe(KtbIntegrationViewComponent.name, () => {
   it('should select a uniform registration by the user', (done) => {
     // given
     const id = 'af567de129';
-    const u = new UniformRegistration();
+    const u: IUniformRegistration = UniformRegistrationsMock[0];
     u.id = id;
     component.selectedUniformRegistrationId$.subscribe((actual) => {
       // then
@@ -151,11 +152,9 @@ describe(KtbIntegrationViewComponent.name, () => {
 
   it('should get subscriptions for a uniform registration', () => {
     // given
-    const u = new UniformRegistration();
-    const s1 = new UniformSubscription();
-    s1.event = 'Dog';
-    const s2 = new UniformSubscription();
-    s2.event = 'Cat';
+    const u = UniformRegistrationsMock[0];
+    const s1: IUniformSubscription = { event: 'Dog', filter: { projects: [], stages: [], services: [] } };
+    const s2: IUniformSubscription = { event: 'Cat', filter: { projects: [], stages: [], services: [] } };
     u.subscriptions = [s1, s2];
 
     // when
@@ -167,14 +166,14 @@ describe(KtbIntegrationViewComponent.name, () => {
 
   it('should convert unknown to a uniform registration', () => {
     // given
-    const u: unknown = new UniformRegistration();
+    const u: unknown = UniformRegistrationsMock[0];
 
     // when
     const actual = component.toUniformRegistration(u);
 
     // then
     expect(actual).toBe(u);
-    expect(actual).toEqual(new UniformRegistration());
+    expect(actual).toEqual(UniformRegistrationsMock[0]);
   });
 
   describe(KtbIntegrationViewComponent.name + '_HelperFunctions', () => {
@@ -196,7 +195,7 @@ describe(KtbIntegrationViewComponent.name, () => {
       const actualDesc = sortRegistrations(uniforms, 'anythingDoesNotMatter', false);
 
       // then
-      const idSortOrder = (r: UniformRegistration): string => r.id;
+      const idSortOrder = (r: IUniformRegistration): string => r.id;
       expect(actualAsc.map(idSortOrder)).toEqual(['2', '1', '3']);
       expect(actualDesc.map(idSortOrder)).toEqual(['3', '1', '2']);
     });
@@ -210,7 +209,7 @@ describe(KtbIntegrationViewComponent.name, () => {
       const actualDesc = sortRegistrations(uniforms, 'host', false);
 
       // then
-      const idSortOrder = (r: UniformRegistration): string => r.id;
+      const idSortOrder = (r: IUniformRegistration): string => r.id;
       expect(actualAsc.map(idSortOrder)).toEqual(['3', '2', '1']);
       expect(actualDesc.map(idSortOrder)).toEqual(['1', '2', '3']);
     });
@@ -224,7 +223,7 @@ describe(KtbIntegrationViewComponent.name, () => {
       const actualDesc = sortRegistrations(uniforms, 'location', false);
 
       // then
-      const idSortOrder = (r: UniformRegistration): string => r.id;
+      const idSortOrder = (r: IUniformRegistration): string => r.id;
       expect(actualAsc.map(idSortOrder)).toEqual(['1', '2', '3']);
       expect(actualDesc.map(idSortOrder)).toEqual(['3', '2', '1']);
     });
@@ -238,7 +237,7 @@ describe(KtbIntegrationViewComponent.name, () => {
       const actualDesc = sortRegistrations(uniforms, 'namespace', false);
 
       // then
-      const idSortOrder = (r: UniformRegistration): string => r.id;
+      const idSortOrder = (r: IUniformRegistration): string => r.id;
       expect(actualAsc.map(idSortOrder)).toEqual(['2', '3', '1']);
       expect(actualDesc.map(idSortOrder)).toEqual(['1', '3', '2']);
     });
@@ -275,28 +274,29 @@ describe(KtbIntegrationViewComponent.name, () => {
       expect(actual.map((l) => l.message)).toEqual(['1', '2', '3', '4']);
     });
 
-    function getUniform(id: string, name: string, host: string, loc: string, namespace: string): UniformRegistration {
-      const u1 = new UniformRegistration();
-      u1.id = id;
-      u1.name = name;
-      u1.metadata = {
-        hostname: host,
-        location: loc,
-        deplyomentname: '',
-        distributorversion: '',
-        integrationversion: '',
-        status: '',
-        lastseen: '',
-        kubernetesmetadata: {
-          namespace,
-          podname: '',
-          deploymentname: '',
+    function getUniform(id: string, name: string, host: string, loc: string, namespace: string): IUniformRegistration {
+      return {
+        id,
+        name,
+        subscriptions: [],
+        metadata: {
+          hostname: host,
+          location: loc,
+          deplyomentname: '',
+          distributorversion: '',
+          integrationversion: '',
+          status: '',
+          lastseen: '',
+          kubernetesmetadata: {
+            namespace,
+            podname: '',
+            deploymentname: '',
+          },
         },
       };
-      return u1;
     }
 
-    function getUniforms(): UniformRegistration[] {
+    function getUniforms(): IUniformRegistration[] {
       return [
         getUniform('1', 'B', 'C', 'A', 'C'),
         getUniform('2', 'A', 'B', 'B', 'A'),

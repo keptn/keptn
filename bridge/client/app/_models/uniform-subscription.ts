@@ -1,125 +1,54 @@
-import { DtAutoComplete, DtFilterArray } from './dt-filter';
-import { DtFilterFieldChangeEvent } from '@dynatrace/barista-components/filter-field';
-import {
-  IUniformSubscription as us,
-  IUniformSubscriptionFilter,
-} from '../../../shared/interfaces/uniform-subscription';
-import { DtFilterFieldDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/filter-field/src/filter-field-default-data-source';
+import { IUniformSubscription, IUniformSubscriptionFilter } from '../../../shared/interfaces/uniform-subscription';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 
-export class UniformSubscription implements us {
-  public id?: string;
-  public filter!: IUniformSubscriptionFilter;
-  public event = '';
-  public parameters: { key: string; value: string; visible: boolean }[] = [];
-  private _filter?: DtFilterArray[];
+export function getEventContent(us: IUniformSubscription): string {
+  return us.event.replace(EventTypes.PREFIX, '');
+}
 
-  constructor(projectName?: string) {
-    this.filter = {
-      projects: projectName ? [projectName] : [],
-      stages: [],
-      services: [],
-    };
+export function getPrefix(us: IUniformSubscription): string {
+  return getEventContent(us).substring(0, getEventContent(us).lastIndexOf('.'));
+}
+
+export function getSuffix(us: IUniformSubscription): string {
+  return getEventContent(us).split('.').pop() ?? '';
+}
+
+export function getFormattedEvent(us: IUniformSubscription): string {
+  return us.event.replace('>', '*');
+}
+
+export function isGlobal(uf: IUniformSubscriptionFilter): boolean {
+  return !uf.projects?.length;
+}
+
+export function hasProject(uf: IUniformSubscriptionFilter, projectName: string, includeEmpty = false): boolean {
+  return uf.projects?.includes(projectName) || (includeEmpty && !uf.projects?.length);
+}
+
+export function getFirstStage(uf: IUniformSubscriptionFilter): string | undefined {
+  return uf.stages?.find(() => true);
+}
+
+export function getFirstService(uf: IUniformSubscriptionFilter): string | undefined {
+  return uf.services?.find(() => true);
+}
+
+export function getGlobalProjects(uf: IUniformSubscriptionFilter, status: boolean, projectName: string): string[] {
+  if (status) {
+    return [];
   }
 
-  public static fromJSON(data: unknown): UniformSubscription {
-    return Object.assign(new this(), data);
+  if (hasProject(uf, projectName)) {
+    return uf.projects ? [...uf.projects] : [];
   }
 
-  public get prefix(): string {
-    return this.eventContent.substring(0, this.eventContent.lastIndexOf('.'));
-  }
+  return uf.projects ? [...uf.projects, projectName] : [projectName];
+}
 
-  public get suffix(): string {
-    return this.eventContent.split('.').pop() ?? '';
-  }
+export function formatFilter(uf: IUniformSubscriptionFilter, key: 'services' | 'stages' | 'projects'): string {
+  return uf[key]?.join(', ') || 'all';
+}
 
-  public get eventContent(): string {
-    return this.event.replace(EventTypes.PREFIX, '');
-  }
-
-  public get isGlobal(): boolean {
-    return !this.filter.projects?.length;
-  }
-
-  public get reduced(): Partial<UniformSubscription> {
-    const { _filter, ...subscription } = this;
-    return subscription;
-  }
-
-  public get formattedEvent(): string {
-    return this.event.replace('>', '*');
-  }
-
-  public setIsGlobal(status: boolean, projectName: string): void {
-    if (status) {
-      this.filter.projects = [];
-    } else if (!this.hasProject(projectName)) {
-      if (!this.filter.projects) {
-        this.filter.projects = [];
-      }
-      this.filter.projects.push(projectName);
-    }
-  }
-
-  public hasProject(projectName: string, includeEmpty = false): boolean {
-    return this.filter.projects?.includes(projectName) || (includeEmpty && !this.filter.projects?.length);
-  }
-
-  public addParameter(): void {
-    this.parameters.push({ key: '', value: '', visible: true });
-  }
-
-  public deleteParameter(index: number): void {
-    this.parameters.splice(index, 1);
-  }
-
-  public getFilter(data?: DtFilterFieldDefaultDataSourceAutocomplete): DtFilterArray[] {
-    if (data) {
-      const filter = [
-        ...(this.filter.stages?.map((stage) => [data.autocomplete[0], { name: stage }] as DtFilterArray) ?? []),
-        ...(this.filter.services?.map((service) => [data.autocomplete[1], { name: service }] as DtFilterArray) ?? []),
-      ];
-      if (filter.length !== this._filter?.length) {
-        this._filter = filter;
-      }
-    } else {
-      this._filter = [];
-    }
-    return this._filter;
-  }
-
-  public getFirstStage(): string | undefined {
-    return this.filter.stages?.find(() => true);
-  }
-
-  public getFirstService(): string | undefined {
-    return this.filter.services?.find(() => true);
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public filterChanged(event: DtFilterFieldChangeEvent<any>, projectName: string): void {
-    // can't set another type because of "is not assignable to..."
-    const eventCasted = event as DtFilterFieldChangeEvent<DtAutoComplete>;
-    const result = eventCasted.filters.reduce(
-      (filters: { Stage: string[]; Service: string[] }, filter) => {
-        filters[filter[0].name as 'Stage' | 'Service'].push(filter[1].name);
-        return filters;
-      },
-      { Stage: [], Service: [] }
-    );
-    this.filter.services = result.Service;
-    this.filter.stages = result.Stage;
-    if (this.filter.projects?.length && this.hasFilter()) {
-      this.setIsGlobal(false, projectName);
-    }
-  }
-
-  public formatFilter(key: 'services' | 'stages' | 'projects'): string {
-    return this.filter[key]?.join(', ') || 'all';
-  }
-
-  public hasFilter(): boolean {
-    return !!(this.filter.stages?.length || this.filter.services?.length);
-  }
+export function hasFilter(uf: IUniformSubscriptionFilter): boolean {
+  return !!(uf.stages?.length || uf.services?.length);
 }
