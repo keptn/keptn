@@ -199,7 +199,7 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 		return true, "", err
 	}
 
-	if len(startedSequenceExecutions) > 0 {
+	if len(startedSequenceExecutions) > 0 && queueItem.Scope.KeptnContext != startedSequenceExecutions[0].Scope.KeptnContext {
 		log.Debugf("Sequence with KeptnContext %s blocked due to started sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, startedSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
 		return true, startedSequenceExecutions[0].Scope.KeptnContext, nil
 	}
