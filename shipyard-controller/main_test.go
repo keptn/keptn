@@ -22,6 +22,7 @@ import (
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/config"
+	"github.com/keptn/keptn/shipyard-controller/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
@@ -978,6 +979,49 @@ func Test__main_SequenceTimeoutDelayedTask(t *testing.T) {
 		}
 		return true
 	}, 20*time.Second, 1*time.Second)
+}
+
+func Test__main_SequenceTimeoutDelayedTaskCancelSequence(t *testing.T) {
+	projectName := "my-project-delayed-task-cancel"
+	stageName := "dev"
+	serviceName := "my-service"
+	sequencename := "delivery"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, sequenceTimeoutWithTriggeredAfterShipyard)
+
+	defer tearDown()
+
+	require.Nil(t, err)
+
+	// trigger the task sequence
+	t.Log("starting task sequence")
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+	require.NotNil(t, keptnContext)
+
+	// wait 5s and make verify that the sequence has not been timed out
+	<-time.After(5 * time.Second)
+
+	// also, the unknown.triggered event should not have been sent yet
+	triggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("unknown"))
+	require.Nil(t, err)
+	require.Nil(t, triggeredEvent)
+
+	mdbConn := db.GetMongoDBConnectionInstance()
+
+	eventQueueRepo := db.NewMongoDBEventQueueRepo(mdbConn)
+
+	require.Eventually(t, func() bool {
+		events, _ := eventQueueRepo.GetQueuedEvents(time.Now().Add(10 * time.Minute))
+		return len(events) > 0
+	}, 10*time.Second, 100*time.Millisecond)
+
+	controlSequence(t, projectName, *keptnContext.KeptnContext, apimodels.AbortSequence)
+
+	require.Eventually(t, func() bool {
+		events, _ := eventQueueRepo.GetQueuedEvents(time.Now().Add(10 * time.Minute))
+		return events == nil
+	}, 10*time.Second, 100*time.Millisecond)
+
 }
 
 func Test__main_SeuenceQueueTriggerAndDeleteProject(t *testing.T) {
