@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "This is the API documentation of the DebugUI of the Shipyard Controller.",
-        "title": "Control Plane API",
+        "title": "DebugUI API",
         "contact": {
             "name": "Keptn Team",
             "url": "http://www.keptn.sh"

@@ -30,12 +30,3 @@ If a sequence is currently waiting to be executed, the `getblockingsequences` bu
 This will download the json data from the selected MongoDB collection. This can be then imported into MongoDB-compass for further debugging by opening an empty Database and then clicking on import.
 
 ![debugui](./dbdump.png)
-
-# FAQ
-## How to snakeshot in balanka
-
-* Trap the ball under the man’s foot.
-* Make sure that the point of contact between the foot and the ball is at, or very near, the top of the ball. This will prevent the ball from squeezing out prematurely.
-* Once the ball is secure, place your wrist on the handle.
-* Pull or push the handle with your wrist to move the ball sideways.
-* Turn the handle with your wrist, making the man do a backward somersault before striking the ball.
