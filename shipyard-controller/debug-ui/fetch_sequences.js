@@ -1,6 +1,7 @@
 function fetchSequences(
   project_name,
   show_triggered,
+  show_started,
   show_finished,
   show_timedOut,
   table
@@ -18,6 +19,7 @@ function fetchSequences(
       response.sequenceExecutions.forEach((object) => {
         if (
           (object.status.state === "triggered" && show_triggered) ||
+          (object.status.state === "started" && show_started) ||
           (object.status.state === "finished" && show_finished) ||
           (object.status.state === "timedOut" && show_timedOut)
         ) {

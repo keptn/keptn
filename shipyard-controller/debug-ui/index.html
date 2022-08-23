@@ -34,6 +34,16 @@
       </li>
 
       <li class="header">
+        Started:
+        <input
+          onChange="fetchSequencesHelper()"
+          id="checkboxStarted"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
         TimedOut:
         <input
           onChange="fetchSequencesHelper()"
@@ -128,6 +138,8 @@
 
         const show_finished =
           document.getElementById("checkboxFinished").checked;
+        const show_started =
+          document.getElementById("checkboxStarted").checked;
         const show_triggered =
           document.getElementById("checkboxTriggered").checked;
         const show_timedOut =
@@ -135,6 +147,7 @@
 
         fetchSequences(
           project_name,
+	  show_started,
           show_triggered,
           show_finished,
           show_timedOut,
