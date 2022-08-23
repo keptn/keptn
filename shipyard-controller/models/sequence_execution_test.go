@@ -1,11 +1,12 @@
 package models
 
 import (
+	"reflect"
+	"testing"
+
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/stretchr/testify/require"
-	"reflect"
-	"testing"
 )
 
 func TestSequenceExecution_GetNextTriggeredEventData(t *testing.T) {
@@ -563,6 +564,120 @@ func TestSequenceExecution_CompleteCurrentTask(t *testing.T) {
 					TriggeredID: "my-triggered-id",
 					Result:      keptnv2.ResultFailed,
 					Status:      keptnv2.StatusErrored,
+					Properties: map[string]interface{}{
+						"deploymentURI": "my-deployment-uri",
+						"otherProperty": "otherValue",
+					},
+				},
+			},
+		},
+		{
+			name: "multiple executors - one of them status unknown",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					CurrentTask: TaskExecutionState{
+						Name:        "deployment",
+						TriggeredID: "my-triggered-id",
+						Events: []TaskEvent{
+							{
+								EventType: "deployment.started",
+								Source:    "my-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-service",
+								Result:    keptnv2.ResultPass,
+								Status:    keptnv2.StatusSucceeded,
+								Properties: map[string]interface{}{
+									"deploymentURI": "my-deployment-uri",
+								},
+							},
+							{
+								EventType: "deployment.started",
+								Source:    "my-second-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-second-service",
+								Result:    keptnv2.ResultFailed,
+								Status:    "some status",
+								Properties: map[string]interface{}{
+									"otherProperty": "otherValue",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantResult: keptnv2.ResultFailed,
+			wantStatus: keptnv2.StatusUnknown,
+			wantPreviousTasks: []TaskExecutionResult{
+				{
+					Name:        "deployment",
+					TriggeredID: "my-triggered-id",
+					Result:      keptnv2.ResultFailed,
+					Status:      keptnv2.StatusUnknown,
+					Properties: map[string]interface{}{
+						"deploymentURI": "my-deployment-uri",
+						"otherProperty": "otherValue",
+					},
+				},
+			},
+		},
+		{
+			name: "multiple executors - one of them result unknown",
+			fields: fields{
+				Status: SequenceExecutionStatus{
+					CurrentTask: TaskExecutionState{
+						Name:        "deployment",
+						TriggeredID: "my-triggered-id",
+						Events: []TaskEvent{
+							{
+								EventType: "deployment.started",
+								Source:    "my-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-service",
+								Result:    keptnv2.ResultPass,
+								Status:    keptnv2.StatusSucceeded,
+								Properties: map[string]interface{}{
+									"deploymentURI": "my-deployment-uri",
+								},
+							},
+							{
+								EventType: "deployment.started",
+								Source:    "my-second-service",
+								Result:    "",
+								Status:    "",
+							},
+							{
+								EventType: "deployment.finished",
+								Source:    "my-second-service",
+								Result:    "unknown result",
+								Status:    keptnv2.StatusSucceeded,
+								Properties: map[string]interface{}{
+									"otherProperty": "otherValue",
+								},
+							},
+						},
+					},
+				},
+			},
+			wantResult: keptnv2.ResultFailed,
+			wantStatus: keptnv2.StatusSucceeded,
+			wantPreviousTasks: []TaskExecutionResult{
+				{
+					Name:        "deployment",
+					TriggeredID: "my-triggered-id",
+					Result:      keptnv2.ResultFailed,
+					Status:      keptnv2.StatusSucceeded,
 					Properties: map[string]interface{}{
 						"deploymentURI": "my-deployment-uri",
 						"otherProperty": "otherValue",

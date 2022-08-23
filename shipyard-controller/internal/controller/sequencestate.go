@@ -3,14 +3,16 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"sync"
-	"time"
+
 	//"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 )
@@ -92,7 +94,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event apimodel
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
 
-	state, err := smv.updateLastEventOfSequence(event)
+	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 		return
@@ -113,7 +115,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event apimodel
 func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-	state, err := smv.updateLastEventOfSequence(event)
+	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 		return
@@ -127,7 +129,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event apimodels.
 func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-	state, err := smv.updateLastEventOfSequence(event)
+	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 		return
@@ -147,7 +149,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event apimodels
 func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event apimodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-	state, err := smv.updateLastEventOfSequence(event)
+	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 		return
@@ -309,7 +311,7 @@ func (smv *SequenceStateMaterializedView) updateImageOfSequence(event apimodels.
 	return nil
 }
 
-func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event apimodels.KeptnContextExtendedCE) (apimodels.SequenceState, error) {
+func (smv *SequenceStateMaterializedView) UpdateLastEventOfSequence(event apimodels.KeptnContextExtendedCE) (apimodels.SequenceState, error) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return apimodels.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())
@@ -348,7 +350,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event apimod
 			stageFound = true
 			state.Stages[index].LatestEvent = newLastEvent
 			state.Stages[index].State = getStageState(*eventScope)
-			if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
+			if eventData.Status != keptnv2.StatusSucceeded || (eventData.Result != keptnv2.ResultPass && eventData.Result != keptnv2.ResultWarning) {
 				state.Stages[index].LatestFailedEvent = newLastEvent
 			}
 		}
@@ -359,7 +361,7 @@ func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event apimod
 			LatestEvent: newLastEvent,
 			State:       getStageState(*eventScope),
 		}
-		if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
+		if eventData.Status != keptnv2.StatusSucceeded || (eventData.Result != keptnv2.ResultPass && eventData.Result != keptnv2.ResultWarning) {
 			newStage.LatestFailedEvent = newLastEvent
 		}
 		state.Stages = append(state.Stages, newStage)
@@ -371,7 +373,16 @@ func getStageState(eventScope models.EventScope) string {
 	stageState := apimodels.SequenceTriggeredState
 	// check if this event was a <stage>.<sequence>.finished event - if yes, mark the stage as completed
 	if keptnv2.IsSequenceEventType(eventScope.EventType) {
-		stageState = string(eventScope.Status)
+		if eventScope.Status == keptnv2.StatusSucceeded && (eventScope.Result == keptnv2.ResultPass || eventScope.Result == keptnv2.ResultWarning) {
+			stageState = string(keptnv2.StatusSucceeded)
+		} else if eventScope.Status == keptnv2.StatusAborted {
+			stageState = string(keptnv2.StatusAborted)
+		} else if eventScope.Status == keptnv2.StatusErrored {
+			stageState = string(keptnv2.StatusErrored)
+		} else {
+			stageState = string(keptnv2.StatusUnknown)
+		}
+		//stageState = string(eventScope.Status)
 	}
 	return stageState
 }
