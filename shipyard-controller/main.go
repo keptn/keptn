@@ -296,13 +296,19 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		Handler: engine,
 	}
 
-	// TODO! feature flag
-	/*
+	debuguiEnabled := os.Getenv("DEBUGUI_ENABLED")
+
+	if debuguiEnabled == "true" {
 		srvDebug := &http.Server{
 			Addr:    ":9090",
 			Handler: debugEngine,
 		}
-	*/
+		go func() {
+			if err := srvDebug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.WithError(err).Error("could not start debug server")
+			}
+		}()
+	}
 
 	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}, nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent)); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
@@ -315,15 +321,6 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 			log.WithError(err).Error("could not start API server")
 		}
 	}()
-
-	// TODO! feature flag
-	/*
-		go func() {
-			if err := srvDebug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				log.WithError(err).Error("could not start debug server")
-			}
-		}()
-	*/
 
 	if env.DisableLeaderElection {
 		// single shipyard

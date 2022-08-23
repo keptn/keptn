@@ -17,6 +17,8 @@ func NewDebugController(debugHandler handler.IDebugHandler, projectHandler handl
 func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.Static("/ui", "./debug-ui")
 
+	apiGroup.Static("/swagger-ui", "./swagger-ui-debug")
+
 	apiGroup.GET("/", func(c *gin.Context) {
 		c.Redirect(302, "/ui")
 	})
