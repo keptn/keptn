@@ -30,7 +30,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get scopes",
+                "description": "Get scopes\n\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}secrets:read\u003c/span\u003e",
                 "tags": [
                     "Scopes"
                 ],
@@ -58,11 +58,27 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Get secrets",
+                "description": "Get secrets\n\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}secrets:read\u003c/span\u003e",
                 "tags": [
                     "Secrets"
                 ],
                 "summary": "Get secrets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The name of the secret",
+                        "name": "name",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The scope of the secret",
+                        "name": "scope",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -84,7 +100,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update an existing Secret",
+                "description": "Update an existing Secret\n\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}secrets:write\u003c/span\u003e",
                 "consumes": [
                     "application/json"
                 ],
@@ -139,7 +155,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Create a new Secret",
+                "description": "Create a new Secret\n\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}secrets:write\u003c/span\u003e",
                 "consumes": [
                     "application/json"
                 ],
@@ -194,7 +210,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Delete an existing Secret",
+                "description": "Delete an existing Secret\n\u003cspan class=\"oauth-scopes\"\u003eRequired OAuth scopes: ${prefix}secrets:delete\u003c/span\u003e",
                 "tags": [
                     "Secrets"
                 ],

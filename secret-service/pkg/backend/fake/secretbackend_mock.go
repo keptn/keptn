@@ -28,7 +28,7 @@ var _ backend.SecretBackend = &SecretBackendMock{}
 // 			GetScopesFunc: func() ([]string, error) {
 // 				panic("mock out the GetScopes method")
 // 			},
-// 			GetSecretsFunc: func() ([]model.GetSecretResponseItem, error) {
+// 			GetSecretsFunc: func(secret model.Secret) ([]model.GetSecretResponseItem, error) {
 // 				panic("mock out the GetSecrets method")
 // 			},
 // 			UpdateSecretFunc: func(secret model.Secret) error {
@@ -51,7 +51,7 @@ type SecretBackendMock struct {
 	GetScopesFunc func() ([]string, error)
 
 	// GetSecretsFunc mocks the GetSecrets method.
-	GetSecretsFunc func() ([]model.GetSecretResponseItem, error)
+	GetSecretsFunc func(secret model.Secret) ([]model.GetSecretResponseItem, error)
 
 	// UpdateSecretFunc mocks the UpdateSecret method.
 	UpdateSecretFunc func(secret model.Secret) error
@@ -73,6 +73,7 @@ type SecretBackendMock struct {
 		}
 		// GetSecrets holds details about calls to the GetSecrets method.
 		GetSecrets []struct {
+			Secret model.Secret
 		}
 		// UpdateSecret holds details about calls to the UpdateSecret method.
 		UpdateSecret []struct {
@@ -176,24 +177,27 @@ func (mock *SecretBackendMock) GetScopesCalls() []struct {
 }
 
 // GetSecrets calls GetSecretsFunc.
-func (mock *SecretBackendMock) GetSecrets() ([]model.GetSecretResponseItem, error) {
+func (mock *SecretBackendMock) GetSecrets(secret model.Secret) ([]model.GetSecretResponseItem, error) {
 	if mock.GetSecretsFunc == nil {
 		panic("SecretBackendMock.GetSecretsFunc: method is nil but SecretBackend.GetSecrets was just called")
 	}
 	callInfo := struct {
+		Secret model.Secret
 	}{}
 	mock.lockGetSecrets.Lock()
 	mock.calls.GetSecrets = append(mock.calls.GetSecrets, callInfo)
 	mock.lockGetSecrets.Unlock()
-	return mock.GetSecretsFunc()
+	return mock.GetSecretsFunc(secret)
 }
 
 // GetSecretsCalls gets all the calls that were made to GetSecrets.
 // Check the length with:
 //     len(mockedSecretBackend.GetSecretsCalls())
 func (mock *SecretBackendMock) GetSecretsCalls() []struct {
+	Secret model.Secret
 } {
 	var calls []struct {
+		Secret model.Secret
 	}
 	mock.lockGetSecrets.RLock()
 	calls = mock.calls.GetSecrets
