@@ -14,6 +14,8 @@ mongo:
   host: mongodb:27017
   ## @param mongo.architecture
   architecture: standalone
+  updateStrategy:
+    type: Recreate
   service:
     ## @param mongo.service.nameOverride
     nameOverride: 'mongo'
