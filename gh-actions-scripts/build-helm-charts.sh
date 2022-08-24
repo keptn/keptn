@@ -115,7 +115,7 @@ do
     exit 1
   fi
 
-  mv "${BASE_NAME}-${VERSION}.tgz" "keptn-charts/${BASE_NAME}-${VERSION}.tgz"
+  mv "${BASE_NAME}-${VERSION}.tgz" 'keptn-charts/'
 
   # verify the chart
   echo "::group::Template install of ${BASE_NAME}"
