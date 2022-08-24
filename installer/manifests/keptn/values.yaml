@@ -66,6 +66,9 @@ mongo:
 
 ## @section Keptn Features
 features:
+  debugUI:
+    ## @param features.debugUI.enabled
+    enabled: "false"
   automaticProvisioning:
     ## @param features.automaticProvisioning.serviceURL
     serviceURL: ""

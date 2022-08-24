@@ -38,6 +38,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 | Name                                        | Description            | Value    |
 | ------------------------------------------- | ---------------------- | -------- |
+| `features.debugUI.enabled`                  |                        | `false`  |
 | `features.automaticProvisioning.serviceURL` |                        | `""`     |
 | `features.automaticProvisioning.message`    |                        | `""`     |
 | `features.swagger.hideDeprecated`           |                        | `false`  |
