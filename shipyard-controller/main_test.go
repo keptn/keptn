@@ -146,17 +146,6 @@ spec:
           warning: manual
       - name: mytask`
 
-const simpleShipyard = `apiVersion: spec.keptn.sh/0.2.0
-kind: Shipyard
-metadata:
-  name: shipyard-simple
-spec:
-  stages:
-    - name: dev
-      sequences:
-        - name: delivery
-          tasks:
-            - name: delivery`
 const sequenceStateParallelStagesShipyard = `apiVersion: spec.keptn.sh/0.2.0
 kind: Shipyard
 metadata:
@@ -1783,8 +1772,7 @@ func createProject(t *testing.T, c http.Client, projectName string, shipyardCont
 			RemoteURL: "http://some.url",
 			User:      "user",
 			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token:           "token",
-				InsecureSkipTLS: true,
+				Token: "token",
 			},
 		},
 	}

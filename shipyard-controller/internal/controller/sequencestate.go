@@ -350,7 +350,7 @@ func (smv *SequenceStateMaterializedView) UpdateLastEventOfSequence(event apimod
 			stageFound = true
 			state.Stages[index].LatestEvent = newLastEvent
 			state.Stages[index].State = getStageState(*eventScope)
-			if eventData.Status != keptnv2.StatusSucceeded || (eventData.Result != keptnv2.ResultPass && eventData.Result != keptnv2.ResultWarning) {
+			if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
 				state.Stages[index].LatestFailedEvent = newLastEvent
 			}
 		}
@@ -361,7 +361,7 @@ func (smv *SequenceStateMaterializedView) UpdateLastEventOfSequence(event apimod
 			LatestEvent: newLastEvent,
 			State:       getStageState(*eventScope),
 		}
-		if eventData.Status != keptnv2.StatusSucceeded || (eventData.Result != keptnv2.ResultPass && eventData.Result != keptnv2.ResultWarning) {
+		if eventData.Result == keptnv2.ResultFailed || eventData.Status == keptnv2.StatusErrored {
 			newStage.LatestFailedEvent = newLastEvent
 		}
 		state.Stages = append(state.Stages, newStage)
@@ -373,16 +373,7 @@ func getStageState(eventScope models.EventScope) string {
 	stageState := apimodels.SequenceTriggeredState
 	// check if this event was a <stage>.<sequence>.finished event - if yes, mark the stage as completed
 	if keptnv2.IsSequenceEventType(eventScope.EventType) {
-		if eventScope.Status == keptnv2.StatusSucceeded && (eventScope.Result == keptnv2.ResultPass || eventScope.Result == keptnv2.ResultWarning) {
-			stageState = string(keptnv2.StatusSucceeded)
-		} else if eventScope.Status == keptnv2.StatusAborted {
-			stageState = string(keptnv2.StatusAborted)
-		} else if eventScope.Status == keptnv2.StatusErrored {
-			stageState = string(keptnv2.StatusErrored)
-		} else {
-			stageState = string(keptnv2.StatusUnknown)
-		}
-		//stageState = string(eventScope.Status)
+		stageState = string(eventScope.Status)
 	}
 	return stageState
 }

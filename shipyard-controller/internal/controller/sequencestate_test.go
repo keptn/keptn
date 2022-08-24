@@ -1252,7 +1252,7 @@ func TestSequenceStateMaterializedView_UpdateLastEventOfSequence(t *testing.T) {
 				Stages: []apimodels.SequenceStateStage{
 					{
 						Name:  "my-stage",
-						State: string(keptnv2.StatusUnknown),
+						State: "strange",
 					},
 				},
 			},
@@ -1326,7 +1326,7 @@ func TestSequenceStateMaterializedView_UpdateLastEventOfSequence(t *testing.T) {
 				Stages: []apimodels.SequenceStateStage{
 					{
 						Name:  "my-stage",
-						State: string(keptnv2.StatusUnknown),
+						State: string(keptnv2.StatusSucceeded),
 					},
 				},
 			},
