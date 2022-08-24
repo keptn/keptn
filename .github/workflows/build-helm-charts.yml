@@ -34,7 +34,7 @@ jobs:
       VERSION: ${{ inputs.version }}
       KEPTN_SPEC_VERSION: ${{ inputs.keptn-spec-version }}
       DATETIME: ${{ inputs.datetime }}
-      RELEASE_BUILD: ${{ inputs.release }}
+      RELEASE_BUILD: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
