@@ -113,8 +113,8 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:delete</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
-// @Param        name   query  string  false  "The name of the secret"
-// @Param        scope  query  string  false  "The scope of the secret"
+// @Param        name   query  string  true  "The name of the secret"
+// @Param        scope  query  string  true  "The scope of the secret"
 // @Success      200    "OK"
 // @Failure      400    {object}  model.Error  "Invalid payload"
 // @Failure      404    {object}  model.Error  "Not Found"
@@ -158,8 +158,8 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 // @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:read</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
-// @Param        name   query  string  true  "The name of the secret"
-// @Param        scope  query  string  true  "The scope of the secret"
+// @Param        name   query  string  false  "The name of the secret"
+// @Param        scope  query  string  false  "The scope of the secret"
 // @Success      200  {object}  model.GetSecretsResponse  "OK"
 // @Failure      500  {object}  model.Error               "Internal Server Error"
 // @Router       /secret [get]
