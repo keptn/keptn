@@ -15,6 +15,7 @@ mongo:
   ## @param mongo.architecture
   architecture: standalone
   updateStrategy:
+    ## @param mongo.updateStrategy.type
     type: Recreate
   service:
     ## @param mongo.service.nameOverride
