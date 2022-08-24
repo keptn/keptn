@@ -402,6 +402,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
+          gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz.prov
           gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
 
       - name: Upload helm charts
@@ -410,6 +411,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
+          mv ./dist/keptn-installer/*.tgz.prov ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
           git add *.tgz
