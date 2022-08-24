@@ -1,8 +1,10 @@
 package db
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"time"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	"go.mongodb.org/mongo-driver/bson"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -97,4 +99,10 @@ type SequenceExecutionRepo interface {
 	ResumeContext(eventScope models.EventScope) error
 	IsContextPaused(eventScope models.EventScope) bool
 	Clear(projectName string) error
+}
+
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/dbdump_mock.go . DBDumpRepo
+type DBDumpRepo interface {
+	GetDump(collectionName string) ([]bson.M, error)
+	ListAllCollections() ([]string, error)
 }

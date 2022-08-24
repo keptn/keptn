@@ -6,11 +6,13 @@ package fake
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"sync"
 )
 
 // Ensure, that IDebugManagerMock does implement handler.IDebugManager.
 // If this is not the case, regenerate this file with moq.
+//var _ handler.IDebugManager = &IDebugManagerMock{}
 
 // IDebugManagerMock is a mock implementation of handler.IDebugManager.
 //
@@ -30,11 +32,17 @@ import (
 // 			GetBlockingSequencesFunc: func(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error) {
 // 				panic("mock out the GetBlockingSequences method")
 // 			},
+// 			GetDatabaseDumpFunc: func(collectionName string) ([]primitive.M, error) {
+// 				panic("mock out the GetDatabaseDump method")
+// 			},
 // 			GetEventByIDFunc: func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
 // 				panic("mock out the GetEventByID method")
 // 			},
 // 			GetSequenceByIDFunc: func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error) {
 // 				panic("mock out the GetSequenceByID method")
+// 			},
+// 			ListAllCollectionsFunc: func() ([]string, error) {
+// 				panic("mock out the ListAllCollections method")
 // 			},
 // 		}
 //
@@ -55,11 +63,17 @@ type IDebugManagerMock struct {
 	// GetBlockingSequencesFunc mocks the GetBlockingSequences method.
 	GetBlockingSequencesFunc func(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error)
 
+	// GetDatabaseDumpFunc mocks the GetDatabaseDump method.
+	GetDatabaseDumpFunc func(collectionName string) ([]primitive.M, error)
+
 	// GetEventByIDFunc mocks the GetEventByID method.
 	GetEventByIDFunc func(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
 
 	// GetSequenceByIDFunc mocks the GetSequenceByID method.
 	GetSequenceByIDFunc func(projectName string, shkeptncontext string) (*apimodels.SequenceState, error)
+
+	// ListAllCollectionsFunc mocks the ListAllCollections method.
+	ListAllCollectionsFunc func() ([]string, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
@@ -89,6 +103,11 @@ type IDebugManagerMock struct {
 			// Stage is the stage argument value.
 			Stage string
 		}
+		// GetDatabaseDump holds details about calls to the GetDatabaseDump method.
+		GetDatabaseDump []struct {
+			// CollectionName is the collectionName argument value.
+			CollectionName string
+		}
 		// GetEventByID holds details about calls to the GetEventByID method.
 		GetEventByID []struct {
 			// ProjectName is the projectName argument value.
@@ -105,13 +124,18 @@ type IDebugManagerMock struct {
 			// Shkeptncontext is the shkeptncontext argument value.
 			Shkeptncontext string
 		}
+		// ListAllCollections holds details about calls to the ListAllCollections method.
+		ListAllCollections []struct {
+		}
 	}
 	lockGetAllEvents              sync.RWMutex
 	lockGetAllProjects            sync.RWMutex
 	lockGetAllSequencesForProject sync.RWMutex
 	lockGetBlockingSequences      sync.RWMutex
+	lockGetDatabaseDump           sync.RWMutex
 	lockGetEventByID              sync.RWMutex
 	lockGetSequenceByID           sync.RWMutex
+	lockListAllCollections        sync.RWMutex
 }
 
 // GetAllEvents calls GetAllEventsFunc.
@@ -249,6 +273,37 @@ func (mock *IDebugManagerMock) GetBlockingSequencesCalls() []struct {
 	return calls
 }
 
+// GetDatabaseDump calls GetDatabaseDumpFunc.
+func (mock *IDebugManagerMock) GetDatabaseDump(collectionName string) ([]primitive.M, error) {
+	if mock.GetDatabaseDumpFunc == nil {
+		panic("IDebugManagerMock.GetDatabaseDumpFunc: method is nil but IDebugManager.GetDatabaseDump was just called")
+	}
+	callInfo := struct {
+		CollectionName string
+	}{
+		CollectionName: collectionName,
+	}
+	mock.lockGetDatabaseDump.Lock()
+	mock.calls.GetDatabaseDump = append(mock.calls.GetDatabaseDump, callInfo)
+	mock.lockGetDatabaseDump.Unlock()
+	return mock.GetDatabaseDumpFunc(collectionName)
+}
+
+// GetDatabaseDumpCalls gets all the calls that were made to GetDatabaseDump.
+// Check the length with:
+//     len(mockedIDebugManager.GetDatabaseDumpCalls())
+func (mock *IDebugManagerMock) GetDatabaseDumpCalls() []struct {
+	CollectionName string
+} {
+	var calls []struct {
+		CollectionName string
+	}
+	mock.lockGetDatabaseDump.RLock()
+	calls = mock.calls.GetDatabaseDump
+	mock.lockGetDatabaseDump.RUnlock()
+	return calls
+}
+
 // GetEventByID calls GetEventByIDFunc.
 func (mock *IDebugManagerMock) GetEventByID(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error) {
 	if mock.GetEventByIDFunc == nil {
@@ -320,5 +375,31 @@ func (mock *IDebugManagerMock) GetSequenceByIDCalls() []struct {
 	mock.lockGetSequenceByID.RLock()
 	calls = mock.calls.GetSequenceByID
 	mock.lockGetSequenceByID.RUnlock()
+	return calls
+}
+
+// ListAllCollections calls ListAllCollectionsFunc.
+func (mock *IDebugManagerMock) ListAllCollections() ([]string, error) {
+	if mock.ListAllCollectionsFunc == nil {
+		panic("IDebugManagerMock.ListAllCollectionsFunc: method is nil but IDebugManager.ListAllCollections was just called")
+	}
+	callInfo := struct {
+	}{}
+	mock.lockListAllCollections.Lock()
+	mock.calls.ListAllCollections = append(mock.calls.ListAllCollections, callInfo)
+	mock.lockListAllCollections.Unlock()
+	return mock.ListAllCollectionsFunc()
+}
+
+// ListAllCollectionsCalls gets all the calls that were made to ListAllCollections.
+// Check the length with:
+//     len(mockedIDebugManager.ListAllCollectionsCalls())
+func (mock *IDebugManagerMock) ListAllCollectionsCalls() []struct {
+} {
+	var calls []struct {
+	}
+	mock.lockListAllCollections.RLock()
+	calls = mock.calls.ListAllCollections
+	mock.lockListAllCollections.RUnlock()
 	return calls
 }

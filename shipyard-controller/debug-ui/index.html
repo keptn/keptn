@@ -34,6 +34,16 @@
       </li>
 
       <li class="header">
+        Started:
+        <input
+          onChange="fetchSequencesHelper()"
+          id="checkboxStarted"
+          type="checkbox"
+          checked
+        />
+      </li>
+
+      <li class="header">
         TimedOut:
         <input
           onChange="fetchSequencesHelper()"
@@ -47,6 +57,15 @@
         Select Project:
 
         <select id="projectSelector" onChange="fetchSequencesHelper()"></select>
+      </li>
+
+      <li class="header">
+        Export MongoDB collection:
+        <select id="collectionSelector" onChange="updateDumpButton()"></select>
+
+        <a id="adownload" href="#" download="dump.json">
+          <button>Download</button>
+        </a>
       </li>
     </ul>
 
@@ -82,15 +101,46 @@
 
           fetchSequencesHelper();
         });
-    </script>
 
-    <script>
+      // get collections
+      fetch("/dbdump/listcollections", {
+        method: "get",
+      })
+        .then((res) => {
+          return res.json();
+        })
+        .then((response) => {
+          var collectionSelector =
+            document.getElementById("collectionSelector");
+          collectionSelector.innerHTML = "";
+
+          response.forEach((collection) => {
+            el_collection = document.createElement("option");
+            el_collection.innerHTML = collection;
+            collectionSelector.appendChild(el_collection);
+          });
+
+          updateDumpButton();
+        })
+        .catch((err) => {
+          console.log(e);
+        });
+
+      function updateDumpButton() {
+        const adownload = document.getElementById("adownload");
+        const collection = document.getElementById("collectionSelector").value;
+        adownload.href = `/dbdump/collection/${collection}`;
+        adownload.download = `${collection}.json`;
+      }
+
       function fetchSequencesHelper() {
         const project_name = document.getElementById("projectSelector").value;
         let table = document.getElementById("prodTable");
 
         const show_finished =
           document.getElementById("checkboxFinished").checked;
+        const show_started =
+          document.getElementById("checkboxStarted").checked;
         const show_triggered =
           document.getElementById("checkboxTriggered").checked;
         const show_timedOut =
@@ -98,6 +148,7 @@
 
         fetchSequences(
           project_name,
+	  show_started,
           show_triggered,
           show_finished,
           show_timedOut,
