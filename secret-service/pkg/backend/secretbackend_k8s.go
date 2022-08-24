@@ -178,42 +178,42 @@ func (k K8sSecretBackend) GetSecrets(secret model.Secret) ([]model.GetSecretResp
 	result := []model.GetSecretResponseItem{}
 
 	labelSelector := "app.kubernetes.io/managed-by=" + SecretServiceName
+	fieldSelector := ""
 	if secret.Scope != "" {
 		labelSelector += ",app.kubernetes.io/scope=" + secret.Scope
 	}
-
+	if secret.Name != "" {
+		fieldSelector += "metadata.name=" + secret.Name
+	}
 	namespace := k.KeptnNamespaceProvider()
 	list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{
 		LabelSelector: labelSelector,
+		FieldSelector: fieldSelector,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
 	}
 
 	for _, secretItem := range list.Items {
-		if secret.Name == "" || secret.Name == secretItem.Name {
-			keys := []string{}
-			for key := range secretItem.StringData {
-				if key != "" {
-					keys = insert(keys, key)
-				}
-			}
-			for key := range secretItem.Data {
-				if key != "" {
-					keys = insert(keys, key)
-				}
-			}
-			result = append(result, model.GetSecretResponseItem{
-				SecretMetadata: model.SecretMetadata{
-					Name:  secretItem.Name,
-					Scope: secretItem.Labels["app.kubernetes.io/scope"],
-				},
-				Keys: keys,
-			})
-			if secret.Name != "" {
-				break //if name is specified we found the only secret matching, no need to continue
+
+		keys := []string{}
+		for key := range secretItem.StringData {
+			if key != "" {
+				keys = insert(keys, key)
 			}
 		}
+		for key := range secretItem.Data {
+			if key != "" {
+				keys = insert(keys, key)
+			}
+		}
+		result = append(result, model.GetSecretResponseItem{
+			SecretMetadata: model.SecretMetadata{
+				Name:  secretItem.Name,
+				Scope: secretItem.Labels["app.kubernetes.io/scope"],
+			},
+			Keys: keys,
+		})
 	}
 
 	return result, nil
