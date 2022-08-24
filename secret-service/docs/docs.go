@@ -68,15 +68,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "The name of the secret",
                         "name": "name",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     },
                     {
                         "type": "string",
                         "description": "The scope of the secret",
                         "name": "scope",
-                        "in": "query",
-                        "required": true
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -220,13 +218,15 @@ const docTemplate = `{
                         "type": "string",
                         "description": "The name of the secret",
                         "name": "name",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "string",
                         "description": "The scope of the secret",
                         "name": "scope",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
