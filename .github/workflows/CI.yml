@@ -261,7 +261,7 @@ jobs:
 
       - name: Set up gotestsum
         if: matrix.config.artifact != 'bridge2'
-        run: go install gotest.tools/gotestsum@v1.7.0
+        run: go mod tidy && go install gotest.tools/gotestsum@v1.8.1
 
       - name: Test ${{ matrix.config.artifact }} # TODO add --race #8486 
         if: matrix.config.artifact != 'bridge2' && ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
