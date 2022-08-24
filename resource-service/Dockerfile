@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.5-alpine3.16 as builder
+FROM golang:1.19.0-alpine3.16 as builder
 
 ARG version=develop
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
