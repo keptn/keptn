@@ -28,7 +28,7 @@ if [ -z "$DOCKER_ORG" ]; then
 fi
 
 if [ -z "$SIGN_CHART" ]; then
-  echo "No flag set for singning charts, defaulting to no signing"
+  echo "No flag set for signing charts, defaulting to no signing"
   SIGN_CHART=false
 fi
 
@@ -38,12 +38,16 @@ if [[ "$SIGN_CHART" == 'true' ]]; then
     exit 2
   fi
 
+  echo "Creating necessary files for chart signing..."
+
   KEY_PATH='.gpg-dir'
   SIGNING_KEY_PATH="$KEY_PATH/secring.gpg"
   SIGNING_KEY_PASSPHRASE_PATH="$KEY_PATH/passphrase"
   mkdir "$KEY_PATH"
   base64 -d <<< "$SIGNING_KEY_BASE64" > "$SIGNING_KEY_PATH"
   base64 -d <<< "$SIGNING_KEY_PASSPHRASE_BASE64" > "$SIGNING_KEY_PASSPHRASE_PATH"
+
+  echo "Done..."
 fi
 
 
@@ -65,9 +69,11 @@ helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 COMMON_CHART_BASE_PATH=installer/manifests/common
 
 if [[ "$SIGN_CHART" == 'true' ]]; then
+  echo "Packaging chart with signage..."
   # shellcheck disable=SC2002
   cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
 else
+  echo "Packaging chart without signage..."
   helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
 fi
 
