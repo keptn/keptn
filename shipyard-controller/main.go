@@ -296,9 +296,7 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		Handler: engine,
 	}
 
-	debuguiEnabled := os.Getenv("DEBUGUI_ENABLED")
-
-	if debuguiEnabled == "true" {
+	if env.DebugUIEnabled {
 		srvDebug := &http.Server{
 			Addr:    ":9090",
 			Handler: debugEngine,

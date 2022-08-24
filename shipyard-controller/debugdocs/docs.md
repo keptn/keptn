@@ -8,7 +8,7 @@ The Debug-UI was built to debug keptn.
  - Get the sequences which are blocking a specific sequence 
  - Export a MongoDB collection
 
-The Debug-UI can be exposed on port 9090 of the shipyard controller by setting 'DEBUGUI_ENABLED' in the deploy/service.yml to "true".
+The Debug-UI can be exposed on port 9090 of the shipyard controller by setting the helm value 'features.debugUI.enabled' to `true`.
 After enabling it, you can portforward port 9090 of the shipyard-controller to your local host: `kubectl -n keptn port-forward service/shipyard-controller 9090:9090`
 
 All the endpoints are documented in a [Swagger-ui](http://localhost:9090/swagger-ui/)

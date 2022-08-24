@@ -33,8 +33,8 @@ spec:
       - name: shipyard-controller
         image: keptndev/shipyard-controller:0.18.1-dev #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
         env:
-          - name: DEBUGUI_ENABLED
-+            value: 'false'
+          - name: DEBUG_UI_ENABLED
+            value: 'false'
           - name: RESOURCE_SERVICE
             value: "http://resource-service:8080"
           - name: EVENTBROKER
