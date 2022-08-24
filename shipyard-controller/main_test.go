@@ -6,8 +6,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/internal/config"
-	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,6 +15,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/config"
+	"github.com/keptn/keptn/shipyard-controller/internal/db"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
@@ -1551,6 +1552,7 @@ func Test__main_SequenceControl_PauseAndResume(t *testing.T) {
 	t.Log("sending task1 finished event")
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultPass,
+		Status: keptnv2.StatusSucceeded,
 	}, source)
 
 	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequencePaused})
@@ -1568,6 +1570,52 @@ func Test__main_SequenceControl_PauseAndResume(t *testing.T) {
 		task2TriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
 		return task2TriggeredEvent != nil
 	}, 10*time.Second, 100*time.Millisecond)
+}
+
+func Test__main_SequenceControl_UnknownStatus(t *testing.T) {
+	projectName := "sequence-unknown-status"
+	serviceName := "myservice"
+	stageName := "dev"
+	sequencename := "mysequence"
+	source := "golang-test-1"
+
+	natsClient, tearDown, err := setupTestProject(t, projectName, serviceName, sequencePauseShipyard)
+
+	defer tearDown()
+	require.Nil(t, err)
+
+	t.Logf("triggering sequence %s in stage %s", sequencename, stageName)
+	keptnContext := natsClient.triggerSequence(projectName, serviceName, stageName, sequencename)
+
+	// get mytask.triggered event
+	var myTaskTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		myTaskTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, stageName, keptnv2.GetTriggeredEventType("task1"))
+		return myTaskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	cloudEvent := keptnv2.ToCloudEvent(*myTaskTriggeredEvent)
+
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+	require.NotNil(t, keptn)
+
+	// send .started event
+	_, err = keptn.SendTaskStartedEvent(nil, source)
+	require.Nil(t, err)
+
+	// verify state
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 10*time.Second, []string{apimodels.SequenceStartedState})
+
+	// send .finished event with unknown result
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
+		Status: "random status",
+		Result: "random result",
+	}, source)
+	require.Nil(t, err)
+
+	// verify state -> now the sequence should be finished and should not continue as it failed
+	verifySequenceEndsUpInState(t, projectName, keptnContext, 20*time.Second, []string{apimodels.SequenceFinished})
 }
 
 func Test__main_SequenceLoop(t *testing.T) {
@@ -1606,6 +1654,7 @@ func Test__main_SequenceLoop(t *testing.T) {
 	// send .finished event with result = fail
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultFailed,
+		Status: keptnv2.StatusSucceeded,
 	}, source)
 	require.Nil(t, err)
 
@@ -1630,6 +1679,7 @@ func Test__main_SequenceLoop(t *testing.T) {
 	// send .finished event with result = pass
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultPass,
+		Status: keptnv2.StatusSucceeded,
 	}, source)
 	require.Nil(t, err)
 
@@ -1653,6 +1703,7 @@ func Test__main_SequenceLoop(t *testing.T) {
 	// send .finished event with result = fail
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
 		Result: keptnv2.ResultFailed,
+		Status: keptnv2.StatusSucceeded,
 	}, source)
 	require.Nil(t, err)
 

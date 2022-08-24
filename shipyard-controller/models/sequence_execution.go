@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"time"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -95,8 +96,13 @@ func (e *SequenceExecution) CompleteCurrentTask() (keptnv2.ResultType, keptnv2.S
 	}
 	if e.Status.CurrentTask.IsErrored() {
 		status = keptnv2.StatusErrored
-	} else {
+	} else if e.Status.CurrentTask.IsAborted() {
+		status = keptnv2.StatusAborted
+	} else if e.Status.CurrentTask.IsSucceeded() {
 		status = keptnv2.StatusSucceeded
+	} else {
+		status = keptnv2.StatusUnknown
+		result = keptnv2.ResultFailed
 	}
 
 	var mergedProperties interface{}
@@ -235,7 +241,7 @@ func (e *TaskExecutionState) IsFinished() bool {
 func (e *TaskExecutionState) IsFailed() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
-			if event.Result == keptnv2.ResultFailed {
+			if event.Result != keptnv2.ResultPass && event.Result != keptnv2.ResultWarning {
 				return true
 			}
 		}
@@ -269,6 +275,28 @@ func (e *TaskExecutionState) IsErrored() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
 			if event.Status == keptnv2.StatusErrored {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (e *TaskExecutionState) IsSucceeded() bool {
+	for _, event := range e.Events {
+		if keptnv2.IsFinishedEventType(event.EventType) {
+			if event.Status != keptnv2.StatusSucceeded {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+func (e *TaskExecutionState) IsAborted() bool {
+	for _, event := range e.Events {
+		if keptnv2.IsFinishedEventType(event.EventType) {
+			if event.Status == keptnv2.StatusAborted {
 				return true
 			}
 		}
