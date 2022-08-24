@@ -242,7 +242,6 @@ func (e *TaskExecutionState) IsFailed() bool {
 	for _, event := range e.Events {
 		if keptnv2.IsFinishedEventType(event.EventType) {
 			if event.Result != keptnv2.ResultPass && event.Result != keptnv2.ResultWarning {
-				//if event.Result == keptnv2.ResultFailed {
 				return true
 			}
 		}
