@@ -530,7 +530,7 @@ jobs:
             echo "$FINAL" >> zd-test-failed.md
           
             echo "" >> zd-test-failed.md
-            echo "Note: This issue was auto-generated from [zero-downtime-tests.yml](.github/workflows/zero-downtime-tests.yml)" >> zd-test-failed.md
+            echo "Note: This issue was auto-generated from [zero-downtime-tests.yml](https://github.com/keptn/keptn/blob/master/.github/workflows/zero-downtime-tests.yml)" >> zd-test-failed.md
             cat zd-test-failed.md
 
       - name: Create issue if tests failed
