@@ -176,47 +176,59 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 
 func (k K8sSecretBackend) GetSecrets(secret model.Secret) ([]model.GetSecretResponseItem, error) {
 	result := []model.GetSecretResponseItem{}
-
-	labelSelector := "app.kubernetes.io/managed-by=" + SecretServiceName
-	fieldSelector := ""
-	if secret.Scope != "" {
-		labelSelector += ",app.kubernetes.io/scope=" + secret.Scope
-	}
-	if secret.Name != "" {
-		fieldSelector += "metadata.name=" + secret.Name
-	}
 	namespace := k.KeptnNamespaceProvider()
-	list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), metav1.ListOptions{
-		LabelSelector: labelSelector,
-		FieldSelector: fieldSelector,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
-	}
 
-	for _, secretItem := range list.Items {
+	if secret.Name != "" {
+		s, err := k.KubeAPI.CoreV1().Secrets(namespace).Get(context.TODO(), secret.Name, metav1.GetOptions{})
 
-		keys := []string{}
-		for key := range secretItem.StringData {
-			if key != "" {
-				keys = insert(keys, key)
-			}
+		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason != metav1.StatusReasonNotFound {
+			return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
 		}
-		for key := range secretItem.Data {
-			if key != "" {
-				keys = insert(keys, key)
-			}
+		if s != nil && (secret.Scope == "" || s.Labels["app.kubernetes.io/scope"] == secret.Scope) {
+			result = append(result, createGetResponseItem(s))
 		}
-		result = append(result, model.GetSecretResponseItem{
-			SecretMetadata: model.SecretMetadata{
-				Name:  secretItem.Name,
-				Scope: secretItem.Labels["app.kubernetes.io/scope"],
-			},
-			Keys: keys,
-		})
-	}
+		return result, nil
 
+	} else {
+		options := metav1.ListOptions{
+			LabelSelector: "app.kubernetes.io/managed-by=" + SecretServiceName,
+		}
+		if secret.Scope != "" {
+			options.LabelSelector += ",app.kubernetes.io/scope=" + secret.Scope
+		}
+
+		list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), options)
+		if err != nil {
+			return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
+		}
+
+		for _, secretItem := range list.Items {
+			result = append(result, createGetResponseItem(&secretItem))
+		}
+	}
 	return result, nil
+}
+
+func createGetResponseItem(secretItem *corev1.Secret) model.GetSecretResponseItem {
+	keys := []string{}
+	for key := range secretItem.StringData {
+		if key != "" {
+			keys = insert(keys, key)
+		}
+	}
+	for key := range secretItem.Data {
+		if key != "" {
+			keys = insert(keys, key)
+		}
+	}
+	return model.GetSecretResponseItem{
+		SecretMetadata: model.SecretMetadata{
+			Name:  secretItem.Name,
+			Scope: secretItem.Labels["app.kubernetes.io/scope"],
+		},
+		Keys: keys,
+	}
+
 }
 
 func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
