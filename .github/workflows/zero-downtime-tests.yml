@@ -378,8 +378,8 @@ jobs:
       - name: Generate Github Summary
         if: always()
         env:
-          TESTUI: github.event.inputs.testUI
-          UIOUT: steps.log_output.outcome
+          TESTUI: ${{ github.event.inputs.testUI }}
+          UIOUT: ${{ steps.log_output.outcome }}
         run: |  
           if [[ $TESTUI == 'true' && $UIOUT != 'success' ]]; then
              echo "UI test failed!" >> $GITHUB_STEP_SUMMARY 
