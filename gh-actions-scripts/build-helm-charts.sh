@@ -5,9 +5,10 @@ VERSION=$1
 IMAGE_TAG=$2
 KEPTN_SPEC_VERSION=$3
 DOCKER_ORG=$4
+SIGN_CHART=$5
 
-if [ $# -lt 3 ]; then
-  echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION"
+if [ $# -lt 4 ]; then
+  echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION SIGN_CHART"
   exit
 fi
 
@@ -24,6 +25,25 @@ fi
 if [ -z "$DOCKER_ORG" ]; then
   echo "No Docker organisation set, defaulting to keptn"
   DOCKER_ORG='keptn'
+fi
+
+if [ -z "$SIGN_CHART" ]; then
+  echo "No flag set for singning charts, defaulting to no signing"
+  SIGN_CHART=false
+fi
+
+if [[ "$SIGN_CHART" == 'true' ]]; then
+  if [ -z "$SIGNING_KEY_BASE64" ] || [ -z "$SIGNING_KEY_PASSPHRASE_BASE64" ] || [ -z "$SIGNING_KEY_NAME" ]; then
+    echo 'The following variable need to be set to enable Helm chart signing: SIGNING_KEY_BASE64 SIGNING_KEY_PASSPHRASE_BASE64 SIGNING_KEY_NAME'
+    exit 2
+  fi
+
+  KEY_PATH='.gpg-dir'
+  SIGNING_KEY_PATH="$KEY_PATH/secring.gpg"
+  SIGNING_KEY_PASSPHRASE_PATH="$KEY_PATH/passphrase"
+  mkdir "$KEY_PATH"
+  base64 -d <<< "$SIGNING_KEY_BASE64" > "$SIGNING_KEY_PATH"
+  base64 -d <<< "$SIGNING_KEY_PASSPHRASE_BASE64" > "$SIGNING_KEY_PASSPHRASE_PATH"
 fi
 
 
@@ -44,7 +64,13 @@ helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 # ####################
 COMMON_CHART_BASE_PATH=installer/manifests/common
 
-helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
+if [[ "$SIGN_CHART" == 'true' ]]; then
+  # shellcheck disable=SC2002
+  cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+else
+  helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
+fi
+
 if [ $? -ne 0 ]; then
   echo "Error packaging common chart, exiting..."
   exit 1
@@ -69,7 +95,13 @@ do
   helm dependency build ${BASE_PATH}
   echo "::endgroup::"
 
-  helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+  if [[ "$SIGN_CHART" == 'true' ]]; then
+    # shellcheck disable=SC2002
+    cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+  else
+    helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+  fi
+
   if [ $? -ne 0 ]; then
     echo "Error packing ${BASE_NAME}, exiting..."
     exit 1

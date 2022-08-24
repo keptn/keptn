@@ -41,13 +41,17 @@ jobs:
 
       - name: Build Helm Charts
         id: build_helm_charts
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.HELM_SIGNING_PRIVATE_KEY }}
+          SIGNING_KEY_NAME: ${{ secrets.HELM_SIGNING_PRIVATE_KEY_NAME }}
+          SIGNING_KEY_PASSPHRASE_BASE64: ${{ secrets.HELM_SIGNING_PRIVATE_KEY_PASSPHRASE }}
         run: |
           if [[ "$RELEASE_BUILD" == "false" ]] && [[ $DATETIME != "" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}" "keptndev"
+            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}" "keptndev" "false"
           else
             # just use VERSION for the image tag
-            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}" "keptn"
+            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}" "keptn" "true"
           fi
 
       - name: Upload Helm Chart as an artifact
