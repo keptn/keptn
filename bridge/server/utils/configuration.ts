@@ -15,7 +15,7 @@ import {
   URLsConfig,
 } from '../interfaces/configuration';
 
-import { EnabledComponents, LogDestination, logger as log } from './logger';
+import { EnabledComponents, Level, LogDestination, logger as log } from './logger';
 import { getOAuthMongoExternalConnectionString, getOAuthSecrets } from '../user/secrets';
 
 const _componentName = 'Configuration';
@@ -58,6 +58,7 @@ export function getConfiguration(options: BridgeOption): BridgeConfiguration {
 
 function getLogConfiguration(options: BridgeOption): LogConfiguration {
   const logDestination = options.logging?.destination ?? LogDestination.STDOUT;
+  const logLevel = options.logging?.defaultLogLevel ?? Level.INFO;
   const loggingComponents = Object.create({}) as EnabledComponents;
   const loggingComponentsString = options.logging?.enabledComponents ?? '';
   if (loggingComponentsString.length > 0) {
@@ -70,6 +71,7 @@ function getLogConfiguration(options: BridgeOption): LogConfiguration {
   return {
     destination: logDestination,
     enabledComponents: loggingComponents,
+    defaultLogLevel: logLevel,
   };
 }
 
@@ -306,6 +308,7 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
     mode: env.NODE_ENV,
     logging: {
       enabledComponents: env.LOGGING_COMPONENTS,
+      defaultLogLevel: Level[env.LOG_LEVEL as keyof typeof Level] ?? undefined,
     },
     api: {
       showToken: env.SHOW_API_TOKEN ? toBool(env.SHOW_API_TOKEN) : undefined,

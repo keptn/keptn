@@ -1,11 +1,13 @@
 import * as FS from 'fs';
 
 export enum Level {
-  INFO = 'info   ',
+  INFO = 'info',
   WARNING = 'warning',
-  ERROR = 'error  ',
-  DEBUG = 'debug  ',
+  ERROR = 'error',
+  DEBUG = 'debug',
 }
+
+const hierarchy = [Level.DEBUG, Level.INFO, Level.WARNING, Level.ERROR];
 
 export enum LogDestination {
   FILE = 'file',
@@ -19,10 +21,12 @@ export interface EnabledComponents {
 export class LoggerImpl {
   public configure(
     destination: LogDestination = LogDestination.STDOUT,
-    enabledComponents: EnabledComponents = Object.create(null)
+    enabledComponents: EnabledComponents = Object.create(null),
+    defaultLogLevel: Level = Level.INFO
   ): void {
     this._log = destination == LogDestination.STDOUT ? console.log : this.fileLog;
     this._components = enabledComponents;
+    this._defaultLogLevel = defaultLogLevel;
   }
 
   private fileLog(msg: string): void {
@@ -35,13 +39,19 @@ export class LoggerImpl {
     if (this._log == null) {
       return;
     }
-    // Print debug levels only if the component is enabled
-    if (level === Level.DEBUG && this._components != null && this._components[component] !== true) {
+
+    const componentConfigured = this._components != null && this._components[component] === true;
+    const levelToLog = hierarchy.findIndex((l) => l === level);
+    const thresholdLevel = hierarchy.findIndex((l) => l === this._defaultLogLevel);
+    const logAllowed = levelToLog >= thresholdLevel || componentConfigured;
+    if (!logAllowed) {
       return;
     }
 
+    const padLength = Math.max(...hierarchy.map((l) => l.length));
+    const levelPadded = level.padEnd(padLength, ' ');
     const date = new Date(Date.now()).toISOString();
-    const message = `[Keptn] ${date} ${level} [${component}] ${msg}`;
+    const message = `[Keptn] ${date} ${levelPadded} [${component}] ${msg}`;
 
     this._log(message);
   }
@@ -52,7 +62,9 @@ export class LoggerImpl {
   public debug = (component: string, msg: string): void => this.log(Level.DEBUG, component, msg);
 
   private _log?: (msg: string) => void;
+
   private _components?: EnabledComponents;
+  private _defaultLogLevel: Level = Level.INFO;
 }
 
 export const logger = new LoggerImpl();

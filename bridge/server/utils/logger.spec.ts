@@ -100,4 +100,29 @@ describe('Logger', () => {
       expect(l.prettyPrint(obj)).toBe('key=value, array=[object Object],[object Object], k=v');
     });
   });
+
+  describe('Log Level', () => {
+    it('should log equal or above to a given default value', () => {
+      const levels = [Level.DEBUG, Level.INFO, Level.WARNING, Level.ERROR];
+
+      while (levels.length > 0) {
+        // given
+        const numberOfLevels = levels.length;
+        const level = levels.shift();
+        logger.configure(LogDestination.STDOUT, Object.create(null), level);
+
+        // when
+        logger.debug('Test', 'debug msg');
+        logger.info('Test', 'debug msg');
+        logger.warning('Test', 'debug msg');
+        logger.error('Test', 'debug msg');
+
+        // then
+        expect(spyLog).toBeCalledTimes(numberOfLevels);
+
+        // reset
+        spyLog.mockClear();
+      }
+    });
+  });
 });

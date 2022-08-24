@@ -6,7 +6,7 @@ import {
   MongoConfig,
   OAuthConfig,
 } from '../interfaces/configuration';
-import { LogDestination } from './logger';
+import { Level, LogDestination } from './logger';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
 
@@ -40,6 +40,7 @@ describe('Configuration', () => {
       logging: {
         destination: LogDestination.STDOUT,
         enabledComponents: {},
+        defaultLogLevel: Level.INFO,
       },
       api: {
         showToken: true,
@@ -148,6 +149,7 @@ describe('Configuration', () => {
           b: false,
           c: true,
         },
+        defaultLogLevel: Level.INFO,
       },
       api: {
         showToken: false,
@@ -357,6 +359,7 @@ describe('Configuration', () => {
   it('should correctly map process.env to options', () => {
     const config: Record<EnvVar, string> = {
       LOGGING_COMPONENTS: 'xyz',
+      LOG_LEVEL: 'info',
       SHOW_API_TOKEN: 'invalidBool',
       API_URL: 'apiUrl',
       API_TOKEN: 'apiToken',
