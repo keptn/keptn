@@ -64,7 +64,9 @@ info:
 paths:
   /scope:
     get:
-      description: Get scopes
+      description: |-
+        Get scopes
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:read</span>
       responses:
         "200":
           description: OK
@@ -81,7 +83,9 @@ paths:
       - Scopes
   /secret:
     delete:
-      description: Delete an existing Secret
+      description: |-
+        Delete an existing Secret
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:delete</span>
       parameters:
       - description: The name of the secret
         in: query
@@ -114,7 +118,18 @@ paths:
       tags:
       - Secrets
     get:
-      description: Get secrets
+      description: |-
+        Get secrets
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:read</span>
+      parameters:
+      - description: The name of the secret
+        in: query
+        name: name
+        type: string
+      - description: The scope of the secret
+        in: query
+        name: scope
+        type: string
       responses:
         "200":
           description: OK
@@ -132,7 +147,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new Secret
+      description: |-
+        Create a new Secret
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:write</span>
       parameters:
       - description: The new secret to be created
         in: body
@@ -167,7 +184,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update an existing Secret
+      description: |-
+        Update an existing Secret
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:write</span>
       parameters:
       - description: The updated Secret
         in: body
