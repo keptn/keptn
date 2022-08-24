@@ -46,11 +46,9 @@ if [[ "$SIGN_CHART" == 'true' ]]; then
   mkdir "$KEY_PATH"
   base64 -d <<< "$SIGNING_KEY_BASE64" > "$SIGNING_KEY_PATH"
   base64 -d <<< "$SIGNING_KEY_PASSPHRASE_BASE64" > "$SIGNING_KEY_PASSPHRASE_PATH"
-
-  echo "Done..."
 fi
 
-
+echo "Preparing charts..."
 # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
 find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${IMAGE_TAG}/g" {} \;
 find . -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
@@ -69,12 +67,10 @@ helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 COMMON_CHART_BASE_PATH=installer/manifests/common
 
 if [[ "$SIGN_CHART" == 'true' ]]; then
-  echo "Packaging chart with signage..."
   # shellcheck disable=SC2002
   cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
   mv "common-${VERSION}.tgz.prov" 'keptn-charts/'
 else
-  echo "Packaging chart without signage..."
   helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
 fi
 
