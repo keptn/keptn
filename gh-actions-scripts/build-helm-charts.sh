@@ -72,6 +72,7 @@ if [[ "$SIGN_CHART" == 'true' ]]; then
   echo "Packaging chart with signage..."
   # shellcheck disable=SC2002
   cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+  mv "common-${VERSION}.tgz.prov" 'keptn-charts/'
 else
   echo "Packaging chart without signage..."
   helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
@@ -82,7 +83,7 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
+mv "common-${VERSION}.tgz" 'keptn-charts/'
 
 # ####################
 # INSTALLER HELM CHART
@@ -104,6 +105,7 @@ do
   if [[ "$SIGN_CHART" == 'true' ]]; then
     # shellcheck disable=SC2002
     cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+    mv "${BASE_NAME}-${VERSION}.tgz.prov" 'keptn-charts/'
   else
     helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
   fi
@@ -130,4 +132,4 @@ do
 done
 
 echo "Generated files:"
-echo " - keptn-charts/keptn-${VERSION}.tgz"
+ls -l 'keptn-charts/'
