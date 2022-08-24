@@ -252,15 +252,12 @@ jobs:
     needs: prepare
     name: Build Helm Charts
     uses: ./.github/workflows/build-helm-charts.yml
+    secrets: inherit
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
       keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
       release: true
-    secrets:
-      HELM_SIGNING_PRIVATE_KEY: ${{ secrets.HELM_SIGNING_PRIVATE_KEY }}
-      HELM_SIGNING_PRIVATE_KEY_NAME: ${{ secrets.HELM_SIGNING_PRIVATE_KEY_NAME }}
-      HELM_SIGNING_PRIVATE_KEY_PASSPHRASE: ${{ secrets.HELM_SIGNING_PRIVATE_KEY_PASSPHRASE }}
 
   ############################################################################
   # Build CLI

@@ -254,6 +254,7 @@ jobs:
     needs: prepare
     name: Build Helm Charts
     uses: ./.github/workflows/build-helm-charts.yml
+    secrets: inherit
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
