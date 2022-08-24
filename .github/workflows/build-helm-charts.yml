@@ -20,6 +20,13 @@ on:
         type: boolean
         required: false
         default: false
+    secrets:
+      HELM_SIGNING_PRIVATE_KEY:
+        required: false
+      HELM_SIGNING_PRIVATE_KEY_NAME:
+        required: false
+      HELM_SIGNING_PRIVATE_KEY_PASSPHRASE:
+        required: false
 defaults:
   run:
     shell: bash
