@@ -2,7 +2,7 @@ name: ZeroDowntime Tests
 on:
   schedule:
     # * is a special character in YAML so you have to quote this string
-    - cron:  '0 4 * * 1-5' # run integration tests at 4 AM (UTC), monday to friday (1-5)
+    - cron:  '0 4 * * 1-5' # run zero downtime tests at 4 AM (UTC), monday to friday (1-5)
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
@@ -12,7 +12,7 @@ on:
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://github.com/keptn/helm-charts-dev/raw/gh-pages/packages/keptn-0.18.1-dev.tgz'
+        default: 'https://charts.keptn.sh/packages/keptn-0.18.1-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -57,7 +57,6 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
-      RUN_CONTINUOUS_DELIVERY_TEST: "true"
       TEST_REPORT_FOLDER: tmp
       FINAL_TEST_REPORT_FOLDER: tmp
       FINAL_TEST_REPORT_PATH: tmp/gotest.log
@@ -338,7 +337,7 @@ jobs:
         
           wait $GOTEST
           if [[ $? -ne 0 ]]; then
-            echo " Zero Downtime go test failed - exiting "
+            echo " Zero Downtime go test failed - exiting"
             echo "::error::Zero Downtime go test failed - exiting"          
             exit 1
           fi
@@ -348,12 +347,13 @@ jobs:
         if: always()
         run: go-junit-report -in temp_res/gotest.log -parser gojson -out temp_res/gotest.xml
 
-      - name: Generate test Summary
+      - name: Generate Test Summary
+        if: always()
         uses: test-summary/action@v1
         with:
           paths: "temp_res/*.xml"
           output: temp_res/test-summary.md
-        if: always()
+
 
       - name: Format go test log output
         if: always()
@@ -380,9 +380,9 @@ jobs:
         env:
           TESTUI: ${{ github.event.inputs.testUI }}
           UIOUT: ${{ steps.log_output.outcome }}
-        run: |  
+        run: |
           if [[ $TESTUI == 'true' && $UIOUT != 'success' ]]; then
-             echo "UI test failed!" >> $GITHUB_STEP_SUMMARY 
+             echo "UI test failed!" >> $GITHUB_STEP_SUMMARY
           fi
           if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
              echo "* Triggered by: Scheduled build" >> $GITHUB_STEP_SUMMARY
@@ -396,7 +396,7 @@ jobs:
           echo "* Datetime: $DATETIME" >> $GITHUB_STEP_SUMMARY
           echo "* Commit: $GIT_SHA" >> $GITHUB_STEP_SUMMARY
           echo "* Upgraded to: $UPGRADE_HELM_CHART" >> $GITHUB_STEP_SUMMARY
-          echo "" >>$GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
 
       #######################################################################
       # TEARDOWN
