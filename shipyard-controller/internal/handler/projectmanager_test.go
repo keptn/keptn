@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/internal/configurationstore/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore/fake"
-	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -170,7 +171,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 		GitCredentials: &gitCredentials,
 		Shipyard:       common.Stringp("shipyard"),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 
@@ -211,7 +212,7 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 		Name:           common.Stringp("existing-project"),
 		Shipyard:       common.Stringp("shipyard"),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 
@@ -246,7 +247,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	params := &models.CreateProjectParams{
 		Name: common.Stringp("my-project"),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "git-credentials-my-project", secretStore.DeleteSecretCalls()[0].Name)
@@ -301,7 +302,7 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "my-project", configStore.DeleteProjectCalls()[0].ProjectName)
@@ -370,7 +371,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "my-project", configStore.DeleteProjectCalls()[0].ProjectName)
@@ -420,7 +421,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "my-project", configStore.DeleteProjectCalls()[0].ProjectName)
@@ -499,7 +500,7 @@ func TestCreate(t *testing.T) {
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	instance.Create(params)
+	instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.Equal(t, 3, len(configStore.CreateStageCalls()))
 	assert.Equal(t, "my-project", configStore.CreateStageCalls()[0].ProjectName)
 	assert.Equal(t, "dev", configStore.CreateStageCalls()[0].Stage)

@@ -16,7 +16,7 @@ import (
 //
 // 		// make and configure a mocked handler.IProjectManager
 // 		mockedIProjectManager := &IProjectManagerMock{
-// 			CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+// 			CreateFunc: func(params *models.CreateProjectParams, internalOptions models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 // 				panic("mock out the Create method")
 // 			},
 // 			DeleteFunc: func(projectName string) (string, error) {
@@ -39,7 +39,7 @@ import (
 // 	}
 type IProjectManagerMock struct {
 	// CreateFunc mocks the Create method.
-	CreateFunc func(params *models.CreateProjectParams) (error, common.RollbackFunc)
+	CreateFunc func(params *models.CreateProjectParams, internalOptions models.InternalCreateProjectOptions) (error, common.RollbackFunc)
 
 	// DeleteFunc mocks the Delete method.
 	DeleteFunc func(projectName string) (string, error)
@@ -59,6 +59,8 @@ type IProjectManagerMock struct {
 		Create []struct {
 			// Params is the params argument value.
 			Params *models.CreateProjectParams
+			// InternalOptions is the internalOptions argument value.
+			InternalOptions models.InternalCreateProjectOptions
 		}
 		// Delete holds details about calls to the Delete method.
 		Delete []struct {
@@ -87,19 +89,21 @@ type IProjectManagerMock struct {
 }
 
 // Create calls CreateFunc.
-func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams, internalOptions models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 	if mock.CreateFunc == nil {
 		panic("IProjectManagerMock.CreateFunc: method is nil but IProjectManager.Create was just called")
 	}
 	callInfo := struct {
 		Params *models.CreateProjectParams
+		InternalOptions models.InternalCreateProjectOptions
 	}{
 		Params: params,
+		InternalOptions: internalOptions,
 	}
 	mock.lockCreate.Lock()
 	mock.calls.Create = append(mock.calls.Create, callInfo)
 	mock.lockCreate.Unlock()
-	return mock.CreateFunc(params)
+	return mock.CreateFunc(params, internalOptions)
 }
 
 // CreateCalls gets all the calls that were made to Create.
@@ -107,9 +111,11 @@ func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams) (err
 //     len(mockedIProjectManager.CreateCalls())
 func (mock *IProjectManagerMock) CreateCalls() []struct {
 	Params *models.CreateProjectParams
+	InternalOptions models.InternalCreateProjectOptions
 } {
 	var calls []struct {
 		Params *models.CreateProjectParams
+		InternalOptions models.InternalCreateProjectOptions
 	}
 	mock.lockCreate.RLock()
 	calls = mock.calls.Create

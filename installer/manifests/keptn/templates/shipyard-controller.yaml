@@ -89,6 +89,8 @@ spec:
               value: {{ .Values.logLevel | default "info" }}
             - name: AUTOMATIC_PROVISIONING_URL
               value: {{ ((.Values.features).automaticProvisioning).serviceURL | default "" | quote }}
+            - name: HIDE_AUTOMATIC_PROVISIONED_URL
+              value: {{ ((.Values.features).automaticProvisioning).hideURL | default true | quote }}
             - name: DISABLE_LEADER_ELECTION
               {{- if lt .Capabilities.KubeVersion.Minor "14" }}
               value: {{ true | quote }}

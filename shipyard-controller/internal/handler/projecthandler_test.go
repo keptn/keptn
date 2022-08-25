@@ -305,7 +305,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with invalid payload",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrProjectAlreadyExists, func() error {
 
 							return nil
@@ -337,7 +337,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project project already exists",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrProjectAlreadyExists, func() error { return nil }
 					},
 				},
@@ -358,7 +358,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project project resource-service cannot find repo",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrConfigStoreUpstreamNotFound, func() error { return nil }
 					},
 				},
@@ -379,7 +379,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project creating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return errors.New("whoops"), func() error {
 							rollbackCalled = true
 							return nil
@@ -404,7 +404,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -425,7 +425,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with validator fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -450,7 +450,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with missing git credentials",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -475,7 +475,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning - fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -501,7 +501,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -531,7 +531,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning - validator should not be called",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},

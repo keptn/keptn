@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/configurationstore"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
-	"strconv"
-	"strings"
-	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -27,9 +28,15 @@ const errUpdateProject = "failed to update project '%s': %w"
 type IProjectManager interface {
 	Get() ([]*apimodels.ExpandedProject, error)
 	GetByName(projectName string) (*apimodels.ExpandedProject, error)
-	Create(params *models.CreateProjectParams) (error, common.RollbackFunc)
+	Create(params *models.CreateProjectParams, internalOptions models.InternalCreateProjectOptions) (error, common.RollbackFunc)
 	Update(params *models.UpdateProjectParams) (error, common.RollbackFunc)
 	Delete(projectName string) (string, error)
+}
+
+func WithHideAutoProvisionedURL(hideAutoProvisionedURL bool) func(pm *ProjectManager) {
+	return func(pm *ProjectManager) {
+		pm.hideAutoProvisionedURL = hideAutoProvisionedURL
+	}
 }
 
 type ProjectManager struct {
@@ -40,6 +47,7 @@ type ProjectManager struct {
 	EventRepository         db.EventRepo
 	SequenceQueueRepo       db.SequenceQueueRepo
 	EventQueueRepo          db.EventQueueRepo
+	hideAutoProvisionedURL  bool
 }
 
 var nilRollback = func() error {
@@ -53,7 +61,8 @@ func NewProjectManager(
 	sequenceExecutionRepo db.SequenceExecutionRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
-	eventQueueRepo db.EventQueueRepo) *ProjectManager {
+	eventQueueRepo db.EventQueueRepo,
+	opts ...func(pm *ProjectManager)) *ProjectManager {
 	projectUpdater := &ProjectManager{
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
@@ -63,6 +72,10 @@ func NewProjectManager(
 		SequenceQueueRepo:       sequenceQueueRepo,
 		EventQueueRepo:          eventQueueRepo,
 	}
+
+	for _, o := range opts {
+		o(projectUpdater)
+	}
 	return projectUpdater
 }
 
@@ -71,6 +84,11 @@ func (pm *ProjectManager) Get() ([]*apimodels.ExpandedProject, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	for _, project := range allProjects {
+		pm.modifyProjectResponse(project)
+	}
+
 	return allProjects, nil
 }
 
@@ -82,10 +100,20 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 	if project == nil {
 		return nil, common.ErrProjectNotFound
 	}
+
+	pm.modifyProjectResponse(project)
+
 	return project, err
 }
 
-func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+func (pm *ProjectManager) modifyProjectResponse(project *apimodels.ExpandedProject) {
+	if project.IsUpstreamAutoProvisioned && pm.hideAutoProvisionedURL {
+		project.GitCredentials.User = ""
+		project.GitCredentials.RemoteURL = ""
+	}
+}
+
+func (pm *ProjectManager) Create(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 
 	if err := pm.checkForExistingProject(params); err != nil {
 		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
@@ -152,7 +180,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		return fmt.Errorf("failed to upload shipyard resource for project '%s'", *params.Name), rollbackFunc
 	}
 
-	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard); err != nil {
+	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard, options); err != nil {
 		log.Errorf("Error occurred creating project in respository: %s", err.Error())
 		return fmt.Errorf("failed to create project '%s'", *params.Name), rollbackFunc
 	}
@@ -261,6 +289,9 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	updateProject := *oldProject
 	updateProject.GitCredentials = toSecureGitCredentials(params.GitCredentials)
+	if params.GitCredentials != nil && params.GitCredentials.RemoteURL != "" {
+		updateProject.IsUpstreamAutoProvisioned = false
+	}
 	if isShipyardPresent {
 		updateProject.Shipyard = *params.Shipyard
 	}
@@ -354,7 +385,7 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 	}
 }
 
-func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
+func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard, options models.InternalCreateProjectOptions) error {
 
 	var expandedStages []*apimodels.ExpandedStage
 
@@ -367,12 +398,13 @@ func (pm *ProjectManager) createProjectInRepository(params *models.CreateProject
 	}
 
 	p := &apimodels.ExpandedProject{
-		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		ProjectName:     *params.Name,
-		Shipyard:        string(decodedShipyard),
-		ShipyardVersion: shipyardVersion,
-		GitCredentials:  toSecureGitCredentials(params.GitCredentials),
-		Stages:          expandedStages,
+		CreationDate:              strconv.FormatInt(time.Now().UnixNano(), 10),
+		ProjectName:               *params.Name,
+		Shipyard:                  string(decodedShipyard),
+		ShipyardVersion:           shipyardVersion,
+		GitCredentials:            toSecureGitCredentials(params.GitCredentials),
+		Stages:                    expandedStages,
+		IsUpstreamAutoProvisioned: options.IsUpstreamAutoProvisioned,
 	}
 
 	err := pm.ProjectMaterializedView.CreateProject(p)

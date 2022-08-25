@@ -120,7 +120,9 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		sequenceExecutionRepo,
 		createEventsRepo(),
 		createSequenceQueueRepo(),
-		createEventQueueRepo())
+		createEventQueueRepo(),
+		handler.WithHideAutoProvisionedURL(env.HideAutomaticProvisionedURL),
+	)
 
 	repositoryProvisioner := provisioner.New(env.AutomaticProvisioningURL, &http.Client{})
 
