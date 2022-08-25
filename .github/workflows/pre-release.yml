@@ -446,9 +446,11 @@ jobs:
 
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
 
-      - name: Attach Helm provenance public key to release
+      - name: Attach Helm provenance and Cosign public keys to release
         working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-        run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
+        run: |
+          gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
+          gh release upload "$RELEASE_TAG" './assets/cosign.pub'
