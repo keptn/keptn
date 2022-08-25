@@ -34,8 +34,8 @@ mongo:
     ## @param mongo.auth.usernames
     usernames:
       - 'keptn'
-    ## @param mongo.auth.passwords
-    passwords: []
+    ## @param mongo.auth.password
+    password: null
     ## @param mongo.auth.rootUser
     rootUser: 'admin'
     ## @param mongo.auth.rootPassword

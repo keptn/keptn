@@ -25,7 +25,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `mongo.auth.databases`                              |                                                                     | `["keptn"]`           |
 | `mongo.auth.existingSecret`                         |                                                                     | `mongodb-credentials` |
 | `mongo.auth.usernames`                              |                                                                     | `["keptn"]`           |
-| `mongo.auth.passwords`                              |                                                                     | `[]`                  |
+| `mongo.auth.password`                               |                                                                     | `nil`                 |
 | `mongo.auth.rootUser`                               |                                                                     | `admin`               |
 | `mongo.auth.rootPassword`                           |                                                                     | `nil`                 |
 | `mongo.auth.bridgeAuthDatabase`                     |                                                                     | `keptn`               |
