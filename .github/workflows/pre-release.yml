@@ -254,6 +254,7 @@ jobs:
         env:
           COSIGN_PRIVATE_KEY_BASE64: ${{ secrets.COSIGN_PRIVATE_KEY }}
           COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_EXPERIMENTAL: 1
         run: |
           COSIGN_FOLDER='./cosign'
           COSIGN_KEY_PATH="$COSIGN_FOLDER/cosign.key"
