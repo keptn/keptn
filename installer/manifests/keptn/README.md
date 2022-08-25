@@ -18,9 +18,9 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `mongo.enabled`                                     |                                                                     | `true`                |
 | `mongo.host`                                        |                                                                     | `mongodb:27017`       |
 | `mongo.architecture`                                |                                                                     | `standalone`          |
-| `mongo.updateStrategy.type`                         |                                                                     | `Recreate`            |
+| `mongo.updateStrategy.type`                         | Set the update strategy for MongoDB                                 | `Recreate`            |
 | `mongo.service.nameOverride`                        |                                                                     | `mongo`               |
-| `mongo.service.ports.mongodb`                       |                                                                     | `27017`               |
+| `mongo.service.ports.mongodb`                       | Port for MongoDB to listen at                                       | `27017`               |
 | `mongo.auth.enabled`                                |                                                                     | `true`                |
 | `mongo.auth.databases`                              |                                                                     | `["keptn"]`           |
 | `mongo.auth.existingSecret`                         |                                                                     | `mongodb-credentials` |

@@ -15,13 +15,13 @@ mongo:
   ## @param mongo.architecture
   architecture: standalone
   updateStrategy:
-    ## @param mongo.updateStrategy.type
+    ## @param mongo.updateStrategy.type Set the update strategy for MongoDB
     type: Recreate
   service:
     ## @param mongo.service.nameOverride
     nameOverride: 'mongo'
     ports:
-      ## @param mongo.service.ports.mongodb
+      ## @param mongo.service.ports.mongodb Port for MongoDB to listen at
       mongodb: 27017
   auth:
     ## @param mongo.auth.enabled
