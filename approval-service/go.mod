@@ -35,7 +35,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	golang.org/x/time v0.0.0-20220411224347-583f2d630306 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
@@ -43,7 +43,7 @@ require (
 replace (
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
-	golang.org/x/net => golang.org/x/net b0a4917ee28c
+	golang.org/x/net => golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
