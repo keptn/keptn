@@ -16,8 +16,8 @@ for file in ./{**/,}*; do
       echo "Yes, updating $ARTIFACT now..."
       cd "$file" || exit
       # fetch the desired version (this will update go.mod and go.sum)
-#      go get "github.com/keptn/$ARTIFACT@$TARGET" && \
-#      go get ./... && \
+      go get "github.com/keptn/$ARTIFACT@$TARGET" && \
+      go get ./... && \
       go mod tidy
       cd - || exit
     fi
