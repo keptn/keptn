@@ -78,20 +78,31 @@ Please find details on regular hosted community events as well as our Slack work
 ## Keptn Versions compatibilities
 
 We manage the Keptn *core components* in versions.
-The respective images in their versions are stored on the  following container registries:
-
-* [DockerHub](https://hub.docker.com/?namespace=keptn)
-* [GitHub Container Registry](https://github.com/orgs/keptn/packages?repo_name=keptn)
-* [Quay.io Container Registry](https://quay.io/organization/keptn)
-
 The versions of the Keptn *core components* and the services are compatible with each other. However, contributed services
 as well as services that are not considered *core components* might not follow the same versioning schema.
 
 We are tracking compatibility of those services [on our website](https://keptn.sh/docs/integrations/).
 
+## Container Images
+
+Keptn provides container images of all *core components*.
+The respective images in their versions are stored on the following container registries:
+
+* [DockerHub](https://hub.docker.com/?namespace=keptn)
+* [GitHub Container Registry](https://github.com/orgs/keptn/packages?repo_name=keptn)
+* [Quay.io Container Registry](https://quay.io/organization/keptn)
+
+From version 0.19.0, all released container images are signed using [cosign](https://github.com/sigstore/cosign)
+with a keyless signing mechanism.
+That means that Keptn uses short-lived code signing certificates and keys together with OIDC and a transparency log
+to sign all its container images.
+More info on keyless signed container images can be found [here](https://github.com/sigstore/cosign/blob/main/KEYLESS.md).
+
+
 ## Helm Chart
+
 Keptn provides Helm charts for easy installation of all control plane components.
-The charts are signed and can be verified with the public key that can be found in [assets/pubring.gpg](assets/pubring.gpg)
+From version 0.19.0, the charts are signed and can be verified with the public key that can be found in [assets/pubring.gpg](assets/pubring.gpg)
 and attached to every release.
 More info on signed Helm charts can be found [here](https://helm.sh/docs/topics/provenance/).
 
