@@ -88,7 +88,7 @@ We are tracking compatibility of those services [on our website](https://keptn.s
 Keptn provides container images of all *core components*.
 The respective images in their versions are stored on the following container registries:
 
-* [DockerHub](https://hub.docker.com/?namespace=keptn)
+* [DockerHub](https://hub.docker.com/u/keptn)
 * [GitHub Container Registry](https://github.com/orgs/keptn/packages?repo_name=keptn)
 * [Quay.io Container Registry](https://quay.io/organization/keptn)
 
