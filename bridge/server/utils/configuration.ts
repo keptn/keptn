@@ -308,7 +308,7 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
     mode: env.NODE_ENV,
     logging: {
       enabledComponents: env.LOGGING_COMPONENTS,
-      defaultLogLevel: Level[env.LOG_LEVEL?.toLowerCase() as keyof typeof Level] ?? undefined,
+      defaultLogLevel: Level[env.LOG_LEVEL?.toUpperCase() as keyof typeof Level] ?? undefined,
     },
     api: {
       showToken: env.SHOW_API_TOKEN ? toBool(env.SHOW_API_TOKEN) : undefined,
