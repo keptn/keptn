@@ -8,11 +8,11 @@ on:
       branch:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster'
         required: true
-        default: 'master'
+        default: '0.18.x'
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://charts.keptn.sh/packages/keptn-0.18.1-dev.tgz'
+        default: 'https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -310,6 +310,11 @@ jobs:
          go install github.com/jstemmer/go-junit-report/v2@v2.0.0
          go get ./...
 
+      - name: Override Test Configs
+        if: always() && github.event_name == 'schedule'
+        # Only run one upgrade in case of scheduled run
+        run:  echo "NUMBER_OF_UPGRADES=1" >> $GITHUB_ENV
+
       #######################################################################
       # TESTS
       #######################################################################
@@ -322,7 +327,6 @@ jobs:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
-          
           go test -v -json -run Test_ZeroDowntime -timeout 25m > ../../temp_res/gotest.log & GOTEST=$!
           
           cd ../../bridge &&
