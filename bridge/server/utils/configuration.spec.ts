@@ -426,6 +426,7 @@ describe('Configuration', () => {
       },
       logging: {
         enabledComponents: 'xyz',
+        defaultLogLevel: 'info',
       },
       mode: 'test',
       mongo: {
