@@ -89,6 +89,12 @@ as well as services that are not considered *core components* might not follow t
 
 We are tracking compatibility of those services [on our website](https://keptn.sh/docs/integrations/).
 
+## Helm Chart
+Keptn provides Helm charts for easy installation of all control plane components.
+The charts are signed and can be verified with the public key that can be found in [assets/pubring.gpg](assets/pubring.gpg)
+and attached to every release.
+More info on signed Helm charts can be found [here](https://helm.sh/docs/topics/provenance/).
+
 ## Contributions
 
 You are welcome to contribute using Pull Requests to the respective repositories. Before contributing, please read our [Contributing Guidelines](CONTRIBUTING.md) and our [Code of Conduct](CODE_OF_CONDUCT.md).

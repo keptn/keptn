@@ -10,7 +10,7 @@ type SecretManager interface {
 	CreateSecret(model.Secret) error
 	UpdateSecret(model.Secret) error
 	DeleteSecret(model.Secret) error
-	GetSecrets() ([]model.GetSecretResponseItem, error)
+	GetSecrets(model.Secret) ([]model.GetSecretResponseItem, error)
 }
 
 type ScopeManager interface {

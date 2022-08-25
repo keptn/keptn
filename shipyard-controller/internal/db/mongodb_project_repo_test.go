@@ -2,8 +2,9 @@ package db
 
 import (
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"testing"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
@@ -30,6 +31,8 @@ func TestMongoDBProjectsRepo_InsertAndRetrieve(t *testing.T) {
 
 	require.ErrorIs(t, err, common.ErrProjectNotFound)
 	require.Nil(t, prj)
+
+	CleanupDB(t, r)
 }
 
 func TestMongoDBProjectsRepo_InsertAndRetrieveMultiple(t *testing.T) {
@@ -51,6 +54,8 @@ func TestMongoDBProjectsRepo_InsertAndRetrieveMultiple(t *testing.T) {
 	require.Nil(t, err)
 	require.NotNil(t, prj)
 	require.Len(t, prj, 5)
+
+	CleanupDB(t, r)
 }
 
 func TestMongoDBProjectsRepo_UpdateProject(t *testing.T) {
@@ -76,4 +81,16 @@ func TestMongoDBProjectsRepo_UpdateProject(t *testing.T) {
 	require.NotNil(t, prj)
 
 	require.Equal(t, updatedProject, prj)
+
+	CleanupDB(t, r)
+}
+
+func CleanupDB(t *testing.T, r *MongoDBProjectsRepo) {
+	prjs, err := r.GetProjects()
+	require.Nil(t, err)
+
+	for _, p := range prjs {
+		err = r.DeleteProject(p.ProjectName)
+		require.Nil(t, err)
+	}
 }

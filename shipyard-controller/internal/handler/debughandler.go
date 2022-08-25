@@ -18,6 +18,8 @@ type IDebugHandler interface {
 	GetAllEvents(context *gin.Context)
 	GetEventByID(context *gin.Context)
 	GetBlockingSequences(context *gin.Context)
+	GetDatabaseDump(c *gin.Context)
+	ListAllCollections(c *gin.Context)
 }
 
 type DebugHandler struct {
@@ -217,4 +219,44 @@ func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, sequences)
+}
+
+// GetDatabaseDump godoc
+// @Summary      Get JSON export of a specific collection
+// @Description  Get JSON export of a collection specified by the collectionName path parameter
+// @Tags         Collection
+// @Param        collectionName							path     string                    	true "The Name of the collection to dump"
+// @Success      200                  {object}			[]bson.M							"ok"
+// @Failure      500                  {object}			models.Error              			"Internal error"
+// @Router       /dbdump/collection/{collectionName} [get]
+func (dh *DebugHandler) GetDatabaseDump(c *gin.Context) {
+
+	collectionName := c.Param("collectionName")
+
+	dump, err := dh.DebugManager.GetDatabaseDump(collectionName)
+
+	if err != nil {
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, dump)
+}
+
+// ListAllCollections godoc
+// @Summary      Get all the collections in the database
+// @Description  Get a List of all collection Names in the database
+// @Tags         Collection
+// @Success      200                  {object}			[]string							"ok"
+// @Failure      500                  {object}			models.Error              			"Internal error"
+// @Router       /dbdump/listcollections [get]
+func (dh *DebugHandler) ListAllCollections(c *gin.Context) {
+	collections, err := dh.DebugManager.ListAllCollections()
+
+	if err != nil {
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, collections)
 }

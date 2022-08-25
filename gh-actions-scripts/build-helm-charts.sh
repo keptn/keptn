@@ -5,9 +5,10 @@ VERSION=$1
 IMAGE_TAG=$2
 KEPTN_SPEC_VERSION=$3
 DOCKER_ORG=$4
+SIGN_CHART=$5
 
-if [ $# -lt 3 ]; then
-  echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION"
+if [ $# -lt 4 ]; then
+  echo "Usage: $0 VERSION IMAGE_TAG KEPTN_SPEC_VERSION SIGN_CHART"
   exit
 fi
 
@@ -26,7 +27,28 @@ if [ -z "$DOCKER_ORG" ]; then
   DOCKER_ORG='keptn'
 fi
 
+if [ -z "$SIGN_CHART" ]; then
+  echo "No flag set for signing charts, defaulting to no signing"
+  SIGN_CHART=false
+fi
 
+if [[ "$SIGN_CHART" == 'true' ]]; then
+  if [ -z "$SIGNING_KEY_BASE64" ] || [ -z "$SIGNING_KEY_PASSPHRASE_BASE64" ] || [ -z "$SIGNING_KEY_NAME" ]; then
+    echo 'The following env variables need to be set to enable Helm chart signing: SIGNING_KEY_BASE64 SIGNING_KEY_PASSPHRASE_BASE64 SIGNING_KEY_NAME'
+    exit 2
+  fi
+
+  echo "Creating necessary files for chart signing..."
+
+  KEY_PATH='.gpg-dir'
+  SIGNING_KEY_PATH="$KEY_PATH/secring.gpg"
+  SIGNING_KEY_PASSPHRASE_PATH="$KEY_PATH/passphrase"
+  mkdir "$KEY_PATH"
+  base64 -d <<< "$SIGNING_KEY_BASE64" > "$SIGNING_KEY_PATH"
+  base64 -d <<< "$SIGNING_KEY_PASSPHRASE_BASE64" > "$SIGNING_KEY_PASSPHRASE_PATH"
+fi
+
+echo "Preparing charts..."
 # replace "appVersion: latest" with "appVersion: $VERSION" in all Chart.yaml files
 find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${IMAGE_TAG}/g" {} \;
 find . -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
@@ -44,13 +66,20 @@ helm repo add nats https://nats-io.github.io/k8s/helm/charts/
 # ####################
 COMMON_CHART_BASE_PATH=installer/manifests/common
 
-helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
+if [[ "$SIGN_CHART" == 'true' ]]; then
+  # shellcheck disable=SC2002
+  cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+  mv "common-${VERSION}.tgz.prov" 'keptn-charts/'
+else
+  helm package ${COMMON_CHART_BASE_PATH} --version "$VERSION"
+fi
+
 if [ $? -ne 0 ]; then
   echo "Error packaging common chart, exiting..."
   exit 1
 fi
 
-mv "common-${VERSION}.tgz" "keptn-charts/common-${VERSION}.tgz"
+mv "common-${VERSION}.tgz" 'keptn-charts/'
 
 # ####################
 # INSTALLER HELM CHART
@@ -69,13 +98,20 @@ do
   helm dependency build ${BASE_PATH}
   echo "::endgroup::"
 
-  helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+  if [[ "$SIGN_CHART" == 'true' ]]; then
+    # shellcheck disable=SC2002
+    cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+    mv "${BASE_NAME}-${VERSION}.tgz.prov" 'keptn-charts/'
+  else
+    helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+  fi
+
   if [ $? -ne 0 ]; then
     echo "Error packing ${BASE_NAME}, exiting..."
     exit 1
   fi
 
-  mv "${BASE_NAME}-${VERSION}.tgz" "keptn-charts/${BASE_NAME}-${VERSION}.tgz"
+  mv "${BASE_NAME}-${VERSION}.tgz" 'keptn-charts/'
 
   # verify the chart
   echo "::group::Template install of ${BASE_NAME}"
@@ -92,4 +128,4 @@ do
 done
 
 echo "Generated files:"
-echo " - keptn-charts/keptn-${VERSION}.tgz"
+ls -l 'keptn-charts/'

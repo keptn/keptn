@@ -19,7 +19,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/tryvium-travels/memongo v0.6.0
 	go.mongodb.org/mongo-driver v1.9.1
-	golang.org/x/net v0.0.0-20220802222814-0bcc04d9c69b
+	golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c
 )
 
 require (
@@ -79,7 +79,7 @@ require (
 replace (
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
 	github.com/gobuffalo/packr/v2 => github.com/gobuffalo/packr/v2 v2.3.2
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )

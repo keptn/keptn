@@ -30,4 +30,10 @@ func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event", controller.DebugHandler.GetAllEvents)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event/:eventId", controller.DebugHandler.GetEventByID)
 	}
+
+	dbdump := apiGroup.Group("/dbdump")
+	{
+		dbdump.GET("/listcollections", controller.DebugHandler.ListAllCollections)
+		dbdump.GET("/collection/:collectionName", controller.DebugHandler.GetDatabaseDump)
+	}
 }

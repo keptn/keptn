@@ -25,3 +25,13 @@ type GetSecretResponseItem struct {
 type GetSecretsResponse struct {
 	Secrets []GetSecretResponseItem `json:"Secrets"`
 }
+
+type GetSecretQueryParams struct {
+	Name  string `form:"name,omitempty"`
+	Scope string `form:"scope,omitempty"`
+}
+
+type DeleteSecretQueryParams struct {
+	Name  string `form:"name" binding:"required"`
+	Scope string `form:"scope" binding:"required"`
+}

@@ -5,6 +5,7 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
@@ -18,20 +19,24 @@ type IDebugManager interface {
 	GetAllEvents(projectName string, shkeptncontext string) ([]*apimodels.KeptnContextExtendedCE, error)
 	GetEventByID(projectName string, shkeptncontext string, eventId string) (*apimodels.KeptnContextExtendedCE, error)
 	GetBlockingSequences(projectName string, shkeptncontext string, stage string) ([]models.SequenceExecution, error)
+	GetDatabaseDump(collectionName string) ([]bson.M, error)
+	ListAllCollections() ([]string, error)
 }
 
 type DebugManager struct {
 	eventRepo             db.EventRepo
 	stateRepo             db.SequenceStateRepo
 	projectRepo           db.ProjectRepo
+	dbDumpRepo            db.DBDumpRepo
 	sequenceExecutionRepo db.SequenceExecutionRepo
 }
 
-func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, projectsRepo db.ProjectRepo, sequenceExecutionRepo db.SequenceExecutionRepo) *DebugManager {
+func NewDebugManager(eventRepo db.EventRepo, stateRepo db.SequenceStateRepo, projectsRepo db.ProjectRepo, sequenceExecutionRepo db.SequenceExecutionRepo, dbDumpRepo db.DBDumpRepo) *DebugManager {
 	return &DebugManager{
 		eventRepo:             eventRepo,
 		stateRepo:             stateRepo,
 		projectRepo:           projectsRepo,
+		dbDumpRepo:            dbDumpRepo,
 		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
 }
@@ -156,4 +161,16 @@ func (dm *DebugManager) GetBlockingSequences(projectName string, shkeptncontext 
 	blockingSequences := append(blockingSequencesStarted, blockingSequencesTriggered...)
 
 	return blockingSequences, nil
+}
+
+func (dm *DebugManager) GetDatabaseDump(collectionName string) ([]bson.M, error) {
+	result, err := dm.dbDumpRepo.GetDump(collectionName)
+
+	return result, err
+}
+
+func (dm *DebugManager) ListAllCollections() ([]string, error) {
+	result, err := dm.dbDumpRepo.ListAllCollections()
+
+	return result, err
 }
