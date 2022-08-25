@@ -34,7 +34,7 @@ fi
 
 if [[ "$SIGN_CHART" == 'true' ]]; then
   if [ -z "$SIGNING_KEY_BASE64" ] || [ -z "$SIGNING_KEY_PASSPHRASE_BASE64" ] || [ -z "$SIGNING_KEY_NAME" ]; then
-    echo 'The following variable need to be set to enable Helm chart signing: SIGNING_KEY_BASE64 SIGNING_KEY_PASSPHRASE_BASE64 SIGNING_KEY_NAME'
+    echo 'The following env variables need to be set to enable Helm chart signing: SIGNING_KEY_BASE64 SIGNING_KEY_PASSPHRASE_BASE64 SIGNING_KEY_NAME'
     exit 2
   fi
 
