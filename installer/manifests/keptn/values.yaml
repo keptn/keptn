@@ -68,7 +68,7 @@ mongo:
 features:
   debugUI:
     ## @param features.debugUI.enabled
-    enabled: "false"
+    enabled: false
   automaticProvisioning:
     ## @param features.automaticProvisioning.serviceURL
     serviceURL: ""
