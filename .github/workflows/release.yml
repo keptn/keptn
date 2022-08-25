@@ -248,18 +248,23 @@ jobs:
           name: image-digests
           path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
-      - name: Sign container image
+      - name: Sign container images
+        if: matrix.config.should-push-image
         env:
-          COSIGN_PRIVATE_KEY_BASE64: ${{ secrets.COSIGN_PRIVATE_KEY }}
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_EXPERIMENTAL: 1
         run: |
-          COSIGN_FOLDER='./cosign'
-          COSIGN_KEY_PATH="$COSIGN_FOLDER/cosign.key"
-          mkdir "$COSIGN_FOLDER"
-          base64 -d <<< "$COSIGN_PRIVATE_KEY_BASE64" > "$COSIGN_KEY_PATH"
-          cosign sign --key "$COSIGN_KEY_PATH" 'keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-          cosign sign --key "$COSIGN_KEY_PATH" 'quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-          cosign sign --key "$COSIGN_KEY_PATH" 'ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+          cosign sign 'keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+          cosign sign 'quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+          cosign sign 'ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+
+      - name: Verify container images
+        if: matrix.config.should-push-image
+        env:
+          COSIGN_EXPERIMENTAL: 1
+        run: |
+          cosign verify 'keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+          cosign verify 'quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+          cosign verify 'ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
