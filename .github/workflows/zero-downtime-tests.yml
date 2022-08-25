@@ -8,11 +8,11 @@ on:
       branch:
         description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster'
         required: true
-        default: 'master'
+        default: '0.18.x'
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://charts.keptn.sh/packages/keptn-0.18.1.tgz'
+        default: 'https://charts-dev.keptn.sh/packages/keptn-0.19.0.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
