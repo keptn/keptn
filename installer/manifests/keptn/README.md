@@ -20,12 +20,12 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `mongo.architecture`                                |                                                                     | `standalone`          |
 | `mongo.updateStrategy.type`                         |                                                                     | `Recreate`            |
 | `mongo.service.nameOverride`                        |                                                                     | `mongo`               |
-| `mongo.service.port`                                |                                                                     | `27017`               |
+| `mongo.service.ports.mongodb`                       |                                                                     | `27017`               |
 | `mongo.auth.enabled`                                |                                                                     | `true`                |
 | `mongo.auth.databases`                              |                                                                     | `["keptn"]`           |
 | `mongo.auth.existingSecret`                         |                                                                     | `mongodb-credentials` |
 | `mongo.auth.usernames`                              |                                                                     | `["keptn"]`           |
-| `mongo.auth.password`                               |                                                                     | `nil`                 |
+| `mongo.auth.passwords`                              |                                                                     | `[]`                  |
 | `mongo.auth.rootUser`                               |                                                                     | `admin`               |
 | `mongo.auth.rootPassword`                           |                                                                     | `nil`                 |
 | `mongo.auth.bridgeAuthDatabase`                     |                                                                     | `keptn`               |

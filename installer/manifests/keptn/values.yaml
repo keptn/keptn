@@ -20,8 +20,9 @@ mongo:
   service:
     ## @param mongo.service.nameOverride
     nameOverride: 'mongo'
-    ## @param mongo.service.port
-    port: 27017
+    ports:
+      ## @param mongo.service.ports.mongodb
+      mongodb: 27017
   auth:
     ## @param mongo.auth.enabled
     enabled: true
@@ -33,8 +34,8 @@ mongo:
     ## @param mongo.auth.usernames
     usernames:
       - 'keptn'
-    ## @param mongo.auth.password
-    password: null
+    ## @param mongo.auth.passwords
+    passwords: []
     ## @param mongo.auth.rootUser
     rootUser: 'admin'
     ## @param mongo.auth.rootPassword
