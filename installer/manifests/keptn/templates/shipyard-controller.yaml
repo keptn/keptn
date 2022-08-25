@@ -58,7 +58,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:

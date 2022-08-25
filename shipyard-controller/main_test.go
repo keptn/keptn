@@ -36,7 +36,7 @@ import (
 )
 
 const natsTestPort = 8370
-const mongoDBVersion = "4.4.9"
+const mongoDBVersion = "5.0.10"
 
 const sequencePauseShipyard = `--- 
 apiVersion: "spec.keptn.sh/0.2.3"

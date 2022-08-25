@@ -15,7 +15,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var mongoDbVersion = "4.4.9"
+var mongoDbVersion = "5.0.10"
 
 func setupLocalMongoDB(t *testing.T) func() {
 	mongoServer, err := memongo.Start(mongoDbVersion)

@@ -16,7 +16,7 @@ import (
 	"testing"
 )
 
-var mongoDbVersion = "4.4.9"
+var mongoDbVersion = "5.0.10"
 
 func TestMain(m *testing.M) {
 	defer setupLocalMongoDB()()

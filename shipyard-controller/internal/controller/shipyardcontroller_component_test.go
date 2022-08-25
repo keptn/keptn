@@ -100,7 +100,7 @@ spec:
       - name: deployment
       - name: evaluation`
 
-const mongoDBVersion = "4.4.9"
+const mongoDBVersion = "5.0.10"
 
 func TestMain(m *testing.M) {
 	defer setupLocalMongoDB()()
