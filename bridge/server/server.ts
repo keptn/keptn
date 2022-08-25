@@ -14,7 +14,11 @@ try {
 }
 
 // init destination and debug flags
-logger.configure(configuration.logging.destination, configuration.logging.enabledComponents);
+logger.configure(
+  configuration.logging.destination,
+  configuration.logging.enabledComponents,
+  configuration.logging.defaultLogLevel
+);
 
 const log = new ComponentLogger('Server');
 

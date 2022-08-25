@@ -36,11 +36,11 @@ export class LoggerImpl {
   }
 
   public log(level: Level, component: string, msg: string): void {
-    if (this._log == null) {
+    if (!this._log) {
       return;
     }
 
-    const componentConfigured = this._components != null && this._components[component] === true;
+    const componentConfigured = !!this._components && this._components[component] === true;
     const levelToLog = hierarchy.findIndex((l) => l === level);
     const thresholdLevel = hierarchy.findIndex((l) => l === this._defaultLogLevel);
     const logAllowed = levelToLog >= thresholdLevel || componentConfigured;
