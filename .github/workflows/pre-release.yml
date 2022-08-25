@@ -430,7 +430,7 @@ jobs:
 
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
 
-      - name: Attach helm provenance public key to release
+      - name: Attach Helm provenance public key to release
         working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
