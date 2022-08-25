@@ -49,6 +49,8 @@ spec:
           env:
             - name: RESOURCE_SERVICE
               value: "http://resource-service:8080"
+            - name: DEBUG_UI_ENABLED
+              value: {{ ((.Values.features).debugUI).enabled | default false | quote }}
             - name: EVENTBROKER
               value: http://localhost:8081/event
             - name: POD_NAMESPACE
