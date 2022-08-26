@@ -181,7 +181,7 @@ jobs:
         id: upgradeTo
         run: |
           USER_INPUT=${{ github.event.inputs.upgradeTo }}
-          echo "::set-output chart=value::${USER_INPUT:-"https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz"}"
+          echo "::set-output name=chart::${USER_INPUT:-"https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz"}"
 
       - name: Setup upgrade charts
         id: setup_upgrade_charts
