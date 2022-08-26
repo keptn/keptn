@@ -79,7 +79,7 @@ features:
     ## @param features.automaticProvisioning.message Message for provisioning remote git URL
     message: ""
     ## @param features.automaticProvisioning.hideURL Hide automatically provisioned URL
-    hideURL: true
+    hideURL: false
   swagger:
     ## @param features.swagger.hideDeprecated
     hideDeprecated: false

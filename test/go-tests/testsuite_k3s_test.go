@@ -10,6 +10,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
 	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+	t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)

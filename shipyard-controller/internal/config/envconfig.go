@@ -42,5 +42,5 @@ type EnvConfig struct {
 	// DebugUIEnabled enabled the debugUI
 	DebugUIEnabled bool `envconfig:"DEBUG_UI_ENABLED" default:"false"`
 	// HideAutomaticProvisionedURL hides the provisioned url
-	HideAutomaticProvisionedURL bool `envconfig:"HIDE_AUTOMATIC_PROVISIONED_URL" default:"true"`
+	HideAutomaticProvisionedURL bool `envconfig:"HIDE_AUTOMATIC_PROVISIONED_URL" default:"false"`
 }

@@ -42,7 +42,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `features.debugUI.enabled`                  |                                         | `false`  |
 | `features.automaticProvisioning.serviceURL` | Service for provisioning remote git URL | `""`     |
 | `features.automaticProvisioning.message`    | Message for provisioning remote git URL | `""`     |
-| `features.automaticProvisioning.hideURL`    | Hide automatically provisioned URL      | `true`   |
+| `features.automaticProvisioning.hideURL`    | Hide automatically provisioned URL      | `false`  |
 | `features.swagger.hideDeprecated`           |                                         | `false`  |
 | `features.oauth.enabled`                    | Enable OAuth for Keptn                  | `false`  |
 | `features.oauth.prefix`                     |                                         | `keptn:` |
