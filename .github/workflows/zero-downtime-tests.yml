@@ -203,11 +203,11 @@ jobs:
             helm repo update
           
             if [[ "${{ github.event.inputs.upgradeTo }}" == *"-dev"* ]]; then
-               helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
+               helm pull keptndev/keptn --version ${{ github.steps.outputs.upgradeTo.chart }}
             else
-               helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
+               helm pull keptn/keptn --version ${{ github.steps.outputs.upgradeTo.chart }}
             fi
-            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
+            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.steps.outputs.upgradeTo.chart }}.tgz')" >> $GITHUB_ENV
           fi
           
           echo "Downloaded files:"
