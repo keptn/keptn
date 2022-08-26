@@ -514,6 +514,88 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "http", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.Scheme)
 	assert.Equal(t, "proxy-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.User)
 	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.InsecureSkipTLS)
+	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.IsUpstreamAutoProvisioned)
+	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
+}
+
+func TestCreate_AutoProvisioned(t *testing.T) {
+
+	encodedShipyard := "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="
+
+	secretStore := &fake.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return nil, nil
+	}
+
+	configStore.CreateProjectFunc = func(apimodels.Project) error {
+		return nil
+	}
+
+	configStore.CreateStageFunc = func(projectName string, stageName string) error {
+		return nil
+	}
+
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*apimodels.Resource) error {
+		return nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+
+	projectMVRepo.CreateProjectFunc = func(prj *apimodels.ExpandedProject) error {
+		return nil
+	}
+
+	eventRepo.DeleteEventCollectionsFunc = func(project string) error {
+		return nil
+	}
+
+	sequenceQueueRepo.DeleteQueuedSequencesFunc = func(itemFilter models.QueueItem) error {
+		return nil
+	}
+
+	eventQueueRepo.DeleteQueuedEventsFunc = func(scope models.EventScope) error {
+		return nil
+	}
+
+	sequenceExecutionRepo.ClearFunc = func(projectName string) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	gitCredentials := apimodels.GitAuthCredentials{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token:           "git-token",
+			InsecureSkipTLS: false,
+		},
+	}
+	params := &models.CreateProjectParams{
+		GitCredentials: &gitCredentials,
+		Name:           common.Stringp("my-project"),
+		Shipyard:       common.Stringp(encodedShipyard),
+	}
+	instance.Create(params, models.InternalCreateProjectOptions{IsUpstreamAutoProvisioned: true})
+	assert.Equal(t, 3, len(configStore.CreateStageCalls()))
+	assert.Equal(t, "my-project", configStore.CreateStageCalls()[0].ProjectName)
+	assert.Equal(t, "dev", configStore.CreateStageCalls()[0].Stage)
+	assert.Equal(t, "my-project", configStore.CreateStageCalls()[1].ProjectName)
+	assert.Equal(t, "hardening", configStore.CreateStageCalls()[1].Stage)
+	assert.Equal(t, "my-project", configStore.CreateStageCalls()[2].ProjectName)
+	assert.Equal(t, "production", configStore.CreateStageCalls()[2].Stage)
+	assert.Equal(t, "git-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.RemoteURL)
+	assert.Equal(t, "git-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.User)
+	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.InsecureSkipTLS)
+	assert.Equal(t, true, projectMVRepo.CreateProjectCalls()[0].Prj.IsUpstreamAutoProvisioned)
 	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
 }
 

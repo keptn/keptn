@@ -105,7 +105,6 @@ require (
 
 replace (
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
-	github.com/keptn/go-utils => ../../go-utils
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220824171710-5757bc0c5503
 	golang.org/x/net => golang.org/x/net v0.0.0-20220822230855-b0a4917ee28c
 	golang.org/x/text => golang.org/x/text v0.3.7
