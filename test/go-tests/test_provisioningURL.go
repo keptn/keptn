@@ -186,7 +186,6 @@ func Test_ProvisioningURL_hiddenURL(t *testing.T) {
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
 	user := GetGiteaUser()
-	url := fmt.Sprintf("http://gitea-http:3000/%s/%s", user, projectName)
 	token, _ := GetGiteaToken()
 	provisioningConfigMap := fmt.Sprintf(provisioningConfigMapTemplate, user, token, user)
 	shipyardPod := "shipyard-controller"
