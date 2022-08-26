@@ -1,7 +1,7 @@
 import { init as initApp } from './app';
 import { BridgeConfiguration } from './interfaces/configuration';
 import { envToConfiguration, getConfiguration } from './utils/configuration';
-import { logger } from './utils/logger';
+import { ComponentLogger, logger } from './utils/logger';
 
 const PORT = normalizePort(process.env.PORT || '3000');
 const HOST = process.env.HOST || '0.0.0.0';
@@ -14,7 +14,13 @@ try {
 }
 
 // init destination and debug flags
-logger.configure(configuration.logging.destination, configuration.logging.enabledComponents);
+logger.configure(
+  configuration.logging.destination,
+  configuration.logging.enabledComponents,
+  configuration.logging.defaultLogLevel
+);
+
+const log = new ComponentLogger('Server');
 
 if (typeof PORT === 'number') {
   (async (): Promise<void> => {
@@ -25,15 +31,15 @@ if (typeof PORT === 'number') {
       /**
        * Listen on provided port, on all network interfaces.
        */
-      console.log(`Running on http://${HOST}:${PORT}`);
+      log.info(`Running on http://${HOST}:${PORT}`);
       app.listen(PORT, HOST);
     } catch (e) {
-      console.log(`Error while starting the application. Cause : ${e}`);
+      log.error(`Error while starting the application. Cause : ${e}`);
       process.exit(1);
     }
   })();
 } else {
-  console.log(`Error while starting the application. Invalid port`);
+  log.error(`Error while starting the application. Invalid port`);
   process.exit(1);
 }
 
