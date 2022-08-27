@@ -96,7 +96,7 @@
     "@storybook/manager-webpack5": "6.5.10",
     "@storybook/testing-library": "0.0.13",
     "@types/d3": "7.4.0",
-    "@types/dompurify": "2.3.3",
+    "@types/dompurify": "2.3.4",
     "@types/jest": "28.1.7",
     "@types/lodash": "4.14.184",
     "@types/lodash-es": "4.17.6",
