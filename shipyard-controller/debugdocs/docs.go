@@ -284,6 +284,62 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/dbdump/collection/{collectionName}": {
+            "get": {
+                "description": "Get JSON export of a collection specified by the collectionName path parameter",
+                "summary": "Get JSON export of a specific collection",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The Name of the collection to dump",
+                        "name": "The Name of the collection to dump",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "bson.M"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/dbdump/listcollections": {
+            "get": {
+                "description": "Get a List of all collection Names in the database",
+                "summary": "Get all the collections in the database",
+                "parameters": [],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal error",
+                        "schema": {
+                            "$ref": "#/definitions/models.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
