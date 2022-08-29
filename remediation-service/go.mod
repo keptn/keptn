@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/remediation-service
 
-go 1.18
+go 1.19
 
 require (
 	github.com/ghodss/yaml v1.0.0

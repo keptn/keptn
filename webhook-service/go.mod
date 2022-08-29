@@ -1,6 +1,6 @@
 module github.com/keptn/keptn/webhook-service
 
-go 1.18
+go 1.19
 
 require (
 	github.com/keptn/go-utils v0.18.1-0.20220829065650-dc8c0968b133
