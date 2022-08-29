@@ -462,6 +462,43 @@ paths:
       summary: Get all blocking sequences for specific sequence
       tags:
       - Sequence
+  /dbdump/collection/{collectionName}:
+    get:
+      description: Get JSON export of a collection specified by the collectionName path parameter
+      parameters:
+      - description: The Name of the collection to dump
+        in: path
+        name: collectionName
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              type: bson.M
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Get JSON export of a specific collection
+  /dbdump/listcollections:
+    get:
+      description: Get a List of all collection Names in the database
+      parameters: []
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              type: string
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            $ref: '#/definitions/models.Error'
+      summary: Get all the collections in the database
 securityDefinitions:
   ApiKeyAuth:
     in: header
