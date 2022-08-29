@@ -57,10 +57,6 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
-      TEST_REPORT_FOLDER: tmp
-      FINAL_TEST_REPORT_FOLDER: tmp
-      FINAL_TEST_REPORT_PATH: tmp/gotest.log
-      TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -181,6 +177,12 @@ jobs:
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
           echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
 
+      - name: Setup upgrade chart value
+        id: upgradeTo
+        run: |
+          USER_INPUT=${{ github.event.inputs.upgradeTo }}
+          echo "::set-output name=chart::${USER_INPUT:-"https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz"}"
+
       - name: Setup upgrade charts
         id: setup_upgrade_charts
         env:
@@ -192,8 +194,8 @@ jobs:
           cd test/zero-downtime
           echo "INSTALL_HELM_CHART=$(ls ./keptn-dev-installed.tgz)" >> $GITHUB_ENV
           
-          if [[ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.upgradeTo }}" == "http"* ]]; then
-            echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
+          if [[ "${{ github.event_name }}" == 'schedule' || ${{ github.steps.outputs.upgradeTo.chart }} == "http"* ]]; then
+            echo "UPGRADE_HELM_CHART=${{ github.steps.upgradeTo.chart }}" >> $GITHUB_ENV
           else
             echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'
             helm repo add keptn "https://charts.keptn.sh"
@@ -201,11 +203,11 @@ jobs:
             helm repo update
           
             if [[ "${{ github.event.inputs.upgradeTo }}" == *"-dev"* ]]; then
-               helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
+               helm pull keptndev/keptn --version ${{ github.steps.outputs.upgradeTo.chart }}
             else
-               helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
+               helm pull keptn/keptn --version ${{ github.steps.outputs.upgradeTo.chart }}
             fi
-            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
+            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.steps.outputs.upgradeTo.chart }}.tgz')" >> $GITHUB_ENV
           fi
           
           echo "Downloaded files:"
