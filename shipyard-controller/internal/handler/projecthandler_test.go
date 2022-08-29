@@ -278,7 +278,7 @@ func TestCreateProject(t *testing.T) {
 	}
 
 	type fields struct {
-		ProjectManager        IProjectManager
+		ProjectManager        *fake.IProjectManagerMock
 		EventSender           common.EventSender
 		RepositoryProvisioner *fake2.IRepositoryProvisionerMock
 		EnvConfig             config.EnvConfig
@@ -331,6 +331,11 @@ func TestCreateProject(t *testing.T) {
 			expectHttpStatus: http.StatusBadRequest,
 			fields: fields{
 				RemoteURLValidator: remoteURLValidator,
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
 			},
 		},
 		{
@@ -580,6 +585,13 @@ func TestCreateProject(t *testing.T) {
 				provisioningCall := tt.fields.RepositoryProvisioner.ProvideRepositoryCalls()[0]
 				require.Equal(t, tt.projectNameParam, provisioningCall.ProjectName)
 				require.Equal(t, namespace, provisioningCall.Namespace)
+				if len(tt.fields.ProjectManager.CreateCalls()) == 1 {
+					require.Equal(t, tt.fields.ProjectManager.CreateCalls()[0].InternalOptions.IsUpstreamAutoProvisioned, true)
+				}
+			} else {
+				if len(tt.fields.ProjectManager.CreateCalls()) == 1 {
+					require.Equal(t, tt.fields.ProjectManager.CreateCalls()[0].InternalOptions.IsUpstreamAutoProvisioned, false)
+				}
 			}
 
 			rollbackCalled = false
