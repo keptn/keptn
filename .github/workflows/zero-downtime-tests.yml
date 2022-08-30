@@ -189,7 +189,7 @@ jobs:
           echo "INSTALL_HELM_CHART=$(ls ./keptn-dev-installed.tgz)" >> $GITHUB_ENV
           
           if [[ "${{ github.event_name }}" == 'schedule' || ${{ env.UPGRADE_TO }} == "http"* ]]; then
-            echo "UPGRADE_HELM_CHART=${{ github.steps.upgradeTo.chart }}" >> $GITHUB_ENV
+            echo "UPGRADE_HELM_CHART=${{ env.UPGRADE_TO}}" >> $GITHUB_ENV
           else
             echo  'retrieving  ./keptn-${{ env.UPGRADE_TO  }}.tgz'
             helm repo add keptn "https://charts.keptn.sh"
