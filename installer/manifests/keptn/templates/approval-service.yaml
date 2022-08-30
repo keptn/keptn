@@ -21,30 +21,10 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 60 }}
       serviceAccountName: keptn-default
       initContainers:
-        - name: wait-for-nats
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-nats"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-keptn-mongo
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-mongo"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-mongodb-datastore
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "mongodb-datastore"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-shipyard-controller
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "shipyard-controller"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
       containers:
         - name: approval-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.approvalService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}

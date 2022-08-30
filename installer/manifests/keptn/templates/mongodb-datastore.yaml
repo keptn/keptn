@@ -19,12 +19,7 @@ spec:
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
       initContainers:
-        - name: wait-for-nats
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-nats"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
       containers:
         - name: mongodb-datastore
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.mongodbDatastore.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
@@ -51,7 +46,7 @@ spec:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_USER

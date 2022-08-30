@@ -463,3 +463,66 @@ Usage:
   {{- end }}
 {{- end -}}
 
+{{- define "keptn.initContainers.wait-for-nats" -}}
+- name: "wait-for-nats"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "{{ .Values.nats.nameOverride }}"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
+- name: "wait-for-keptn-mongo"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "keptn-mongo"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
+- name: "wait-for-mongodb-datastore"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "mongodb-datastore"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
+- name: "wait-for-shipyard-controller"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "shipyard-controller"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-secret-service" -}}
+- name: "wait-for-secret-service"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "secret-service"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-api-service" -}}
+- name: "wait-for-secret-service"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "api-service"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-resource-service" -}}
+- name: "wait-for-resource-service"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  env:
+  - name: "ENDPOINT"
+    value: "resource-service"
+  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+

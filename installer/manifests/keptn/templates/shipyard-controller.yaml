@@ -22,24 +22,9 @@ spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-shipyard-controller
       initContainers:
-        - name: wait-for-nats
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-nats"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-keptn-mongo
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "keptn-mongo"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
-        - name: wait-for-mongodb-datastore
-          image: busybox:1.35.0
-          env:
-          - name: "ENDPOINT"
-            value: "mongodb-datastore"
-          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
       containers:
         - name: shipyard-controller
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
@@ -64,8 +49,6 @@ spec:
           env:
             - name: RESOURCE_SERVICE
               value: "http://resource-service:8080"
-            - name: DEBUG_UI_ENABLED
-              value: {{ ((.Values.features).debugUI).enabled | default false | quote }}
             - name: EVENTBROKER
               value: http://localhost:8081/event
             - name: POD_NAMESPACE
@@ -73,7 +56,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -172,4 +155,4 @@ metadata:
     app.kubernetes.io/name: shipyard-controller
 data:
   git-remote-url-denylist: |-
-{{ .Values.features.git.remoteURLDenyList | default "" | indent 4 }}
+{{ .Values.git.remoteURLDenyList | default "" | indent 4 }}

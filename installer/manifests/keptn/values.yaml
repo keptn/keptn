@@ -5,6 +5,10 @@ global:
     registry: docker.io/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
+  initContainers:
+    image: "busybox"
+    version: "1.35.0"
+
 
 ## @section MongoDB
 mongo:
