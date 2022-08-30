@@ -18,6 +18,13 @@ spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
+      initContainers:
+        - name: wait-for-nats
+          image: busybox:1.35.0
+          env:
+          - name: "ENDPOINT"
+            value: "keptn-nats"
+          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
       containers:
         - name: mongodb-datastore
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.mongodbDatastore.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}

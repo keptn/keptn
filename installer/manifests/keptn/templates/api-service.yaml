@@ -17,6 +17,37 @@ spec:
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 60 }}
+      initContainers:
+        - name: wait-for-nats
+          image: busybox:1.35.0
+          env:
+          - name: "ENDPOINT"
+            value: "keptn-nats"
+          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        - name: wait-for-keptn-mongo
+          image: busybox:1.35.0
+          env:
+          - name: "ENDPOINT"
+            value: "keptn-mongo"
+          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        - name: wait-for-mongodb-datastore
+          image: busybox:1.35.0
+          env:
+          - name: "ENDPOINT"
+            value: "mongodb-datastore"
+          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        - name: wait-for-shipyard-controller
+          image: busybox:1.35.0
+          env:
+          - name: "ENDPOINT"
+            value: "shipyard-controller"
+          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+        - name: wait-for-secret-service
+          image: busybox:1.35.0
+          env:
+          - name: "ENDPOINT"
+            value: "secret-service"
+          command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
       containers:
         - name: api-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.apiService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
