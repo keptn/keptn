@@ -278,7 +278,7 @@ func TestCreateProject(t *testing.T) {
 	}
 
 	type fields struct {
-		ProjectManager        IProjectManager
+		ProjectManager        *fake.IProjectManagerMock
 		EventSender           common.EventSender
 		RepositoryProvisioner *fake2.IRepositoryProvisionerMock
 		EnvConfig             config.EnvConfig
@@ -305,7 +305,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with invalid payload",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrProjectAlreadyExists, func() error {
 
 							return nil
@@ -331,13 +331,18 @@ func TestCreateProject(t *testing.T) {
 			expectHttpStatus: http.StatusBadRequest,
 			fields: fields{
 				RemoteURLValidator: remoteURLValidator,
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
 			},
 		},
 		{
 			name: "Create project project already exists",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrProjectAlreadyExists, func() error { return nil }
 					},
 				},
@@ -358,7 +363,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project project resource-service cannot find repo",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrConfigStoreUpstreamNotFound, func() error { return nil }
 					},
 				},
@@ -379,7 +384,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project creating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return errors.New("whoops"), func() error {
 							rollbackCalled = true
 							return nil
@@ -404,7 +409,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -425,7 +430,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with validator fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -450,7 +455,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with missing git credentials",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -475,7 +480,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning - fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -501,7 +506,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -531,7 +536,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning - validator should not be called",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -580,6 +585,13 @@ func TestCreateProject(t *testing.T) {
 				provisioningCall := tt.fields.RepositoryProvisioner.ProvideRepositoryCalls()[0]
 				require.Equal(t, tt.projectNameParam, provisioningCall.ProjectName)
 				require.Equal(t, namespace, provisioningCall.Namespace)
+				if len(tt.fields.ProjectManager.CreateCalls()) == 1 {
+					require.Equal(t, tt.fields.ProjectManager.CreateCalls()[0].InternalOptions.IsUpstreamAutoProvisioned, true)
+				}
+			} else {
+				if len(tt.fields.ProjectManager.CreateCalls()) == 1 {
+					require.Equal(t, tt.fields.ProjectManager.CreateCalls()[0].InternalOptions.IsUpstreamAutoProvisioned, false)
+				}
 			}
 
 			rollbackCalled = false

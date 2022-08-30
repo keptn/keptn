@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"github.com/keptn/keptn/shipyard-controller/internal/provisioner"
@@ -302,6 +303,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		return
 	}
 
+	isAutoProvisioned := false
 	if provideProvisionedRepository(ph.Env.AutomaticProvisioningURL, params) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
@@ -320,6 +322,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			},
 			User: provisioningData.GitUser,
 		}
+		isAutoProvisioned = true
 	} else if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
 		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 		return
@@ -332,7 +335,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
 	}
 
-	err, rollback := ph.ProjectManager.Create(params)
+	err, rollback := ph.ProjectManager.Create(params, models.InternalCreateProjectOptions{IsUpstreamAutoProvisioned: isAutoProvisioned})
 	if err != nil {
 		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, params); err != nil {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())

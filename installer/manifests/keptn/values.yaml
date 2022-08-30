@@ -74,10 +74,12 @@ features:
     ## @param features.debugUI.enabled
     enabled: false
   automaticProvisioning:
-    ## @param features.automaticProvisioning.serviceURL
+    ## @param features.automaticProvisioning.serviceURL Service for provisioning remote git URL
     serviceURL: ""
-    ## @param features.automaticProvisioning.message
+    ## @param features.automaticProvisioning.message Message for provisioning remote git URL
     message: ""
+    ## @param features.automaticProvisioning.hideURL Hide automatically provisioned URL
+    hideURL: false
   swagger:
     ## @param features.swagger.hideDeprecated
     hideDeprecated: false

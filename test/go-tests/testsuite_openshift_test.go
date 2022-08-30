@@ -23,6 +23,7 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_Webhook_Migrator", Test_Webhook_Migrator)
 
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+	t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)

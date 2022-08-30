@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	common_mock "github.com/keptn/keptn/shipyard-controller/internal/configurationstore/fake"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore/fake"
-	"testing"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -170,7 +171,7 @@ func TestCreate_GettingProjectFails(t *testing.T) {
 		GitCredentials: &gitCredentials,
 		Shipyard:       common.Stringp("shipyard"),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 
@@ -211,7 +212,7 @@ func TestCreateWithAlreadyExistingProject(t *testing.T) {
 		Name:           common.Stringp("existing-project"),
 		Shipyard:       common.Stringp("shipyard"),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 
@@ -246,7 +247,7 @@ func TestCreate_WhenCreatingProjectInConfigStoreFails_ThenSecretGetsDeletedAgain
 	params := &models.CreateProjectParams{
 		Name: common.Stringp("my-project"),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "git-credentials-my-project", secretStore.DeleteSecretCalls()[0].Name)
@@ -301,7 +302,7 @@ func TestCreate_WhenCreatingStageInConfigStoreFails_ThenProjectAndSecretGetDelet
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "my-project", configStore.DeleteProjectCalls()[0].ProjectName)
@@ -370,7 +371,7 @@ func TestCreate_WhenUploadingShipyardFails_thenProjectAndSecretGetDeletedAgain(t
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "my-project", configStore.DeleteProjectCalls()[0].ProjectName)
@@ -420,7 +421,7 @@ func TestCreate_WhenSavingProjectInRepositoryFails_thenProjectAndSecretGetDelete
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	err, rollback := instance.Create(params)
+	err, rollback := instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.NotNil(t, err)
 	rollback()
 	assert.Equal(t, "my-project", configStore.DeleteProjectCalls()[0].ProjectName)
@@ -499,7 +500,7 @@ func TestCreate(t *testing.T) {
 		Name:           common.Stringp("my-project"),
 		Shipyard:       common.Stringp(encodedShipyard),
 	}
-	instance.Create(params)
+	instance.Create(params, models.InternalCreateProjectOptions{})
 	assert.Equal(t, 3, len(configStore.CreateStageCalls()))
 	assert.Equal(t, "my-project", configStore.CreateStageCalls()[0].ProjectName)
 	assert.Equal(t, "dev", configStore.CreateStageCalls()[0].Stage)
@@ -513,6 +514,88 @@ func TestCreate(t *testing.T) {
 	assert.Equal(t, "http", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.Scheme)
 	assert.Equal(t, "proxy-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.Proxy.User)
 	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.InsecureSkipTLS)
+	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.IsUpstreamAutoProvisioned)
+	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
+}
+
+func TestCreate_AutoProvisioned(t *testing.T) {
+
+	encodedShipyard := "YXBpVmVyc2lvbjogc3BlYy5rZXB0bi5zaC8wLjIuMApraW5kOiBTaGlweWFyZAptZXRhZGF0YToKICBuYW1lOiB0ZXN0LXNoaXB5YXJkCnNwZWM6CiAgc3RhZ2VzOgogIC0gbmFtZTogZGV2CiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5CiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IGRlcGxveW1lbnQKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBzdHJhdGVneTogZGlyZWN0CiAgICAgIC0gbmFtZTogdGVzdAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBraW5kOiBmdW5jdGlvbmFsCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbiAKICAgICAgLSBuYW1lOiByZWxlYXNlIAoKICAtIG5hbWU6IGhhcmRlbmluZwogICAgc2VxdWVuY2VzOgogICAgLSBuYW1lOiBhcnRpZmFjdC1kZWxpdmVyeQogICAgICB0cmlnZ2VyczoKICAgICAgLSBkZXYuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6IAogICAgICAgICAgc3RyYXRlZ3k6IGJsdWVfZ3JlZW5fc2VydmljZQogICAgICAtIG5hbWU6IHRlc3QKICAgICAgICBwcm9wZXJ0aWVzOiAgCiAgICAgICAgICBraW5kOiBwZXJmb3JtYW5jZQogICAgICAtIG5hbWU6IGV2YWx1YXRpb24KICAgICAgLSBuYW1lOiByZWxlYXNlCiAgICAgICAgCiAgLSBuYW1lOiBwcm9kdWN0aW9uCiAgICBzZXF1ZW5jZXM6CiAgICAtIG5hbWU6IGFydGlmYWN0LWRlbGl2ZXJ5IAogICAgICB0cmlnZ2VyczoKICAgICAgLSBoYXJkZW5pbmcuYXJ0aWZhY3QtZGVsaXZlcnkuZmluaXNoZWQKICAgICAgdGFza3M6CiAgICAgIC0gbmFtZTogZGVwbG95bWVudAogICAgICAgIHByb3BlcnRpZXM6CiAgICAgICAgICBzdHJhdGVneTogYmx1ZV9ncmVlbgogICAgICAtIG5hbWU6IHJlbGVhc2UKICAgICAgCiAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIHRhc2tzOgogICAgICAtIG5hbWU6IHJlbWVkaWF0aW9uCiAgICAgIC0gbmFtZTogZXZhbHVhdGlvbg=="
+
+	secretStore := &fake.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return nil, nil
+	}
+
+	configStore.CreateProjectFunc = func(apimodels.Project) error {
+		return nil
+	}
+
+	configStore.CreateStageFunc = func(projectName string, stageName string) error {
+		return nil
+	}
+
+	configStore.CreateProjectShipyardFunc = func(projectName string, resources []*apimodels.Resource) error {
+		return nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+
+	projectMVRepo.CreateProjectFunc = func(prj *apimodels.ExpandedProject) error {
+		return nil
+	}
+
+	eventRepo.DeleteEventCollectionsFunc = func(project string) error {
+		return nil
+	}
+
+	sequenceQueueRepo.DeleteQueuedSequencesFunc = func(itemFilter models.QueueItem) error {
+		return nil
+	}
+
+	eventQueueRepo.DeleteQueuedEventsFunc = func(scope models.EventScope) error {
+		return nil
+	}
+
+	sequenceExecutionRepo.ClearFunc = func(projectName string) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	gitCredentials := apimodels.GitAuthCredentials{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token:           "git-token",
+			InsecureSkipTLS: false,
+		},
+	}
+	params := &models.CreateProjectParams{
+		GitCredentials: &gitCredentials,
+		Name:           common.Stringp("my-project"),
+		Shipyard:       common.Stringp(encodedShipyard),
+	}
+	instance.Create(params, models.InternalCreateProjectOptions{IsUpstreamAutoProvisioned: true})
+	assert.Equal(t, 3, len(configStore.CreateStageCalls()))
+	assert.Equal(t, "my-project", configStore.CreateStageCalls()[0].ProjectName)
+	assert.Equal(t, "dev", configStore.CreateStageCalls()[0].Stage)
+	assert.Equal(t, "my-project", configStore.CreateStageCalls()[1].ProjectName)
+	assert.Equal(t, "hardening", configStore.CreateStageCalls()[1].Stage)
+	assert.Equal(t, "my-project", configStore.CreateStageCalls()[2].ProjectName)
+	assert.Equal(t, "production", configStore.CreateStageCalls()[2].Stage)
+	assert.Equal(t, "git-url", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.RemoteURL)
+	assert.Equal(t, "git-user", projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.User)
+	assert.Equal(t, false, projectMVRepo.CreateProjectCalls()[0].Prj.GitCredentials.HttpsAuth.InsecureSkipTLS)
+	assert.Equal(t, true, projectMVRepo.CreateProjectCalls()[0].Prj.IsUpstreamAutoProvisioned)
 	assert.Equal(t, "my-project", projectMVRepo.CreateProjectCalls()[0].Prj.ProjectName)
 }
 
@@ -1173,6 +1256,124 @@ func TestUpdate(t *testing.T) {
 		ProjectName:     "my-project",
 		Shipyard:        "my-shipyard",
 		ShipyardVersion: "v1",
+	}
+
+	expectedUpdateShipyardResourceData := &apimodels.Resource{
+		ResourceContent: *params.Shipyard,
+		ResourceURI:     common.Stringp("shipyard.yaml")}
+
+	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
+	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
+	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
+	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
+}
+
+func TestUpdate_FromProvisionedRepository(t *testing.T) {
+
+	secretStore := &fake.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	oldSecretsData, _ := json.Marshal(apimodels.GitAuthCredentials{
+		User: "provisioned-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token: "my-provisioned-token",
+		},
+		RemoteURL: "http://provisioned.url",
+	})
+
+	updateSecretsData, _ := json.Marshal(apimodels.GitAuthCredentials{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token:           "git-token",
+			InsecureSkipTLS: false,
+		},
+	})
+
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://provisioned.url",
+		User:      "provisioned-user",
+	}
+
+	oldProjectData := &apimodels.ExpandedProject{
+		CreationDate:              "old-creationdate",
+		GitCredentials:            &gitCredentials,
+		ProjectName:               "my-project",
+		Shipyard:                  "",
+		ShipyardVersion:           "v1",
+		IsUpstreamAutoProvisioned: true,
+	}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return oldProjectData, nil
+	}
+
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
+		return nil
+	}
+
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	myShipyard := "my-shipyard"
+	gitCredentials4 := apimodels.GitAuthCredentials{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token:           "git-token",
+			InsecureSkipTLS: false,
+		},
+	}
+	params := &models.UpdateProjectParams{
+		GitCredentials: &gitCredentials4,
+		Name:           common.Stringp("my-project"),
+		Shipyard:       &myShipyard,
+	}
+	err, rollback := instance.Update(params)
+	assert.Nil(t, err)
+	rollback()
+
+	projectUpdateData := apimodels.Project{
+		ProjectName: *params.Name,
+	}
+
+	httpCredentials := apimodels.HttpsGitAuthSecure{
+		InsecureSkipTLS: false,
+	}
+
+	gitCredentials2 := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "git-url",
+		User:      "git-user",
+		HttpsAuth: &httpCredentials,
+	}
+
+	projectDBUpdateData := &apimodels.ExpandedProject{
+		CreationDate:              "old-creationdate",
+		GitCredentials:            &gitCredentials2,
+		ProjectName:               "my-project",
+		Shipyard:                  "my-shipyard",
+		ShipyardVersion:           "v1",
+		IsUpstreamAutoProvisioned: false,
 	}
 
 	expectedUpdateShipyardResourceData := &apimodels.Resource{
@@ -1860,6 +2061,103 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 			if (err != nil) != tt.err {
 				t.Errorf("validateShipyardStagesUnchaged(): got %s, want %t", err.Error(), tt.err)
 			}
+		})
+	}
+}
+
+func Test_ModifyProjectResponse(t *testing.T) {
+	tests := []struct {
+		name           string
+		projectManager *ProjectManager
+		project        *apimodels.ExpandedProject
+		expected       *apimodels.ExpandedProject
+	}{
+		{
+			name: "hide - true; provisioned - false",
+			projectManager: &ProjectManager{
+				hideAutoProvisionedURL: true,
+			},
+			project: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: false,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+			expected: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: false,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+		},
+		{
+			name: "hide - true; provisioned - true",
+			projectManager: &ProjectManager{
+				hideAutoProvisionedURL: true,
+			},
+			project: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: true,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+			expected: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: true,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "",
+					User:      "",
+				},
+			},
+		},
+		{
+			name: "hide - false; provisioned - true",
+			projectManager: &ProjectManager{
+				hideAutoProvisionedURL: false,
+			},
+			project: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: true,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+			expected: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: true,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+		},
+		{
+			name: "hide - false; provisioned - false",
+			projectManager: &ProjectManager{
+				hideAutoProvisionedURL: false,
+			},
+			project: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: false,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+			expected: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: false,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "some-url",
+					User:      "user",
+				},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.projectManager.modifyProjectResponse(tt.project)
+			require.Equal(t, tt.expected, tt.project)
 		})
 	}
 }

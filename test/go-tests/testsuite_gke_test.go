@@ -16,6 +16,7 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_ExecutingWebhookTargetingClusterInternalAddressesFails", Test_ExecutingWebhookTargetingClusterInternalAddressesFails)
 
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+	t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)

@@ -114,9 +114,9 @@ func Test_ProvisioningURL(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", mockServerIP, keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 240s to make sure shipyard pod is deleted...")
-	// due to termination grae period this takes quite some time now...
-	time.Sleep(240 * time.Second)
+	t.Logf("Sleeping for 120s to make sure shipyard pod is deleted...")
+	// due to termination grace period this takes quite some time now...
+	time.Sleep(120 * time.Second)
 
 	t.Logf("Checking if mockserver is running")
 	err = WaitForPodOfDeployment("mockserver")
@@ -167,6 +167,111 @@ func Test_ProvisioningURL(t *testing.T) {
 
 	t.Logf("Unsetting AUTOMATIC_PROVISIONING_URL env variable")
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", "", keptnNamespace)
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 30s to make sure shipyard pod is deleted...")
+	time.Sleep(30 * time.Second)
+	t.Logf("Waiting for Shipyard-controller to be running")
+	err = WaitForPodOfDeployment(shipyardPod)
+	require.Nil(t, err)
+
+	t.Log("Deleting mockserver ConfigMap")
+	_, err = ExecuteCommandf("kubectl delete configmap mockserver-config -n %s", keptnNamespace)
+	require.Nil(t, err)
+}
+
+func Test_ProvisioningURL_hiddenURL(t *testing.T) {
+	projectName := "url-provisioning"
+	mockserverConfigFileName := "mockserver-config.yaml"
+	keptnNamespace := GetKeptnNameSpaceFromEnv()
+	mockServerIP := "http://mockserver:1080"
+	user := GetGiteaUser()
+	token, _ := GetGiteaToken()
+	provisioningConfigMap := fmt.Sprintf(provisioningConfigMapTemplate, user, token, user)
+	shipyardPod := "shipyard-controller"
+
+	mockserverconfigFilePath, err := CreateTmpFile(mockserverConfigFileName, provisioningConfigMap)
+	defer func() {
+		if err := os.Remove(mockserverconfigFilePath); err != nil {
+			t.Logf("Could not delete file: %v", err)
+		}
+	}()
+
+	t.Logf("Create mock server ConfigMap")
+	_, err = ExecuteCommandf("kubectl apply -f %s -n %s", mockserverconfigFilePath, keptnNamespace)
+	require.Nil(t, err)
+
+	t.Logf("Restarting mockserver deployment")
+	_, err = ExecuteCommandf("kubectl rollout restart deployment mockserver -n %s", keptnNamespace)
+	require.Nil(t, err)
+
+	t.Logf("Setting up AUTOMATIC_PROVISIONING_URL env variable")
+	t.Logf("External mockserver IP address: %s", mockServerIP)
+	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", mockServerIP, keptnNamespace)
+	require.Nil(t, err)
+
+	t.Logf("Setting up HIDE_AUTOMATIC_PROVISIONED_URL env variable to true")
+	t.Logf("External mockserver IP address: %s", mockServerIP)
+	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller HIDE_AUTOMATIC_PROVISIONED_URL=%s -n %s", "true", keptnNamespace)
+	require.Nil(t, err)
+
+	t.Logf("Sleeping for 120s to make sure shipyard pod is deleted...")
+	// due to termination grace period this takes quite some time now...
+	time.Sleep(120 * time.Second)
+
+	t.Logf("Checking if mockserver is running")
+	err = WaitForPodOfDeployment("mockserver")
+	require.Nil(t, err)
+
+	//kubectl set kills shipyard pod, instead of sleeping we wait for the deployment to be ready
+	t.Logf("Waiting for Shipyard-controller to be running")
+	err = WaitForPodOfDeployment(shipyardPod)
+	require.Nil(t, err)
+
+	t.Logf("Creating a new upstream repository for project %s", projectName)
+	err = retry.Retry(func() error {
+		if err := RecreateProjectUpstream(projectName); err != nil {
+			return err
+		}
+		return nil
+	}, retry.NumberOfRetries(10), retry.DelayBetweenRetries(10*time.Second))
+	require.Nil(t, err)
+
+	t.Logf("Creating a new project %s with a provisioned Gitea Upstream", projectName)
+	projectParams := map[string]string{
+		"name":     projectName,
+		"shipyard": provisioningShipyard,
+	}
+	createProjectRequestData, err := json.Marshal(projectParams)
+	require.Nil(t, err)
+
+	resp, err := ApiPOSTRequest(baseProjectPath, createProjectRequestData, 3)
+	require.Nil(t, err)
+	require.Equal(t, 201, resp.Response().StatusCode)
+
+	t.Logf("Getting project %s with a provisioned Gitea Upstream", projectName)
+	resp, err = ApiGETRequest(baseProjectPath+"/"+projectName, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Checking if provisioned upstream was hidden")
+	project := models.ExpandedProject{}
+	err = resp.ToJSON(&project)
+	require.Nil(t, err)
+	require.Equal(t, "", project.GitCredentials.User)
+	require.Equal(t, "", project.GitCredentials.RemoteURL)
+
+	t.Logf("Deleting project %s with a provisioned Gitea Upstream", projectName)
+	resp, err = ApiDELETERequest(baseProjectPath+"/"+projectName, 3)
+	require.Nil(t, err)
+	require.Equal(t, 200, resp.Response().StatusCode)
+
+	t.Logf("Unsetting AUTOMATIC_PROVISIONING_URL env variable")
+	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", "", keptnNamespace)
+	require.Nil(t, err)
+
+	t.Logf("Unsetting HIDE_AUTOMATIC_PROVISIONED_URL env variable to false")
+	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller HIDE_AUTOMATIC_PROVISIONED_URL=%s -n %s", "false", keptnNamespace)
 	require.Nil(t, err)
 
 	t.Logf("Sleeping for 30s to make sure shipyard pod is deleted...")
