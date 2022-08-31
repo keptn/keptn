@@ -23,6 +23,11 @@ on:
         required: false
         description: "Check this if you don't want the test namespaces to stay alive after the test run"
         default: false
+      testDowngrade:
+        type: boolean
+        required: false
+        description: "Check if downgrade is also with zero downtime"
+        default: false
 defaults:
   run:
     shell: bash
@@ -307,7 +312,7 @@ jobs:
          go get ./...
 
       - name: Override Test Configs
-        if: always() && github.event_name == 'schedule'
+        if: always() && ( github.event_name == 'schedule' || github.event.inputs.testDowngrade == 'false')
         # Only run one upgrade in case of scheduled run
         run:  echo "NUMBER_OF_UPGRADES=1" >> $GITHUB_ENV
 
