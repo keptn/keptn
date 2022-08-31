@@ -221,28 +221,26 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 		}
 		executedRequests = executedRequests + 1
 
-		//attempt to create a json object out of the response as requested in https://github.com/keptn/keptn/issues/8256
-
-		dat := map[string]interface{}{}
-
-		resp := []byte(response)
-		if json.Valid(resp) {
-
-			err = json.Unmarshal(resp, &dat)
-			if err == nil {
-				logger.Infof("Webhook response unmarshalled! %+v", dat)
-				responses = append(responses, dat)
-			} else {
-				logger.Infof("Webhook response cannot be unmarshalled! %s", err.Error())
-			}
-
-		} else {
-			logger.Infof("Webhook response could not be changed")
-			responses = append(responses, response)
-		}
-
+		data := UnmarshalResponse(response)
+		responses = append(responses, data)
 	}
 	return responses, nil
+}
+
+//UnmarshalResponse attempts to create a json object out of the response as requested in https://github.com/keptn/keptn/issues/8256
+func UnmarshalResponse(response string) interface{} {
+	dat := map[string]interface{}{}
+
+	resp := []byte(response)
+
+	err := json.Unmarshal(resp, &dat)
+	if err != nil {
+		logger.Debugf("Webhook response is unmarshallable : %s, appending response as string", err.Error())
+		return response
+	}
+	logger.Debugf("Webhook response unmarshalled! %+v", dat)
+	return dat
+
 }
 
 func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]string, error) {

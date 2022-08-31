@@ -698,6 +698,67 @@ func Test_HandleIncomingFinishedEventWithResultingError(t *testing.T) {
 
 }
 
+func Test_HandleIncomingFinishedEventWithJSON(t *testing.T) {
+
+	t.Run("Test_HandleIncomingFinishedEventWithJSON - BETA", func(t *testing.T) {
+
+		templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+			tplE := &lib.TemplateEngine{}
+			return tplE.ParseTemplate(data, templateStr)
+		}}
+
+		secretReaderMock := &fake.ISecretReaderMock{}
+		secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+			return "my-secret-value", nil
+		}
+
+		curlExecutorMock := &fake.ICurlExecutorMock{}
+		curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+			return "{\"page\": \"1\", \"fruits\": [\"apple\", \"peach\"]}", nil
+		}
+
+		requestValidatorMock := &fake.RequestValidatorMock{ValidateFunc: func(request lib.Request) error {
+			return nil
+		}}
+
+		taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, requestValidatorMock, secretReaderMock)
+
+		fakeKeptn := sdk.NewFakeKeptn("test-webhook-svc")
+		fakeKeptn.SetResourceHandler(sdk.StringResourceHandler{ResourceContent: webHookContent1_BETA})
+		fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
+		fakeKeptn.SetAutomaticResponse(false)
+
+		fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+		require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 1 }, 30*time.Second, time.Millisecond*10)
+		require.Eventually(t, func() bool {
+			return curlExecutorMock.CurlCalls()[0].CurlCmd == "curl --request GET http://local:8080 myproject my-secret-value"
+		}, 30*time.Second, time.Millisecond*10)
+
+		//verify sent events
+		fakeKeptn.AssertNumberOfEventSent(t, 2)
+		fakeKeptn.AssertSentEventType(t, 0, keptnv2.GetStartedEventType("webhook"))
+		fakeKeptn.AssertSentEventType(t, 1, keptnv2.GetFinishedEventType("webhook"))
+		fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusSucceeded)
+		fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultPass)
+
+		result := map[string]interface{}{
+			"labels": interface{}(nil), "project": "myproject", "result": "pass", "service": "myservice", "stage": "mystage", "status": "succeeded",
+			"webhook": map[string]interface{}{
+				"responses": []interface{}{
+					map[string]interface{}{
+						"page":   "1",
+						"fruits": []interface{}{"apple", "peach"},
+					},
+				},
+			},
+		}
+		t.Logf("%+v  vs  %+v", result, fakeKeptn.SentEvents[1].Data)
+		require.Equal(t, result, fakeKeptn.SentEvents[1].Data)
+
+	})
+
+}
+
 func Test_HandleIncomingTriggeredEvent_SendMultipleRequests(t *testing.T) {
 
 	t.Run("Test_HandleIncomingTriggeredEvent_SendMultipleRequests - ALPHA", func(t *testing.T) {
@@ -2065,6 +2126,37 @@ func Test_createRequest(t *testing.T) {
 			}
 
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func TestUnmarshalResponse(t *testing.T) {
+
+	tests := []struct {
+		name     string
+		response string
+		want     interface{}
+	}{
+		{
+			name:     "invalid JSON",
+			response: "not a JSON",
+			want:     "not a JSON",
+		},
+		{
+			name:     "valid JSON",
+			response: "{\n  \"contenttype\": \"application/json\",\n  \"data\": {\n    \"project\": \"keptn-webhooks-subscription-overlap\",\n    \"service\": \"myservice\",\n    \"stage\": \"dev\"\n  }\n}",
+			want: map[string]interface{}{
+				"contenttype": "application/json",
+				"data": map[string]interface{}{
+					"project": "keptn-webhooks-subscription-overlap",
+					"service": "myservice",
+					"stage":   "dev"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equalf(t, tt.want, handler.UnmarshalResponse(tt.response), "UnmarshalResponse(%v)", tt.response)
 		})
 	}
 }

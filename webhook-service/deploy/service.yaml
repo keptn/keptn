@@ -27,10 +27,6 @@ spec:
         helm.sh/chart: keptn-0.1.0
     spec:
       serviceAccountName: keptn-webhook-service
-      securityContext:
-        fsGroup: 65532
-        seccompProfile:
-          type: RuntimeDefault
       containers:
         - name: webhook-service
           image: 'docker.io/keptndev/webhook-service'
