@@ -8,7 +8,7 @@ require (
 	github.com/keptn/go-utils v0.18.1-0.20220829065650-dc8c0968b133
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
-	github.com/swaggo/swag v1.8.4
+	github.com/swaggo/swag v1.8.5
 	k8s.io/api v0.22.13
 	k8s.io/apimachinery v0.22.13
 	k8s.io/client-go v0.22.13
