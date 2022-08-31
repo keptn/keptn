@@ -68,7 +68,9 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
 	}
 	eventAdapter.Add("env", secretEnvVars)
-	responses, err := th.performWebhookRequests(*webhook, eventAdapter)
+
+	responses := []interface{}{}
+	responses, err = th.performWebhookRequests(*webhook, eventAdapter, responses)
 	if err != nil {
 		onError(err, secretEnvVars)
 		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
@@ -199,8 +201,8 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 	return nil
 }
 
-func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter) ([]interface{}, error) {
-	var responses []interface{}
+func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter, responses []interface{}) ([]interface{}, error) {
+
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
