@@ -63,7 +63,7 @@ jobs:
       GO_VERSION: "~1.18"
       UPGRADE_TO: ${{ inputs.upgradeTo || 'https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz' }}
     outputs:
-      BRANCH: ${{ steps.determine_branch.outputs.BRANCH || '0.18.x' }}
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
     steps:
 
@@ -97,22 +97,9 @@ jobs:
             BRANCH=${{ github.event.inputs.branch }}
             echo "Using $BRANCH as target branch for zd tests"
           else
-            echo "Determining branch based on what triggered this workflow"
-
-            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
-              echo "This is a push to a local branch -> using branch name"
-              BRANCH=${GITHUB_REF#refs/heads/}
-              echo "Branch Name: $BRANCH"
-            else
-              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-                # usually the format for PRs is: refs/pull/1234/merge
-                echo "::error::This is a Pull Request, and PRs are not supported yet"
-                exit 1
-              else
-                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
-                exit 1
-              fi
-            fi
+            echo "Determining branch based on last release"
+            STR=$(curl -s https://api.github.com/repos/keptn/keptn/releases/latest | grep -oP '(?<="tag_name": ")[^"]*')
+            BRANCH=$(echo ${STR%?}x)
           fi
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
@@ -134,6 +121,8 @@ jobs:
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
           echo "::set-output name=RUN_ID::$RUN_ID"
+
+          
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
