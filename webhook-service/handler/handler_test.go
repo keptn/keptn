@@ -712,9 +712,14 @@ func Test_HandleIncomingFinishedEventWithJSON(t *testing.T) {
 			return "my-secret-value", nil
 		}
 
+		validJSON := true
+
 		curlExecutorMock := &fake.ICurlExecutorMock{}
 		curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
-			return "{\"page\": \"1\", \"fruits\": [\"apple\", \"peach\"]}", nil
+			if validJSON {
+				return "{\"page\": \"1\", \"fruits\": [\"apple\", \"peach\"]}", nil
+			}
+			return "some strange output", nil
 		}
 
 		requestValidatorMock := &fake.RequestValidatorMock{ValidateFunc: func(request lib.Request) error {
@@ -752,8 +757,33 @@ func Test_HandleIncomingFinishedEventWithJSON(t *testing.T) {
 				},
 			},
 		}
-		t.Logf("%+v  vs  %+v", result, fakeKeptn.SentEvents[1].Data)
 		require.Equal(t, result, fakeKeptn.SentEvents[1].Data)
+
+		// now set wrong json format
+		validJSON = false
+		fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+		require.Eventually(t, func() bool { return len(curlExecutorMock.CurlCalls()) == 2 }, 30*time.Second, time.Millisecond*10)
+		require.Eventually(t, func() bool {
+			return curlExecutorMock.CurlCalls()[0].CurlCmd == "curl --request GET http://local:8080 myproject my-secret-value"
+		}, 30*time.Second, time.Millisecond*10)
+
+		//verify sent events
+		fakeKeptn.AssertNumberOfEventSent(t, 4)
+		fakeKeptn.AssertSentEventType(t, 2, keptnv2.GetStartedEventType("webhook"))
+		fakeKeptn.AssertSentEventType(t, 3, keptnv2.GetFinishedEventType("webhook"))
+		fakeKeptn.AssertSentEventStatus(t, 3, keptnv2.StatusSucceeded)
+		fakeKeptn.AssertSentEventResult(t, 3, keptnv2.ResultPass)
+
+		result = map[string]interface{}{
+			"labels": interface{}(nil), "project": "myproject", "result": "pass", "service": "myservice", "stage": "mystage", "status": "succeeded",
+			"webhook": map[string]interface{}{
+				"responses": []interface{}{
+					"some strange output",
+				},
+			},
+		}
+		t.Logf("%+v  vs  %+v", result, fakeKeptn.SentEvents[3].Data)
+		require.Equal(t, result, fakeKeptn.SentEvents[3].Data)
 
 	})
 
