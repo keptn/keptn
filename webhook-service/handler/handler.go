@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -55,8 +56,6 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkError(err.Error(), err)
 	}
 
-	responses := []string{}
-
 	if sdkErr := th.onStartedWebhookExecution(keptnHandler, event, webhook); sdkErr != nil {
 		return nil, sdkErr
 	}
@@ -69,7 +68,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
 	}
 	eventAdapter.Add("env", secretEnvVars)
-	responses, err = th.performWebhookRequests(*webhook, eventAdapter, responses)
+	responses, err := th.performWebhookRequests(*webhook, eventAdapter)
 	if err != nil {
 		onError(err, secretEnvVars)
 		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
@@ -200,7 +199,8 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 	return nil
 }
 
-func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter, responses []string) ([]string, error) {
+func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter) ([]interface{}, error) {
+	var responses []interface{}
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
@@ -220,7 +220,27 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not execute request '%s': %s", request, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		executedRequests = executedRequests + 1
-		responses = append(responses, response)
+
+		//attempt to create a json object out of the response as requested in https://github.com/keptn/keptn/issues/8256
+
+		dat := map[string]interface{}{}
+
+		resp := []byte(response)
+		if json.Valid(resp) {
+
+			err = json.Unmarshal(resp, &dat)
+			if err == nil {
+				logger.Infof("Webhook response unmarshalled! %+v", dat)
+				responses = append(responses, dat)
+			} else {
+				logger.Infof("Webhook response cannot be unmarshalled! %s", err.Error())
+			}
+
+		} else {
+			logger.Infof("Webhook response could not be changed")
+			responses = append(responses, response)
+		}
+
 	}
 	return responses, nil
 }
