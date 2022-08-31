@@ -6,7 +6,8 @@ on:
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
-        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster'
+        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster, defaults to last release'
+        required: false
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
