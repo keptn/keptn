@@ -63,7 +63,7 @@ jobs:
       GO_VERSION: "~1.18"
       UPGRADE_TO: ${{ inputs.upgradeTo || 'https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz' }}
     outputs:
-      BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
+      BRANCH: ${{ steps.determine_branch.outputs.BRANCH || '0.18.x' }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
     steps:
 
