@@ -70,8 +70,8 @@ github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnr
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.18.1-0.20220829065650-dc8c0968b133 h1:NNzTLZwGrzwnrnwLK8DNYRer94K+imKk3NErkHOePZc=
-github.com/keptn/go-utils v0.18.1-0.20220829065650-dc8c0968b133/go.mod h1:jPys4TFvxkN6KY3IhM5XWBeCCPQeLzsT6zTwt4iYfes=
+github.com/keptn/go-utils v0.18.1-0.20220831070853-f07eb2f4a74b h1:5KJjw/iGpl+FkyXEh79VGEQQmFOzFf+VAJ12nV543ag=
+github.com/keptn/go-utils v0.18.1-0.20220831070853-f07eb2f4a74b/go.mod h1:jPys4TFvxkN6KY3IhM5XWBeCCPQeLzsT6zTwt4iYfes=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/klauspost/compress v1.14.4 h1:eijASRJcobkVtSt81Olfh7JX43osYLwy5krOJo6YEu4=
 github.com/klauspost/compress v1.14.4/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
