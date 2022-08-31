@@ -172,6 +172,31 @@ spec:
           tasks:
             - name: delivery`
 
+const triggerNextSequenceShipyard = `apiVersion: spec.keptn.sh/0.2.0
+kind: Shipyard
+metadata:
+  name: shipyard-trigger-nexr
+spec:
+  stages:
+    - name: dev
+      sequences:
+        - name: delivery
+          tasks:
+            - name: delivery
+        - name: notify-failure
+          triggeredOn:
+            - event: "dev.delivery.finished"
+              selector:
+                match:
+                  result: "fail"
+          tasks:
+            - name: notify-failure
+        - name: notify-success
+          triggeredOn:
+            - event: "dev.delivery.finished"
+          tasks:
+            - name: notify-success`
+
 const sequenceTimeoutWithTriggeredAfterShipyard = `--- 
 apiVersion: spec.keptn.sh/0.2.0
 kind: Shipyard
@@ -477,6 +502,147 @@ func Test__main_Delivery(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, "docker.io/my-image:0.1.0", getProjectData.Stages[1].Services[0].DeployedImage)
+
+}
+
+func Test__main_TriggerNextSequenceOnSuccess(t *testing.T) {
+	projectName := "my-project-trigger-sequence-success"
+	serviceName := "my-service"
+
+	natsClient, tearDown, _ := setupTestProject(t, projectName, serviceName, triggerNextSequenceShipyard)
+	defer tearDown()
+
+	context := natsClient.triggerSequenceWithData(keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "dev",
+			Service: serviceName,
+		},
+	}, "dev", "delivery")
+
+	t.Logf("wait for the sequence state to be available")
+	verifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{apimodels.SequenceStartedState})
+
+	t.Logf("check if delivery.triggered has been sent")
+	var taskTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent = natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
+		return taskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Logf("send .started and .finished event for deployment task")
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	t.Logf("send started event")
+	_, err = keptn.SendTaskStartedEvent(nil, "golang-test")
+	require.Nil(t, err)
+
+	t.Log("wait for .started event to be persisted")
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, context)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("delivery")
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Logf("send finished event")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "dev",
+			Service: serviceName,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultPass,
+			Message: "Successfully deployed",
+		},
+	}, "golang-test")
+	require.Nil(t, err)
+
+	t.Log("wait for next sequence (test) to be triggered")
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("notify-success"))
+		return taskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	// verify that the notify-failure sequence has NOT been triggered
+	notifyFailureTaskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("notify-failure"))
+	require.Nil(t, notifyFailureTaskTriggeredEvent)
+}
+
+func Test__main_TriggerNextSequenceOnFailure(t *testing.T) {
+	projectName := "my-project-trigger-sequence-failure"
+	serviceName := "my-service"
+
+	natsClient, tearDown, _ := setupTestProject(t, projectName, serviceName, triggerNextSequenceShipyard)
+	defer tearDown()
+
+	context := natsClient.triggerSequenceWithData(keptnv2.DeploymentTriggeredEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "dev",
+			Service: serviceName,
+		},
+	}, "dev", "delivery")
+
+	t.Logf("wait for the sequence state to be available")
+	verifySequenceEndsUpInState(t, projectName, context, 2*time.Minute, []string{apimodels.SequenceStartedState})
+
+	t.Logf("check if delivery.triggered has been sent")
+	var taskTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent = natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
+		return taskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Logf("send .started and .finished event for deployment task")
+	cloudEvent := keptnv2.ToCloudEvent(*taskTriggeredEvent)
+	keptn, err := keptnv2.NewKeptn(&cloudEvent, keptncommon.KeptnOpts{EventSender: natsClient})
+	require.Nil(t, err)
+
+	t.Logf("send started event")
+	_, err = keptn.SendTaskStartedEvent(nil, "golang-test")
+	require.Nil(t, err)
+
+	t.Log("wait for .started event to be persisted")
+	require.Eventually(t, func() bool {
+		states, err := getStates(projectName, context)
+		if err != nil {
+			return false
+		}
+		if states == nil || len(states.States) == 0 {
+			return false
+		}
+		return states.States[0].Stages[0].LatestEvent.Type == keptnv2.GetStartedEventType("delivery")
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Logf("send finished event")
+	_, err = keptn.SendTaskFinishedEvent(&keptnv2.DeploymentFinishedEventData{
+		EventData: keptnv2.EventData{
+			Project: projectName,
+			Stage:   "dev",
+			Service: serviceName,
+			Status:  keptnv2.StatusSucceeded,
+			Result:  keptnv2.ResultFailed,
+			Message: "oops",
+		},
+	}, "golang-test")
+	require.Nil(t, err)
+
+	t.Log("wait for next sequence (test) to be triggered")
+	require.Eventually(t, func() bool {
+		taskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("notify-failure"))
+		return taskTriggeredEvent != nil
+	}, 10*time.Second, 100*time.Millisecond)
+
+	// verify that the notify-failure sequence has NOT been triggered
+	notifyFailureTaskTriggeredEvent := natsClient.getLatestEventOfType(*context.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("notify-success"))
+	require.Nil(t, notifyFailureTaskTriggeredEvent)
 
 }
 
