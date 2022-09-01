@@ -189,7 +189,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 
 	if e.Result == keptnv2.ResultFailed {
 		evaluationResult.EventData.Result = keptnv2.ResultFailed
-		evaluationResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
+		evaluationResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
 	}
 
 	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)

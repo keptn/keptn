@@ -175,10 +175,6 @@ func Test_QualityGates(t *testing.T) {
 
 	_, err = ExecuteCommand(fmt.Sprintf("keptn add-resource --project=%s --stage=%s --service=%s --resource=%s --resourceUri=slo.yaml", projectName, "hardening", serviceName, sloFilePath))
 	require.Nil(t, err)
-	checkCommit := false
-	if image, err := GetImageOfDeploymentContainer("resource-service", "resource-service"); err == nil && image != "" {
-		checkCommit = true
-	}
 
 	t.Log("triggering the evaluation again")
 	keptnContext, err = TriggerEvaluation(projectName, "hardening", serviceName)
@@ -226,7 +222,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Log("triggering the evaluation again (this time valid)")
-	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, checkCommit)
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, true, false)
 
 	t.Log("got hardening.evaluation.finished event")
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
@@ -347,7 +343,7 @@ func Test_QualityGates(t *testing.T) {
 
 	t.Log("triggering the evaluation again (this time valid)")
 	// do another evaluation - the resulting .finished event should not contain the first .finished event (which has been invalidated) in the list of compared evaluation results
-	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, checkCommit)
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, true, false)
 	t.Log("got hardening.evaluation.finished event")
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
@@ -450,7 +446,7 @@ func Test_QualityGates(t *testing.T) {
 
 	// do another evaluation - the resulting .finished event should contain the second .finished event in the list of compared evaluation results
 	t.Log("triggering the evaluation again (this time it will be compared with the second evaluation)")
-	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, checkCommit)
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, true, false)
 	t.Log("got hardening.evaluation.finished event")
 
 	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
@@ -565,9 +561,110 @@ func Test_QualityGates(t *testing.T) {
 	require.NotEmpty(t, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)])
 	require.Equal(t, keptnContext, project.Stages[0].Services[0].LastEventTypes[keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName)].KeptnContext)
 
+	t.Log("triggering the evaluation again (this time getSLI will fail)")
+	keptnContext, evaluationFinishedEvent = PerformResourceServiceTest(t, projectName, serviceName, false, true)
+	t.Log("got hardening.evaluation.finished event")
+
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+	require.Len(t, evaluationFinishedPayload.Evaluation.ComparedEvents, 1)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
+	require.NotEmpty(t, evaluationFinishedPayload.Message)
+
+	require.Equal(t, "pass", evaluationFinishedPayload.Evaluation.Result)
+	require.Equal(t, float64(100), evaluationFinishedPayload.Evaluation.Score)
+
+	require.Len(t, evaluationFinishedPayload.Evaluation.IndicatorResults, 3)
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:        "response_time_p95",
+			Value:         200,
+			ComparedValue: 200,
+			Success:       true,
+			Message:       "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+75%",
+				TargetValue: 350,
+				Violated:    false,
+			},
+			{
+				Criteria:    "<800",
+				TargetValue: 800,
+				Violated:    false,
+			},
+		},
+		WarningTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=1000",
+				TargetValue: 1000,
+				Violated:    false,
+			},
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 400,
+				Violated:    false,
+			},
+		},
+		Status: "pass",
+		KeySLI: false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[0])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 1,
+		Value: &keptnv2.SLIResult{
+			Metric:        "throughput",
+			Value:         200,
+			ComparedValue: 200,
+			Success:       true,
+			Message:       "",
+		},
+		DisplayName: "",
+		PassTargets: []*keptnv2.SLITarget{
+			{
+				Criteria:    "<=+100%",
+				TargetValue: 400,
+				Violated:    false,
+			},
+			{
+				Criteria:    ">=-80%",
+				TargetValue: 40,
+				Violated:    false,
+			},
+		},
+		WarningTargets: nil,
+		Status:         "pass",
+		KeySLI:         false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[1])
+
+	require.Equal(t, &keptnv2.SLIEvaluationResult{
+		Score: 0,
+		Value: &keptnv2.SLIResult{
+			Metric:        "error_rate",
+			Value:         0,
+			ComparedValue: 0,
+			Success:       true,
+			Message:       "",
+		},
+		DisplayName:    "",
+		PassTargets:    nil,
+		WarningTargets: nil,
+		Status:         "info",
+		KeySLI:         false,
+	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
+
+	t.Log("hardening.evaluation.finished event is valid")
+
 }
 
-func PerformResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool) (string, *models.KeptnContextExtendedCE) {
+func PerformResourceServiceTest(t *testing.T, projectName string, serviceName string, checkCommit bool, fail bool) (string, *models.KeptnContextExtendedCE) {
 	commitID := ""
 	commitID1 := ""
 	if checkCommit {
@@ -740,6 +837,10 @@ func PerformResourceServiceTest(t *testing.T, projectName string, serviceName st
 
 	require.Nil(t, err)
 
+	result := keptnv2.ResultPass
+	if fail {
+		result = keptnv2.ResultFailed
+	}
 	t.Log("sending get-sli.finished event (valid)")
 	resp, err = ApiPOSTRequest("/v1/event", models.KeptnContextExtendedCE{
 		Contenttype: "application/json",
@@ -750,8 +851,8 @@ func PerformResourceServiceTest(t *testing.T, projectName string, serviceName st
 				Service: serviceName,
 				Labels:  nil,
 				Status:  keptnv2.StatusSucceeded,
-				Result:  keptnv2.ResultPass,
-				Message: "",
+				Result:  result,
+				Message: "Some info",
 			},
 			GetSLI: keptnv2.GetSLIFinished{
 				Start: getSLIPayload.GetSLI.Start,
