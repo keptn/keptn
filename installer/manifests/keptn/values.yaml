@@ -12,6 +12,8 @@ mongo:
   enabled: true
   ## @param mongo.host
   host: mongodb:27017
+  livenessProbe:
+    periodSeconds: 5
   ## @param mongo.architecture
   architecture: standalone
   updateStrategy:
