@@ -120,6 +120,7 @@ data:
         deny all;
       }
       auth_request               /api/v1/auth;
+      error_page 401 = @error401;
       rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
       proxy_redirect     off;
@@ -173,6 +174,7 @@ data:
         deny all;
       }
       auth_request               /api/v1/auth;
+      error_page 401 = @error401;
 
       rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
@@ -189,6 +191,7 @@ data:
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               /api/v1/auth;
+      error_page 401 = @error401;
 
       rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
@@ -198,7 +201,6 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
-      error_page 401 = @error401;
     }
 
     location {{ .Values.prefixPath }}/api/secrets/swagger-ui/swagger.yaml {
@@ -221,6 +223,7 @@ data:
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               /api/v1/auth;
+      error_page 401 = @error401;
 
       rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
       proxy_pass         http://secret-service:8080;
@@ -230,7 +233,6 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
-      error_page 401 = @error401;
     }
 {{- if .Values.statisticsService.enabled }}
     location {{ .Values.prefixPath }}/api/statistics/swagger-ui/swagger.yaml {
@@ -258,6 +260,7 @@ data:
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               /api/v1/auth;
+      error_page 401 = @error401;
 
       rewrite {{ .Values.prefixPath }}/api/statistics/(.*) /$1  break;
       proxy_pass         http://statistics-service:8080;
@@ -267,7 +270,6 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
-      error_page 401 = @error401;
     }
 {{- end }}
 
@@ -331,6 +333,7 @@ data:
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               /api/v1/auth;
+      error_page 401 = @error401;
 
       rewrite {{ .Values.prefixPath }}/api/resource-service/(.*) /$1  break;
       proxy_pass         http://resource-service:8080;
@@ -340,7 +343,6 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
-      error_page 401 = @error401;
     }
 
     location {{ .Values.prefixPath }}/api {
