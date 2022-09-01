@@ -341,14 +341,15 @@ bridge:
     ## @param bridge.secret.enabled Enable bridge credentials for HTTP Basic Auth
     enabled: true
   versionCheck:
-    ## @param bridge.versionCheck.enabled Enable check for updated versions of Keptn
+    ## @param bridge.versionCheck.enabled If enabled, the Bridge notifies the user when a new version is available
     enabled: true
   showApiToken:
-    ## @param bridge.showApiToken.enabled If disabled, the API token will not be shown in the Bridge info
+    ## @param bridge.showApiToken.enabled If disabled, the API token will not be shown in the Bridge user menu
     enabled: true
   ## @param bridge.installationType Can take the values: `QUALITY_GATES`, `CONTINUOUS_OPERATIONS`, `CONTINUOUS_DELIVERY` and determines the mode in which the Bridge will be started. If only `QUALITY_GATES` is set, only functionalities and data specific for the Quality Gates Only use case will be displayed
   installationType: null
   ## @param bridge.lookAndFeelUrl Define a different styling for the Bridge by providing a URL to a ZIP archive containing style files. This archive will be downloaded and used upon Bridge startup
+  ## ref: https://github.com/keptn/keptn/tree/master/bridge#custom-look-and-feel
   lookAndFeelUrl: null
   ## @extra bridge.podSecurityContext Define a pod security context for the Bridge
   ## @skip bridge.podSecurityContext.enabled
@@ -377,6 +378,7 @@ bridge:
       drop:
         - ALL
   ## @extra bridge.oauth Configure OAuth settings for the Bridge
+  ## ref: https://github.com/keptn/keptn/tree/master/bridge#setting-up-login-via-openid
   ## @skip bridge.oauth.discovery
   ## @skip bridge.oauth.secureCookie
   ## @skip bridge.oauth.trustProxy
@@ -402,10 +404,10 @@ bridge:
     scope: ""
     userIdentifier: ""
     mongoConnectionString: ""
-  ## @param bridge.authMsg
+  ## @param bridge.authMsg Overrides Keptn auth command displayed inside the Bridge user menu
   authMsg: ""
   d3:
-    ## @param bridge.d3.enabled Enable D3 basic heatmaps in the Bridge
+    ## @param bridge.d3.enabled If disabled, Highcharts will be used instead of D3
     enabled: true
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
