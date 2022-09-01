@@ -97,8 +97,8 @@ jobs:
             echo "Using $BRANCH as target branch for zd tests"
           else
             echo "Determining branch based on last release"
-            STR=$(curl -s https://api.github.com/repos/keptn/keptn/releases/latest | grep -oP '(?<="tag_name": ")[^"]*')
-            BRANCH=$(echo ${STR%?}x)
+            STR=$(curl https://api.github.com/repos/keptn/keptn/releases -s | jq -r .[].tag_name | grep '^[0-9]\.[0-9]*\.[0-9]*$' | sort -nr | head -n 1)
+            BRANCH=$(echo "${STR%.*}.x")
           fi
 
           echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
