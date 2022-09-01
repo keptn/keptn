@@ -90,6 +90,10 @@ data:
       proxy_busy_buffers_size 256k;
     }
 
+    location @error401 {
+      return 302 /api/v1/auth;
+    }
+
     # health check
     location /nginx-health {
         access_log off;
@@ -145,6 +149,7 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
+      error_page 401 = @error401;
     }
 
     location {{ .Values.prefixPath }}/api/controlPlane/swagger-ui/swagger.yaml {
@@ -193,6 +198,7 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
+      error_page 401 = @error401;
     }
 
     location {{ .Values.prefixPath }}/api/secrets/swagger-ui/swagger.yaml {
@@ -224,6 +230,7 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
+      error_page 401 = @error401;
     }
 {{- if .Values.statisticsService.enabled }}
     location {{ .Values.prefixPath }}/api/statistics/swagger-ui/swagger.yaml {
@@ -260,6 +267,7 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
+      error_page 401 = @error401;
     }
 {{- end }}
 
@@ -332,6 +340,7 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
+      error_page 401 = @error401;
     }
 
     location {{ .Values.prefixPath }}/api {
