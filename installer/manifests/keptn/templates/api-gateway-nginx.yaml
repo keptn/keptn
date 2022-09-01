@@ -91,7 +91,7 @@ data:
     }
 
     location @error401 {
-      return 401 '{"code":401,"message":"unauthenticated for invalid credentials"}';
+      return 401 '{"code":401, "message":"unauthenticated or invalid credentials"}';
     }
 
     # health check
