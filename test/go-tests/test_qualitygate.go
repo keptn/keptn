@@ -572,6 +572,7 @@ func Test_QualityGates(t *testing.T) {
 	require.Equal(t, "hardening", evaluationFinishedPayload.EventData.Stage)
 	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
 	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	// in this scenario the evaluation should pass but the failure should be inherited from the getSLI event
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
 	require.NotEmpty(t, evaluationFinishedPayload.Message)
 

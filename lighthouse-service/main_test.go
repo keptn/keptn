@@ -355,9 +355,9 @@ func Test_SLIFailResultSend(t *testing.T) {
 	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
 	require.Equal(t, stageName, evaluationFinishedPayload.EventData.Stage)
 	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
-	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.StatusErrored, evaluationFinishedPayload.EventData.Status) //Now lighthouse will have an error since lighthouse does not exit immediately
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
-	require.Equal(t, "no evaluation performed by lighthouse because SLI failed with message some-silly-msg", evaluationFinishedPayload.EventData.Message)
+	require.Equal(t, "lighthouse failed because SLI failed with message some-silly-msg", evaluationFinishedPayload.EventData.Message)
 
 	go func() {
 		natsClient.Close()
