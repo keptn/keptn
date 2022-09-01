@@ -139,7 +139,8 @@ data:
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+      auth_request               /api/v1/auth;
+      error_page 401 = @error401;
 
       rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
@@ -149,7 +150,6 @@ data:
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
       proxy_set_header X-Forwarded-Proto $scheme;
-      error_page 401 = @error401;
     }
 
     location {{ .Values.prefixPath }}/api/controlPlane/swagger-ui/swagger.yaml {
@@ -188,7 +188,7 @@ data:
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+      auth_request               /api/v1/auth;
 
       rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
@@ -220,7 +220,7 @@ data:
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+      auth_request               /api/v1/auth;
 
       rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
       proxy_pass         http://secret-service:8080;
@@ -257,7 +257,7 @@ data:
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
+      auth_request               /api/v1/auth;
 
       rewrite {{ .Values.prefixPath }}/api/statistics/(.*) /$1  break;
       proxy_pass         http://statistics-service:8080;
