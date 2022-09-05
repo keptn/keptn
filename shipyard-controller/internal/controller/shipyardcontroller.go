@@ -768,7 +768,7 @@ func (sc *ShipyardController) triggerNextTaskSequences(eventScope models.EventSc
 
 func (sc *ShipyardController) completeTaskSequence(eventScope models.EventScope, sequenceExecution models.SequenceExecution, reason string) error {
 	sequenceExecution.Status.State = reason
-	_, err := sc.sequenceExecutionRepo.UpdateStatus(sequenceExecution)
+	err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil)
 
 	if err != nil {
 		return err
