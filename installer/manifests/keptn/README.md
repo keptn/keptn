@@ -13,91 +13,88 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### MongoDB
 
-| Name                                                | Description                                                         | Value                 |
-| --------------------------------------------------- | ------------------------------------------------------------------- | --------------------- |
-| `mongo.enabled`                                     |                                                                     | `true`                |
-| `mongo.host`                                        |                                                                     | `mongodb:27017`       |
-| `mongo.architecture`                                |                                                                     | `standalone`          |
-| `mongo.updateStrategy.type`                         | Set the update strategy for MongoDB                                 | `Recreate`            |
-| `mongo.service.nameOverride`                        |                                                                     | `mongo`               |
-| `mongo.service.ports.mongodb`                       | Port for MongoDB to listen at                                       | `27017`               |
-| `mongo.auth.enabled`                                |                                                                     | `true`                |
-| `mongo.auth.databases`                              |                                                                     | `["keptn"]`           |
-| `mongo.auth.existingSecret`                         |                                                                     | `mongodb-credentials` |
-| `mongo.auth.usernames`                              |                                                                     | `["keptn"]`           |
-| `mongo.auth.password`                               |                                                                     | `nil`                 |
-| `mongo.auth.rootUser`                               |                                                                     | `admin`               |
-| `mongo.auth.rootPassword`                           |                                                                     | `nil`                 |
-| `mongo.auth.bridgeAuthDatabase`                     |                                                                     | `keptn`               |
-| `mongo.external.connectionString`                   |                                                                     | `nil`                 |
-| `mongo.containerSecurityContext`                    | Container Security Context that should be used for all MongoDB pods |                       |
-| `mongo.serviceAccount.automountServiceAccountToken` |                                                                     | `false`               |
-| `mongo.resources`                                   | Define resources for MongoDB                                        |                       |
+| Name                                                | Description                                                                                                                                  | Value                 |
+| --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `mongo.enabled`                                     | Enable usage of MongoDB for Keptn                                                                                                            | `true`                |
+| `mongo.host`                                        | Host and port of MongoDB                                                                                                                     | `mongodb:27017`       |
+| `mongo.architecture`                                | Set the architecture for MongoDB (only standalone is supported in Keptn)                                                                     | `standalone`          |
+| `mongo.updateStrategy.type`                         | Set the update strategy for MongoDB                                                                                                          | `Recreate`            |
+| `mongo.service.nameOverride`                        | Service name of MongoDB                                                                                                                      | `mongo`               |
+| `mongo.service.ports.mongodb`                       | Port for MongoDB to listen at                                                                                                                | `27017`               |
+| `mongo.auth.enabled`                                | Enable authentication                                                                                                                        | `true`                |
+| `mongo.auth.databases`                              | List of custom databases to be created during the initialization                                                                             | `["keptn"]`           |
+| `mongo.auth.existingSecret`                         | Existing secret with MongoDB credentials (keys: mongodb-passwords, mongodb-root-password, mongodb-metrics-password, mongodb-replica-set-key) | `mongodb-credentials` |
+| `mongo.auth.usernames`                              | List of custom users to be created during the initialization                                                                                 | `["keptn"]`           |
+| `mongo.auth.password`                               | Password for the custom users set at auth.usernames                                                                                          | `nil`                 |
+| `mongo.auth.rootUser`                               | MongoDB root user                                                                                                                            | `admin`               |
+| `mongo.auth.rootPassword`                           | MongoDB root password                                                                                                                        | `nil`                 |
+| `mongo.auth.bridgeAuthDatabase`                     | MongoDB database name for Keptn instance                                                                                                     | `keptn`               |
+| `mongo.external.connectionString`                   | Connection string for MongoDB                                                                                                                | `nil`                 |
+| `mongo.containerSecurityContext`                    | Container Security Context that should be used for all MongoDB pods                                                                          |                       |
+| `mongo.serviceAccount.automountServiceAccountToken` | Allows auto mount of ServiceAccountToken on the serviceAccount created                                                                       | `false`               |
+| `mongo.resources`                                   | Define resources for MongoDB                                                                                                                 |                       |
 
 
 ### Keptn Features
 
-| Name                                        | Description                             | Value    |
-| ------------------------------------------- | --------------------------------------- | -------- |
-| `features.debugUI.enabled`                  |                                         | `false`  |
-| `features.automaticProvisioning.serviceURL` | Service for provisioning remote git URL | `""`     |
-| `features.automaticProvisioning.message`    | Message for provisioning remote git URL | `""`     |
-| `features.automaticProvisioning.hideURL`    | Hide automatically provisioned URL      | `false`  |
-| `features.swagger.hideDeprecated`           |                                         | `false`  |
-| `features.oauth.enabled`                    | Enable OAuth for Keptn                  | `false`  |
-| `features.oauth.prefix`                     |                                         | `keptn:` |
-| `features.git.remoteURLDenyList`            |                                         | `""`     |
+| Name                                        | Description                                              | Value    |
+| ------------------------------------------- | -------------------------------------------------------- | -------- |
+| `features.debugUI.enabled`                  | Enable debugUI interface for shipyard-controller         | `false`  |
+| `features.automaticProvisioning.serviceURL` | Service for provisioning remote git URL                  | `""`     |
+| `features.automaticProvisioning.message`    | Message for provisioning remote git URL                  | `""`     |
+| `features.automaticProvisioning.hideURL`    | Hide automatically provisioned URL                       | `false`  |
+| `features.swagger.hideDeprecated`           | Hide deprecated swagger API documentation                | `false`  |
+| `features.oauth.enabled`                    | Enable OAuth for Keptn                                   | `false`  |
+| `features.oauth.prefix`                     | OAuth prefix for Keptn                                   | `keptn:` |
+| `features.git.remoteURLDenyList`            | List of forbidden URLs for creation of projects in Keptn | `""`     |
 
 
 ### NATS
 
-| Name                                               | Description                                                                | Value        |
-| -------------------------------------------------- | -------------------------------------------------------------------------- | ------------ |
-| `nats.nameOverride`                                |                                                                            | `keptn-nats` |
-| `nats.fullnameOverride`                            |                                                                            | `keptn-nats` |
-| `nats.cluster.enabled`                             | Enable NATS clustering                                                     | `false`      |
-| `nats.cluster.replicas`                            | Define the NATS cluster size                                               | `3`          |
-| `nats.cluster.name`                                | Define the NATS cluster name                                               | `nats`       |
-| `nats.securityContext`                             | Define security context settings for NATS                                  |              |
-| `nats.nats.automountServiceAccountToken`           |                                                                            | `false`      |
-| `nats.nats.resources`                              | Define resources for NATS                                                  |              |
-| `nats.nats.healthcheck.startup.enabled`            | Enable NATS startup probe                                                  | `false`      |
-| `nats.nats.jetstream.enabled`                      |                                                                            | `true`       |
-| `nats.nats.jetstream.memStorage.enabled`           | Enable memory storage for NATS Jetstream                                   | `true`       |
-| `nats.nats.jetstream.memStorage.size`              | Define the memory storage size for NATS Jetstream                          | `500Mi`      |
-| `nats.nats.jetstream.fileStorage.enabled`          |                                                                            | `true`       |
-| `nats.nats.jetstream.fileStorage.size`             |                                                                            | `5Gi`        |
-| `nats.nats.jetstream.fileStorage.storageDirectory` |                                                                            | `/data/`     |
-| `nats.nats.jetstream.fileStorage.storageClassName` |                                                                            | `""`         |
-| `nats.nats.securityContext`                        | Define the container security context for NATS                             |              |
-| `nats.natsbox.enabled`                             | Enable NATS Box utility container                                          | `false`      |
-| `nats.reloader.enabled`                            | Enable NATS Config Reloader sidecar to reload configuration during runtime | `false`      |
-| `nats.exporter.enabled`                            | Enable NATS Prometheus Exporter sidecar to emit prometheus metrics         | `false`      |
+| Name                                     | Description                                                                | Value        |
+| ---------------------------------------- | -------------------------------------------------------------------------- | ------------ |
+| `nats.nameOverride`                      | Service name of NATS                                                       | `keptn-nats` |
+| `nats.fullnameOverride`                  | Full service name of NATS                                                  | `keptn-nats` |
+| `nats.cluster.enabled`                   | Enable NATS clustering                                                     | `false`      |
+| `nats.cluster.replicas`                  | Define the NATS cluster size                                               | `3`          |
+| `nats.cluster.name`                      | Define the NATS cluster name                                               | `nats`       |
+| `nats.securityContext`                   | Define security context settings for NATS                                  |              |
+| `nats.nats.automountServiceAccountToken` | Allows auto mount of ServiceAccountToken on the serviceAccount created     | `false`      |
+| `nats.nats.resources`                    | Define resources for NATS                                                  |              |
+| `nats.nats.healthcheck.startup.enabled`  | Enable NATS startup probe                                                  | `false`      |
+| `nats.nats.jetstream.enabled`            | Enable NATS JetStream                                                      | `true`       |
+| `nats.nats.jetstream.memStorage.enabled` | Enable memory storage for NATS Jetstream                                   | `true`       |
+| `nats.nats.jetstream.memStorage.size`    | Define the memory storage size for NATS Jetstream                          | `500Mi`      |
+| `nats.nats.jetstream.fileStorage`        | Define fileStorage for NATS Jetstream                                      |              |
+| `nats.nats.securityContext`              | Define the container security context for NATS                             |              |
+| `nats.natsbox.enabled`                   | Enable NATS Box utility container                                          | `false`      |
+| `nats.reloader.enabled`                  | Enable NATS Config Reloader sidecar to reload configuration during runtime | `false`      |
+| `nats.exporter.enabled`                  | Enable NATS Prometheus Exporter sidecar to emit prometheus metrics         | `false`      |
 
 
 ### API Gateway Nginx
 
-| Name                                                       | Description                                             | Value                |
-| ---------------------------------------------------------- | ------------------------------------------------------- | -------------------- |
-| `apiGatewayNginx.type`                                     |                                                         | `ClusterIP`          |
-| `apiGatewayNginx.port`                                     |                                                         | `80`                 |
-| `apiGatewayNginx.targetPort`                               |                                                         | `8080`               |
-| `apiGatewayNginx.nodePort`                                 |                                                         | `31090`              |
-| `apiGatewayNginx.podSecurityContext.enabled`               | Enable the pod security context for the API Gateway     | `true`               |
-| `apiGatewayNginx.podSecurityContext.defaultSeccompProfile` | Use the default seccomp profile for the API Gateway     | `true`               |
-| `apiGatewayNginx.podSecurityContext.fsGroup`               | Filesystem group to be used by the API Gateway          | `101`                |
-| `apiGatewayNginx.containerSecurityContext`                 | Define a container security context for the API Gateway |                      |
-| `apiGatewayNginx.image.registry`                           | API Gateway image registry                              | `docker.io/nginxinc` |
-| `apiGatewayNginx.image.repository`                         | API Gateway image repository                            | `nginx-unprivileged` |
-| `apiGatewayNginx.image.tag`                                | API Gateway image tag                                   | `1.22.0-alpine`      |
-| `apiGatewayNginx.nodeSelector`                             | API Gateway node labels for pod assignment              | `{}`                 |
-| `apiGatewayNginx.gracePeriod`                              | API Gateway termination grace period                    | `60`                 |
-| `apiGatewayNginx.preStopHookTime`                          | API Gateway pre stop timeout                            | `20`                 |
-| `apiGatewayNginx.clientMaxBodySize`                        |                                                         | `5m`                 |
-| `apiGatewayNginx.sidecars`                                 | Add additional sidecar containers to the API Gateway    | `[]`                 |
-| `apiGatewayNginx.extraVolumeMounts`                        | Add additional volume mounts to the API Gateway         | `[]`                 |
-| `apiGatewayNginx.extraVolumes`                             | Add additional volumes to the API Gateway               | `[]`                 |
-| `apiGatewayNginx.resources`                                | Define resources for the API Gateway                    |                      |
+| Name                                                       | Description                                                 | Value                |
+| ---------------------------------------------------------- | ----------------------------------------------------------- | -------------------- |
+| `apiGatewayNginx.type`                                     | Kubernetes Service type                                     | `ClusterIP`          |
+| `apiGatewayNginx.port`                                     | Nginx service port                                          | `80`                 |
+| `apiGatewayNginx.targetPort`                               | Nginx target port                                           | `8080`               |
+| `apiGatewayNginx.nodePort`                                 | Port to bind to for NodePort and LoadBalancer service types | `31090`              |
+| `apiGatewayNginx.podSecurityContext.enabled`               | Enable the pod security context for the API Gateway         | `true`               |
+| `apiGatewayNginx.podSecurityContext.defaultSeccompProfile` | Use the default seccomp profile for the API Gateway         | `true`               |
+| `apiGatewayNginx.podSecurityContext.fsGroup`               | Filesystem group to be used by the API Gateway              | `101`                |
+| `apiGatewayNginx.containerSecurityContext`                 | Define a container security context for the API Gateway     |                      |
+| `apiGatewayNginx.image.registry`                           | API Gateway image registry                                  | `docker.io/nginxinc` |
+| `apiGatewayNginx.image.repository`                         | API Gateway image repository                                | `nginx-unprivileged` |
+| `apiGatewayNginx.image.tag`                                | API Gateway image tag                                       | `1.22.0-alpine`      |
+| `apiGatewayNginx.nodeSelector`                             | API Gateway node labels for pod assignment                  | `{}`                 |
+| `apiGatewayNginx.gracePeriod`                              | API Gateway termination grace period                        | `60`                 |
+| `apiGatewayNginx.preStopHookTime`                          | API Gateway pre stop timeout                                | `20`                 |
+| `apiGatewayNginx.clientMaxBodySize`                        | Set max file upload size for Nginx                          | `5m`                 |
+| `apiGatewayNginx.sidecars`                                 | Add additional sidecar containers to the API Gateway        | `[]`                 |
+| `apiGatewayNginx.extraVolumeMounts`                        | Add additional volume mounts to the API Gateway             | `[]`                 |
+| `apiGatewayNginx.extraVolumes`                             | Add additional volumes to the API Gateway                   | `[]`                 |
+| `apiGatewayNginx.resources`                                | Define resources for the API Gateway                        |                      |
 
 
 ### Remediation Service
@@ -166,22 +163,22 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### Distributor
 
-| Name                                         | Description                          | Value         |
-| -------------------------------------------- | ------------------------------------ | ------------- |
-| `distributor.metadata.hostname`              |                                      | `nil`         |
-| `distributor.metadata.namespace`             |                                      | `nil`         |
-| `distributor.image.registry`                 | Distributor image registry           | `""`          |
-| `distributor.image.repository`               | Distributor image repository         | `distributor` |
-| `distributor.image.tag`                      | Distributor image tag                | `""`          |
-| `distributor.config.proxy.httpTimeout`       |                                      | `30`          |
-| `distributor.config.proxy.maxPayloadBytesKB` |                                      | `64`          |
-| `distributor.config.queueGroup.enabled`      | Enable queue groups for distributor  | `true`        |
-| `distributor.config.oauth.clientID`          |                                      | `""`          |
-| `distributor.config.oauth.clientSecret`      |                                      | `""`          |
-| `distributor.config.oauth.discovery`         |                                      | `""`          |
-| `distributor.config.oauth.tokenURL`          |                                      | `""`          |
-| `distributor.config.oauth.scopes`            |                                      | `""`          |
-| `distributor.resources`                      | Define resources for the Distributor |               |
+| Name                                         | Description                               | Value         |
+| -------------------------------------------- | ----------------------------------------- | ------------- |
+| `distributor.metadata.hostname`              | Distributor k8s hostname                  | `nil`         |
+| `distributor.metadata.namespace`             | distributor k8s namespace                 | `nil`         |
+| `distributor.image.registry`                 | Distributor image registry                | `""`          |
+| `distributor.image.repository`               | Distributor image repository              | `distributor` |
+| `distributor.image.tag`                      | Distributor image tag                     | `""`          |
+| `distributor.config.proxy.httpTimeout`       | Distributor HTTP timeout                  | `30`          |
+| `distributor.config.proxy.maxPayloadBytesKB` | Distributor max HTTP request payload size | `64`          |
+| `distributor.config.queueGroup.enabled`      | Enable queue groups for distributor       | `true`        |
+| `distributor.config.oauth.clientID`          | OAuth client ID                           | `""`          |
+| `distributor.config.oauth.clientSecret`      | OAuth client secret                       | `""`          |
+| `distributor.config.oauth.discovery`         | OAuth discovery string                    | `""`          |
+| `distributor.config.oauth.tokenURL`          | OAuth tokenURL string                     | `""`          |
+| `distributor.config.oauth.scopes`            | OAuth scopes                              | `""`          |
+| `distributor.resources`                      | Define resources for the Distributor      |               |
 
 
 ### Shipyard Controller
@@ -191,8 +188,8 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `shipyardController.image.registry`                       | Shipyard Controller image registry                                               | `""`                  |
 | `shipyardController.image.repository`                     | Shipyard Controller image repository                                             | `shipyard-controller` |
 | `shipyardController.image.tag`                            | Shipyard Controller image tag                                                    | `""`                  |
-| `shipyardController.config.taskStartedWaitDuration`       |                                                                                  | `10m`                 |
-| `shipyardController.config.uniformIntegrationTTL`         |                                                                                  | `48h`                 |
+| `shipyardController.config.taskStartedWaitDuration`       | Waiting duration for every triggered event until the task is marked as timedOut  | `10m`                 |
+| `shipyardController.config.uniformIntegrationTTL`         | TTL for uniform integration                                                      | `48h`                 |
 | `shipyardController.config.leaderElection.enabled`        | Enable leader election when multiple replicas of Shipyard Controller are running | `false`               |
 | `shipyardController.config.replicas`                      | Number of replicas of Shipyard Controller                                        | `1`                   |
 | `shipyardController.config.validation.projectNameMaxSize` | Maximum number of characters that a Keptn project name can have                  | `200`                 |
