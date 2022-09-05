@@ -118,7 +118,7 @@ func (suite *TestSuiteSequences) Test_Evaluation() {
 	suite.T().Log("adding SLI provider")
 	_, err := testutils.ExecuteCommand(fmt.Sprintf("kubectl create configmap -n %s lighthouse-config-%s --from-literal=sli-provider=my-sli-provider", testutils.GetKeptnNameSpaceFromEnv(), suite.project))
 	suite.Require().Nil(err)
-	_, finished = testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true)
+	_, finished = testutils.PerformResourceServiceTest(suite.T(), suite.project, "myservice", true, false)
 	if finished.Data != nil {
 		suite.env.passFailedSequence()
 	}
