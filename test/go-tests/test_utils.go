@@ -17,11 +17,9 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
-	k8sretry "k8s.io/client-go/util/retry"
-
 	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -449,48 +447,6 @@ func GetApiCredentials() (string, string, error) {
 		keptnAPIURL = "http://" + serviceIP + "/api"
 	}
 	return apiToken, keptnAPIURL, nil
-}
-
-func ScaleDownUniform(deployments []string) error {
-	for _, deployment := range deployments {
-		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
-			// log the error but continue
-			fmt.Println("could not scale down deployment: " + err.Error())
-		}
-	}
-	return nil
-}
-
-func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
-	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	deploymentsClient := clientset.AppsV1().Deployments(namespace)
-
-	retryErr := k8sretry.RetryOnConflict(k8sretry.DefaultRetry, func() error {
-		// Retrieve the latest version of Deployment before attempting update
-		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
-		result, getErr := deploymentsClient.Get(context.TODO(), deployment, metav1.GetOptions{})
-		if getErr != nil {
-			return fmt.Errorf("Failed to get latest version of Deployment: %v", getErr)
-		}
-
-		result.Spec.Replicas = &replicas
-		_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions{})
-		return updateErr
-	})
-	return retryErr
-}
-
-func ScaleUpUniform(deployments []string, replicas int) error {
-	for _, deployment := range deployments {
-		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
-			// log the error but continue
-			fmt.Println("could not scale up deployment: " + err.Error())
-		}
-	}
-	return nil
 }
 
 func waitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
