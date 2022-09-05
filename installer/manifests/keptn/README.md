@@ -17,7 +17,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
 | `mongo.enabled`                                     | Enable usage of MongoDB for Keptn                                                                                                            | `true`                |
 | `mongo.host`                                        | Host and port of MongoDB                                                                                                                     | `mongodb:27017`       |
-| `mongo.architecture`                                | Set the architecture for MongoDB                                                                                                             | `standalone`          |
+| `mongo.architecture`                                | Set the architecture for MongoDB (only standalone is supported in Keptn)                                                                     | `standalone`          |
 | `mongo.updateStrategy.type`                         | Set the update strategy for MongoDB                                                                                                          | `Recreate`            |
 | `mongo.service.nameOverride`                        | Service name of MongoDB                                                                                                                      | `mongo`               |
 | `mongo.service.ports.mongodb`                       | Port for MongoDB to listen at                                                                                                                | `27017`               |
@@ -39,7 +39,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 | Name                                        | Description                                              | Value    |
 | ------------------------------------------- | -------------------------------------------------------- | -------- |
-| `features.debugUI.enabled`                  | Enable debugUI interface                                 | `false`  |
+| `features.debugUI.enabled`                  | Enable debugUI interface for shipyard-controller         | `false`  |
 | `features.automaticProvisioning.serviceURL` | Service for provisioning remote git URL                  | `""`     |
 | `features.automaticProvisioning.message`    | Message for provisioning remote git URL                  | `""`     |
 | `features.automaticProvisioning.hideURL`    | Hide automatically provisioned URL                       | `false`  |
@@ -188,7 +188,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `shipyardController.image.registry`                       | Shipyard Controller image registry                                               | `""`                  |
 | `shipyardController.image.repository`                     | Shipyard Controller image repository                                             | `shipyard-controller` |
 | `shipyardController.image.tag`                            | Shipyard Controller image tag                                                    | `""`                  |
-| `shipyardController.config.taskStartedWaitDuration`       | Waiting duration until the task is market as timedOut                            | `10m`                 |
+| `shipyardController.config.taskStartedWaitDuration`       | Waiting duration for every triggered event until the task is marked as timedOut  | `10m`                 |
 | `shipyardController.config.uniformIntegrationTTL`         | TTL for uniform integration                                                      | `48h`                 |
 | `shipyardController.config.leaderElection.enabled`        | Enable leader election when multiple replicas of Shipyard Controller are running | `false`               |
 | `shipyardController.config.replicas`                      | Number of replicas of Shipyard Controller                                        | `1`                   |

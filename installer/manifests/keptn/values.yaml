@@ -12,7 +12,7 @@ mongo:
   enabled: true
   ## @param mongo.host Host and port of MongoDB
   host: mongodb:27017
-  ## @param mongo.architecture Set the architecture for MongoDB
+  ## @param mongo.architecture Set the architecture for MongoDB (only standalone is supported in Keptn)
   architecture: standalone
   updateStrategy:
     ## @param mongo.updateStrategy.type Set the update strategy for MongoDB
@@ -71,7 +71,7 @@ mongo:
 ## @section Keptn Features
 features:
   debugUI:
-    ## @param features.debugUI.enabled Enable debugUI interface
+    ## @param features.debugUI.enabled Enable debugUI interface for shipyard-controller
     enabled: false
   automaticProvisioning:
     ## @param features.automaticProvisioning.serviceURL Service for provisioning remote git URL
@@ -481,7 +481,7 @@ shipyardController:
     ## @param shipyardController.image.tag Shipyard Controller image tag
     tag: ""
   config:
-    ## @param shipyardController.config.taskStartedWaitDuration Waiting duration until the task is market as timedOut
+    ## @param shipyardController.config.taskStartedWaitDuration Waiting duration for every triggered event until the task is marked as timedOut
     taskStartedWaitDuration: "10m"
     ## @param shipyardController.config.uniformIntegrationTTL TTL for uniform integration
     uniformIntegrationTTL: "48h"
