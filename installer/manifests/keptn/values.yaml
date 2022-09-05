@@ -8,42 +8,42 @@ global:
 
 ## @section MongoDB
 mongo:
-  ## @param mongo.enabled
+  ## @param mongo.enabled Enable usage of MongoDB for Keptn
   enabled: true
-  ## @param mongo.host
+  ## @param mongo.host Host and port of MongoDB
   host: mongodb:27017
-  ## @param mongo.architecture
+  ## @param mongo.architecture Set the architecture for MongoDB
   architecture: standalone
   updateStrategy:
     ## @param mongo.updateStrategy.type Set the update strategy for MongoDB
     type: Recreate
   service:
-    ## @param mongo.service.nameOverride
+    ## @param mongo.service.nameOverride Service name of MongoDB
     nameOverride: 'mongo'
     ports:
       ## @param mongo.service.ports.mongodb Port for MongoDB to listen at
       mongodb: 27017
   auth:
-    ## @param mongo.auth.enabled
+    ## @param mongo.auth.enabled Enable authentication
     enabled: true
-    ## @param mongo.auth.databases
+    ## @param mongo.auth.databases List of custom databases to be created during the initialization
     databases:
       - 'keptn'
-    ## @param mongo.auth.existingSecret
+    ## @param mongo.auth.existingSecret Existing secret with MongoDB credentials (keys: mongodb-passwords, mongodb-root-password, mongodb-metrics-password, mongodb-replica-set-key)
     existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
-    ## @param mongo.auth.usernames
+    ## @param mongo.auth.usernames List of custom users to be created during the initialization
     usernames:
       - 'keptn'
-    ## @param mongo.auth.password
+    ## @param mongo.auth.password Password for the custom users set at auth.usernames
     password: null
-    ## @param mongo.auth.rootUser
+    ## @param mongo.auth.rootUser MongoDB root user
     rootUser: 'admin'
-    ## @param mongo.auth.rootPassword
+    ## @param mongo.auth.rootPassword MongoDB root password
     rootPassword: null
-    ## @param mongo.auth.bridgeAuthDatabase
+    ## @param mongo.auth.bridgeAuthDatabase MongoDB database name for Keptn instance
     bridgeAuthDatabase: 'keptn'
   external:
-    ## @param mongo.external.connectionString
+    ## @param mongo.external.connectionString Connection string for MongoDB
     connectionString:
   ## @extra mongo.containerSecurityContext Container Security Context that should be used for all MongoDB pods
   ## @skip mongo.containerSecurityContext.allowPrivilegeEscalation
@@ -55,7 +55,7 @@ mongo:
       drop:
         - ALL
   serviceAccount:
-    ## @param mongo.serviceAccount.automountServiceAccountToken
+    ## @param mongo.serviceAccount.automountServiceAccountToken Allows auto mount of ServiceAccountToken on the serviceAccount created
     automountServiceAccountToken: false
   ## @extra mongo.resources Define resources for MongoDB
   ## @skip mongo.resources.requests
@@ -71,7 +71,7 @@ mongo:
 ## @section Keptn Features
 features:
   debugUI:
-    ## @param features.debugUI.enabled
+    ## @param features.debugUI.enabled Enable debugUI interface
     enabled: false
   automaticProvisioning:
     ## @param features.automaticProvisioning.serviceURL Service for provisioning remote git URL
@@ -81,22 +81,22 @@ features:
     ## @param features.automaticProvisioning.hideURL Hide automatically provisioned URL
     hideURL: false
   swagger:
-    ## @param features.swagger.hideDeprecated
+    ## @param features.swagger.hideDeprecated Hide deprecated swagger API documentation
     hideDeprecated: false
   oauth:
     ## @param features.oauth.enabled Enable OAuth for Keptn
     enabled: false
-    ## @param features.oauth.prefix
+    ## @param features.oauth.prefix OAuth prefix for Keptn
     prefix: "keptn:"
   git:
-    ## @param features.git.remoteURLDenyList
+    ## @param features.git.remoteURLDenyList List of forbidden URLs for creation of projects in Keptn
     remoteURLDenyList: ""
 
 ## @section NATS
 nats:
-  ## @param nats.nameOverride
+  ## @param nats.nameOverride Service name of NATS
   nameOverride: keptn-nats
-  ## @param nats.fullnameOverride
+  ## @param nats.fullnameOverride Full service name of NATS
   fullnameOverride: keptn-nats
   cluster:
     ## @param nats.cluster.enabled Enable NATS clustering
@@ -114,7 +114,7 @@ nats:
     runAsUser: 10001
     fsGroup: 10001
   nats:
-    ## @param nats.nats.automountServiceAccountToken
+    ## @param nats.nats.automountServiceAccountToken Allows auto mount of ServiceAccountToken on the serviceAccount created
     automountServiceAccountToken: false
     ## @extra nats.nats.resources Define resources for NATS
     ## @skip nats.nats.resources.requests
@@ -132,7 +132,7 @@ nats:
         ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
         enabled: false
     jetstream:
-      ## @param nats.nats.jetstream.enabled
+      ## @param nats.nats.jetstream.enabled Enable NATS JetStream
       enabled: true
 
       ## @param nats.nats.jetstream.memStorage.enabled Enable memory storage for NATS Jetstream
@@ -141,10 +141,8 @@ nats:
         enabled: true
         size: 500Mi
 
-      ## @param nats.nats.jetstream.fileStorage.enabled
-      ## @param nats.nats.jetstream.fileStorage.size
-      ## @param nats.nats.jetstream.fileStorage.storageDirectory
-      ## @param nats.nats.jetstream.fileStorage.storageClassName
+      ## @extra nats.nats.jetstream.fileStorage Define fileStorage for NATS Jetstream
+      ## @skip nats.nats.jetstream.fileStorage
       fileStorage:
         enabled: true
         size: 5Gi
@@ -180,13 +178,13 @@ nats:
 
 ## @section API Gateway Nginx
 apiGatewayNginx:
-  ## @param apiGatewayNginx.type
+  ## @param apiGatewayNginx.type Kubernetes Service type
   type: ClusterIP
-  ## @param apiGatewayNginx.port
+  ## @param apiGatewayNginx.port Nginx service port
   port: 80
-  ## @param apiGatewayNginx.targetPort
+  ## @param apiGatewayNginx.targetPort Nginx target port
   targetPort: 8080
-  ## @param apiGatewayNginx.nodePort
+  ## @param apiGatewayNginx.nodePort Port to bind to for NodePort and LoadBalancer service types
   nodePort: 31090
   podSecurityContext:
     ## @param apiGatewayNginx.podSecurityContext.enabled Enable the pod security context for the API Gateway
@@ -227,7 +225,7 @@ apiGatewayNginx:
   gracePeriod: 60
   ## @param apiGatewayNginx.preStopHookTime API Gateway pre stop timeout
   preStopHookTime: 20
-  ## @param apiGatewayNginx.clientMaxBodySize
+  ## @param apiGatewayNginx.clientMaxBodySize Set max file upload size for Nginx
   clientMaxBodySize: "5m"
   ## @param apiGatewayNginx.sidecars Add additional sidecar containers to the API Gateway
   sidecars: []
@@ -431,9 +429,9 @@ bridge:
 ## @section Distributor
 distributor:
   metadata:
-    ## @param distributor.metadata.hostname
+    ## @param distributor.metadata.hostname Distributor k8s hostname
     hostname:
-    ## @param distributor.metadata.namespace
+    ## @param distributor.metadata.namespace distributor k8s namespace
     namespace:
   image:
     ## @param distributor.image.registry Distributor image registry
@@ -444,23 +442,23 @@ distributor:
     tag: ""
   config:
     proxy:
-      ## @param distributor.config.proxy.httpTimeout
+      ## @param distributor.config.proxy.httpTimeout Distributor HTTP timeout
       httpTimeout: "30"
-      ## @param distributor.config.proxy.maxPayloadBytesKB
+      ## @param distributor.config.proxy.maxPayloadBytesKB Distributor max HTTP request payload size
       maxPayloadBytesKB: "64"
     queueGroup:
       ## @param distributor.config.queueGroup.enabled Enable queue groups for distributor
       enabled: true
     oauth:
-      ## @param distributor.config.oauth.clientID
+      ## @param distributor.config.oauth.clientID OAuth client ID
       clientID: ""
-      ## @param distributor.config.oauth.clientSecret
+      ## @param distributor.config.oauth.clientSecret OAuth client secret
       clientSecret: ""
-      ## @param distributor.config.oauth.discovery
+      ## @param distributor.config.oauth.discovery OAuth discovery string
       discovery: ""
-      ## @param distributor.config.oauth.tokenURL
+      ## @param distributor.config.oauth.tokenURL OAuth tokenURL string
       tokenURL: ""
-      ## @param distributor.config.oauth.scopes
+      ## @param distributor.config.oauth.scopes OAuth scopes
       scopes: ""
   ## @extra distributor.resources Define resources for the Distributor
   ## @skip distributor.resources.requests
@@ -483,9 +481,9 @@ shipyardController:
     ## @param shipyardController.image.tag Shipyard Controller image tag
     tag: ""
   config:
-    ## @param shipyardController.config.taskStartedWaitDuration
+    ## @param shipyardController.config.taskStartedWaitDuration Waiting duration until the task is market as timedOut
     taskStartedWaitDuration: "10m"
-    ## @param shipyardController.config.uniformIntegrationTTL
+    ## @param shipyardController.config.uniformIntegrationTTL TTL for uniform integration
     uniformIntegrationTTL: "48h"
     leaderElection:
       ## @param shipyardController.config.leaderElection.enabled Enable leader election when multiple replicas of Shipyard Controller are running
