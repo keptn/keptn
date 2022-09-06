@@ -19,9 +19,10 @@ import (
 )
 
 type sequenceStruct struct {
-	Project *string `json:"project"`
-	Service *string `json:"service"`
-	Stage   *string `json:"stage"`
+	Project *string            `json:"project"`
+	Service *string            `json:"service"`
+	Stage   *string            `json:"stage"`
+	Labels  *map[string]string `json:"labels"`
 }
 
 var sequence = sequenceStruct{}
@@ -60,7 +61,7 @@ var triggerSequenceCmd = &cobra.Command{
 	Long: `Triggers the execution of any sequence in a project with an arbitrary name.
 The name of the sequence has to be provided as an argument to the command. The sequence name is used to identify the sequence to be triggered.
 `,
-	Example:      `keptn trigger sequence <sequence-name> --project=<project> --service=<service> --stage=<stage>`,
+	Example:      `keptn trigger sequence <sequence-name> --project=<project> --service=<service> --stage=<stage> [--labels=test-id=1234,test-name=performance-test]`,
 	SilenceUsage: true,
 	Args: func(cmd *cobra.Command, args []string) error {
 		if len(args) != 1 {
@@ -109,6 +110,7 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 			Project: *sequenceInputData.Project,
 			Stage:   *sequenceInputData.Stage,
 			Service: *sequenceInputData.Service,
+			Labels:  *sequenceInputData.Labels,
 		},
 	}
 
@@ -155,5 +157,7 @@ func init() {
 	sequence.Stage = triggerSequenceCmd.Flags().StringP("stage", "", "",
 		"The stage in which the new artifact will be triggered")
 	triggerSequenceCmd.MarkFlagRequired("stage")
+
+	sequence.Labels = triggerSequenceCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 
 }
