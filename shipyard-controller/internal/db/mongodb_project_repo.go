@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"strings"
 	"time"
 
@@ -25,27 +26,24 @@ func NewMongoDBProjectsRepo(dbConnection *MongoDBConnection) *MongoDBProjectsRep
 	return &MongoDBProjectsRepo{DBConnection: dbConnection}
 }
 
-func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error) {
+func (m *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error) {
 	result := []*apimodels.ExpandedProject{}
-	err := mdbrepo.DBConnection.EnsureDBConnection()
+	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get collection: %w", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	projectCollection := mdbrepo.getProjectsCollection()
 	cursor, err := projectCollection.Find(ctx, bson.M{})
+	defer closeCursor(ctx, cursor)
 	if err != nil {
-		fmt.Println("Error retrieving projects from mongoDB: " + err.Error())
-		return nil, err
+		return nil, fmt.Errorf("error retrieving projects from mongoDB: %w", err)
 	}
-	defer cursor.Close(ctx)
+
 	for cursor.Next(ctx) {
 		projectResult := &apimodels.ExpandedProject{}
 		err := cursor.Decode(projectResult)
 		if err != nil {
-			fmt.Println("Could not cast to *models.Project")
+			log.Errorf("could not cast to *models.Project: %v", err)
 		}
 		result = append(result, projectResult)
 	}
@@ -53,15 +51,12 @@ func (mdbrepo *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject,
 	return result, nil
 }
 
-func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
-	err := mdbrepo.DBConnection.EnsureDBConnection()
+func (m *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
+	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get collection: %w", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
-	projectCollection := mdbrepo.getProjectsCollection()
 	result := projectCollection.FindOne(ctx, bson.M{"projectName": projectName})
 	if result.Err() != nil {
 		if result.Err() == mongo.ErrNoDocuments {
@@ -72,52 +67,89 @@ func (mdbrepo *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.E
 	projectResult := &apimodels.ExpandedProject{}
 	err = result.Decode(projectResult)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("Could not cast %v to *models.Project\n", result))
+		log.Errorf("could not cast to *models.Project: %v", err)
 		return nil, err
 	}
 	return projectResult, nil
 }
 
 func (m *MongoDBProjectsRepo) CreateProject(project *apimodels.ExpandedProject) error {
-	err := m.DBConnection.EnsureDBConnection()
+	prjInterface, err := toInterface(project)
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
+	if err != nil {
+		return fmt.Errorf("could not get collection: %w", err)
+	}
 	defer cancel()
-
-	prjInterface, err := transformProjectToInterface(project)
-	if err != nil {
-		return err
-	}
-
-	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.InsertOne(ctx, prjInterface)
 	if err != nil {
-		fmt.Println("Could not create project " + project.ProjectName + ": " + err.Error())
+		return fmt.Errorf("could not create project '%s': %w", project.ProjectName, err)
 	}
 	return nil
 }
 
 func (m *MongoDBProjectsRepo) UpdateProject(project *apimodels.ExpandedProject) error {
-	err := m.DBConnection.EnsureDBConnection()
+	prjInterface, err := toInterface(project)
 	if err != nil {
 		return err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
+	if err != nil {
+		return fmt.Errorf("could not get collection: %w", err)
+	}
 	defer cancel()
 
-	prjInterface, err := transformProjectToInterface(project)
-	if err != nil {
-		return err
-	}
-	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.ReplaceOne(ctx, bson.M{"projectName": project.ProjectName}, prjInterface)
 	if err != nil {
 		fmt.Println("Could not update project " + project.ProjectName + ": " + err.Error())
 		return err
 	}
 	return nil
+}
+
+func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, serviceName string, properties map[string]interface{}) error {
+
+	encodedProperties := map[string]interface{}{}
+	for key, value := range properties {
+		encodedValue, err := toInterface(value)
+		if err != nil {
+			return fmt.Errorf("could not encode value of '%s': %w", key, err)
+		}
+		encodedProperties[key] = encodedValue
+	}
+	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
+	if err != nil {
+		return fmt.Errorf("could not get collection: %w", err)
+	}
+	defer cancel()
+
+	filter := bson.D{
+		{"projectName", projectName},
+		{"stages.stageName", stageName},
+	}
+
+	arrayFilter := options.FindOneAndUpdate().SetArrayFilters(options.ArrayFilters{
+		Filters: []interface{}{
+			bson.M{"service.serviceName": serviceName},
+		},
+	})
+
+	changeSet := bson.M{}
+
+	for key, value := range encodedProperties {
+		changeSet["stages.$.services.$[service]."+key] = value
+	}
+
+	update := bson.D{
+		{"$set", changeSet},
+	}
+
+	result := projectCollection.FindOneAndUpdate(ctx, filter, update, arrayFilter)
+	return result.Err()
+
 }
 
 func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
@@ -140,14 +172,12 @@ func (m *MongoDBProjectsRepo) UpdateProjectUpstream(projectName string, uri stri
 }
 
 func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
-	err := m.DBConnection.EnsureDBConnection()
+	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return err
+		return fmt.Errorf("could not get collection: %w", err)
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	projectCollection := m.getProjectsCollection()
 	_, err = projectCollection.DeleteMany(ctx, bson.M{"projectName": projectName})
 	if err != nil {
 		log.Errorf("Could not delete project %s: %v", projectName, err)
@@ -156,14 +186,24 @@ func (m *MongoDBProjectsRepo) DeleteProject(projectName string) error {
 	return nil
 }
 
+func (m *MongoDBProjectsRepo) getCollectionAndContext() (context.Context, context.CancelFunc, *mongo.Collection, error) {
+	err := m.DBConnection.EnsureDBConnection()
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	collection := m.getProjectsCollection()
+	return ctx, cancel, collection, nil
+}
+
 func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
 	projectCollection := m.DBConnection.Client.Database(getDatabaseName()).Collection(projectsCollectionName)
 	return projectCollection
 }
 
-func transformProjectToInterface(prj *apimodels.ExpandedProject) (interface{}, error) {
+func toInterface(item interface{}) (interface{}, error) {
 	// marshall and unmarshall again because for some reason the json tags of the golang struct of the project type are not considered
-	marshal, _ := json.Marshal(prj)
+	marshal, _ := json.Marshal(item)
 	var prjInterface interface{}
 	err := json.Unmarshal(marshal, &prjInterface)
 	if err != nil {
@@ -215,6 +255,24 @@ func (m *MongoDBKeyEncodingProjectsRepo) UpdateProject(project *apimodels.Expand
 		return err
 	}
 	return m.d.UpdateProject(encProject)
+}
+
+func (m *MongoDBKeyEncodingProjectsRepo) UpdateProjectService(projectName, stageName, serviceName string, properties map[string]interface{}) error {
+	encodedProperties := map[string]interface{}{}
+
+	lastEventTypesKey := "lastEventTypes."
+	for key, value := range properties {
+		encodedKey := key
+		if strings.HasPrefix(key, lastEventTypesKey) {
+			splitKey := strings.Split(key, lastEventTypesKey)
+			if len(splitKey) > 0 {
+				encodedKey = lastEventTypesKey + encodeKey(splitKey[len(splitKey)-1])
+			}
+		}
+
+		encodedProperties[encodedKey] = value
+	}
+	return m.d.UpdateProjectService(projectName, stageName, serviceName, encodedProperties)
 }
 
 func (m *MongoDBKeyEncodingProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {

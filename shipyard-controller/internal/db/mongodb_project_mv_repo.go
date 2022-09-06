@@ -459,37 +459,29 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e apimodels.KeptnContextExt
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
 
-	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *apimodels.ExpandedService) error {
-		if service.LastEventTypes == nil {
-			service.LastEventTypes = map[string]apimodels.EventContextInfo{}
+	updateProperties := map[string]interface{}{}
+	updateProperties["lastEventTypes."+*e.Type] = contextInfo
+
+	if *e.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
+		executions, err := mv.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+			Scope: models.EventScope{EventData: keptnv2.EventData{Project: eventData.Project, Stage: eventData.Stage}},
+		})
+		if err != nil {
+			return fmt.Errorf("unable to fetch sequence executions for keptn context %s: %w", e.Shkeptncontext, err)
 		}
-		service.LastEventTypes[*e.Type] = *contextInfo
-		// for events of type "deployment.finished", find the correlating
-		// "deployment.triggered" event to update the deployed image name
-		if *e.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
-			executions, err := mv.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
-				Scope: models.EventScope{EventData: keptnv2.EventData{Project: eventData.Project, Stage: eventData.Stage}},
-			})
-			if err != nil {
-				return fmt.Errorf("unable to fetch sequence executions for keptn context %s: %w", e.Shkeptncontext, err)
-			}
-			if len(executions) == 0 {
-				return fmt.Errorf("no sequence executions could be found for keptn context %s", e.Shkeptncontext)
-			}
-			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
-			err = keptnv2.Decode(executions[0].InputProperties, triggeredData)
-			if err != nil {
-				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
-			}
-			service.DeployedImage = common.ExtractImageOfDeploymentEvent(*triggeredData)
+		if len(executions) == 0 {
+			return fmt.Errorf("no sequence executions could be found for keptn context %s", e.Shkeptncontext)
 		}
-		return nil
-	})
-	if err != nil {
-		log.Errorf("Could not update image of service %s: %s", eventData.Service, err.Error())
-		return err
+		triggeredData := &keptnv2.DeploymentTriggeredEventData{}
+		err = keptnv2.Decode(executions[0].InputProperties, triggeredData)
+		if err != nil {
+			return errors.New("unable to decode deployment.triggered event data: " + err.Error())
+		}
+		updateProperties["deployedImage"] = common.ExtractImageOfDeploymentEvent(*triggeredData)
 	}
-	err = mv.projectRepo.UpdateProject(existingProject)
+
+	err = mv.projectRepo.UpdateProjectService(existingProject.ProjectName, eventData.Stage, eventData.Service, updateProperties)
+
 	if err != nil {
 		log.Errorf("Could not update project %s: %s", eventData.Project, err.Error())
 		return err

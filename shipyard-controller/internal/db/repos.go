@@ -75,6 +75,7 @@ type ProjectRepo interface {
 	GetProject(projectName string) (*apimodels.ExpandedProject, error)
 	CreateProject(project *apimodels.ExpandedProject) error
 	UpdateProject(project *apimodels.ExpandedProject) error
+	UpdateProjectService(projectName, stageName, serviceName string, properties map[string]interface{}) error
 	UpdateProjectUpstream(projectName string, uri string, user string) error
 	DeleteProject(projectName string) error
 }

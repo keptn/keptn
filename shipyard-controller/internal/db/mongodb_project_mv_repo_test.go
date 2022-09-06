@@ -997,103 +997,92 @@ func Test_projectsMaterializedView_UpdateEventOfService(t *testing.T) {
 }
 
 func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
-	type fields struct {
-		ProjectRepo           ProjectRepo
-		EventRetriever        EventRepo
-		SequenceExecutionRepo SequenceExecutionRepo
-	}
-	type args struct {
-		event apimodels.KeptnContextExtendedCE
-	}
-	tests := []struct {
-		name   string
-		fields fields
-		args   args
-	}{
-		{
-			name: "deployment.finished",
-			fields: fields{
-
-				ProjectRepo: &db_mock.ProjectRepoMock{
-					CreateProjectFunc: nil,
-					GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
-						return &apimodels.ExpandedProject{
-							ProjectName: "test-project",
-							Stages: []*apimodels.ExpandedStage{
-								{
-									Services: []*apimodels.ExpandedService{
-										{
-											ServiceName: "test-service",
-										},
-									},
-									StageName: "dev",
-								},
+	projectRepo := &db_mock.ProjectRepoMock{
+		CreateProjectFunc: nil,
+		GetProjectFunc: func(projectName string) (project *apimodels.ExpandedProject, err error) {
+			return &apimodels.ExpandedProject{
+				ProjectName: "test-project",
+				Stages: []*apimodels.ExpandedStage{
+					{
+						Services: []*apimodels.ExpandedService{
+							{
+								ServiceName: "test-service",
 							},
-						}, nil
+						},
+						StageName: "dev",
 					},
-					UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
-						if project.Stages[0].Services[0].DeployedImage == "the-service-image:latest" {
-							return nil
-						}
-						return errors.New("project was not updated correctly")
-					},
-					DeleteProjectFunc: nil,
-					GetProjectsFunc:   nil,
 				},
-				EventRetriever: &db_mock.EventRepoMock{
-					GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
-						e2 := apimodels.KeptnContextExtendedCE{
-							Data: keptnv2.DeploymentTriggeredEventData{
-								EventData: keptnv2.EventData{
-									Project: "test-project",
-									Stage:   "dev",
-									Service: "test-service",
-								},
-								ConfigurationChange: keptnv2.ConfigurationChange{
-									Values: map[string]interface{}{"image": "the-service-image:latest"},
-								},
-								Deployment: keptnv2.DeploymentTriggeredData{},
-							},
-							ID: "the-triggered-id",
-						}
-						return []apimodels.KeptnContextExtendedCE{e2}, nil
+			}, nil
+		},
+		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+			return nil
+		},
+		DeleteProjectFunc: nil,
+		GetProjectsFunc:   nil,
+	}
 
+	eventRepo := &db_mock.EventRepoMock{
+		GetEventsFunc: func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+			e2 := apimodels.KeptnContextExtendedCE{
+				Data: keptnv2.DeploymentTriggeredEventData{
+					EventData: keptnv2.EventData{
+						Project: "test-project",
+						Stage:   "dev",
+						Service: "test-service",
 					},
-				},
-				SequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
-					GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
-						return []models.SequenceExecution{{ID: "abcde"}}, nil
+					ConfigurationChange: keptnv2.ConfigurationChange{
+						Values: map[string]interface{}{"image": "the-service-image:latest"},
 					},
+					Deployment: keptnv2.DeploymentTriggeredData{},
 				},
-			},
-			args: args{
-				event: apimodels.KeptnContextExtendedCE{
-					Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
-					Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
-					Shkeptncontext: "test-context",
-					ID:             "test-event-id",
-					Triggeredid:    "the-triggered-id",
-				},
-			},
+				ID: "the-triggered-id",
+			}
+			return []apimodels.KeptnContextExtendedCE{e2}, nil
+
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mv := &MongoDBProjectMVRepo{
-				projectRepo:           tt.fields.ProjectRepo,
-				eventRepo:             tt.fields.EventRetriever,
-				sequenceExecutionRepo: tt.fields.SequenceExecutionRepo,
-			}
-			mv.OnSequenceTaskFinished(tt.args.event)
 
-			projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
-
-			require.Len(t, projectRepoMock.UpdateProjectCalls(), 1)
-			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages)
-			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages[0].Services)
-			require.NotEmpty(t, projectRepoMock.UpdateProjectCalls()[0].Project.Stages[0].Services[0].LastEventTypes[*tt.args.event.Type])
-		})
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			return []models.SequenceExecution{
+				{
+					ID: "abcde",
+					InputProperties: map[string]interface{}{
+						"configurationChange": keptnv2.ConfigurationChange{
+							Values: map[string]interface{}{"image": "the-service-image:latest"},
+						},
+					},
+				},
+			}, nil
+		},
 	}
+
+	event := apimodels.KeptnContextExtendedCE{
+		Data:           &keptnv2.EventData{Project: "test-project", Stage: "dev", Service: "test-service"},
+		Type:           common.Stringp(keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName)),
+		Shkeptncontext: "test-context",
+		ID:             "test-event-id",
+		Triggeredid:    "the-triggered-id",
+	}
+
+	mv := &MongoDBProjectMVRepo{
+		projectRepo:           projectRepo,
+		eventRepo:             eventRepo,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+	}
+	mv.OnSequenceTaskFinished(event)
+
+	projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
+
+	require.Len(t, projectRepoMock.UpdateProjectServiceCalls(), 1)
+	require.Equal(t, "test-project", projectRepoMock.UpdateProjectServiceCalls()[0].ProjectName)
+	require.Equal(t, "dev", projectRepoMock.UpdateProjectServiceCalls()[0].StageName)
+	require.Equal(t, "test-service", projectRepoMock.UpdateProjectServiceCalls()[0].ServiceName)
+
+	require.Equal(t, "the-service-image:latest", projectRepoMock.UpdateProjectServiceCalls()[0].Properties["deployedImage"])
+	require.NotNil(t, projectRepoMock.UpdateProjectServiceCalls()[0].Properties["lastEventTypes.sh.keptn.event.deployment.finished"])
+
+	return
 }
 
 func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {

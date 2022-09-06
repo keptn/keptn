@@ -29,6 +29,9 @@ import (
 // 			UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
+// 			UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+// 				panic("mock out the UpdateProjectService method")
+// 			},
 // 			UpdateProjectUpstreamFunc: func(projectName string, uri string, user string) error {
 // 				panic("mock out the UpdateProjectUpstream method")
 // 			},
@@ -53,6 +56,9 @@ type ProjectRepoMock struct {
 
 	// UpdateProjectFunc mocks the UpdateProject method.
 	UpdateProjectFunc func(project *apimodels.ExpandedProject) error
+
+	// UpdateProjectServiceFunc mocks the UpdateProjectService method.
+	UpdateProjectServiceFunc func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error
 
 	// UpdateProjectUpstreamFunc mocks the UpdateProjectUpstream method.
 	UpdateProjectUpstreamFunc func(projectName string, uri string, user string) error
@@ -82,6 +88,17 @@ type ProjectRepoMock struct {
 			// Project is the project argument value.
 			Project *apimodels.ExpandedProject
 		}
+		// UpdateProjectService holds details about calls to the UpdateProjectService method.
+		UpdateProjectService []struct {
+			// ProjectName is the projectName argument value.
+			ProjectName string
+			// StageName is the stageName argument value.
+			StageName string
+			// ServiceName is the serviceName argument value.
+			ServiceName string
+			// Properties is the properties argument value.
+			Properties map[string]interface{}
+		}
 		// UpdateProjectUpstream holds details about calls to the UpdateProjectUpstream method.
 		UpdateProjectUpstream []struct {
 			// ProjectName is the projectName argument value.
@@ -97,6 +114,7 @@ type ProjectRepoMock struct {
 	lockGetProject            sync.RWMutex
 	lockGetProjects           sync.RWMutex
 	lockUpdateProject         sync.RWMutex
+	lockUpdateProjectService  sync.RWMutex
 	lockUpdateProjectUpstream sync.RWMutex
 }
 
@@ -247,6 +265,49 @@ func (mock *ProjectRepoMock) UpdateProjectCalls() []struct {
 	mock.lockUpdateProject.RLock()
 	calls = mock.calls.UpdateProject
 	mock.lockUpdateProject.RUnlock()
+	return calls
+}
+
+// UpdateProjectService calls UpdateProjectServiceFunc.
+func (mock *ProjectRepoMock) UpdateProjectService(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+	if mock.UpdateProjectServiceFunc == nil {
+		panic("ProjectRepoMock.UpdateProjectServiceFunc: method is nil but ProjectRepo.UpdateProjectService was just called")
+	}
+	callInfo := struct {
+		ProjectName string
+		StageName   string
+		ServiceName string
+		Properties  map[string]interface{}
+	}{
+		ProjectName: projectName,
+		StageName:   stageName,
+		ServiceName: serviceName,
+		Properties:  properties,
+	}
+	mock.lockUpdateProjectService.Lock()
+	mock.calls.UpdateProjectService = append(mock.calls.UpdateProjectService, callInfo)
+	mock.lockUpdateProjectService.Unlock()
+	return mock.UpdateProjectServiceFunc(projectName, stageName, serviceName, properties)
+}
+
+// UpdateProjectServiceCalls gets all the calls that were made to UpdateProjectService.
+// Check the length with:
+//     len(mockedProjectRepo.UpdateProjectServiceCalls())
+func (mock *ProjectRepoMock) UpdateProjectServiceCalls() []struct {
+	ProjectName string
+	StageName   string
+	ServiceName string
+	Properties  map[string]interface{}
+} {
+	var calls []struct {
+		ProjectName string
+		StageName   string
+		ServiceName string
+		Properties  map[string]interface{}
+	}
+	mock.lockUpdateProjectService.RLock()
+	calls = mock.calls.UpdateProjectService
+	mock.lockUpdateProjectService.RUnlock()
 	return calls
 }
 

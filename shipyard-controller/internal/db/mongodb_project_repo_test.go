@@ -94,3 +94,110 @@ func CleanupDB(t *testing.T, r *MongoDBProjectsRepo) {
 		require.Nil(t, err)
 	}
 }
+
+func TestMongoDBProjectsRepo_UpdateProjectService(t *testing.T) {
+	r := NewMongoDBProjectsRepo(GetMongoDBConnectionInstance())
+
+	err := r.CreateProject(&apimodels.ExpandedProject{
+		ProjectName: "my-project",
+		Stages: []*apimodels.ExpandedStage{
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+					{
+						ServiceName: "my-other-service",
+					},
+				},
+				StageName: "dev",
+			},
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+				},
+				StageName: "staging",
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	eventContextInfo := apimodels.EventContextInfo{
+		EventID:      "event-id",
+		KeptnContext: "event-context",
+		Time:         "event-timestamp",
+	}
+
+	encodedEventType := encodeKey("sh.keptn.event.test.triggered")
+	err = r.UpdateProjectService("my-project", "dev", "my-service", map[string]interface{}{
+		"deployedImage":                      "my-new-image",
+		"lastEventTypes." + encodedEventType: eventContextInfo,
+	})
+
+	require.Nil(t, err)
+
+	projectInfo, err := r.GetProject("my-project")
+	require.Nil(t, err)
+
+	require.Equal(t, "my-new-image", projectInfo.Stages[0].Services[0].DeployedImage)
+	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes[encodedEventType])
+
+	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
+	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)
+}
+
+func TestMongoDBKeyEncodingProjectsRepo_UpdateProjectService(t *testing.T) {
+	r := NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance())
+
+	err := r.CreateProject(&apimodels.ExpandedProject{
+		ProjectName: "my-project",
+		Stages: []*apimodels.ExpandedStage{
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+					{
+						ServiceName: "my-other-service",
+					},
+				},
+				StageName: "dev",
+			},
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+				},
+				StageName: "staging",
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	eventContextInfo := apimodels.EventContextInfo{
+		EventID:      "event-id",
+		KeptnContext: "event-context",
+		Time:         "event-timestamp",
+	}
+
+	err = r.UpdateProjectService("my-project", "dev", "my-service", map[string]interface{}{
+		"deployedImage": "my-new-image",
+		"lastEventTypes.sh.keptn.event.test.triggered": eventContextInfo,
+	})
+
+	require.Nil(t, err)
+
+	projectInfo, err := r.GetProject("my-project")
+	require.Nil(t, err)
+
+	require.Equal(t, "my-new-image", projectInfo.Stages[0].Services[0].DeployedImage)
+	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes["sh.keptn.event.test.triggered"])
+
+	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
+	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)
+}
