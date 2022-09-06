@@ -845,8 +845,14 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 	require.Equal(t, keptnv2.GetTriggeredEventType("delivery"), stage.LatestEvent.Type)
 
 	// get delivery.triggered event
-	deliveryTriggeredEvent := natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
-	require.NotNil(t, deliveryTriggeredEvent)
+	var deliveryTriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		deliveryTriggeredEvent = natsClient.getLatestEventOfType(*keptnContext.KeptnContext, projectName, "dev", keptnv2.GetTriggeredEventType("delivery"))
+		if deliveryTriggeredEvent == nil {
+			return false
+		}
+		return true
+	}, 1*time.Second, 100*time.Millisecond)
 
 	cloudEvent := keptnv2.ToCloudEvent(*deliveryTriggeredEvent)
 
