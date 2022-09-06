@@ -30,7 +30,7 @@ func (m *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error
 	result := []*apimodels.ExpandedProject{}
 	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return nil, fmt.Errorf("could not get collection: %w", err)
+		return nil, err
 	}
 	defer cancel()
 	cursor, err := projectCollection.Find(ctx, bson.M{})
@@ -54,7 +54,7 @@ func (m *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error
 func (m *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.ExpandedProject, error) {
 	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return nil, fmt.Errorf("could not get collection: %w", err)
+		return nil, err
 	}
 	defer cancel()
 	result := projectCollection.FindOne(ctx, bson.M{"projectName": projectName})
@@ -80,7 +80,7 @@ func (m *MongoDBProjectsRepo) CreateProject(project *apimodels.ExpandedProject) 
 	}
 	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return fmt.Errorf("could not get collection: %w", err)
+		return err
 	}
 	defer cancel()
 	_, err = projectCollection.InsertOne(ctx, prjInterface)
@@ -98,7 +98,7 @@ func (m *MongoDBProjectsRepo) UpdateProject(project *apimodels.ExpandedProject) 
 
 	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return fmt.Errorf("could not get collection: %w", err)
+		return err
 	}
 	defer cancel()
 
@@ -122,7 +122,7 @@ func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, servi
 	}
 	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
-		return fmt.Errorf("could not get collection: %w", err)
+		return err
 	}
 	defer cancel()
 
