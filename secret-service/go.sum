@@ -165,8 +165,8 @@ github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnr
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/jstemmer/go-junit-report v0.0.0-20190106144839-af01ea7f8024/go.mod h1:6v2b51hI/fHJwM22ozAgKL4VKDeJcHhJFhtBdhmNjmU=
 github.com/jstemmer/go-junit-report v0.9.1/go.mod h1:Brl9GWCQeLvo8nXZwPNNblvFj/XSXhF0NWZEnDohbsk=
-github.com/keptn/go-utils v0.18.1-0.20220831070853-f07eb2f4a74b h1:5KJjw/iGpl+FkyXEh79VGEQQmFOzFf+VAJ12nV543ag=
-github.com/keptn/go-utils v0.18.1-0.20220831070853-f07eb2f4a74b/go.mod h1:jPys4TFvxkN6KY3IhM5XWBeCCPQeLzsT6zTwt4iYfes=
+github.com/keptn/go-utils v0.18.1-0.20220906084422-4c3065b21056 h1:ypH38jVUqFAHCLHFUCn+WoTxGcK4vJcLfa40GQ05KOQ=
+github.com/keptn/go-utils v0.18.1-0.20220906084422-4c3065b21056/go.mod h1:jPys4TFvxkN6KY3IhM5XWBeCCPQeLzsT6zTwt4iYfes=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/kr/pretty v0.1.0/go.mod h1:dAy3ld7l9f0ibDNOQOHHMYYIIbhfbHSm3C4ZsoJORNo=
