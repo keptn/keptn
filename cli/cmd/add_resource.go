@@ -83,27 +83,47 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			return internal.OnAPIError(err)
 		}
 
-		// Handle different cases of adding resource to a projects default branch, stage branch, and/or service sub-directory
-		if isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) {
-			// add to all stages
-			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to all stages of project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if areStringFlagsSet(addResourceCmdParams.Service, addResourceCmdParams.Stage) {
-			// add to service and stage
-			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to service "+*addResourceCmdParams.Service+" in stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if !isStringFlagSet(addResourceCmdParams.Service) && isStringFlagSet(addResourceCmdParams.Stage) {
-			// service is empty, add to stage
-			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to stage "+*addResourceCmdParams.Stage+" in project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else if !isStringFlagSet(addResourceCmdParams.Service) && !isStringFlagSet(addResourceCmdParams.Stage) {
-			// service and stage are empty, add to default branch
-			logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" to project "+*addResourceCmdParams.Project, logging.InfoLevel)
-		} else {
-			return errors.New("Flag 'stage' is missing")
-		}
-
 		if !mocking {
-			if addResourceCmdParams.AllStages != nil && *addResourceCmdParams.AllStages {
-				// Upload to all stages
-				// get stages
+			if !isStringFlagSet(addResourceCmdParams.Service) && !isBoolFlagSet(addResourceCmdParams.AllStages) && !isStringFlagSet(addResourceCmdParams.Stage) {
+				// project resource
+				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a project resource to project "+*addResourceCmdParams.Project, logging.InfoLevel)
+				_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, "", "", resources)
+				if errorObj != nil {
+					return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded as a project resource: " + *errorObj.Message)
+				}
+			} else if !isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) {
+				// stage resource to all stages
+				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a stage resource to all stages for project "+*addResourceCmdParams.Project, logging.InfoLevel)
+				api, err := internal.APIProvider(endPoint.String(), apiToken)
+				if err != nil {
+					return err
+				}
+
+				stages, err := api.StagesV1().GetAllStages(*addResourceCmdParams.Project)
+				if err != nil {
+					return fmt.Errorf("Failed to retrieve stages for project %s: %v", *addResourceCmdParams.Project, err)
+				}
+
+				if len(stages) == 0 {
+					return fmt.Errorf("No stages found")
+				}
+
+				for _, stage := range stages {
+					_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, stage.StageName, "", resources)
+					if errorObj != nil {
+						return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded as stage resource: " + *errorObj.Message)
+					}
+				}
+			} else if !isStringFlagSet(addResourceCmdParams.Service) && isStringFlagSet(addResourceCmdParams.Stage) {
+				// stage resource to a defined stage
+				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a stage resource to stage "+*addResourceCmdParams.Stage+" for project "+*addResourceCmdParams.Project, logging.InfoLevel)
+				_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, "", resources)
+				if errorObj != nil {
+					return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded as a stage resource: " + *errorObj.Message)
+				}
+			} else if isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) && !isStringFlagSet(addResourceCmdParams.Stage) {
+				// service resource to all stages for a defined service
+				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a service resource to service "+*addResourceCmdParams.Service+" for all stages for project "+*addResourceCmdParams.Project, logging.InfoLevel)
 				api, err := internal.APIProvider(endPoint.String(), apiToken)
 				if err != nil {
 					return err
@@ -121,15 +141,18 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 				for _, stage := range stages {
 					_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, stage.StageName, *addResourceCmdParams.Service, resources)
 					if errorObj != nil {
-						return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
+						return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded as service resource: " + *errorObj.Message)
 					}
 				}
-			} else {
-				// upload to specific project/service/stage
+			} else if isStringFlagSet(addResourceCmdParams.Service) && !isBoolFlagSet(addResourceCmdParams.AllStages) && isStringFlagSet(addResourceCmdParams.Stage) {
+				// service resource to defined stage for a defined service
+				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a service resource to service "+*addResourceCmdParams.Service+" for stage "+*addResourceCmdParams.Stage+" for project "+*addResourceCmdParams.Project, logging.InfoLevel)
 				_, errorObj := api.ResourcesV1().CreateResources(*addResourceCmdParams.Project, *addResourceCmdParams.Stage, *addResourceCmdParams.Service, resources)
 				if errorObj != nil {
-					return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded: " + *errorObj.Message)
+					return errors.New("Resource " + *addResourceCmdParams.Resource + " could not be uploaded as a service resource: " + *errorObj.Message)
 				}
+			} else {
+				return errors.New("Invalid combination of input parameters")
 			}
 
 			logging.PrintLog("Resource has been uploaded.", logging.InfoLevel)
@@ -143,6 +166,10 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 		// Prevent setting --stage and --all-stages at the same time
 		if isStringFlagSet(addResourceCmdParams.Stage) && isBoolFlagSet(addResourceCmdParams.AllStages) {
 			return errors.New("Cannot use --stage and --all-stages at the same time")
+		}
+
+		if !isStringFlagSet(addResourceCmdParams.Stage) && !isBoolFlagSet(addResourceCmdParams.AllStages) && isStringFlagSet(addResourceCmdParams.Service) {
+			return errors.New("Flag 'stage' is missing")
 		}
 
 		return nil
