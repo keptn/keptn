@@ -99,6 +99,7 @@ var ErrInvalidCredentials = New("credentials need to have ssh or http auth metho
 // Error messages
 
 const ErrMsgCouldNotRetrieveCredentials = "could not read credentials for project %s: %w"
+const ErrMsgCouldEstablishAuthMethod = "could not establish auth method for project %s: %w"
 const ErrMsgInvalidRequestFormat = "Invalid request format"
 const ErrMsgCouldNotSetUser = "could not set git user: %w"
 const ErrMsgCouldNotCreatePath = "could not create path %s: %w"

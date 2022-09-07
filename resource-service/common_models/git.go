@@ -6,6 +6,7 @@ import (
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 )
 
@@ -15,6 +16,7 @@ type GitCredentials apimodels.GitAuthCredentials
 type GitContext struct {
 	Project     string
 	Credentials *GitCredentials
+	AuthMethod  transport.AuthMethod
 }
 
 func (g GitCredentials) Validate() error {
