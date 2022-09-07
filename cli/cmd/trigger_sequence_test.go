@@ -105,7 +105,7 @@ func TestTriggerSequence(t *testing.T) {
 
 	t.Setenv("MOCK_SERVER", ts.URL)
 
-	cmd := fmt.Sprintf("trigger sequence %s --project=%s --service=%s --stage=%s --mock", "hello", "hello-world", "demo", "dev")
+	cmd := fmt.Sprintf("trigger sequence %s --project=%s --service=%s --stage=%s --labels=key1=value1,key2=value2 --mock", "hello", "hello-world", "demo", "dev")
 	_, err := executeActionCommandC(cmd)
 
 	if err != nil {
