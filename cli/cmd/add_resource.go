@@ -45,9 +45,11 @@ From a technical perspective, the file provided via the *--resource* flag is sto
 `,
 	Example: `keptn add-resource --project=musicshop --stage=hardening --service=catalogue --resource=slo.yaml
 keptn add-resource --project=musicshop --stage=hardening --service=catalogue --resource=slo-quality-gates.yaml --resourceUri=slo.yaml
-keptn add-resource --project=sockshop --stage=dev --service=carts --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
-keptn add-resource --project=rockshop --stage=production --service=shop --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
-keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --resource=0.7.3_keptn-installer.tgz --resourceUri=helm/keptn-control-plane.tgz`,
+keptn add-resource --project=sockshop --resource=./jmeter.jmx --resourceUri=jmeter/functional.jmx
+keptn add-resource --project=rockshop --stage=production --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
+keptn add-resource --project=rockshop --all-stages --resource=./basiccheck.jmx --resourceUri=jmeter/basiccheck.jmx
+keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --resource=0.7.3_keptn-installer.tgz --resourceUri=helm/keptn-control-plane.tgz
+keptn add-resource --project=keptn --service=keptn-control-plane --stage=dev --resource=0.7.3_keptn-installer.tgz --resourceUri=helm/keptn-control-plane.tgz`,
 	SilenceUsage: true,
 	Args:         cobra.ExactArgs(0),
 	RunE: func(cmd *cobra.Command, args []string) error {
