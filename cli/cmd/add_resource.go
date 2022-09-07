@@ -145,11 +145,6 @@ keptn add-resource --project=keptn --service=keptn-control-plane --all-stages --
 			return errors.New("Cannot use --stage and --all-stages at the same time")
 		}
 
-		// When setting --all-stages, project and service needs to be set
-		if isBoolFlagSet(addResourceCmdParams.AllStages) &&
-			!areStringFlagsSet(addResourceCmdParams.Service, addResourceCmdParams.Project) {
-			return errors.New("--service and --project need to be supplied when using --all-stages")
-		}
 		return nil
 	},
 }

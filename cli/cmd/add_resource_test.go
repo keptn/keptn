@@ -103,7 +103,7 @@ func TestAddResourceAllStagesWithoutService(t *testing.T) {
 	cmd := fmt.Sprintf("add-resource --all-stages --project=%s --resource=%s "+
 		"--resourceUri=%s --mock", "sockshop", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
-	if err.Error() != "--service and --project need to be supplied when using --all-stages" {
+	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
 }
