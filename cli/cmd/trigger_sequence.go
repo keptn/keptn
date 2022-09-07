@@ -18,11 +18,12 @@ import (
 )
 
 type sequenceStruct struct {
-	Project *string            `json:"project"`
-	Service *string            `json:"service"`
-	Stage   *string            `json:"stage"`
-	Labels  *map[string]string `json:"labels"`
-	Data    *map[string]string `json:"data"`
+	Project  *string            `json:"project"`
+	Service  *string            `json:"service"`
+	Stage    *string            `json:"stage"`
+	Labels   *map[string]string `json:"labels"`
+	Data     *map[string]string `json:"data"`
+	DataFrom *string            `json:"data-from"`
 }
 
 var sequence = sequenceStruct{}
@@ -70,7 +71,13 @@ The name of the sequence has to be provided as an argument to the command. The s
 		return nil
 	},
 	PreRunE: func(cmd *cobra.Command, args []string) error {
-		if len(*sequence.Data) == 0 && (sequence.Project == nil || sequence.Stage == nil || sequence.Service == nil) {
+		// when user gives all event data from a file, then
+		// we do not validate any options
+		if sequence.DataFrom != nil {
+			return nil
+		}
+		// else we enfource --project/--stage/--service
+		if sequence.Project == nil || sequence.Stage == nil || sequence.Service == nil {
 			return fmt.Errorf("--project, --stage or --service option missing")
 		}
 		return nil
