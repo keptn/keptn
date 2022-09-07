@@ -119,32 +119,18 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 	}
 
 	// set event data
-	var eventData map[string]interface{}
+	eventData := make(map[string]interface{})
 	if len(*sequence.Data) > 0 {
 		customData, err := internal.UnfoldMap(*sequence.Data)
 		if err != nil {
 			return fmt.Errorf("Unable to process custom event data: %w", err)
 		}
-
-		// check if mandatory fields were given
-		if _, ok := customData["project"]; !ok {
-			return fmt.Errorf("unable to process custom event data: project missing")
-		}
-		if _, ok := customData["service"]; !ok {
-			return fmt.Errorf("unable to process custom event data: service missing")
-		}
-		if _, ok := customData["stage"]; !ok {
-			return fmt.Errorf("unable to process custom event data: stage missing")
-		}
 		eventData = customData
-	} else {
-		eventData = map[string]interface{}{
-			"project": *sequenceInputData.Project,
-			"stage":   *sequenceInputData.Stage,
-			"service": *sequenceInputData.Service,
-			"labels":  *sequenceInputData.Labels,
-		}
 	}
+	eventData["project"] = *sequence.Project
+	eventData["stage"] = *sequence.Stage
+	eventData["service"] = *sequence.Service
+	eventData["labels"] = *sequence.Labels
 
 	sdkEvent := cloudevents.NewEvent()
 	sdkEvent.SetID(uuid.New().String())
