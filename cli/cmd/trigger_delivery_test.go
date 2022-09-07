@@ -209,38 +209,6 @@ func TestTriggerDeliveryNoStageProvided(t *testing.T) {
 	}
 }
 
-func TestCheckImageAvailabilityD(t *testing.T) {
-
-	validImgs := []DockerImg{{"docker.io/keptnexamples/carts", "0.7.0"},
-		{"docker.io/keptnexamples/carts:0.7.0", ""},
-		{"keptnexamples/carts", ""},
-		{"keptnexamples/carts", "0.7.0"},
-		{"keptnexamples/carts:0.7.0", ""},
-		{"127.0.0.1:10/keptnexamples/carts", "0.7.5"},
-		{"127.0.0.1:10/keptnexamples/carts:0.7.5", ""},
-		{"httpd", ""}}
-
-	credentialmanager.MockAuthCreds = true
-	buf := new(bytes.Buffer)
-	rootCmd.SetOutput(buf)
-
-	for _, validImg := range validImgs {
-		*delivery.Project = "sockshop"
-		*delivery.Service = "carts"
-		if validImg.Tag != "" {
-			*delivery.Image = fmt.Sprintf("%s:%s", validImg.Image, validImg.Tag)
-		} else {
-			*delivery.Image = validImg.Tag
-		}
-
-		err := triggerDeliveryCmd.PreRunE(triggerDeliveryCmd, []string{})
-
-		if err != nil {
-			t.Errorf(unexpectedErrMsg, err)
-		}
-	}
-}
-
 func TestCheckImageNonAvailabilityD(t *testing.T) {
 
 	invalidImgs := []DockerImg{{"docker.io/keptnexamples/carts:0.7.5", ""}}
