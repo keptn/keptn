@@ -59,6 +59,15 @@ spec:
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.approvalService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.approvalService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.approvalService.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.approvalService.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.approvalService.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "keptn.affinities.pods" (dict "value" .Values.approvalService.podAffinityPreset "default" .Values.podAffinityPreset "component" "approval-service" "context" . ) | nindent 10 }}
+        podAntiAffinity: {{- include "keptn.affinities.pods" (dict "value" .Values.approvalService.podAntiAffinityPreset "default" .Values.podAntiAffinityPreset "component" "approval-service" "context" . ) | nindent 10 }}
+        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.approvalService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "approval-service" "context" . ) | nindent 10 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service

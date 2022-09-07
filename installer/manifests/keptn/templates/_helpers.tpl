@@ -298,6 +298,147 @@ Usage:
 {{- end -}}
 
 {{/*
+Renders affinity if either "value" or "default" is not empty. the needed indentation must be set
+with "indent". Templates may be used in values and keys!
+Usage:
+{{ include "keptn.affinity" ( dict "value" .my-path-to.affinity-map "default" .my-path.to-default-affinity "indent" 6 "context" $ ) }}
+*/}}
+{{- define "keptn.affinity" -}}
+  {{- if not .indent }}
+    {{ fail "keptn.affinity needs indent to be set" }}
+  {{- end }}
+  {{- if not (typeIs "int" .indent) }}
+    {{ fail "keptn.affinity needs indent to be an int" }}
+  {{- end }}
+  {{- if or .value .default }}
+    {{- printf "\n%saffinity:" (repeat .indent " ") }}{{- include "keptn.tpl-value-or-default" ( dict "value" .value "default" .default "context" .context  ) | nindent ( int ( add .indent 2 ) ) }}
+  {{- end }}
+{{- end -}}
+
+{{/*
+Return a soft nodeAffinity definition 
+{{ include "keptn.affinities.nodes.soft" (dict "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+*/}}
+{{- define "keptn.affinities.nodes.soft" -}}
+preferredDuringSchedulingIgnoredDuringExecution:
+  - preference:
+      matchExpressions:
+        - key: {{ .preset.key }}
+          operator: In
+          values:
+            {{- range .preset.values }}
+            - {{ . }}
+            {{- end }}
+    weight: 1
+{{- end -}}
+
+{{/*
+Return a hard nodeAffinity definition
+{{ include "keptn.affinities.nodes.hard" (dict "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+*/}}
+{{- define "keptn.affinities.nodes.hard" -}}
+requiredDuringSchedulingIgnoredDuringExecution:
+  nodeSelectorTerms:
+    - matchExpressions:
+        - key: {{ .preset.key }}
+          operator: In
+          values:
+            {{- range .preset.values }}
+            - {{ . }}
+            {{- end }}
+{{- end -}}
+
+{{/*
+Return a nodeAffinity definition
+{{ include "keptn.affinities.nodes" (dict "type" "soft" "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+*/}}
+{{- define "keptn.affinities.nodes" -}}
+  {{- $preset := "" -}}
+  {{- if .value -}}
+    {{- $preset = .value -}}
+  {{- else -}}
+    {{- $preset = .default -}}
+  {{- end -}}
+  {{- if eq $preset.type "soft" -}}
+    {{- include "keptn.affinities.nodes.soft" ( dict "preset" $preset "context" .context ) -}}
+  {{- else if eq $preset.type "hard" -}}
+    {{- include "keptn.affinities.nodes.hard" ( dict "preset" $preset "context" .context ) -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Return a soft podAffinity/podAntiAffinity definition
+{{ include "keptn.affinities.pods.soft" (dict "component" "FOO" "context" $) -}}
+*/}}
+{{- define "keptn.affinities.pods.soft" -}}
+{{- $component := default "" .component -}}
+preferredDuringSchedulingIgnoredDuringExecution:
+  - podAffinityTerm:
+      labelSelector:
+        matchLabels: {{- (include "keptn.common.labels.selectorLabels" .context) | nindent 10 }}
+          {{- if not (empty $component) }}
+          app.kubernetes.io/name: {{ $component | quote }}
+          {{- end }}
+      namespaces:
+        - {{ .context.Release.Namespace }}
+      topologyKey: kubernetes.io/hostname
+    weight: 1
+{{- end -}}
+
+{{/*
+Return a hard podAffinity/podAntiAffinity definition
+{{ include "keptn.affinities.pods.hard" (dict "component" "FOO" "context" $) -}}
+*/}}
+{{- define "keptn.affinities.pods.hard" -}}
+{{- $component := default "" .component -}}
+requiredDuringSchedulingIgnoredDuringExecution:
+  - labelSelector:
+      matchLabels: {{- (include "keptn.common.labels.selectorLabels" .context) | nindent 8 }}
+        {{- if not (empty $component) }}
+        app.kubernetes.io/name: {{ $component | quote }}
+        {{- end }}
+    namespaces:
+      - {{ .context.Release.Namespace }}
+    topologyKey: kubernetes.io/hostname
+{{- end -}}
+
+{{/*
+Return a podAffinity/podAntiAffinity definition
+{{ include "keptn.affinities.pods" (dict "value" "soft" "default" "soft" "values" (list "BAR" "BAZ")) -}}
+*/}}
+{{- define "keptn.affinities.pods" -}}
+{{- $value := "" -}}
+  {{- if .value -}}
+    {{- $value = .value -}}
+  {{- else -}}
+    {{- $value = .default -}}
+  {{- end -}}
+  {{- if eq $value "soft" }}
+    {{- include "keptn.affinities.pods.soft" . -}}
+  {{- else if eq $value "hard" }}
+    {{- include "keptn.affinities.pods.hard" . -}}
+  {{- end -}}
+{{- end -}}
+
+{{/*
+Renders tolerations if either "value" or "default" is not empty. the needed indentation must be set
+with "indent". Templates may be used in values and keys!
+Usage:
+{{ include "keptn.tolerations" ( dict "value" .my-path-to.tolerations-map "default" .my-path.to-default-tolerations "indent" 6 "context" $ ) }}
+*/}}
+{{- define "keptn.tolerations" -}}
+  {{- if not .indent }}
+    {{ fail "keptn.tolerations needs indent to be set" }}
+  {{- end }}
+  {{- if not (typeIs "int" .indent) }}
+    {{ fail "keptn.tolerations needs indent to be an int" }}
+  {{- end }}
+  {{- if or .value .default }}
+    {{- printf "\n%stolerations:" (repeat .indent " ") }}{{- include "keptn.tpl-value-or-default" ( dict "value" .value "default" .default "context" .context  ) | nindent ( int ( add .indent 2 ) ) }}
+  {{- end }}
+{{- end -}}
+
+{{/*
 Renders a optional value that contains a template. if the given value is empty default is used
 Usage:
 {{ include "keptn.tpl-value-or-default" ( dict "value" .my-value.to-template "default" .my-default.to-template "context" $ ) }}
