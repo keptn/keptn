@@ -353,11 +353,9 @@ Return a nodeAffinity definition
 {{ include "keptn.affinities.nodes" (dict "value" "service-values" "default" "default-values" "component" "component-name" "context" . ) -}}
 */}}
 {{- define "keptn.affinities.nodes" -}}
-  {{- $preset := "" -}}
+  {{- $preset := default "" .default -}}
   {{- if .value -}}
     {{- $preset = .value -}}
-  {{- else -}}
-    {{- $preset = .default -}}
   {{- end -}}
   {{- if eq $preset.type "soft" -}}
     {{- include "keptn.affinities.nodes.soft" ( dict "preset" $preset "context" .context ) -}}
@@ -407,11 +405,9 @@ Return a podAffinity/podAntiAffinity definition
 {{ include "keptn.affinities.pods" (dict "value" "service-values" "default" "default-values" "component" "component-name" "context" . ) -}}
 */}}
 {{- define "keptn.affinities.pods" -}}
-{{- $value := "" -}}
+  {{- $value := default "" .default -}}
   {{- if .value -}}
     {{- $value = .value -}}
-  {{- else -}}
-    {{- $value = .default -}}
   {{- end -}}
   {{- if eq $value "soft" }}
     {{- include "keptn.affinities.pods.soft" . -}}
