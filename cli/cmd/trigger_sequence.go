@@ -4,9 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
-
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/google/uuid"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -16,6 +13,8 @@ import (
 	"github.com/keptn/keptn/cli/pkg/credentialmanager"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/spf13/cobra"
+	"net/url"
+	"os"
 )
 
 type sequenceStruct struct {
@@ -23,6 +22,7 @@ type sequenceStruct struct {
 	Service *string            `json:"service"`
 	Stage   *string            `json:"stage"`
 	Labels  *map[string]string `json:"labels"`
+	Data    *map[string]string `json:"data"`
 }
 
 var sequence = sequenceStruct{}
@@ -69,6 +69,12 @@ The name of the sequence has to be provided as an argument to the command. The s
 		}
 		return nil
 	},
+	PreRunE: func(cmd *cobra.Command, args []string) error {
+		if len(*sequence.Data) == 0 && (sequence.Project == nil || sequence.Stage == nil || sequence.Service == nil) {
+			return fmt.Errorf("--project, --stage or --service option missing")
+		}
+		return nil
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return doTriggerSequence(sequence, args[0])
 	},
@@ -105,13 +111,32 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 		return fmt.Errorf("could not start sequence because service %s has not been found in project %s", *sequenceInputData.Service, *sequenceInputData.Project)
 	}
 
-	triggeredEvent := keptnv2.DeploymentTriggeredEventData{
-		EventData: keptnv2.EventData{
-			Project: *sequenceInputData.Project,
-			Stage:   *sequenceInputData.Stage,
-			Service: *sequenceInputData.Service,
-			Labels:  *sequenceInputData.Labels,
-		},
+	// set event data
+	var eventData map[string]interface{}
+	if len(*sequence.Data) > 0 {
+		customData, err := internal.UnfoldMap(*sequence.Data)
+		if err != nil {
+			return fmt.Errorf("Unable to process custom event data: %w", err)
+		}
+
+		// check if mandatory fields were given
+		if _, ok := customData["project"]; !ok {
+			return fmt.Errorf("unable to process custom event data: project missing")
+		}
+		if _, ok := customData["service"]; !ok {
+			return fmt.Errorf("unable to process custom event data: service missing")
+		}
+		if _, ok := customData["stage"]; !ok {
+			return fmt.Errorf("unable to process custom event data: stage missing")
+		}
+		eventData = customData
+	} else {
+		eventData = map[string]interface{}{
+			"project": *sequenceInputData.Project,
+			"stage":   *sequenceInputData.Stage,
+			"service": *sequenceInputData.Service,
+			"labels":  *sequenceInputData.Labels,
+		}
 	}
 
 	sdkEvent := cloudevents.NewEvent()
@@ -119,7 +144,7 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 	sdkEvent.SetType(keptnv2.GetTriggeredEventType(*sequenceInputData.Stage + "." + sequenceName))
 	sdkEvent.SetSource("https://github.com/keptn/keptn/cli#configuration-change")
 	sdkEvent.SetDataContentType(cloudevents.ApplicationJSON)
-	sdkEvent.SetData(cloudevents.ApplicationJSON, triggeredEvent)
+	sdkEvent.SetData(cloudevents.ApplicationJSON, eventData)
 
 	eventByte, err := sdkEvent.MarshalJSON()
 	if err != nil {
@@ -148,16 +173,14 @@ func init() {
 	triggerCmd.AddCommand(triggerSequenceCmd)
 	sequence.Project = triggerSequenceCmd.Flags().StringP("project", "", "",
 		"The project containing the service for which the new artifact will be triggered")
-	triggerSequenceCmd.MarkFlagRequired("project")
 
 	sequence.Service = triggerSequenceCmd.Flags().StringP("service", "", "",
 		"The service for which the new artifact will be triggered")
-	triggerSequenceCmd.MarkFlagRequired("service")
 
 	sequence.Stage = triggerSequenceCmd.Flags().StringP("stage", "", "",
 		"The stage in which the new artifact will be triggered")
-	triggerSequenceCmd.MarkFlagRequired("stage")
 
 	sequence.Labels = triggerSequenceCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
+	sequence.Data = triggerSequenceCmd.Flags().StringToStringP("data", "d", nil, "Additional field data to be merged into da data block of the cloud event")
 
 }
