@@ -99,3 +99,12 @@ spec:
       serviceAccountName: keptn-resource-service
       automountServiceAccountToken: true
       {{- include "keptn.nodeSelector" (dict "value" .Values.resourceService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.resourceService.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.resourceService.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.resourceService.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "keptn.affinities.pods" (dict "value" .Values.resourceService.podAffinityPreset "default" .Values.podAffinityPreset "component" "resource-service" "context" . ) | nindent 10 }}
+        podAntiAffinity: {{- include "keptn.affinities.pods" (dict "value" .Values.resourceService.podAntiAffinityPreset "default" .Values.podAntiAffinityPreset "component" "resource-service" "context" . ) | nindent 10 }}
+        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.resourceService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "resource-service" "context" . ) | nindent 10 }}
+      {{- end }}

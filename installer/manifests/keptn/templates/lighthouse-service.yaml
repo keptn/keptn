@@ -69,6 +69,15 @@ spec:
       serviceAccountName: keptn-lighthouse-service
       terminationGracePeriodSeconds: {{ .Values.lighthouseService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.lighthouseService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.lighthouseService.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.lighthouseService.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.lighthouseService.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        podAffinity: {{- include "keptn.affinities.pods" (dict "value" .Values.lighthouseService.podAffinityPreset "default" .Values.podAffinityPreset "component" "lighthouse-service" "context" . ) | nindent 10 }}
+        podAntiAffinity: {{- include "keptn.affinities.pods" (dict "value" .Values.lighthouseService.podAntiAffinityPreset "default" .Values.podAntiAffinityPreset "component" "lighthouse-service" "context" . ) | nindent 10 }}
+        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.lighthouseService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "lighthouse-service" "context" . ) | nindent 10 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service
