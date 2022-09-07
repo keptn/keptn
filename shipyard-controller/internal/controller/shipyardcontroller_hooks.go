@@ -17,16 +17,8 @@ func (sc *ShipyardController) AddSequenceWaitingHook(hook ISequenceWaitingHook) 
 	sc.sequenceWaitingHooks = append(sc.sequenceWaitingHooks, hook)
 }
 
-func (sc *ShipyardController) AddSequenceTaskTriggeredHook(hook ISequenceTaskTriggeredHook) {
-	sc.sequenceTaskTriggeredHooks = append(sc.sequenceTaskTriggeredHooks, hook)
-}
-
-func (sc *ShipyardController) AddSequenceTaskStartedHook(hook ISequenceTaskStartedHook) {
-	sc.sequenceTaskStartedHooks = append(sc.sequenceTaskStartedHooks, hook)
-}
-
-func (sc *ShipyardController) AddSequenceTaskFinishedHook(hook ISequenceTaskFinishedHook) {
-	sc.sequenceTaskFinishedHooks = append(sc.sequenceTaskFinishedHooks, hook)
+func (sc *ShipyardController) AddSequenceTaskEventHook(hook ISequenceTaskEventHook) {
+	sc.sequenceTaskEventHooks = append(sc.sequenceTaskEventHooks, hook)
 }
 
 func (sc *ShipyardController) AddSubSequenceFinishedHook(hook ISubSequenceFinishedHook) {
@@ -71,21 +63,9 @@ func (sc *ShipyardController) onSequenceWaiting(event models.KeptnContextExtende
 	}
 }
 
-func (sc *ShipyardController) onSequenceTaskStarted(event models.KeptnContextExtendedCE) {
-	for _, hook := range sc.sequenceTaskStartedHooks {
-		hook.OnSequenceTaskStarted(event)
-	}
-}
-
-func (sc *ShipyardController) onSequenceTaskTriggered(event models.KeptnContextExtendedCE) {
-	for _, hook := range sc.sequenceTaskTriggeredHooks {
-		hook.OnSequenceTaskTriggered(event)
-	}
-}
-
-func (sc *ShipyardController) onSequenceTaskFinished(event models.KeptnContextExtendedCE) {
-	for _, hook := range sc.sequenceTaskFinishedHooks {
-		hook.OnSequenceTaskFinished(event)
+func (sc *ShipyardController) onSequenceTaskEvent(event models.KeptnContextExtendedCE) {
+	for _, hook := range sc.sequenceTaskEventHooks {
+		hook.OnSequenceTaskEvent(event)
 	}
 }
 

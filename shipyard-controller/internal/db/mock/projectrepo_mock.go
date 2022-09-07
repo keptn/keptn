@@ -5,6 +5,7 @@ package db_mock
 
 import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"sync"
 )
 
@@ -29,7 +30,7 @@ import (
 // 			UpdateProjectFunc: func(project *apimodels.ExpandedProject) error {
 // 				panic("mock out the UpdateProject method")
 // 			},
-// 			UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+// 			UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties mvmodels.ServiceUpdate) error {
 // 				panic("mock out the UpdateProjectService method")
 // 			},
 // 			UpdateProjectUpstreamFunc: func(projectName string, uri string, user string) error {
@@ -58,7 +59,7 @@ type ProjectRepoMock struct {
 	UpdateProjectFunc func(project *apimodels.ExpandedProject) error
 
 	// UpdateProjectServiceFunc mocks the UpdateProjectService method.
-	UpdateProjectServiceFunc func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error
+	UpdateProjectServiceFunc func(projectName string, stageName string, serviceName string, properties mvmodels.ServiceUpdate) error
 
 	// UpdateProjectUpstreamFunc mocks the UpdateProjectUpstream method.
 	UpdateProjectUpstreamFunc func(projectName string, uri string, user string) error
@@ -97,7 +98,7 @@ type ProjectRepoMock struct {
 			// ServiceName is the serviceName argument value.
 			ServiceName string
 			// Properties is the properties argument value.
-			Properties map[string]interface{}
+			Properties mvmodels.ServiceUpdate
 		}
 		// UpdateProjectUpstream holds details about calls to the UpdateProjectUpstream method.
 		UpdateProjectUpstream []struct {
@@ -269,7 +270,7 @@ func (mock *ProjectRepoMock) UpdateProjectCalls() []struct {
 }
 
 // UpdateProjectService calls UpdateProjectServiceFunc.
-func (mock *ProjectRepoMock) UpdateProjectService(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+func (mock *ProjectRepoMock) UpdateProjectService(projectName string, stageName string, serviceName string, properties mvmodels.ServiceUpdate) error {
 	if mock.UpdateProjectServiceFunc == nil {
 		panic("ProjectRepoMock.UpdateProjectServiceFunc: method is nil but ProjectRepo.UpdateProjectService was just called")
 	}
@@ -277,7 +278,7 @@ func (mock *ProjectRepoMock) UpdateProjectService(projectName string, stageName 
 		ProjectName string
 		StageName   string
 		ServiceName string
-		Properties  map[string]interface{}
+		Properties  mvmodels.ServiceUpdate
 	}{
 		ProjectName: projectName,
 		StageName:   stageName,
@@ -297,13 +298,13 @@ func (mock *ProjectRepoMock) UpdateProjectServiceCalls() []struct {
 	ProjectName string
 	StageName   string
 	ServiceName string
-	Properties  map[string]interface{}
+	Properties  mvmodels.ServiceUpdate
 } {
 	var calls []struct {
 		ProjectName string
 		StageName   string
 		ServiceName string
-		Properties  map[string]interface{}
+		Properties  mvmodels.ServiceUpdate
 	}
 	mock.lockUpdateProjectService.RLock()
 	calls = mock.calls.UpdateProjectService

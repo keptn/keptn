@@ -6,6 +6,7 @@ import (
 	"github.com/benbjohnson/clock"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -81,7 +82,7 @@ func (mdbrepo *MongoDBLogRepo) GetLogEntries(params models.GetLogParams) (*model
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err

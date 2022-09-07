@@ -2,11 +2,12 @@ package db
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	dbcommon "github.com/keptn/keptn/shipyard-controller/internal/db/common"
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"strings"
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -34,7 +35,7 @@ func (m *MongoDBProjectsRepo) GetProjects() ([]*apimodels.ExpandedProject, error
 	}
 	defer cancel()
 	cursor, err := projectCollection.Find(ctx, bson.M{})
-	defer closeCursor(ctx, cursor)
+	defer dbcommon.CloseCursor(ctx, cursor)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving projects from mongoDB: %w", err)
 	}
@@ -74,7 +75,7 @@ func (m *MongoDBProjectsRepo) GetProject(projectName string) (*apimodels.Expande
 }
 
 func (m *MongoDBProjectsRepo) CreateProject(project *apimodels.ExpandedProject) error {
-	prjInterface, err := toInterface(project)
+	prjInterface, err := dbcommon.ToInterface(project)
 	if err != nil {
 		return err
 	}
@@ -91,7 +92,7 @@ func (m *MongoDBProjectsRepo) CreateProject(project *apimodels.ExpandedProject) 
 }
 
 func (m *MongoDBProjectsRepo) UpdateProject(project *apimodels.ExpandedProject) error {
-	prjInterface, err := toInterface(project)
+	prjInterface, err := dbcommon.ToInterface(project)
 	if err != nil {
 		return err
 	}
@@ -110,16 +111,17 @@ func (m *MongoDBProjectsRepo) UpdateProject(project *apimodels.ExpandedProject) 
 	return nil
 }
 
-func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, serviceName string, properties map[string]interface{}) error {
+func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, serviceName string, properties mvmodels.ServiceUpdate) error {
 
-	encodedProperties := map[string]interface{}{}
-	for key, value := range properties {
-		encodedValue, err := toInterface(value)
-		if err != nil {
-			return fmt.Errorf("could not encode value of '%s': %w", key, err)
+	update, err := properties.GetBSONUpdate()
+	if err != nil {
+		if errors.Is(err, mvmodels.ErrEmptyUpdate) {
+			log.Debugf("[ProjectsRepo] Service '%s' in stage '%s' of project '%s' will not get updated as no changes were provided", serviceName, stageName, projectName)
+			return nil
 		}
-		encodedProperties[key] = encodedValue
+		return fmt.Errorf("could not get BSON update command: %w", err)
 	}
+
 	ctx, cancel, projectCollection, err := m.getCollectionAndContext()
 	if err != nil {
 		return err
@@ -137,15 +139,7 @@ func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, servi
 		},
 	})
 
-	changeSet := bson.M{}
-
-	for key, value := range encodedProperties {
-		changeSet["stages.$.services.$[service]."+key] = value
-	}
-
-	update := bson.D{
-		{"$set", changeSet},
-	}
+	log.Debugf("[ProjectsRepo] Updating project service; filter=%v, update=%v, arrayFilter=%v", filter, update, arrayFilter)
 
 	result := projectCollection.FindOneAndUpdate(ctx, filter, update, arrayFilter)
 	return result.Err()
@@ -201,17 +195,6 @@ func (m *MongoDBProjectsRepo) getProjectsCollection() *mongo.Collection {
 	return projectCollection
 }
 
-func toInterface(item interface{}) (interface{}, error) {
-	// marshall and unmarshall again because for some reason the json tags of the golang struct of the project type are not considered
-	marshal, _ := json.Marshal(item)
-	var prjInterface interface{}
-	err := json.Unmarshal(marshal, &prjInterface)
-	if err != nil {
-		return nil, err
-	}
-	return prjInterface, nil
-}
-
 func NewMongoDBKeyEncodingProjectsRepo(dbConnection *MongoDBConnection) *MongoDBKeyEncodingProjectsRepo {
 	projectsRepo := NewMongoDBProjectsRepo(dbConnection)
 	return &MongoDBKeyEncodingProjectsRepo{
@@ -257,22 +240,8 @@ func (m *MongoDBKeyEncodingProjectsRepo) UpdateProject(project *apimodels.Expand
 	return m.d.UpdateProject(encProject)
 }
 
-func (m *MongoDBKeyEncodingProjectsRepo) UpdateProjectService(projectName, stageName, serviceName string, properties map[string]interface{}) error {
-	encodedProperties := map[string]interface{}{}
-
-	lastEventTypesKey := "lastEventTypes."
-	for key, value := range properties {
-		encodedKey := key
-		if strings.HasPrefix(key, lastEventTypesKey) {
-			splitKey := strings.Split(key, lastEventTypesKey)
-			if len(splitKey) > 0 {
-				encodedKey = lastEventTypesKey + encodeKey(splitKey[len(splitKey)-1])
-			}
-		}
-
-		encodedProperties[encodedKey] = value
-	}
-	return m.d.UpdateProjectService(projectName, stageName, serviceName, encodedProperties)
+func (m *MongoDBKeyEncodingProjectsRepo) UpdateProjectService(projectName, stageName, serviceName string, properties mvmodels.ServiceUpdate) error {
+	return m.d.UpdateProjectService(projectName, stageName, serviceName, properties)
 }
 
 func (m *MongoDBKeyEncodingProjectsRepo) UpdateProjectUpstream(projectName string, uri string, user string) error {
@@ -295,7 +264,7 @@ func EncodeProjectKeys(project *apimodels.ExpandedProject) (*apimodels.ExpandedP
 		for _, service := range stage.Services {
 			newLastEvents := make(map[string]apimodels.EventContextInfo)
 			for eventType, context := range service.LastEventTypes {
-				newLastEvents[encodeKey(eventType)] = context
+				newLastEvents[dbcommon.EncodeKey(eventType)] = context
 			}
 			service.LastEventTypes = newLastEvents
 		}
@@ -311,7 +280,7 @@ func DecodeProjectKeys(project *apimodels.ExpandedProject) *apimodels.ExpandedPr
 		for _, service := range stage.Services {
 			newLastEvents := make(map[string]apimodels.EventContextInfo)
 			for eventType, context := range service.LastEventTypes {
-				newLastEvents[decodeKey(eventType)] = context
+				newLastEvents[dbcommon.DecodeKey(eventType)] = context
 			}
 			service.LastEventTypes = newLastEvents
 		}
@@ -328,20 +297,11 @@ func DecodeProjectsKeys(projects []*apimodels.ExpandedProject) ([]*apimodels.Exp
 			for _, service := range stage.Services {
 				newLastEvents := make(map[string]apimodels.EventContextInfo)
 				for eventType, context := range service.LastEventTypes {
-					newLastEvents[decodeKey(eventType)] = context
+					newLastEvents[dbcommon.DecodeKey(eventType)] = context
 				}
 				service.LastEventTypes = newLastEvents
 			}
 		}
 	}
 	return projects, nil
-}
-
-func encodeKey(key string) string {
-	encodedKey := strings.ReplaceAll(strings.ReplaceAll(key, "~", "~t"), ".", "~p")
-	return encodedKey
-}
-func decodeKey(key string) string {
-	decodedKey := strings.ReplaceAll(strings.ReplaceAll(key, "~p", "."), "~t", "~")
-	return decodedKey
 }

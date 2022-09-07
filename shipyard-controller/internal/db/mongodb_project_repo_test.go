@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	common2 "github.com/keptn/keptn/shipyard-controller/internal/db/common"
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"testing"
 
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
@@ -130,12 +132,16 @@ func TestMongoDBProjectsRepo_UpdateProjectService(t *testing.T) {
 		KeptnContext: "event-context",
 		Time:         "event-timestamp",
 	}
+	eventType := "sh.keptn.event.test.triggered"
 
-	encodedEventType := encodeKey("sh.keptn.event.test.triggered")
-	err = r.UpdateProjectService("my-project", "dev", "my-service", map[string]interface{}{
-		"deployedImage":                      "my-new-image",
-		"lastEventTypes." + encodedEventType: eventContextInfo,
+	serviceUpdate := mvmodels.ServiceUpdate{}
+	serviceUpdate.SetDeployedImage("my-new-image")
+	serviceUpdate.SetEventTypeUpdate(&mvmodels.EventUpdate{
+		EventType: eventType,
+		EventInfo: eventContextInfo,
 	})
+
+	err = r.UpdateProjectService("my-project", "dev", "my-service", serviceUpdate)
 
 	require.Nil(t, err)
 
@@ -143,7 +149,7 @@ func TestMongoDBProjectsRepo_UpdateProjectService(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, "my-new-image", projectInfo.Stages[0].Services[0].DeployedImage)
-	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes[encodedEventType])
+	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes[common2.EncodeKey(eventType)])
 
 	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
 	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)
@@ -184,11 +190,16 @@ func TestMongoDBKeyEncodingProjectsRepo_UpdateProjectService(t *testing.T) {
 		KeptnContext: "event-context",
 		Time:         "event-timestamp",
 	}
+	eventType := "sh.keptn.event.test.triggered"
 
-	err = r.UpdateProjectService("my-project", "dev", "my-service", map[string]interface{}{
-		"deployedImage": "my-new-image",
-		"lastEventTypes.sh.keptn.event.test.triggered": eventContextInfo,
+	serviceUpdate := mvmodels.ServiceUpdate{}
+	serviceUpdate.SetDeployedImage("my-new-image")
+	serviceUpdate.SetEventTypeUpdate(&mvmodels.EventUpdate{
+		EventType: eventType,
+		EventInfo: eventContextInfo,
 	})
+
+	err = r.UpdateProjectService("my-project", "dev", "my-service", serviceUpdate)
 
 	require.Nil(t, err)
 
@@ -196,7 +207,7 @@ func TestMongoDBKeyEncodingProjectsRepo_UpdateProjectService(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Equal(t, "my-new-image", projectInfo.Stages[0].Services[0].DeployedImage)
-	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes["sh.keptn.event.test.triggered"])
+	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes[eventType])
 
 	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
 	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)

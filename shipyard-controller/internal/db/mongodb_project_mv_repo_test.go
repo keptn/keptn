@@ -6,6 +6,7 @@ import (
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -1014,7 +1015,7 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 				},
 			}, nil
 		},
-		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties mvmodels.ServiceUpdate) error {
 			return nil
 		},
 		DeleteProjectFunc: nil,
@@ -1070,7 +1071,8 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 		eventRepo:             eventRepo,
 		sequenceExecutionRepo: sequenceExecutionRepo,
 	}
-	mv.OnSequenceTaskFinished(event)
+
+	mv.OnSequenceTaskEvent(event)
 
 	projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
 
@@ -1079,8 +1081,10 @@ func Test_projectsMaterializedView_OnTaskFinished(t *testing.T) {
 	require.Equal(t, "dev", projectRepoMock.UpdateProjectServiceCalls()[0].StageName)
 	require.Equal(t, "test-service", projectRepoMock.UpdateProjectServiceCalls()[0].ServiceName)
 
-	require.Equal(t, "the-service-image:latest", projectRepoMock.UpdateProjectServiceCalls()[0].Properties["deployedImage"])
-	require.NotNil(t, projectRepoMock.UpdateProjectServiceCalls()[0].Properties["lastEventTypes.sh.keptn.event.deployment.finished"])
+	require.Equal(t, "the-service-image:latest", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.DeployedImage())
+	require.Equal(t, "sh.keptn.event.deployment.finished", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventType)
+	require.Equal(t, "test-context", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventInfo.KeptnContext)
+	require.Equal(t, "test-event-id", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventInfo.EventID)
 
 	return
 }
@@ -1104,7 +1108,7 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 				},
 			}, nil
 		},
-		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties mvmodels.ServiceUpdate) error {
 			return nil
 		},
 		DeleteProjectFunc: nil,
@@ -1122,7 +1126,7 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 		projectRepo: projectRepo,
 	}
 
-	mv.OnSequenceTaskTriggered(event)
+	mv.OnSequenceTaskEvent(event)
 
 	projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
 
@@ -1130,7 +1134,10 @@ func Test_projectsMaterializedView_OnTaskTriggered(t *testing.T) {
 	require.Equal(t, "test-project", projectRepoMock.UpdateProjectServiceCalls()[0].ProjectName)
 	require.Equal(t, "dev", projectRepoMock.UpdateProjectServiceCalls()[0].StageName)
 	require.Equal(t, "test-service", projectRepoMock.UpdateProjectServiceCalls()[0].ServiceName)
-	require.NotEmpty(t, projectRepoMock.UpdateProjectServiceCalls()[0].Properties["lastEventTypes.sh.keptn.event.evaluation.triggered"])
+
+	require.Equal(t, "sh.keptn.event.evaluation.triggered", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventType)
+	require.Equal(t, "test-context", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventInfo.KeptnContext)
+	require.Equal(t, "test-event-id", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventInfo.EventID)
 }
 
 func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
@@ -1152,7 +1159,7 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 				},
 			}, nil
 		},
-		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties map[string]interface{}) error {
+		UpdateProjectServiceFunc: func(projectName string, stageName string, serviceName string, properties mvmodels.ServiceUpdate) error {
 			return nil
 		},
 		DeleteProjectFunc: nil,
@@ -1170,7 +1177,7 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 	mv := &MongoDBProjectMVRepo{
 		projectRepo: projectRepo,
 	}
-	mv.OnSequenceTaskStarted(event)
+	mv.OnSequenceTaskEvent(event)
 
 	projectRepoMock := mv.projectRepo.(*db_mock.ProjectRepoMock)
 
@@ -1178,7 +1185,10 @@ func Test_projectsMaterializedView_OnTaskStarted(t *testing.T) {
 	require.Equal(t, "test-project", projectRepoMock.UpdateProjectServiceCalls()[0].ProjectName)
 	require.Equal(t, "dev", projectRepoMock.UpdateProjectServiceCalls()[0].StageName)
 	require.Equal(t, "test-service", projectRepoMock.UpdateProjectServiceCalls()[0].ServiceName)
-	require.NotEmpty(t, projectRepoMock.UpdateProjectServiceCalls()[0].Properties["lastEventTypes.sh.keptn.event.evaluation.started"])
+
+	require.Equal(t, "sh.keptn.event.evaluation.started", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventType)
+	require.Equal(t, "test-context", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventInfo.KeptnContext)
+	require.Equal(t, "test-event-id", projectRepoMock.UpdateProjectServiceCalls()[0].Properties.EventTypeUpdate().EventInfo.EventID)
 }
 
 func Test_projectsMaterializedView_CreateRemediation(t *testing.T) {
