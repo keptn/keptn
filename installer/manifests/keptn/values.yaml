@@ -253,7 +253,7 @@ apiGatewayNginx:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param apiGatewayNginx.tolerations API Gateway node labels for pod assignment
+  ## @param apiGatewayNginx.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param apiGatewayNginx.gracePeriod API Gateway termination grace period
@@ -324,7 +324,7 @@ remediationService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param remediationService.tolerations API Gateway node labels for pod assignment
+  ## @param remediationService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param remediationService.gracePeriod Remediation Service termination grace period
@@ -404,17 +404,8 @@ apiService:
   ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
-  affinity: 
-  # nodeAffinity:
-  #   requiredDuringSchedulingIgnoredDuringExecution:
-  #     nodeSelectorTerms:
-  #     - matchExpressions:
-  #       - key: topology.kubernetes.io/zone
-  #         operator: In
-  #         values:
-  #         - antarctica-east1
-  #         - antarctica-west1
-  ## @param apiService.tolerations API Gateway node labels for pod assignment
+  affinity: {}
+  ## @param apiService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param apiService.gracePeriod API Service termination grace period
@@ -555,7 +546,7 @@ bridge:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param bridge.tolerations API Gateway node labels for pod assignment
+  ## @param bridge.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param bridge.sidecars Add additional sidecar containers to the Bridge
@@ -688,7 +679,7 @@ shipyardController:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param shipyardController.tolerations API Gateway node labels for pod assignment
+  ## @param shipyardController.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param shipyardController.gracePeriod Shipyard Controller termination grace period
@@ -755,7 +746,7 @@ secretService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param secretService.tolerations API Gateway node labels for pod assignment
+  ## @param secretService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param secretService.gracePeriod Secret Service termination grace period
@@ -833,7 +824,7 @@ resourceService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param resourceService.tolerations API Gateway node labels for pod assignment
+  ## @param resourceService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param resourceService.gracePeriod Resource Service termination grace period
@@ -902,7 +893,7 @@ mongodbDatastore:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param mongodbDatastore.tolerations API Gateway node labels for pod assignment
+  ## @param mongodbDatastore.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param mongodbDatastore.gracePeriod MongoDB Datastore termination grace period
@@ -971,7 +962,7 @@ lighthouseService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param lighthouseService.tolerations API Gateway node labels for pod assignment
+  ## @param lighthouseService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param lighthouseService.gracePeriod Lighthouse Service termination grace period
@@ -1040,7 +1031,7 @@ statisticsService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param statisticsService.tolerations API Gateway node labels for pod assignment
+  ## @param statisticsService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param statisticsService.gracePeriod Statistics Service termination grace period
@@ -1109,7 +1100,7 @@ approvalService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param approvalService.tolerations API Gateway node labels for pod assignment
+  ## @param approvalService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param approvalService.gracePeriod Approval Service termination grace period
@@ -1178,7 +1169,7 @@ webhookService:
   ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
   ##
   affinity: {}
-  ## @param webhookService.tolerations API Gateway node labels for pod assignment
+  ## @param webhookService.tolerations Toleration labels for pod assignment
   ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
   tolerations: []
   ## @param webhookService.gracePeriod Webhook Service termination grace period
@@ -1300,7 +1291,7 @@ nodeAffinityPreset:
 ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
 ##
 affinity: {}
-## @param tolerations Tolerations for pod assignment
+## @param tolerations Toleration labels for pod assignment
 ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
 tolerations: []
