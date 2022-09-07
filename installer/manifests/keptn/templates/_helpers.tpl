@@ -317,7 +317,7 @@ Usage:
 
 {{/*
 Return a soft nodeAffinity definition 
-{{ include "keptn.affinities.nodes.soft" (dict "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+{{ include "keptn.affinities.nodes.soft" (dict "preset" "FOO" "context" .context) -}}
 */}}
 {{- define "keptn.affinities.nodes.soft" -}}
 preferredDuringSchedulingIgnoredDuringExecution:
@@ -334,7 +334,7 @@ preferredDuringSchedulingIgnoredDuringExecution:
 
 {{/*
 Return a hard nodeAffinity definition
-{{ include "keptn.affinities.nodes.hard" (dict "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+{{ include "keptn.affinities.nodes.hard" (dict "preset" "FOO" "context" .context) -}}
 */}}
 {{- define "keptn.affinities.nodes.hard" -}}
 requiredDuringSchedulingIgnoredDuringExecution:
@@ -350,7 +350,7 @@ requiredDuringSchedulingIgnoredDuringExecution:
 
 {{/*
 Return a nodeAffinity definition
-{{ include "keptn.affinities.nodes" (dict "type" "soft" "key" "FOO" "values" (list "BAR" "BAZ")) -}}
+{{ include "keptn.affinities.nodes" (dict "value" "service-values" "default" "default-values" "component" "component-name" "context" . ) -}}
 */}}
 {{- define "keptn.affinities.nodes" -}}
   {{- $preset := "" -}}
@@ -368,7 +368,7 @@ Return a nodeAffinity definition
 
 {{/*
 Return a soft podAffinity/podAntiAffinity definition
-{{ include "keptn.affinities.pods.soft" (dict "component" "FOO" "context" $) -}}
+{{ include "keptn.affinities.pods.soft" . -}}
 */}}
 {{- define "keptn.affinities.pods.soft" -}}
 {{- $component := default "" .component -}}
@@ -387,7 +387,7 @@ preferredDuringSchedulingIgnoredDuringExecution:
 
 {{/*
 Return a hard podAffinity/podAntiAffinity definition
-{{ include "keptn.affinities.pods.hard" (dict "component" "FOO" "context" $) -}}
+{{ include "keptn.affinities.pods.hard" . -}}
 */}}
 {{- define "keptn.affinities.pods.hard" -}}
 {{- $component := default "" .component -}}
@@ -404,7 +404,7 @@ requiredDuringSchedulingIgnoredDuringExecution:
 
 {{/*
 Return a podAffinity/podAntiAffinity definition
-{{ include "keptn.affinities.pods" (dict "value" "soft" "default" "soft" "values" (list "BAR" "BAZ")) -}}
+{{ include "keptn.affinities.pods" (dict "value" "service-values" "default" "default-values" "component" "component-name" "context" . ) -}}
 */}}
 {{- define "keptn.affinities.pods" -}}
 {{- $value := "" -}}
