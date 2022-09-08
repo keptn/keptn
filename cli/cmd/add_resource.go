@@ -96,10 +96,6 @@ keptn add-resource --project=keptn --service=keptn-control-plane --stage=dev --r
 			} else if !isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) {
 				// stage resource to all stages
 				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a stage resource to all stages for project "+*addResourceCmdParams.Project, logging.InfoLevel)
-				api, err := internal.APIProvider(endPoint.String(), apiToken)
-				if err != nil {
-					return err
-				}
 
 				stages, err := api.StagesV1().GetAllStages(*addResourceCmdParams.Project)
 				if err != nil {
@@ -126,10 +122,6 @@ keptn add-resource --project=keptn --service=keptn-control-plane --stage=dev --r
 			} else if isStringFlagSet(addResourceCmdParams.Service) && isBoolFlagSet(addResourceCmdParams.AllStages) && !isStringFlagSet(addResourceCmdParams.Stage) {
 				// service resource to all stages for a defined service
 				logging.PrintLog("Adding resource "+*addResourceCmdParams.Resource+" as a service resource to service "+*addResourceCmdParams.Service+" for all stages for project "+*addResourceCmdParams.Project, logging.InfoLevel)
-				api, err := internal.APIProvider(endPoint.String(), apiToken)
-				if err != nil {
-					return err
-				}
 
 				stages, err := api.StagesV1().GetAllStages(*addResourceCmdParams.Project)
 				if err != nil {
