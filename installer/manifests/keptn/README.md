@@ -89,7 +89,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiGatewayNginx.image.tag`                                | API Gateway image tag                                                                     | `1.22.0-alpine`      |
 | `apiGatewayNginx.nodeSelector`                             | API Gateway node labels for pod assignment                                                | `{}`                 |
 | `apiGatewayNginx.podAffinityPreset`                        | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                 |
-| `apiGatewayNginx.podAntiAffinityPreset`                    | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`               |
+| `apiGatewayNginx.podAntiAffinityPreset`                    | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                 |
 | `apiGatewayNginx.nodeAffinityPreset.type`                  | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`                 |
 | `apiGatewayNginx.nodeAffinityPreset.key`                   | Node label key to match Ignored if `affinity` is set.                                     | `""`                 |
 | `apiGatewayNginx.nodeAffinityPreset.values`                | Node label values to match. Ignored if `affinity` is set.                                 | `[]`                 |
@@ -114,7 +114,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `remediationService.image.tag`                 | Remediation Service image tag                                                             | `""`                  |
 | `remediationService.nodeSelector`              | Remediation Service node labels for pod assignment                                        | `{}`                  |
 | `remediationService.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                  |
-| `remediationService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`                |
+| `remediationService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                  |
 | `remediationService.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`                  |
 | `remediationService.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`                  |
 | `remediationService.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`                  |
@@ -143,7 +143,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiService.eventValidation.maxEventSizeKB` | specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0 | `64`   |
 | `apiService.nodeSelector`                   | API Service node labels for pod assignment                                                                                                   | `{}`   |
 | `apiService.podAffinityPreset`              | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                          | `""`   |
-| `apiService.podAntiAffinityPreset`          | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                     | `soft` |
+| `apiService.podAntiAffinityPreset`          | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                     | `""`   |
 | `apiService.nodeAffinityPreset.type`        | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                    | `""`   |
 | `apiService.nodeAffinityPreset.key`         | Node label key to match Ignored if `affinity` is set.                                                                                        | `""`   |
 | `apiService.nodeAffinityPreset.values`      | Node label values to match. Ignored if `affinity` is set.                                                                                    | `[]`   |
@@ -177,7 +177,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `bridge.d3.enabled`                | If disabled, Highcharts will be used instead of D3                                                                                                                                                                                                                             | `true`    |
 | `bridge.nodeSelector`              | Bridge node labels for pod assignment                                                                                                                                                                                                                                          | `{}`      |
 | `bridge.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                                                                                                                                                            | `""`      |
-| `bridge.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                                                                                                                                                       | `soft`    |
+| `bridge.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                                                                                                                                                       | `""`      |
 | `bridge.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                                                                                                                                                      | `""`      |
 | `bridge.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                                                                                                                                                                                                          | `""`      |
 | `bridge.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                                                                                                                                                                                                      | `[]`      |
@@ -224,7 +224,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `shipyardController.config.validation.serviceNameMaxSize` | Maximum number of characters that a service name can have                                 | `43`                  |
 | `shipyardController.nodeSelector`                         | Shipyard Controller node labels for pod assignment                                        | `{}`                  |
 | `shipyardController.podAffinityPreset`                    | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                  |
-| `shipyardController.podAntiAffinityPreset`                | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`                |
+| `shipyardController.podAntiAffinityPreset`                | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                  |
 | `shipyardController.nodeAffinityPreset.type`              | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`                  |
 | `shipyardController.nodeAffinityPreset.key`               | Node label key to match Ignored if `affinity` is set.                                     | `""`                  |
 | `shipyardController.nodeAffinityPreset.values`            | Node label values to match. Ignored if `affinity` is set.                                 | `[]`                  |
@@ -247,7 +247,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `secretService.image.tag`                 | Secret Service image tag                                                                  | `""`             |
 | `secretService.nodeSelector`              | Secret Service node labels for pod assignment                                             | `{}`             |
 | `secretService.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`             |
-| `secretService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`           |
+| `secretService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`             |
 | `secretService.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`             |
 | `secretService.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`             |
 | `secretService.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`             |
@@ -274,7 +274,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `resourceService.env.DIRECTORY_STAGE_STRUCTURE` | Enable directory based structure in the Keptn configuration git repository                | `false`            |
 | `resourceService.nodeSelector`                  | Resource Service node labels for pod assignment                                           | `{}`               |
 | `resourceService.podAffinityPreset`             | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`               |
-| `resourceService.podAntiAffinityPreset`         | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`             |
+| `resourceService.podAntiAffinityPreset`         | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`               |
 | `resourceService.nodeAffinityPreset.type`       | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`               |
 | `resourceService.nodeAffinityPreset.key`        | Node label key to match Ignored if `affinity` is set.                                     | `""`               |
 | `resourceService.nodeAffinityPreset.values`     | Node label values to match. Ignored if `affinity` is set.                                 | `[]`               |
@@ -298,7 +298,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `mongodbDatastore.image.tag`                 | MongoDB Datastore image tag                                                               | `""`                |
 | `mongodbDatastore.nodeSelector`              | MongoDB Datastore node labels for pod assignment                                          | `{}`                |
 | `mongodbDatastore.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                |
-| `mongodbDatastore.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`              |
+| `mongodbDatastore.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                |
 | `mongodbDatastore.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`                |
 | `mongodbDatastore.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`                |
 | `mongodbDatastore.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`                |
@@ -322,7 +322,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `lighthouseService.image.tag`                 | Lighthouse Service image tag                                                              | `""`                 |
 | `lighthouseService.nodeSelector`              | Lighthouse Service node labels for pod assignment                                         | `{}`                 |
 | `lighthouseService.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                 |
-| `lighthouseService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`               |
+| `lighthouseService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                 |
 | `lighthouseService.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`                 |
 | `lighthouseService.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`                 |
 | `lighthouseService.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`                 |
@@ -346,7 +346,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `statisticsService.image.tag`                 | Statistics Service image tag                                                              | `""`                 |
 | `statisticsService.nodeSelector`              | Statistics Service node labels for pod assignment                                         | `{}`                 |
 | `statisticsService.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                 |
-| `statisticsService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`               |
+| `statisticsService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                 |
 | `statisticsService.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`                 |
 | `statisticsService.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`                 |
 | `statisticsService.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`                 |
@@ -370,7 +370,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `approvalService.image.tag`                 | Approval Service image tag                                                                | `""`               |
 | `approvalService.nodeSelector`              | Approval Service node labels for pod assignment                                           | `{}`               |
 | `approvalService.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`               |
-| `approvalService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`             |
+| `approvalService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`               |
 | `approvalService.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`               |
 | `approvalService.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`               |
 | `approvalService.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`               |
@@ -394,7 +394,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `webhookService.image.tag`                 | Webhook Service image tag                                                                 | `""`              |
 | `webhookService.nodeSelector`              | Webhook Service node labels for pod assignment                                            | `{}`              |
 | `webhookService.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`              |
-| `webhookService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`            |
+| `webhookService.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`              |
 | `webhookService.nodeAffinityPreset.type`   | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`              |
 | `webhookService.nodeAffinityPreset.key`    | Node label key to match Ignored if `affinity` is set.                                     | `""`              |
 | `webhookService.nodeAffinityPreset.values` | Node label values to match. Ignored if `affinity` is set.                                 | `[]`              |
@@ -437,7 +437,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `containerSecurityContext.enabled`      | Enable the default container security context for all containers                          | `true`          |
 | `nodeSelector`                          | Default node labels for pod assignment                                                    | `{}`            |
 | `podAffinityPreset`                     | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`            |
-| `podAntiAffinityPreset`                 | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `soft`          |
+| `podAntiAffinityPreset`                 | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`            |
 | `nodeAffinityPreset.type`               | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`            |
 | `nodeAffinityPreset.key`                | Node label key to match Ignored if `affinity` is set.                                     | `""`            |
 | `nodeAffinityPreset.values`             | Node label values to match. Ignored if `affinity` is set.                                 | `[]`            |
