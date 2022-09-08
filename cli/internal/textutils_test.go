@@ -14,6 +14,7 @@ func Test_JSONPathToJSONObj(t *testing.T) {
 		out  string
 		err  bool
 	}{
+		{"0", []string{"a.b=v1", "a.b.c=v2"}, "", true},
 		{"1", []string{""}, "", true},
 		{"2", []string{"a.b.c=v1"}, `{"a":{"b":{"c":"v1"}}}`, false},
 		{"3", []string{"a.b.c=v", "a.b.d=v2"}, `{"a":{"b":{"c":"v","d":"v2"}}}`, false},
@@ -54,6 +55,14 @@ func TestUnfoldMap(t *testing.T) {
 			},
 			want:    map[string]interface{}{"project": "pr", "stage": "st", "service": "sv", "a": map[string]interface{}{"b": "value"}, "b": map[string]interface{}{"a": "othervalue"}},
 			wantErr: assert.NoError,
+		},
+		{
+			name: "valid additional fields",
+			args: args{
+				toAdd: map[string]string{"project": "pr", "stage": "st", "service": "sv", "a.b": "value", "b.a": "othervalue", "b.a.c": "myotherCvalue"},
+			},
+			want:    map[string]interface{}{},
+			wantErr: assert.Error,
 		},
 		{
 			name: "receive nil argument",

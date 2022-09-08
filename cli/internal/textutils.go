@@ -79,14 +79,17 @@ func JSONPathToJSONObj(input []string) (string, error) {
 				currentNode.AddChild(pathParts[i], child)
 				currentNode = child
 			} else {
-				currentNode = node.(*innerNode)
+				if cn, ok := node.(*innerNode); ok {
+					currentNode = cn
+				} else {
+					return "", fmt.Errorf("unable to map path part %s as the value is already bound to %s", pathParts[i], node.(*leafnode).value)
+				}
 			}
 		}
 		leaf := newLeafNode()
 		leaf.value = pathValuePair[1]
 		currentNode.AddChild(pathParts[len(pathParts)-1], leaf)
 	}
-
 	return root.String(), nil
 }
 
