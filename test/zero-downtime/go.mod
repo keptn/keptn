@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/benbjohnson/clock v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.18.1-0.20220831070853-f07eb2f4a74b
+	github.com/keptn/go-utils v0.18.1-0.20220907064406-278ad8bdb217
 	github.com/keptn/keptn/test/go-tests v0.0.0-20220624124934-adc989bafa78
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
