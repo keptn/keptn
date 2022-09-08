@@ -134,7 +134,7 @@ func TestHandleTaskEvent(t *testing.T) {
 		projectMvRepo         db.ProjectMVRepo
 		eventRepo             db.EventRepo
 		sequenceExecutionRepo *db_mock.SequenceExecutionRepoMock
-		taskFinishedHook      *fake.ISequenceTaskFinishedHookMock
+		taskFinishedHook      *fake.ISequenceTaskEventHookMock
 	}
 	type args struct {
 		event apimodels.KeptnContextExtendedCE
@@ -174,7 +174,7 @@ func TestHandleTaskEvent(t *testing.T) {
 						return nil, nil
 					},
 				},
-				taskFinishedHook: &fake.ISequenceTaskFinishedHookMock{OnSequenceTaskFinishedFunc: func(event apimodels.KeptnContextExtendedCE) {}},
+				taskFinishedHook: &fake.ISequenceTaskEventHookMock{OnSequenceTaskEventFunc: func(event apimodels.KeptnContextExtendedCE) {}},
 			},
 			args: args{
 				event: GetTestFinishedEventWithUnmatchedSource(),
@@ -191,15 +191,15 @@ func TestHandleTaskEvent(t *testing.T) {
 				sequenceExecutionRepo: tt.fields.sequenceExecutionRepo,
 			}
 
-			em.AddSequenceTaskFinishedHook(tt.fields.taskFinishedHook)
+			em.AddSequenceTaskEventHook(tt.fields.taskFinishedHook)
 			if err := em.handleTaskEvent(tt.args.event); (err != nil) != tt.wantErr {
 				t.Errorf("handleTaskFinished() error = %v, wantErr %v", err, tt.wantErr)
 			}
 
 			if tt.wantHookCalled {
-				require.Len(t, tt.fields.taskFinishedHook.OnSequenceTaskFinishedCalls(), 1)
+				require.Len(t, tt.fields.taskFinishedHook.OnSequenceTaskEventCalls(), 1)
 			} else {
-				require.Empty(t, tt.fields.taskFinishedHook.OnSequenceTaskFinishedCalls())
+				require.Empty(t, tt.fields.taskFinishedHook.OnSequenceTaskEventCalls())
 			}
 		})
 	}

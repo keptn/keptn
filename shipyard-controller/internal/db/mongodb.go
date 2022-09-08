@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	dbcommon "github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -13,7 +14,7 @@ func SetupTTLIndex(ctx context.Context, propertyName string, duration time.Durat
 	ttlInSeconds := int32(duration.Seconds())
 	indexName := propertyName + "_1"
 	cur, err := collection.Indexes().List(ctx)
-	defer closeCursor(ctx, cur)
+	defer dbcommon.CloseCursor(ctx, cur)
 
 	if err != nil {
 		return fmt.Errorf("could not load list of indexes of collection %s: %w", collection.Name(), err)

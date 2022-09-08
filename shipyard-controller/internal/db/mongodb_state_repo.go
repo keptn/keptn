@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"strings"
 	"time"
 
@@ -84,7 +85,7 @@ func (mdbrepo *MongoDBStateRepo) FindSequenceStates(filter models.StateFilter) (
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
