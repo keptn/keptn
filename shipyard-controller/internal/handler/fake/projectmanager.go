@@ -94,10 +94,10 @@ func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams, inte
 		panic("IProjectManagerMock.CreateFunc: method is nil but IProjectManager.Create was just called")
 	}
 	callInfo := struct {
-		Params *models.CreateProjectParams
+		Params          *models.CreateProjectParams
 		InternalOptions models.InternalCreateProjectOptions
 	}{
-		Params: params,
+		Params:          params,
 		InternalOptions: internalOptions,
 	}
 	mock.lockCreate.Lock()
@@ -110,11 +110,11 @@ func (mock *IProjectManagerMock) Create(params *models.CreateProjectParams, inte
 // Check the length with:
 //     len(mockedIProjectManager.CreateCalls())
 func (mock *IProjectManagerMock) CreateCalls() []struct {
-	Params *models.CreateProjectParams
+	Params          *models.CreateProjectParams
 	InternalOptions models.InternalCreateProjectOptions
 } {
 	var calls []struct {
-		Params *models.CreateProjectParams
+		Params          *models.CreateProjectParams
 		InternalOptions models.InternalCreateProjectOptions
 	}
 	mock.lockCreate.RLock()

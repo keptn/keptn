@@ -549,7 +549,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 
 			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 
-			smv.OnSequenceTaskFinished(event)
+			smv.OnSequenceTaskEvent(event)
 
 			if tt.expectUpdateStateToBeCalled {
 				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
@@ -662,7 +662,7 @@ func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testi
 
 		for i, event := range events {
 
-			smv.OnSequenceTaskFinished(event)
+			smv.OnSequenceTaskEvent(event)
 			call := SequenceStateRepo.UpdateSequenceStateCalls()[i]
 			require.Equal(t, event.ID, call.State.Stages[0].LatestEvent.ID)
 			if *event.Source == goodSource {
@@ -673,25 +673,6 @@ func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testi
 			}
 		}
 	})
-}
-
-func TestSequenceStateMaterializedView_OnSequenceTaskStarted(t *testing.T) {
-	type args struct {
-		event models.KeptnContextExtendedCE
-	}
-	tests := []struct {
-		name   string
-		fields SequenceStateMVTestFields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
-			smv.OnSequenceTaskStarted(tt.args.event)
-		})
-	}
 }
 
 func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
@@ -836,7 +817,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 
 			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 
-			smv.OnSequenceTaskTriggered(event)
+			smv.OnSequenceTaskEvent(event)
 
 			if tt.expectUpdateStateToBeCalled {
 				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))

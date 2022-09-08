@@ -6,6 +6,7 @@ import (
 	"errors"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
+	"github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
@@ -182,7 +183,7 @@ func (m *MongoDBEventQueueRepo) GetEventQueueSequenceStates(filter models.EventQ
 		searchOptions[stageScope] = filter.Scope.Stage
 	}
 	cur, err := collection.Find(ctx, searchOptions)
-	defer closeCursor(ctx, cur)
+	defer common.CloseCursor(ctx, cur)
 
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
@@ -248,7 +249,7 @@ func insertQueueItemIntoCollection(ctx context.Context, collection *mongo.Collec
 
 func getQueueItemsFromCollection(collection *mongo.Collection, ctx context.Context, searchOptions bson.M, opts ...*options.FindOptions) ([]models.QueueItem, error) {
 	cur, err := collection.Find(ctx, searchOptions, opts...)
-	defer closeCursor(ctx, cur)
+	defer common.CloseCursor(ctx, cur)
 
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
