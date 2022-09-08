@@ -139,7 +139,7 @@ func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, servi
 		},
 	})
 
-	log.Debugf("[ProjectsRepo] Updating project service; filter=%v, update=%v, arrayFilter=%v", filter, update, arrayFilter)
+	log.Debugf("[ProjectsRepo] Updating project service; filter=%v, update=%v, arrayFilter=%v", filter, update, arrayFilter.ArrayFilters)
 
 	result := projectCollection.FindOneAndUpdate(ctx, filter, update, arrayFilter)
 	return result.Err()
