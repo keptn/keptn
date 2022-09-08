@@ -131,7 +131,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 ### API Service
 
 | Name                                           | Description                                                                                                                                  | Value   |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | -------- |
 | `apiService.tokenSecretName`                   | K8s secret to be used as API token in the API Service                                                                                        | `nil`   |
 | `apiService.image.registry`                    | API Service image registry                                                                                                                   | `""`    |
 | `apiService.image.repository`                  | API Service image repository                                                                                                                 | `api`   |
