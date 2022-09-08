@@ -70,18 +70,6 @@ The name of the sequence has to be provided as an argument to the command. The s
 		}
 		return nil
 	},
-	PreRunE: func(cmd *cobra.Command, args []string) error {
-		// when user gives all event data from a file, then
-		// we do not validate any options
-		if sequence.DataFrom != nil {
-			return nil
-		}
-		// else we enfource --project/--stage/--service
-		if sequence.Project == nil || sequence.Stage == nil || sequence.Service == nil {
-			return fmt.Errorf("--project, --stage or --service option missing")
-		}
-		return nil
-	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return doTriggerSequence(sequence, args[0])
 	},
@@ -120,6 +108,8 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 
 	// set event data
 	eventData := make(map[string]interface{})
+
+	// custom event data given via --data
 	if len(*sequence.Data) > 0 {
 		customData, err := internal.UnfoldMap(*sequence.Data)
 		if err != nil {
@@ -127,6 +117,8 @@ func doTriggerSequence(sequenceInputData sequenceStruct, sequenceName string) er
 		}
 		eventData = customData
 	}
+
+	// common event data given by other fields
 	eventData["project"] = *sequence.Project
 	eventData["stage"] = *sequence.Stage
 	eventData["service"] = *sequence.Service
@@ -166,12 +158,15 @@ func init() {
 	triggerCmd.AddCommand(triggerSequenceCmd)
 	sequence.Project = triggerSequenceCmd.Flags().StringP("project", "", "",
 		"The project containing the service for which the new artifact will be triggered")
+	triggerSequenceCmd.MarkFlagRequired("project")
 
 	sequence.Service = triggerSequenceCmd.Flags().StringP("service", "", "",
 		"The service for which the new artifact will be triggered")
+	triggerSequenceCmd.MarkFlagRequired("service")
 
 	sequence.Stage = triggerSequenceCmd.Flags().StringP("stage", "", "",
 		"The stage in which the new artifact will be triggered")
+	triggerSequenceCmd.MarkFlagRequired("stage")
 
 	sequence.Labels = triggerSequenceCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
 	sequence.Data = triggerSequenceCmd.Flags().StringToStringP("data", "d", nil, "Additional field data to be merged into da data block of the cloud event")
