@@ -169,6 +169,6 @@ func init() {
 	triggerSequenceCmd.MarkFlagRequired("stage")
 
 	sequence.Labels = triggerSequenceCmd.Flags().StringToStringP("labels", "l", nil, "Additional labels to be included in the event")
-	sequence.Data = triggerSequenceCmd.Flags().StringToStringP("data", "d", nil, "Comma sparated list of additional fields to be merged into the data block of the cloud event, e.g. --data test.strategy=direct,lorem.ipsum=yes")
+	sequence.Data = triggerSequenceCmd.Flags().StringToStringP("data", "d", nil, "Comma separated list of additional fields to be merged into the data block of the cloud event, e.g. --data test.strategy=direct,lorem.ipsum=yes")
 
 }
