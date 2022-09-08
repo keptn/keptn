@@ -18,12 +18,11 @@ import (
 )
 
 type sequenceStruct struct {
-	Project  *string            `json:"project"`
-	Service  *string            `json:"service"`
-	Stage    *string            `json:"stage"`
-	Labels   *map[string]string `json:"labels"`
-	Data     *map[string]string `json:"data"`
-	DataFrom *string            `json:"data-from"`
+	Project *string            `json:"project"`
+	Service *string            `json:"service"`
+	Stage   *string            `json:"stage"`
+	Labels  *map[string]string `json:"labels"`
+	Data    *map[string]string `json:"data"`
 }
 
 var sequence = sequenceStruct{}
