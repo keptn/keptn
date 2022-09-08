@@ -5,6 +5,7 @@ import (
 	"github.com/keptn/go-utils/pkg/api/models"
 	dbcommon "github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"go.mongodb.org/mongo-driver/bson"
+	"strings"
 )
 
 var ErrEmptyUpdate = errors.New("update object does not contain any changes")
@@ -53,7 +54,10 @@ func (s *ServiceUpdate) GetBSONUpdate() (bson.D, error) {
 		if err != nil {
 			return nil, err
 		}
-		encodedEventType := dbcommon.EncodeKey(s.eventTypeUpdate.EventType)
+		encodedEventType := s.eventTypeUpdate.EventType
+		if strings.Contains(s.eventTypeUpdate.EventType, ".") {
+			encodedEventType = dbcommon.EncodeKey(s.eventTypeUpdate.EventType)
+		}
 		changeSet["stages.$.services.$[service].lastEventTypes."+encodedEventType] = encodedEventInfo
 	}
 
