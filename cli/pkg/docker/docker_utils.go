@@ -2,6 +2,7 @@ package docker
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -34,8 +35,13 @@ func CheckImageAvailability(image, tag string, client *http.Client) error {
 		client = http.DefaultClient
 	}
 	if strings.HasPrefix(image, "docker.io/") {
-		resp, err := client.Get("https://index.docker.io/v1/repositories/" +
-			strings.TrimPrefix(image, "docker.io/") + "/tags/" + tag)
+		// [docker.io, namespace, repository]
+		imageArr := strings.Split(image, "/")
+		if len(imageArr) != 3 {
+			return fmt.Errorf("Invalid image name: the format should be 'docker.io/<namespace>/<repository>'")
+		}
+		resp, err := client.Get("https://hub.docker.com/v2/repositories/" + imageArr[1] + "/" +
+			imageArr[2] + "/tags/" + tag)
 		if err != nil {
 			return err
 		}
