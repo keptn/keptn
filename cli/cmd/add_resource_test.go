@@ -92,8 +92,8 @@ func TestAddResourceToProjectAndStage(t *testing.T) {
 	}
 }
 
-// TestAddResourceAllStagesWithoutService tests that using --all-stages without --service doesn't work
-func TestAddResourceAllStagesWithoutService(t *testing.T) {
+// TestAddResourceAllStages tests that using --all-stages works
+func TestAddResourceAllStages(t *testing.T) {
 
 	setup(t)
 
@@ -103,7 +103,7 @@ func TestAddResourceAllStagesWithoutService(t *testing.T) {
 	cmd := fmt.Sprintf("add-resource --all-stages --project=%s --resource=%s "+
 		"--resourceUri=%s --mock", "sockshop", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
-	if err.Error() != "--service and --project need to be supplied when using --all-stages" {
+	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
 	}
 }
@@ -118,6 +118,22 @@ func TestAddResourceToProjectServiceAllStages(t *testing.T) {
 
 	cmd := fmt.Sprintf("add-resource --project=%s --service=%s --all-stages --resource=%s "+
 		"--resourceUri=%s --mock", "sockshop", "carts", resourceFileName, "resource/"+resourceFileName)
+	_, err := executeActionCommandC(cmd)
+	if err != nil {
+		t.Errorf(unexpectedErrMsg, err)
+	}
+}
+
+// TestAddResourceToProjectServiceStage tests that using --project, --service and --stage works
+func TestAddResourceToProjectServiceStage(t *testing.T) {
+
+	setup(t)
+
+	resourceFileName := "testResource.txt"
+	defer testResource(t, resourceFileName, "")()
+
+	cmd := fmt.Sprintf("add-resource --project=%s --service=%s --stage=%s --resource=%s "+
+		"--resourceUri=%s --mock", "sockshop", "carts", "dev", resourceFileName, "resource/"+resourceFileName)
 	_, err := executeActionCommandC(cmd)
 	if err != nil {
 		t.Errorf(unexpectedErrMsg, err)
