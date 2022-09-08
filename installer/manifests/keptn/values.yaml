@@ -286,7 +286,7 @@ apiService:
     ## @param apiService.image.registry API Service image registry
     registry: ""
     ## @param apiService.image.repository API Service image repository
-    repository: "api"    
+    repository: "api"
     ## @param apiService.image.tag API Service image tag
     tag: ""
   maxAuth:
@@ -298,7 +298,7 @@ apiService:
     requestBurst: "2"
   eventValidation:
     ## @param apiService.eventValidation.enabled Enable stricter validation of inbound events via public the event endpoint
-    enabled: true
+    enabled: false
     ## @param apiService.eventValidation.maxEventSizeKB specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0
     maxEventSizeKB: "64"
   ## @param apiService.nodeSelector API Service node labels for pod assignment
@@ -534,7 +534,7 @@ secretService:
     ## @param secretService.image.registry Secret Service image registry
     registry: ""
     ## @param secretService.image.repository Secret Service image repository
-    repository: "secret-service"     
+    repository: "secret-service"
     ## @param secretService.image.tag Secret Service image tag
     tag: ""
   ## @param secretService.nodeSelector Secret Service node labels for pod assignment
@@ -568,7 +568,7 @@ resourceService:
     ## @param resourceService.image.registry Resource Service image registry
     registry: ""
     ## @param resourceService.image.repository Resource Service image repository
-    repository: "resource-service"   
+    repository: "resource-service"
     ## @param resourceService.image.tag Resource Service image tag
     tag: ""
   env:
@@ -609,7 +609,7 @@ mongodbDatastore:
     ## @param mongodbDatastore.image.registry MongoDB Datastore image registry
     registry: ""
     ## @param mongodbDatastore.image.repository MongoDB Datastore image repository
-    repository: "mongodb-datastore"  
+    repository: "mongodb-datastore"
     ## @param mongodbDatastore.image.tag MongoDB Datastore image tag
     tag: ""
   ## @param mongodbDatastore.nodeSelector MongoDB Datastore node labels for pod assignment
@@ -643,7 +643,7 @@ lighthouseService:
     ## @param lighthouseService.image.registry Lighthouse Service image registry
     registry: ""
     ## @param lighthouseService.image.repository Lighthouse Service image repository
-    repository: "lighthouse-service" 
+    repository: "lighthouse-service"
     ## @param lighthouseService.image.tag Lighthouse Service image tag
     tag: ""
   ## @param lighthouseService.nodeSelector Lighthouse Service node labels for pod assignment
@@ -677,7 +677,7 @@ statisticsService:
     ## @param statisticsService.image.registry Statistics Service image registry
     registry: ""
     ## @param statisticsService.image.repository Statistics Service image repository
-    repository: "statistics-service" 
+    repository: "statistics-service"
     ## @param statisticsService.image.tag Statistics Service image tag
     tag: ""
   ## @param statisticsService.nodeSelector Statistics Service node labels for pod assignment
@@ -711,7 +711,7 @@ approvalService:
     ## @param approvalService.image.registry Approval Service image registry
     registry: ""
     ## @param approvalService.image.repository Approval Service image repository
-    repository: "approval-service"   
+    repository: "approval-service"
     ## @param approvalService.image.tag Approval Service image tag
     tag: ""
   ## @param approvalService.nodeSelector Approval Service node labels for pod assignment
@@ -745,7 +745,7 @@ webhookService:
     ## @param webhookService.image.registry Webhook Service image registry
     registry: ""
     ## @param webhookService.image.repository Webhook Service image repository
-    repository: "webhook-service"    
+    repository: "webhook-service"
     ## @param webhookService.image.tag Webhook Service image tag
     tag: ""
   ## @param webhookService.nodeSelector Webhook Service node labels for pod assignment
