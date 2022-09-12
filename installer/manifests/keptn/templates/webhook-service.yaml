@@ -69,7 +69,7 @@ spec:
       {{- else }}
       affinity:
         {{- include "keptn.affinities.pods" (dict "value" .Values.webhookService.podAffinity "default" .Values.podAffinity "component" "webhook-service" "context" . ) | indent 8 }}
-        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.webhookService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "webhook-service" "context" . ) | nindent 10 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.webhookService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "webhook-service" "context" . ) | indent 8 }}
       {{- end }}
 ---
 apiVersion: v1
