@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 )
@@ -78,13 +79,40 @@ func JSONPathToJSONObj(input []string) (string, error) {
 				currentNode.AddChild(pathParts[i], child)
 				currentNode = child
 			} else {
-				currentNode = node.(*innerNode)
+				if cn, ok := node.(*innerNode); ok {
+					currentNode = cn
+				} else {
+					return "", fmt.Errorf("unable to map path part %s as the value is already bound to %s", pathParts[i], node.(*leafnode).value)
+				}
 			}
 		}
 		leaf := newLeafNode()
 		leaf.value = pathValuePair[1]
 		currentNode.AddChild(pathParts[len(pathParts)-1], leaf)
 	}
-
 	return root.String(), nil
+}
+
+// UnfoldToMap takes a map of with keys of the form "a.b.c" and a value "v" each
+// and returns an "unfold" map containing map[a[b[c]]] = v
+func UnfoldMap(inMap map[string]string) (map[string]interface{}, error) {
+	if inMap == nil {
+		return map[string]interface{}{}, nil
+	}
+	var transformed []string
+	for path, value := range inMap {
+		transformed = append(transformed, path+"="+value)
+	}
+	s, err := JSONPathToJSONObj(transformed)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	var res map[string]interface{}
+	err = json.Unmarshal([]byte(s), &res)
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+
+	return res, nil
 }
