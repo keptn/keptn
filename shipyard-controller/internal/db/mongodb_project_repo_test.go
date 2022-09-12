@@ -2,6 +2,8 @@ package db
 
 import (
 	"fmt"
+	common2 "github.com/keptn/keptn/shipyard-controller/internal/db/common"
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"testing"
 
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
@@ -93,4 +95,120 @@ func CleanupDB(t *testing.T, r *MongoDBProjectsRepo) {
 		err = r.DeleteProject(p.ProjectName)
 		require.Nil(t, err)
 	}
+}
+
+func TestMongoDBProjectsRepo_UpdateProjectService(t *testing.T) {
+	r := NewMongoDBProjectsRepo(GetMongoDBConnectionInstance())
+
+	err := r.CreateProject(&apimodels.ExpandedProject{
+		ProjectName: "my-project",
+		Stages: []*apimodels.ExpandedStage{
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+					{
+						ServiceName: "my-other-service",
+					},
+				},
+				StageName: "dev",
+			},
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+				},
+				StageName: "staging",
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	eventContextInfo := apimodels.EventContextInfo{
+		EventID:      "event-id",
+		KeptnContext: "event-context",
+		Time:         "event-timestamp",
+	}
+	eventType := "sh.keptn.event.test.triggered"
+
+	serviceUpdate := mvmodels.ServiceUpdate{}
+	serviceUpdate.SetDeployedImage("my-new-image")
+	serviceUpdate.SetEventTypeUpdate(&mvmodels.EventUpdate{
+		EventType: eventType,
+		EventInfo: eventContextInfo,
+	})
+
+	err = r.UpdateProjectService("my-project", "dev", "my-service", serviceUpdate)
+
+	require.Nil(t, err)
+
+	projectInfo, err := r.GetProject("my-project")
+	require.Nil(t, err)
+
+	require.Equal(t, "my-new-image", projectInfo.Stages[0].Services[0].DeployedImage)
+	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes[common2.EncodeKey(eventType)])
+
+	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
+	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)
+}
+
+func TestMongoDBKeyEncodingProjectsRepo_UpdateProjectService(t *testing.T) {
+	r := NewMongoDBKeyEncodingProjectsRepo(GetMongoDBConnectionInstance())
+
+	err := r.CreateProject(&apimodels.ExpandedProject{
+		ProjectName: "my-project",
+		Stages: []*apimodels.ExpandedStage{
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+					{
+						ServiceName: "my-other-service",
+					},
+				},
+				StageName: "dev",
+			},
+			{
+				Services: []*apimodels.ExpandedService{
+					{
+						ServiceName: "my-service",
+					},
+				},
+				StageName: "staging",
+			},
+		},
+	})
+
+	require.Nil(t, err)
+
+	eventContextInfo := apimodels.EventContextInfo{
+		EventID:      "event-id",
+		KeptnContext: "event-context",
+		Time:         "event-timestamp",
+	}
+	eventType := "sh.keptn.event.test.triggered"
+
+	serviceUpdate := mvmodels.ServiceUpdate{}
+	serviceUpdate.SetDeployedImage("my-new-image")
+	serviceUpdate.SetEventTypeUpdate(&mvmodels.EventUpdate{
+		EventType: eventType,
+		EventInfo: eventContextInfo,
+	})
+
+	err = r.UpdateProjectService("my-project", "dev", "my-service", serviceUpdate)
+
+	require.Nil(t, err)
+
+	projectInfo, err := r.GetProject("my-project")
+	require.Nil(t, err)
+
+	require.Equal(t, "my-new-image", projectInfo.Stages[0].Services[0].DeployedImage)
+	require.Equal(t, eventContextInfo, projectInfo.Stages[0].Services[0].LastEventTypes[eventType])
+
+	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
+	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)
 }

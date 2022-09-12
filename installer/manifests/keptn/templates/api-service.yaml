@@ -78,7 +78,7 @@ spec:
             - name: HIDE_DEPRECATED
               value: "{{ ((.Values.features).swagger).hideDeprecated | default false }}"
             - name: EVENT_VALIDATION_ENABLED
-              value: {{ (.Values.apiService.eventValidation).enabled | default true | quote }}
+              value: {{ (.Values.apiService.eventValidation).enabled | default false | quote }}
             - name: MAX_EVENT_SIZE_KB
               value: '{{ (.Values.apiService.eventValidation).maxEventSizeKB | default "64"}}'
           {{- include "keptn.common.container-security-context" . | nindent 10 }}

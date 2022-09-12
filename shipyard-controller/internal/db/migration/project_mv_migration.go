@@ -26,7 +26,7 @@ type ProjectMVMigrator struct {
 func (p *ProjectMVMigrator) MigrateKeys() error {
 	projects, err := p.projectRepo.GetProjects()
 	if err != nil {
-		return fmt.Errorf("could not migrate keys for last event types in project mv collection: %w", err)
+		return fmt.Errorf("could not migrate keys for last event types in project projects_mv collection: %w", err)
 	}
 	return p.updateProjects(projects)
 }
@@ -38,7 +38,7 @@ func (p *ProjectMVMigrator) updateProjects(projects []*apimodels.ExpandedProject
 	for _, project := range projects {
 		err := p.projectRepo.UpdateProject(project)
 		if err != nil {
-			return fmt.Errorf("could not migrate keys for last event types in project mv collection: %w", err)
+			return fmt.Errorf("could not migrate keys for last event types in project projects_mv collection: %w", err)
 		}
 	}
 	return nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -339,7 +340,7 @@ func (mdbrepo *MongoDBUniformRepo) getCollectionAndContext() (*mongo.Collection,
 func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUniformIntegrationsParams, collection *mongo.Collection, ctx context.Context) ([]apimodels.Integration, error) {
 	searchOptions := mdbrepo.getSearchOptions(searchParams)
 	cur, err := collection.Find(ctx, searchOptions)
-	defer closeCursor(ctx, cur)
+	defer common.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err

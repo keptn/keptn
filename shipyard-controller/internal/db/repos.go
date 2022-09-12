@@ -1,6 +1,7 @@
 package db
 
 import (
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"time"
 
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
@@ -75,6 +76,7 @@ type ProjectRepo interface {
 	GetProject(projectName string) (*apimodels.ExpandedProject, error)
 	CreateProject(project *apimodels.ExpandedProject) error
 	UpdateProject(project *apimodels.ExpandedProject) error
+	UpdateProjectService(projectName, stageName, serviceName string, properties mvmodels.ServiceUpdate) error
 	UpdateProjectUpstream(projectName string, uri string, user string) error
 	DeleteProject(projectName string) error
 }

@@ -2,12 +2,13 @@ package handler
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"gopkg.in/yaml.v3"
-	"time"
 )
 
 //IStageManager provides an interface for stage CRUD operations
@@ -39,9 +40,15 @@ func (s BranchingStageManager) CreateStage(params models.CreateStageParams) erro
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, params.ProjectName, err)
 	}
 
+	auth, err := getAuthMethod(credentials)
+	if err != nil {
+		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, params.Project.ProjectName, err)
+	}
+
 	gitContext := common_models.GitContext{
 		Project:     params.ProjectName,
 		Credentials: credentials,
+		AuthMethod:  auth,
 	}
 
 	if !s.git.ProjectExists(gitContext) {
@@ -143,9 +150,15 @@ func (dm DirectoryStageManager) establishStageContext(project models.Project, st
 		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
+	auth, err := getAuthMethod(credentials)
+	if err != nil {
+		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
+		AuthMethod:  auth,
 	}
 
 	if !dm.git.ProjectExists(gitContext) {
