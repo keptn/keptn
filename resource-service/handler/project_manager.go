@@ -49,7 +49,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	auth, err := getAuthMethod(credentials)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldEstablishAuthMethod, project.ProjectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
@@ -135,7 +135,7 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 
 	auth, err := getAuthMethod(credentials)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldEstablishAuthMethod, project.ProjectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{

@@ -42,7 +42,7 @@ func (s BranchingStageManager) CreateStage(params models.CreateStageParams) erro
 
 	auth, err := getAuthMethod(credentials)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldEstablishAuthMethod, params.Project.ProjectName, err)
+		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, params.Project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
@@ -152,7 +152,7 @@ func (dm DirectoryStageManager) establishStageContext(project models.Project, st
 
 	auth, err := getAuthMethod(credentials)
 	if err != nil {
-		return nil, "", fmt.Errorf(errors.ErrMsgCouldEstablishAuthMethod, project.ProjectName, err)
+		return nil, "", fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
