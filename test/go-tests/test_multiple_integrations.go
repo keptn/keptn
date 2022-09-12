@@ -124,7 +124,7 @@ spec:
             name: "my-webhook-k8s-secret"
             key: "my-key"
       requests:
-        - url:  https://deelay.me/10200/http://keptn.sh
+        - url:  https://deelay.me/17000/http://keptn.sh
           method: GET
     - type: "sh.keptn.event.echo3.triggered"
       subscriptionID: ${echo3-sub-id}
