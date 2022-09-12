@@ -105,5 +105,5 @@ spec:
       {{- else }}
       affinity:
         {{- include "keptn.affinities.pods" (dict "value" .Values.resourceService.podAffinity "default" .Values.podAffinity "component" "resource-service" "context" . ) | indent 8 }}
-        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.resourceService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "resource-service" "context" . ) | nindent 10 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.resourceService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "resource-service" "context" . ) | indent 8 }}
       {{- end }}

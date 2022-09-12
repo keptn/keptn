@@ -104,7 +104,7 @@ spec:
       {{- else }}
       affinity:
         {{- include "keptn.affinities.pods" (dict "value" .Values.statisticsService.podAffinity "default" .Values.podAffinity "component" "statistics-service" "context" . ) | indent 8 }}
-        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.statisticsService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "statistics-service" "context" . ) | nindent 10 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.statisticsService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "statistics-service" "context" . ) | indent 8 }}
       {{- end }}
 ---
 apiVersion: v1
