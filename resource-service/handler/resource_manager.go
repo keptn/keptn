@@ -173,9 +173,15 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 		return nil, "", fmt.Errorf(kerrors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
+	auth, err := getAuthMethod(credentials)
+	if err != nil {
+		return nil, "", fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
+		AuthMethod:  auth,
 	}
 
 	if !p.git.ProjectExists(gitContext) {
