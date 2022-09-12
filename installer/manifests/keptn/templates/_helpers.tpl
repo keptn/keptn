@@ -354,14 +354,14 @@ Return a nodeAffinity definition
 */}}
 {{- define "keptn.affinities.nodes" -}}
   {{- $preset := default "" .default -}}
-  {{- if .value -}}
+  {{- if .value }}
     {{- $preset = .value -}}
-  {{- end -}}
-  {{- if eq $preset.type "soft" -}}
-    {{- include "keptn.affinities.nodes.soft" ( dict "preset" $preset "context" .context ) -}}
-  {{- else if eq $preset.type "hard" -}}
-    {{- include "keptn.affinities.nodes.hard" ( dict "preset" $preset "context" .context ) -}}
-  {{- end -}}
+  {{- end }}
+  {{- if eq $preset.type "soft" }}
+    {{- include "keptn.affinities.nodes.soft" ( dict "preset" $preset "context" .context ) }}
+  {{- else if eq $preset.type "hard" }}
+    {{- include "keptn.affinities.nodes.hard" ( dict "preset" $preset "context" .context ) }}
+  {{- end }}
 {{- end -}}
 
 {{/*
@@ -406,14 +406,25 @@ Return a podAffinity/podAntiAffinity definition
 */}}
 {{- define "keptn.affinities.pods" -}}
   {{- $value := default "" .default -}}
-  {{- if .value -}}
+  {{- if or .value.podAffinityPreset .value.podAntiAffinityPreset }}
     {{- $value = .value -}}
-  {{- end -}}
-  {{- if eq $value "soft" }}
-    {{- include "keptn.affinities.pods.soft" . -}}
-  {{- else if eq $value "hard" }}
-    {{- include "keptn.affinities.pods.hard" . -}}
-  {{- end -}}
+  {{- end }}
+  {{- if and $value.podAffinityPreset ( not $value.podAntiAffinityPreset ) }}
+podAffinity: {{- include "keptn.affinities.pods.mode" ( dict "mode" $value.podAffinityPreset "context" .context ) | nindent 2 }}
+  {{- else if and $value.podAntiAffinityPreset ( not $value.podAffinityPreset ) }}
+podAntiAffinity: {{- include "keptn.affinities.pods.mode" ( dict "mode" $value.podAntiAffinityPreset "context" .context ) | nindent 2 }}
+  {{- end }}
+{{- end -}}
+
+
+{{- define "keptn.affinities.pods.mode" -}}
+{{- if .mode }}
+  {{- if eq .mode "soft" }}
+  {{- include "keptn.affinities.pods.soft" ( dict "component" .component "context"  .context ) }}
+  {{- else if eq .mode "hard" }}
+  {{- include "keptn.affinities.pods.hard" ( dict "component" .component "context"  .context ) }}
+  {{- end }}
+{{- end }}
 {{- end -}}
 
 {{/*
