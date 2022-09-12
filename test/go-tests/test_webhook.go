@@ -209,7 +209,7 @@ func Test_Webhook_Failures(t *testing.T) {
 	taskTypes := []string{"mytask", "mytask-finished", "othertask", "unallowedtask", "unknowntask", "failedtask", "loopback", "loopback2", "loopback3"}
 
 	webhookYamlWithSubscriptionIDs := webhookConfig
-	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
+	webhookYamlWithSubscriptionIDs = GetWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
 
 	// wait some time to make sure the webhook service has pulled the updated subscription
 	<-time.After(20 * time.Second) // sorry :(
@@ -412,7 +412,7 @@ func Test_ExecutingWebhookTargetingClusterInternalAddressesFails(t *testing.T) {
 	taskTypes := []string{"mytask"}
 
 	webhookYamlWithSubscriptionIDs := webhookConfigWithInternalAddress
-	webhookYamlWithSubscriptionIDs = getWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
+	webhookYamlWithSubscriptionIDs = GetWebhookYamlWithSubscriptionIDs(t, taskTypes, projectName, webhookYamlWithSubscriptionIDs)
 
 	// wait some time to make sure the webhook service has pulled the updated subscription
 	<-time.After(20 * time.Second) // sorry :(
@@ -470,7 +470,7 @@ func Test_ExecutingWebhookTargetingClusterInternalAddressesFails(t *testing.T) {
 
 }
 
-func getWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string) string {
+func GetWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string) string {
 	for _, taskType := range taskTypes {
 		eventType := keptnv2.GetTriggeredEventType(taskType)
 		if strings.HasSuffix(taskType, "-finished") {
