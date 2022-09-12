@@ -138,17 +138,17 @@ func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err e
 	return nil
 }
 
-func retrieveDefaultBranchFromEnv() string {
-	if envconfig.Global.DefaultRemoteGitRepositoryBranch == "" {
+func retrieveDefaultBranchFromEnv(env envconfig.EnvConfig) string {
+	if env.DefaultRemoteGitRepositoryBranch == "" {
 		logger.Errorf("Could not determine default remote git repository branch from env variable")
 		return "master"
 	}
-	logger.Infof("Setting default branch to %s", envconfig.Global.DefaultRemoteGitRepositoryBranch)
-	return envconfig.Global.DefaultRemoteGitRepositoryBranch
+	logger.Infof("Setting default branch to %s", env.DefaultRemoteGitRepositoryBranch)
+	return env.DefaultRemoteGitRepositoryBranch
 }
 
 func rewriteDefaultBranch(repo *git.Repository, path string) error {
-	defaultBranch := retrieveDefaultBranchFromEnv()
+	defaultBranch := retrieveDefaultBranchFromEnv(envconfig.Global)
 	if defaultBranch != "master" {
 		file, err := os.OpenFile(path+"/.git/HEAD", os.O_RDWR, 0700)
 		if err != nil {

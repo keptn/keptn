@@ -24,6 +24,7 @@ import (
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
+	envconfig "github.com/keptn/keptn/resource-service/config"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/stretchr/testify/require"
 	. "gopkg.in/check.v1"
@@ -1271,6 +1272,43 @@ func Test_mapError(t *testing.T) {
 			err := mapError(tt.args.err)
 
 			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
+
+func Test_retrieveDefaultBranchFromEnv(t *testing.T) {
+	tests := []struct {
+		name string
+		env  envconfig.EnvConfig
+		want string
+	}{
+		{
+			name: "not set",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "",
+			},
+			want: "master",
+		},
+		{
+			name: "master set",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "master",
+			},
+			want: "master",
+		},
+		{
+			name: "main set",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "main",
+			},
+			want: "main",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := retrieveDefaultBranchFromEnv(tt.env)
+			require.Equal(t, tt.want, got)
 		})
 	}
 }
