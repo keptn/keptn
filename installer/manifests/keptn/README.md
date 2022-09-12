@@ -130,31 +130,31 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### API Service
 
-| Name                                           | Description                                                                                                                                  | Value  |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------ |
-| `apiService.tokenSecretName`                   | K8s secret to be used as API token in the API Service                                                                                        | `nil`  |
-| `apiService.image.registry`                    | API Service image registry                                                                                                                   | `""`   |
-| `apiService.image.repository`                  | API Service image repository                                                                                                                 | `api`  |
-| `apiService.image.tag`                         | API Service image tag                                                                                                                        | `""`   |
-| `apiService.maxAuth.enabled`                   | Enable API authentication rate limiting                                                                                                      | `true` |
-| `apiService.maxAuth.requestsPerSecond`         | API authentication rate limiting requests per second                                                                                         | `1.0`  |
-| `apiService.maxAuth.requestBurst`              | API authentication rate limiting requests burst                                                                                              | `2`    |
-| `apiService.eventValidation.enabled`           | Enable stricter validation of inbound events via public the event endpoint                                                                   | `true` |
-| `apiService.eventValidation.maxEventSizeKB`    | specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0 | `64`   |
-| `apiService.nodeSelector`                      | API Service node labels for pod assignment                                                                                                   | `{}`   |
-| `apiService.podAffinity.podAffinityPreset`     | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                          | `""`   |
-| `apiService.podAffinity.podAntiAffinityPreset` | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                     | `""`   |
-| `apiService.nodeAffinityPreset.type`           | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                    | `""`   |
-| `apiService.nodeAffinityPreset.key`            | Node label key to match Ignored if `affinity` is set.                                                                                        | `""`   |
-| `apiService.nodeAffinityPreset.values`         | Node label values to match. Ignored if `affinity` is set.                                                                                    | `[]`   |
-| `apiService.affinity`                          | Affinity for pod assignment                                                                                                                  | `{}`   |
-| `apiService.tolerations`                       | Toleration labels for pod assignment                                                                                                         | `[]`   |
-| `apiService.gracePeriod`                       | API Service termination grace period                                                                                                         | `60`   |
-| `apiService.preStopHookTime`                   | API Service pre stop timeout                                                                                                                 | `5`    |
-| `apiService.sidecars`                          | Add additional sidecar containers to the API Service                                                                                         | `[]`   |
-| `apiService.extraVolumeMounts`                 | Add additional volume mounts to the API Service                                                                                              | `[]`   |
-| `apiService.extraVolumes`                      | Add additional volumes to the API Service                                                                                                    | `[]`   |
-| `apiService.resources`                         | Define resources for the API Service                                                                                                         |        |
+| Name                                           | Description                                                                                                                                  | Value   |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `apiService.tokenSecretName`                   | K8s secret to be used as API token in the API Service                                                                                        | `nil`   |
+| `apiService.image.registry`                    | API Service image registry                                                                                                                   | `""`    |
+| `apiService.image.repository`                  | API Service image repository                                                                                                                 | `api`   |
+| `apiService.image.tag`                         | API Service image tag                                                                                                                        | `""`    |
+| `apiService.maxAuth.enabled`                   | Enable API authentication rate limiting                                                                                                      | `true`  |
+| `apiService.maxAuth.requestsPerSecond`         | API authentication rate limiting requests per second                                                                                         | `1.0`   |
+| `apiService.maxAuth.requestBurst`              | API authentication rate limiting requests burst                                                                                              | `2`     |
+| `apiService.eventValidation.enabled`           | Enable stricter validation of inbound events via public the event endpoint                                                                   | `false` |
+| `apiService.eventValidation.maxEventSizeKB`    | specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0 | `64`    |
+| `apiService.nodeSelector`                      | API Service node labels for pod assignment                                                                                                   | `{}`    |
+| `apiService.podAffinity.podAffinityPreset`     | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                          | `""`    |
+| `apiService.podAffinity.podAntiAffinityPreset` | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                     | `""`    |
+| `apiService.nodeAffinityPreset.type`           | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`                                                    | `""`    |
+| `apiService.nodeAffinityPreset.key`            | Node label key to match Ignored if `affinity` is set.                                                                                        | `""`    |
+| `apiService.nodeAffinityPreset.values`         | Node label values to match. Ignored if `affinity` is set.                                                                                    | `[]`    |
+| `apiService.affinity`                          | Affinity for pod assignment                                                                                                                  | `{}`    |
+| `apiService.tolerations`                       | Toleration labels for pod assignment                                                                                                         | `[]`    |
+| `apiService.gracePeriod`                       | API Service termination grace period                                                                                                         | `60`    |
+| `apiService.preStopHookTime`                   | API Service pre stop timeout                                                                                                                 | `5`     |
+| `apiService.sidecars`                          | Add additional sidecar containers to the API Service                                                                                         | `[]`    |
+| `apiService.extraVolumeMounts`                 | Add additional volume mounts to the API Service                                                                                              | `[]`    |
+| `apiService.extraVolumes`                      | Add additional volumes to the API Service                                                                                                    | `[]`    |
+| `apiService.resources`                         | Define resources for the API Service                                                                                                         |         |
 
 
 ### Bridge
