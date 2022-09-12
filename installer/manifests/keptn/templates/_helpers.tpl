@@ -366,7 +366,7 @@ Return a nodeAffinity definition
 
 {{/*
 Return a soft podAffinity/podAntiAffinity definition
-{{ include "keptn.affinities.pods.soft" . -}}
+{{ include "keptn.affinities.pods.soft" "component" "component-name" "context" . -}}
 */}}
 {{- define "keptn.affinities.pods.soft" -}}
 {{- $component := default "" .component -}}
@@ -385,7 +385,7 @@ preferredDuringSchedulingIgnoredDuringExecution:
 
 {{/*
 Return a hard podAffinity/podAntiAffinity definition
-{{ include "keptn.affinities.pods.hard" . -}}
+{{ include "keptn.affinities.pods.hard" "component" "component-name" "context" . -}}
 */}}
 {{- define "keptn.affinities.pods.hard" -}}
 {{- $component := default "" .component -}}
@@ -410,13 +410,16 @@ Return a podAffinity/podAntiAffinity definition
     {{- $value = .value -}}
   {{- end }}
   {{- if and $value.podAffinityPreset ( not $value.podAntiAffinityPreset ) }}
-podAffinity: {{- include "keptn.affinities.pods.mode" ( dict "mode" $value.podAffinityPreset "context" .context ) | nindent 2 }}
+podAffinity: {{- include "keptn.affinities.pods.mode" ( dict "mode" $value.podAffinityPreset "component" .component "context" .context ) | nindent 2 }}
   {{- else if and $value.podAntiAffinityPreset ( not $value.podAffinityPreset ) }}
-podAntiAffinity: {{- include "keptn.affinities.pods.mode" ( dict "mode" $value.podAntiAffinityPreset "context" .context ) | nindent 2 }}
+podAntiAffinity: {{- include "keptn.affinities.pods.mode" ( dict "mode" $value.podAntiAffinityPreset "component" .component "context" .context ) | nindent 2 }}
   {{- end }}
 {{- end -}}
 
-
+{{/*
+Return a soft or hard affinity definition
+{{ include "keptn.affinities.pods.mode" (dict "mode" "soft or hard" "component" "component-name" "context" . ) -}}
+*/}}
 {{- define "keptn.affinities.pods.mode" -}}
 {{- if .mode }}
   {{- if eq .mode "soft" }}
