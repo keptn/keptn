@@ -1,13 +1,10 @@
 package common
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	nethttp "net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -16,14 +13,9 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport"
-	"github.com/go-git/go-git/v5/plumbing/transport/client"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	logger "github.com/sirupsen/logrus"
-	ssh2 "golang.org/x/crypto/ssh"
 )
 
 // IGit provides functions to interact with the git repository of a project
@@ -79,55 +71,6 @@ func getGitKeptnEmail() string {
 	return gitKeptnEmailDefault
 }
 
-func getAuthMethod(gitContext common_models.GitContext) (transport.AuthMethod, error) {
-	if gitContext.Credentials.SshAuth != nil {
-		publicKey, err := ssh.NewPublicKeys("git", []byte(gitContext.Credentials.SshAuth.PrivateKey), gitContext.Credentials.SshAuth.PrivateKeyPass)
-		if err != nil {
-			return nil, err
-		}
-		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-		return publicKey, nil
-
-	} else if gitContext.Credentials.HttpsAuth != nil {
-		if gitContext.Credentials.HttpsAuth.Proxy != nil {
-			customClient := &nethttp.Client{
-				Transport: &nethttp.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: gitContext.Credentials.HttpsAuth.InsecureSkipTLS},
-					Proxy: nethttp.ProxyURL(&url.URL{
-						Scheme: gitContext.Credentials.HttpsAuth.Proxy.Scheme,
-						User:   url.UserPassword(gitContext.Credentials.HttpsAuth.Proxy.User, gitContext.Credentials.HttpsAuth.Proxy.Password),
-						Host:   gitContext.Credentials.HttpsAuth.Proxy.URL,
-					}),
-				},
-
-				// 15 second timeout
-				Timeout: 15 * time.Second,
-
-				// don't follow redirect
-				CheckRedirect: func(req *nethttp.Request, via []*nethttp.Request) error {
-					return nethttp.ErrUseLastResponse
-				},
-			}
-
-			// Istalling https protocol as a default one means that all the proxy traffic will be routed via secure connection
-			// To use unsecure conenction, InsecureSkipTLS parameter should be set to true and https protocol will be used without TLS verification
-			client.InstallProtocol("https", http.NewClient(customClient))
-		}
-
-		if gitContext.Credentials.User == "" {
-			//we try the authentication anyway since in most git servers
-			//any user apart from an empty string is fine when we use a token
-			//this auth will fail in case user is using bitbucket
-			gitContext.Credentials.User = "keptnuser"
-		}
-		return &http.BasicAuth{
-			Username: gitContext.Credentials.User,
-			Password: gitContext.Credentials.HttpsAuth.Token,
-		}, nil
-	}
-	return nil, nil
-}
-
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if (gitContext == common_models.GitContext{}) || (*gitContext.Credentials == common_models.GitCredentials{}) {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", "project", kerrors.ErrInvalidGitContext)
@@ -142,14 +85,10 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
-	auth, err := getAuthMethod(gitContext)
-	if err != nil {
-		return false, err
-	}
 	clone, err := g.git.PlainClone(projectPath, false,
 		&git.CloneOptions{
 			URL:             gitContext.Credentials.RemoteURL,
-			Auth:            auth,
+			Auth:            gitContext.AuthMethod,
 			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 		},
 	)
@@ -313,13 +252,9 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
 	}
-	auth, err := getAuthMethod(gitContext)
-	if err != nil {
-		return err
-	}
 	err = repo.Push(&git.PushOptions{
 		RemoteName:      "origin",
-		Auth:            auth,
+		Auth:            gitContext.AuthMethod,
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
@@ -342,20 +277,16 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		if err != nil {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
 		}
-		auth, err := getAuthMethod(gitContext)
-		if err != nil {
-			return err
-		}
 		err = w.Pull(&git.PullOptions{
 			RemoteName:      "origin",
 			Force:           true,
 			ReferenceName:   head.Name(),
-			Auth:            auth,
+			Auth:            gitContext.AuthMethod,
 			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 		})
 		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: auth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
+			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
 		}
 		if err != nil && errors.Is(err, git.ErrNonFastForwardUpdate) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
@@ -499,18 +430,14 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 }
 
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
-	auth, err := getAuthMethod(gitContext)
-	if err != nil {
-		return err
-	}
-	if err = r.Fetch(&git.FetchOptions{
+	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
 		//// take all branch from remote and put them in the local repo as origin branches and as branches
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
 		Force:           true,
-		Auth:            auth,
+		Auth:            gitContext.AuthMethod,
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err

@@ -2,8 +2,9 @@ package handler
 
 import (
 	"fmt"
-	logger "github.com/sirupsen/logrus"
 	"time"
+
+	logger "github.com/sirupsen/logrus"
 
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
@@ -46,9 +47,15 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
+	auth, err := getAuthMethod(credentials)
+	if err != nil {
+		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
+		AuthMethod:  auth,
 	}
 
 	// first, check if the local directory of the project already exists
@@ -126,9 +133,15 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
+	auth, err := getAuthMethod(credentials)
+	if err != nil {
+		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
+		AuthMethod:  auth,
 	}
 
 	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {

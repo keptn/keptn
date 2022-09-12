@@ -117,9 +117,15 @@ func (s ServiceManager) establishServiceContext(project models.Project, stage mo
 		return nil, "", fmt.Errorf(kerrors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
+	auth, err := getAuthMethod(credentials)
+	if err != nil {
+		return nil, "", fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
+		AuthMethod:  auth,
 	}
 
 	if !s.git.ProjectExists(gitContext) {
