@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	envconfig "github.com/keptn/keptn/resource-service/config"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -136,9 +138,39 @@ func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err e
 	return nil
 }
 
+func retrieveDefaultBranchFromEnv() string {
+	if envconfig.Global.DefaultRemoteGitRepositoryBranch == "" {
+		logger.Errorf("Could not determine default remote git repository branch from env variable")
+		return "master"
+	}
+	logger.Infof("Setting default branch to %s", envconfig.Global.DefaultRemoteGitRepositoryBranch)
+	return envconfig.Global.DefaultRemoteGitRepositoryBranch
+}
+
+func (g Git) rewriteDefaultBranch(repo *git.Repository, path string) error {
+	defaultBranch := retrieveDefaultBranchFromEnv()
+	if defaultBranch != "master" {
+		file, err := os.OpenFile(path+"/.git/HEAD", os.O_RDWR, 0700)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		err = file.Truncate(0)
+		_, err = file.Seek(0, 0)
+		_, err = fmt.Fprintf(file, "%s", "ref: refs/heads/"+defaultBranch)
+	}
+
+	return nil
+}
+
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
 	init, err := g.git.PlainInit(projectPath, false)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := g.rewriteDefaultBranch(init, projectPath); err != nil {
 		return nil, err
 	}
 
