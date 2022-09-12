@@ -147,7 +147,7 @@ func retrieveDefaultBranchFromEnv() string {
 	return envconfig.Global.DefaultRemoteGitRepositoryBranch
 }
 
-func (g Git) rewriteDefaultBranch(repo *git.Repository, path string) error {
+func rewriteDefaultBranch(repo *git.Repository, path string) error {
 	defaultBranch := retrieveDefaultBranchFromEnv()
 	if defaultBranch != "master" {
 		file, err := os.OpenFile(path+"/.git/HEAD", os.O_RDWR, 0700)
@@ -170,7 +170,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		return nil, err
 	}
 
-	if err := g.rewriteDefaultBranch(init, projectPath); err != nil {
+	if err := rewriteDefaultBranch(init, projectPath); err != nil {
 		return nil, err
 	}
 
