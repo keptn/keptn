@@ -17,12 +17,40 @@ func Test_getAuthMethod(t *testing.T) {
 		expectedOutput transport.AuthMethod
 	}{
 		{
+			name:           "no credentials",
+			gitCredentials: &common_models.GitCredentials{},
+			wantErr:        false,
+			expectedOutput: nil,
+		},
+		{
 			name: "valid credentials",
 			gitCredentials: &common_models.GitCredentials{
 				RemoteURL: "https://some.url",
 				HttpsAuth: &apimodels.HttpsGitAuth{
 					Token:           "some-token",
 					InsecureSkipTLS: false,
+				},
+				User: "user",
+			},
+			wantErr: false,
+			expectedOutput: &http.BasicAuth{
+				Username: "user",
+				Password: "some-token",
+			},
+		},
+		{
+			name: "valid credentials proxy",
+			gitCredentials: &common_models.GitCredentials{
+				RemoteURL: "https://some.url",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "some-token",
+					InsecureSkipTLS: false,
+					Proxy: &apimodels.ProxyGitAuth{
+						URL:      "proxy-url",
+						Scheme:   "http",
+						User:     "proxy-user",
+						Password: "proxy-password",
+					},
 				},
 				User: "user",
 			},
