@@ -344,8 +344,8 @@ remediationService:
   ## @skip remediationService.resources.limits
   resources:
     requests:
-      memory: "64Mi"
-      cpu: "50m"
+      memory: "32Mi"
+      cpu: "25m"
     limits:
       memory: "1Gi"
       cpu: "200m"
@@ -706,7 +706,7 @@ shipyardController:
       cpu: "50m"
     limits:
       memory: "128Mi"
-      cpu: "100m"
+      cpu: "200m"
 
 ## @section Secret Service
 secretService:
@@ -774,7 +774,7 @@ secretService:
       cpu: "25m"
     limits:
       memory: "64Mi"
-      cpu: "200m"
+      cpu: "100m"
 
 ## @section Resource Service
 resourceService:
@@ -853,7 +853,7 @@ resourceService:
       cpu: "25m"
     limits:
       memory: "64Mi"
-      cpu: "100m"
+      cpu: "200m"
 
 ## @section MongoDB Datastore
 mongodbDatastore:
@@ -918,10 +918,10 @@ mongodbDatastore:
   resources:
     requests:
       memory: "32Mi"
-      cpu: "50m"
+      cpu: "25m"
     limits:
-      memory: "512Mi"
-      cpu: "300m"
+      memory: "64Mi"
+      cpu: "100m"
 
 ## @section Lighthouse Service
 lighthouseService:
@@ -987,11 +987,11 @@ lighthouseService:
   ## @skip lighthouseService.resources.limits
   resources:
     requests:
-      memory: "128Mi"
+      memory: "32Mi"
       cpu: "50m"
     limits:
-      memory: "1Gi"
-      cpu: "200m"
+      memory: "128Mi"
+      cpu: "100m"
 
 ## @section Statistics Service
 statisticsService:
@@ -1130,7 +1130,7 @@ approvalService:
       memory: "32Mi"
       cpu: "25m"
     limits:
-      memory: "128Mi"
+      memory: "64Mi"
       cpu: "100m"
 
 ## @section Webhook Service
