@@ -320,16 +320,17 @@ Return a soft nodeAffinity definition
 {{ include "keptn.affinities.nodes.soft" (dict "preset" "FOO" "context" .context) -}}
 */}}
 {{- define "keptn.affinities.nodes.soft" -}}
-preferredDuringSchedulingIgnoredDuringExecution:
-  - preference:
-      matchExpressions:
-        - key: {{ .preset.key }}
-          operator: In
-          values:
-            {{- range .preset.values }}
-            - {{ . }}
-            {{- end }}
-    weight: 1
+nodeAffinity:
+  preferredDuringSchedulingIgnoredDuringExecution:
+    - preference:
+        matchExpressions:
+          - key: {{ .preset.key }}
+            operator: In
+            values:
+              {{- range .preset.values }}
+              - {{ . }}
+              {{- end }}
+      weight: 1
 {{- end -}}
 
 {{/*
@@ -337,15 +338,16 @@ Return a hard nodeAffinity definition
 {{ include "keptn.affinities.nodes.hard" (dict "preset" "FOO" "context" .context) -}}
 */}}
 {{- define "keptn.affinities.nodes.hard" -}}
-requiredDuringSchedulingIgnoredDuringExecution:
-  nodeSelectorTerms:
-    - matchExpressions:
-        - key: {{ .preset.key }}
-          operator: In
-          values:
-            {{- range .preset.values }}
-            - {{ . }}
-            {{- end }}
+nodeAffinity:
+  requiredDuringSchedulingIgnoredDuringExecution:
+    nodeSelectorTerms:
+      - matchExpressions:
+          - key: {{ .preset.key }}
+            operator: In
+            values:
+              {{- range .preset.values }}
+              - {{ . }}
+              {{- end }}
 {{- end -}}
 
 {{/*
@@ -358,9 +360,9 @@ Return a nodeAffinity definition
     {{- $preset = .value -}}
   {{- end }}
   {{- if eq $preset.type "soft" }}
-    {{- include "keptn.affinities.nodes.soft" ( dict "preset" $preset "context" .context ) }}
+{{ include "keptn.affinities.nodes.soft" ( dict "preset" $preset "context" .context ) }}
   {{- else if eq $preset.type "hard" }}
-    {{- include "keptn.affinities.nodes.hard" ( dict "preset" $preset "context" .context ) }}
+{{ include "keptn.affinities.nodes.hard" ( dict "preset" $preset "context" .context ) }}
   {{- end }}
 {{- end -}}
 

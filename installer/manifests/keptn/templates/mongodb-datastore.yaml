@@ -87,7 +87,7 @@ spec:
       {{- else }}
       affinity:
         {{- include "keptn.affinities.pods" (dict "value" .Values.mongodbDatastore.podAffinity "default" .Values.podAffinity "component" "mongodb-datastore" "context" . ) | indent 8 }}
-        nodeAffinity: {{- include "keptn.affinities.nodes" (dict "value" .Values.mongodbDatastore.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "mongodb-datastore" "context" . ) | nindent 10 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.mongodbDatastore.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "mongodb-datastore" "context" . ) | indent 8 }}
       {{- end }}
 ---
 apiVersion: v1
