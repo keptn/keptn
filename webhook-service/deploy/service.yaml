@@ -40,7 +40,7 @@ spec:
                   apiVersion: v1
                   fieldPath: metadata.namespace
             - name: LOG_LEVEL
-              value: info
+              value: debug
             - name: K8S_DEPLOYMENT_NAME
               valueFrom:
                 fieldRef:
