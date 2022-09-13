@@ -230,6 +230,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `resourceService.env.GIT_KEPTN_USER`            | Default git username for the Keptn configuration git repository            | `keptn`            |
 | `resourceService.env.GIT_KEPTN_EMAIL`           | Default git email address for the Keptn configuration git repository       | `keptn@keptn.sh`   |
 | `resourceService.env.DIRECTORY_STAGE_STRUCTURE` | Enable directory based structure in the Keptn configuration git repository | `false`            |
+| `resourceService.env.DEFAULT_REMOTE_GIT_BRANCH` | Sets the name of the default branch in the git remote repository           | `master`           |
 | `resourceService.nodeSelector`                  | Resource Service node labels for pod assignment                            | `{}`               |
 | `resourceService.gracePeriod`                   | Resource Service termination grace period                                  | `60`               |
 | `resourceService.fsGroup`                       | Configure file system group ID to be used in Resource Service              | `1001`             |

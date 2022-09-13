@@ -10,6 +10,8 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 )
 
+const GitInitDefaultBranchName = "master"
+
 // GitCredentials contains git credentials info
 type GitCredentials apimodels.GitAuthCredentials
 

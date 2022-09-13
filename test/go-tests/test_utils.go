@@ -4,11 +4,11 @@ import (
 	"archive/zip"
 	"context"
 	b64 "encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"k8s.io/utils/strings/slices"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -16,6 +16,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"k8s.io/utils/strings/slices"
 
 	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -1007,6 +1009,62 @@ func GetGiteaUser() string {
 		return os.Getenv("GITEA_ADMIN_USER")
 	}
 	return "gitea_admin"
+}
+
+func GetRepositoryBranches(project string) (*http.Response, error) {
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/gitea-http", "3002", "3000")
+
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := GetGiteaToken()
+	if err != nil {
+		return nil, err
+	}
+	user := GetGiteaUser()
+
+	repoAPIPath := fmt.Sprintf("/api/v1/repos/%s/%s/branches?access_token=%s", user, project, token)
+	resp, err := internalKeptnAPI.Get(repoAPIPath, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Response().StatusCode != 200 {
+		return nil, fmt.Errorf("could not fetch branches for repository %s", project)
+	}
+
+	return resp.Response(), err
+}
+
+type BranchBody struct {
+	Name string `json:"name"`
+}
+
+func VerifyMainRepositoryBranchName(project string, branchName string) (bool, error) {
+	resp, err := GetRepositoryBranches(project)
+	if err != nil {
+		return false, err
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	var jsonMap []BranchBody
+	err = json.Unmarshal(bodyBytes, &jsonMap)
+	if err != nil {
+		return false, err
+	}
+
+	for _, branch := range jsonMap {
+		if branch.Name == branchName {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // RecreateGitUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
