@@ -265,34 +265,39 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 }
 
 func (g *Git) Pull(gitContext common_models.GitContext) error {
-	if g.ProjectExists(gitContext) {
-		r, w, err := g.getWorkTree(gitContext)
-		if err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
-		}
-
-		head, err := r.Head()
-		if err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
-		}
-		err = w.Pull(&git.PullOptions{
-			RemoteName:      "origin",
-			Force:           true,
-			ReferenceName:   head.Name(),
-			Auth:            gitContext.AuthMethod,
-			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
-		})
-		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
-			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
-		}
-		if err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
-		}
-
-		return nil
+	if !g.ProjectExists(gitContext) {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
 	}
-	return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
+
+	r, w, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
+	}
+
+	head, err := r.Head()
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
+	}
+	err = w.Pull(&git.PullOptions{
+		RemoteName:      "origin",
+		Force:           true,
+		ReferenceName:   head.Name(),
+		Auth:            gitContext.AuthMethod,
+		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
+	})
+	if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
+		// reference not there yet
+		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
+	}
+	if err != nil {
+		// do not return an error if we are alread< up to date or if the repository is empty
+		if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
+			return nil
+		}
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
+	}
+
+	return nil
 }
 
 // mapError translates errors that are specific to the go-git library to errors that are understood by the other resource-service components
