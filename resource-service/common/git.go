@@ -1,6 +1,7 @@
 package common
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -20,6 +21,8 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	logger "github.com/sirupsen/logrus"
 )
+
+const gitHeadFilePath = "/.git/HEAD"
 
 // IGit provides functions to interact with the git repository of a project
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
@@ -143,24 +146,24 @@ func retrieveDefaultBranchFromEnv(env envconfig.EnvConfig) string {
 		logger.Errorf("Could not determine default remote git repository branch from env variable")
 		return "master"
 	}
-	logger.Infof("Setting default branch to %s", env.DefaultRemoteGitRepositoryBranch)
 	return env.DefaultRemoteGitRepositoryBranch
 }
 
-func rewriteDefaultBranch(repo *git.Repository, path string) error {
-	defaultBranch := retrieveDefaultBranchFromEnv(envconfig.Global)
+func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
+	defaultBranch := retrieveDefaultBranchFromEnv(env)
 	if defaultBranch != "master" {
-		file, err := os.OpenFile(path+"/.git/HEAD", os.O_RDWR, 0700)
+		logger.Infof("Setting default branch to %s", defaultBranch)
+		input, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
 		}
-		defer file.Close()
 
-		err = file.Truncate(0)
-		_, err = file.Seek(0, 0)
-		_, err = fmt.Fprintf(file, "%s", "ref: refs/heads/"+defaultBranch)
+		output := bytes.Replace(input, []byte("master"), []byte(defaultBranch), -1)
+
+		if err = ioutil.WriteFile(path, output, 0700); err != nil {
+			return err
+		}
 	}
-
 	return nil
 }
 
@@ -170,7 +173,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		return nil, err
 	}
 
-	if err := rewriteDefaultBranch(init, projectPath); err != nil {
+	if err := g.rewriteDefaultBranch(projectPath+gitHeadFilePath, envconfig.Global); err != nil {
 		return nil, err
 	}
 

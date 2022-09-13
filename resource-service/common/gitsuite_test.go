@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -1309,6 +1310,68 @@ func Test_retrieveDefaultBranchFromEnv(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := retrieveDefaultBranchFromEnv(tt.env)
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_rewriteDefaultBranch(t *testing.T) {
+	content := "ref: refs/heads/master"
+	tests := []struct {
+		name string
+		env  envconfig.EnvConfig
+		want string
+	}{
+		{
+			name: "default branch main",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "main",
+			},
+			want: "ref: refs/heads/main",
+		},
+		{
+			name: "default branch master without env set",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "",
+			},
+			want: "ref: refs/heads/master",
+		},
+		{
+			name: "default branch master",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "master",
+			},
+			want: "ref: refs/heads/master",
+		},
+		{
+			name: "default branch silly22",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "silly22",
+			},
+			want: "ref: refs/heads/silly22",
+		},
+	}
+
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGit(GogitReal{})
+			// create tmp file
+			file, err := ioutil.TempFile(tempDir, "file")
+			require.Nil(t, err)
+			// add content to the tmp file
+			err = file.Truncate(0)
+			_, err = file.Seek(0, 0)
+			_, err = fmt.Fprintf(file, "%s", content)
+			// rewrite content
+			err = g.rewriteDefaultBranch(file.Name(), tt.env)
+			require.Nil(t, err)
+			//check if content was rewritten
+			fileBytes, err := ioutil.ReadFile(file.Name())
+			require.Nil(t, err)
+			require.Equal(t, tt.want, string(fileBytes))
 		})
 	}
 }
