@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -1216,6 +1217,60 @@ func TestRetrieveInsecureFlag(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := retrieveInsecureSkipTLS(tt.credentials)
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_mapError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "non fast forward",
+			args: args{
+				err: git.ErrNonFastForwardUpdate,
+			},
+			wantErr: kerrors.ErrNonFastForwardUpdate,
+		},
+		{
+			name: "authentication required",
+			args: args{
+				err: transport.ErrAuthenticationRequired,
+			},
+			wantErr: kerrors.ErrAuthenticationRequired,
+		},
+		{
+			name: "authorization failed",
+			args: args{
+				err: transport.ErrAuthorizationFailed,
+			},
+			wantErr: kerrors.ErrAuthorizationFailed,
+		},
+		{
+			name: "force needed",
+			args: args{
+				err: git.ErrForceNeeded,
+			},
+			wantErr: kerrors.ErrForceNeeded,
+		},
+		{
+			name: "nil",
+			args: args{
+				err: nil,
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := mapError(tt.args.err)
+
+			require.ErrorIs(t, err, tt.wantErr)
 		})
 	}
 }
