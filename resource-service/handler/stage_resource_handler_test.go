@@ -96,6 +96,30 @@ func TestStageResourceHandler_CreateStageResources(t *testing.T) {
 			wantStatus: http.StatusNotFound,
 		},
 		{
+			name: "authentication at upstream failed",
+			fields: fields{
+				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
+					return nil, errors2.ErrAuthenticationRequired
+				}},
+			},
+			request: httptest.NewRequest(http.MethodPost, "/project/my-project/stage/my-stage/resource", bytes.NewBuffer([]byte(createResourcesTestPayload))),
+			wantParams: &models.CreateResourcesParams{
+				ResourceContext: models.ResourceContext{
+					Project: models.Project{ProjectName: "my-project"},
+					Stage:   &models.Stage{StageName: "my-stage"},
+				},
+				CreateResourcesPayload: models.CreateResourcesPayload{
+					Resources: []models.Resource{
+						{
+							ResourceURI:     "resource.yaml",
+							ResourceContent: "c3RyaW5n",
+						},
+					},
+				},
+			},
+			wantStatus: http.StatusFailedDependency,
+		},
+		{
 			name: "internal error",
 			fields: fields{
 				StageResourceManager: &handler_mock.IResourceManagerMock{CreateResourcesFunc: func(project models.CreateResourcesParams) (*models.WriteResourceResponse, error) {
