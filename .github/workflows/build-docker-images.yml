@@ -35,6 +35,9 @@ jobs:
       GIT_SHA: ${{ inputs.gitSha }}
       BUILD_EVERYTHING: ${{ inputs.buildeverything }}
     steps:
+    - name: Output matrix
+      run: echo $matrix
+
     - name: Check out code
       uses: actions/checkout@v3
 
