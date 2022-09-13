@@ -26,6 +26,7 @@ func Test_CreateProjectWithCustomBranchName(t *testing.T) {
 	defer func() {
 		_, err = ExecuteCommandf("kubectl set env deployment/resource-service DEFAULT_REMOTE_GIT_BRANCH=%s -n %s", "master", keptnNamespace)
 		require.Nil(t, err)
+		time.Sleep(45 * time.Second)
 	}()
 
 	t.Logf("Setting up DEFAULT_REMOTE_GIT_BRANCH env variable to main-custom")
