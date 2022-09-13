@@ -367,7 +367,7 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 func getMatchingWebhookFromResource(resource *models.Resource, subscriptionID string) *lib.Webhook {
 	whConfig, err := lib.DecodeWebHookConfigYAML([]byte(resource.ResourceContent))
 	if err != nil {
-		logger.Warnf("Found a malformed webhook: %s", err)
+		logger.Warnf("Found a malformed webhook: %v", err)
 		return nil
 	}
 	for _, webhook := range whConfig.Spec.Webhooks {
