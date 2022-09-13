@@ -332,11 +332,19 @@ jobs:
         if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
         uses: ./.github/workflows/build-docker-images.yml
         with:
-          matrix: ${{ needs.prepare_ci_run.outputs.BUILD_MATRIX }}
-          version: ${{ needs.prepare_ci_run.outputs.VERSION }}
-          datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-          gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-          buildeverything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
+          artifact: ${{ matrix.config.artifact }}
+          working-dir: ./${{ matrix.config.artifact}}
+          tags: |
+            [
+              "keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}",
+              "keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}"
+            ]
+          version: ${{ env.VERSION }}
+          datetime: ${{ env.DATETIME }}
+          gitSha: ${{ env.GIT_SHA }}
+          should-push-image: ${{ matrix.config.should-push-image }}
+          should-run: ${{ matrix.config.should-run }}
+          build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
