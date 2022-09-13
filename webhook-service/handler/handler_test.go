@@ -3,9 +3,11 @@ package handler_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -21,6 +23,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const subscriptionPlaceholder = "${task-sub-id}"
 const webHookContent1_ALPHA = `apiVersion: webhookconfig.keptn.sh/v1alpha1
 kind: WebhookConfig
 metadata:
@@ -51,6 +54,21 @@ spec:
       requests:
       - url: http://local:8080 {{.data.project}} {{.env.mysecret}}
         method: GET`
+
+const webHookMalformedContent_BETA = `apiVersion: webhookconfig.keptn.sh/v1beta1
+kind: WebhookConfig
+metadata:
+  name: webhook-configuration
+spec:
+  webhooks:
+    - type: "sh.keptn.event.webhook.triggered"
+      subscriptionID: "${task-sub-id}"
+      sendFinished: true
+      envFrom:
+        - secretRef:
+          name: mysecret
+      requests:
+      - method: GET`
 
 const webHookContent_BETA = `apiVersion: webhookconfig.keptn.sh/v1beta1
 kind: WebhookConfig
@@ -2059,6 +2077,89 @@ func TestTaskHandler_Execute_WebhookConfigInProject(t *testing.T) {
 		require.Equal(t, "", scopeVals3.FieldByName("service").String())
 		require.Equal(t, "", scopeVals3.FieldByName("stage").String())
 		require.Equal(t, "myproject", scopeVals3.FieldByName("project").String())
+	})
+
+}
+
+func TestTaskHandler_Execute_WebhookConfigInProjectFailsEmptyURL(t *testing.T) {
+
+	t.Run("TestTaskHandler_Execute_WebhookConfigInProject - BETA", func(t *testing.T) {
+		templateEngineMock := &fake.ITemplateEngineMock{ParseTemplateFunc: func(data interface{}, templateStr string) (string, error) {
+			tplE := &lib.TemplateEngine{}
+			return tplE.ParseTemplate(data, templateStr)
+		}}
+		secretReaderMock := &fake.ISecretReaderMock{}
+		secretReaderMock.ReadSecretFunc = func(name string, key string) (string, error) {
+			return "my-secret-value", nil
+		}
+		curlExecutorMock := &fake.ICurlExecutorMock{}
+		curlExecutorMock.CurlFunc = func(curlCmd string) (string, error) {
+			return "success", nil
+		}
+
+		resourceHandlerMock := &fake2.IResourceHandlerMock{}
+		resourceHandlerMock.GetResourceFunc = func(scope api.ResourceScope, options ...api.URIOption) (*models.Resource, error) {
+
+			subscriptionID := "my-subscription-id"
+			if scope.GetService() != "" {
+				subscriptionID = "my-other-sub"
+
+			}
+			// return faulty at stage level with same subscription id
+			return &models.Resource{
+				Metadata:        &models.Version{Version: "CommitID"},
+				ResourceContent: strings.Replace(webHookMalformedContent_BETA, subscriptionPlaceholder, subscriptionID, -1),
+				ResourceURI:     nil,
+			}, nil
+		}
+
+		requestValidatorMock := &fake.RequestValidatorMock{ValidateFunc: func(request lib.Request) error {
+			return nil
+		}}
+
+		taskHandler := handler.NewTaskHandler(templateEngineMock, curlExecutorMock, requestValidatorMock, secretReaderMock)
+
+		fakeKeptn := sdk.NewFakeKeptn(
+			"test-webhook-svc")
+
+		fakeKeptn.SetResourceHandler(resourceHandlerMock)
+		fakeKeptn.AddTaskHandlerWithSubscriptionID("sh.keptn.event.webhook.triggered", taskHandler, "my-subscription-id")
+		fakeKeptn.SetAutomaticResponse(false)
+
+		fakeKeptn.NewEvent(newWebhookTriggeredEvent("test/events/test-webhook.triggered-0.json"))
+
+		//verify sent events
+		fakeKeptn.AssertNumberOfEventSent(t, 2)
+		fakeKeptn.AssertSentEventType(t, 0, "sh.keptn.event.webhook.started")
+		fakeKeptn.AssertSentEventType(t, 1, "sh.keptn.event.webhook.finished")
+		fakeKeptn.AssertSentEventStatus(t, 1, keptnv2.StatusErrored)
+		fakeKeptn.AssertSentEventResult(t, 1, keptnv2.ResultFailed)
+
+		//check the result is a misconfigured error
+		resultEvent := fmt.Sprintf(" %+v", fakeKeptn.SentEvents[1])
+		require.Contains(t, resultEvent, "Webhook config: no valid webhook config found")
+
+		//verify exit when sub id is matching and config is malformed, no project level check
+		require.Len(t, resourceHandlerMock.GetResourceCalls(), 3)
+
+		// need to use reflection package to inspect passed parameters since the properties are unexported
+		scopeVals1 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[0].Scope)
+		require.Equal(t, "myservice", scopeVals1.FieldByName("service").String())
+		require.Equal(t, "mystage", scopeVals1.FieldByName("stage").String())
+		require.Equal(t, "myproject", scopeVals1.FieldByName("project").String())
+
+		// for the second request, we should check for the resource at stage level
+		scopeVals2 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[1].Scope)
+		require.Equal(t, "", scopeVals2.FieldByName("service").String())
+		require.Equal(t, "mystage", scopeVals2.FieldByName("stage").String())
+		require.Equal(t, "myproject", scopeVals2.FieldByName("project").String())
+
+		// for the second request, we should check for the resource at stage level
+		scopeVals3 := reflect.ValueOf(resourceHandlerMock.GetResourceCalls()[2].Scope)
+		require.Equal(t, "", scopeVals3.FieldByName("service").String())
+		require.Equal(t, "", scopeVals3.FieldByName("stage").String())
+		require.Equal(t, "myproject", scopeVals3.FieldByName("project").String())
+
 	})
 
 }
