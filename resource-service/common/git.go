@@ -1,14 +1,18 @@
 package common
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing/transport"
+
+	envconfig "github.com/keptn/keptn/resource-service/config"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -18,6 +22,8 @@ import (
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	logger "github.com/sirupsen/logrus"
 )
+
+const gitHeadFilePath = "/.git/HEAD"
 
 // IGit provides functions to interact with the git repository of a project
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
@@ -136,9 +142,31 @@ func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err e
 	return nil
 }
 
+func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
+	defaultBranch := env.RetrieveDefaultBranchFromEnv()
+	if defaultBranch != common_models.GitInitDefaultBranchName {
+		logger.Infof("Setting default branch to %s", defaultBranch)
+		input, err := ioutil.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		output := bytes.Replace(input, []byte(common_models.GitInitDefaultBranchName), []byte(defaultBranch), -1)
+
+		if err = ioutil.WriteFile(path, output, 0700); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
 	init, err := g.git.PlainInit(projectPath, false)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := g.rewriteDefaultBranch(projectPath+gitHeadFilePath, envconfig.Global); err != nil {
 		return nil, err
 	}
 

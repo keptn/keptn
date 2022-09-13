@@ -794,6 +794,8 @@ resourceService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     ## @param resourceService.env.DIRECTORY_STAGE_STRUCTURE Enable directory based structure in the Keptn configuration git repository
     DIRECTORY_STAGE_STRUCTURE: "false"
+    ## @param resourceService.env.DEFAULT_REMOTE_GIT_BRANCH Sets the name of the default branch in the git remote repository
+    DEFAULT_REMOTE_GIT_BRANCH: "master"
   ## @param resourceService.nodeSelector Resource Service node labels for pod assignment
   nodeSelector: {}
   podAffinity:
