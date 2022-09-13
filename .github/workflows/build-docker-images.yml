@@ -35,6 +35,9 @@ jobs:
       GIT_SHA: ${{ inputs.gitSha }}
       BUILD_EVERYTHING: ${{ inputs.buildeverything }}
     steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v2
