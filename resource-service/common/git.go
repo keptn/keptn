@@ -101,7 +101,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, mapError(err))
 			}
 		} else {
-			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, mapError(err))
+			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 		}
 	}
 
