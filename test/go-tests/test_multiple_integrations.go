@@ -35,28 +35,28 @@ spec:
             - name: "echo3"`
 
 const echoServiceK8sManifestEcho = `---
-# Deployment of our echo-service
+# Deployment of our echo
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: echo-service
+  name: echo
 spec:
   selector:
     matchLabels:
-      app.kubernetes.io/name: echo-service
+      app.kubernetes.io/name: echo
       app.kubernetes.io/instance: keptn
   replicas: 1
   template:
     metadata:
       labels:
-        app.kubernetes.io/name: echo-service
+        app.kubernetes.io/name: echo
         app.kubernetes.io/instance: keptn
         app.kubernetes.io/part-of: keptn-keptn
         app.kubernetes.io/component: keptn
         app.kubernetes.io/version: develop
     spec:
       containers:
-        - name: echo-service
+        - name: echo
           image: keptnsandbox/echo-service:0.1.1
           ports:
             - containerPort: 8080
@@ -316,10 +316,15 @@ func RegisterEchoIntegration(t *testing.T) func() {
 
 	return func() {
 		//cleanup os and integration
+		t.Log("Removing echo service from cluster")
 		err := KubeCtlDeleteFromURL(tmpFile)
 		if err2 := os.Remove(tmpFile); err2 != nil {
 			t.Logf("Could not delete file: %v", err2)
 		}
+		require.Nil(t, err)
+		t.Log("Cleaning up the uniform")
+		resp, err := ApiDELETERequest("/controlPlane/v1/uniform/registration/"+fetchedEchoIntegration.ID, 3)
+		require.Equal(t, resp.Response().StatusCode, 200)
 		require.Nil(t, err)
 	}
 
