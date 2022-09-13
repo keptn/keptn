@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io"
 	"io/ioutil"
 	"os"
@@ -97,10 +98,10 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
-				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, err)
+				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, mapError(err))
 			}
 		} else {
-			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
+			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 		}
 	}
 
@@ -111,7 +112,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 
 	head, err := clone.Head()
 	if err != nil {
-		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, err)
+		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 	}
 
 	if err := g.storeDefaultBranchConfig(gitContext, err, clone, head); err != nil {
@@ -123,14 +124,14 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err error, clone *git.Repository, head *plumbing.Reference) error {
 	cfg, err := clone.Config()
 	if err != nil {
-		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "get config", gitContext.Project, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "get config", gitContext.Project, mapError(err))
 	}
 
 	cfg.Init.DefaultBranch = head.Name().String()
 
 	err = clone.SetConfig(cfg)
 	if err != nil {
-		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "set config", gitContext.Project, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "set config", gitContext.Project, mapError(err))
 	}
 	return nil
 }
@@ -212,7 +213,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
-		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
+		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, mapError(err))
 	}
 	rollbackFunc := func() {
 		err := g.ResetHard(gitContext, "HEAD~1")
@@ -234,7 +235,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 
 	id, updated, err := g.getCurrentRemoteRevision(gitContext)
 	if err != nil {
-		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
+		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, mapError(err))
 	}
 	if !updated {
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, kerrors.ErrForceNeeded)
@@ -250,7 +251,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	}
 	repo, _, err := g.getWorkTree(gitContext)
 	if err != nil {
-		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, mapError(err))
 	}
 	err = repo.Push(&git.PushOptions{
 		RemoteName:      "origin",
@@ -258,51 +259,72 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
-		if errors.Is(err, git.ErrForceNeeded) {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, kerrors.ErrForceNeeded)
-		}
-		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, mapError(err))
 	}
 	return nil
 }
 
 func (g *Git) Pull(gitContext common_models.GitContext) error {
-	if g.ProjectExists(gitContext) {
-		r, w, err := g.getWorkTree(gitContext)
-		if err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
-		}
-
-		head, err := r.Head()
-		if err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
-		}
-		err = w.Pull(&git.PullOptions{
-			RemoteName:      "origin",
-			Force:           true,
-			ReferenceName:   head.Name(),
-			Auth:            gitContext.AuthMethod,
-			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
-		})
-		if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
-			// reference not there yet
-			err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
-		}
-		if err != nil && errors.Is(err, git.ErrNonFastForwardUpdate) {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, err)
-		}
-		return nil
+	if !g.ProjectExists(gitContext) {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
 	}
-	return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
+
+	r, w, err := g.getWorkTree(gitContext)
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
+	}
+
+	head, err := r.Head()
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
+	}
+	err = w.Pull(&git.PullOptions{
+		RemoteName:      "origin",
+		Force:           true,
+		ReferenceName:   head.Name(),
+		Auth:            gitContext.AuthMethod,
+		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
+	})
+	if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
+		// reference not there yet
+		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
+	}
+	if err != nil {
+		// do not return an error if we are alread< up to date or if the repository is empty
+		if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
+			return nil
+		}
+		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
+	}
+
+	return nil
 }
+
+// mapError translates errors that are specific to the go-git library to errors that are understood by the other resource-service components
+func mapError(err error) error {
+	if errors.Is(err, git.ErrNonFastForwardUpdate) {
+		return kerrors.ErrNonFastForwardUpdate
+	}
+	if errors.Is(err, transport.ErrAuthenticationRequired) {
+		return kerrors.ErrAuthenticationRequired
+	}
+	if errors.Is(err, transport.ErrAuthorizationFailed) {
+		return kerrors.ErrAuthorizationFailed
+	}
+	if errors.Is(err, git.ErrForceNeeded) {
+		return kerrors.ErrForceNeeded
+	}
+	return err
+}
+
 func (g *Git) GetCurrentRevision(gitContext common_models.GitContext) (string, error) {
 	r, _, err := g.getWorkTree(gitContext)
 	if err != nil {
-		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, mapError(err))
 	}
 	ref, err := r.Head()
 	if err != nil {
-		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
+		return "", fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, mapError(err))
 	}
 	hash := ref.Hash()
 	return hash.String(), nil
@@ -370,7 +392,7 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	}
 	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
-		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, mapError(err))
 	}
 
 	// First try to check out branch
@@ -382,13 +404,13 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	if err != nil {
 		// got an error  - try to create it
 		if err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b}); err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
+			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, mapError(err))
 		}
 	}
 
 	err = r.CreateBranch(newBranch)
 	if err != nil {
-		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, mapError(err))
 	}
 
 	return nil
@@ -410,7 +432,7 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 		if errors.Is(err, plumbing.ErrReferenceNotFound) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, kerrors.ErrReferenceNotFound)
 		}
-		return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, mapError(err))
 	}
 	return nil
 }
