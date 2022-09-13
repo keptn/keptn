@@ -23,6 +23,7 @@ import (
 )
 
 const gitHeadFilePath = "/.git/HEAD"
+const gitInitDefaultBranchName = "master"
 
 // IGit provides functions to interact with the git repository of a project
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
@@ -144,21 +145,21 @@ func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err e
 func retrieveDefaultBranchFromEnv(env envconfig.EnvConfig) string {
 	if env.DefaultRemoteGitRepositoryBranch == "" {
 		logger.Errorf("Could not determine default remote git repository branch from env variable")
-		return "master"
+		return gitInitDefaultBranchName
 	}
 	return env.DefaultRemoteGitRepositoryBranch
 }
 
 func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 	defaultBranch := retrieveDefaultBranchFromEnv(env)
-	if defaultBranch != "master" {
+	if defaultBranch != gitInitDefaultBranchName {
 		logger.Infof("Setting default branch to %s", defaultBranch)
 		input, err := ioutil.ReadFile(path)
 		if err != nil {
 			return err
 		}
 
-		output := bytes.Replace(input, []byte("master"), []byte(defaultBranch), -1)
+		output := bytes.Replace(input, []byte(gitInitDefaultBranchName), []byte(defaultBranch), -1)
 
 		if err = ioutil.WriteFile(path, output, 0700); err != nil {
 			return err
