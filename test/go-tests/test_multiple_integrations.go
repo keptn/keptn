@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
         - name: echo-service
-          image: keptnsandbox/echo-service:0.1.1-dev-PR-7
+          image: keptnsandbox/echo-service:0.1.1
           ports:
             - containerPort: 8080
           env:
