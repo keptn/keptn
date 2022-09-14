@@ -8,9 +8,9 @@ on:
       tags:
         type: string
         required: true
-#      config:
-#        type: string
-#        required: true
+      config:
+        type: string
+        required: true
 #      version:
 #        type: string
 #        required: true

@@ -255,7 +255,7 @@ jobs:
 #      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
 #      datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
 #      gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-#      config: ${{ matrix.config }}
+      config: ${{ matrix.config }}
 #      build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
 
   unit-tests-cli:
