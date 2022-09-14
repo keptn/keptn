@@ -182,7 +182,9 @@ jobs:
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
     - name: Print working directory
-      run: pwd && ls
+      run: | 
+        echo $(pwd) 
+        echo $(ls)
 
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
