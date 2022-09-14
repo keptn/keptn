@@ -1,31 +1,31 @@
 name: Build Docker Images
 on:
   workflow_call:
-    inputs:
-      artifact:
-        type: string
-        required: true
-      tags:
-        type: string
-        required: false
-      config:
-        type: string
-        required: true
-      version:
-        type: string
-        required: true
-      datetime:
-        type: string
-        required: false
-        default: ''
-      gitSha: 
-        type: string
-        required: true
-        default: ''
-      build-everything:
-        type: boolean
-        required: false
-        default: false
+#    inputs:
+#      artifact:
+#        type: string
+#        required: true
+#      tags:
+#        type: string
+#        required: true
+#      config:
+#        type: string
+#        required: true
+#      version:
+#        type: string
+#        required: true
+#      datetime:
+#        type: string
+#        required: false
+#        default: ''
+#      gitSha: 
+#        type: string
+#        required: true
+#        default: ''
+#      build-everything:
+#        type: boolean
+#        required: false
+#        default: false
 defaults:
   run:
     shell: bash
