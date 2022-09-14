@@ -17,9 +17,9 @@ on:
       docker-test-target:
         type: string
         required: true
-#      working-dir: 
-#        type: string
-#        required: true
+      working-dir: 
+        type: string
+        required: true
 #      version:
 #        type: string
 #        required: true
