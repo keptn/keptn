@@ -35,6 +35,9 @@ on:
         type: string
         required: false
         default: 'false'
+      go-version:
+        type: string
+        required: true
 defaults:
   run:
     shell: bash
