@@ -35,6 +35,10 @@ on:
         type: string
         required: false
         default: 'false'
+      build-installer:
+        type: string
+        required: false
+        default: 'false'
       go-version:
         type: string
         required: true
@@ -146,14 +150,14 @@ jobs:
           fail_ci_if_error: false
           flags: ${{ inputs.artifact }}
 
-    #######################################################################
-    # BUILD PRODUCTION IMAGES
-    #######################################################################
+#######################################################################
+# BUILD PRODUCTION IMAGES
+#######################################################################
   build_image:
     name: Build and push Docker Image
     runs-on: ubuntu-20.04
     needs: unit_test
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+    if: (inputs.build-everything == 'true') || (inputs.build-installer == 'true')
     steps:
     - name: Set up Docker Buildx
       id: buildx
