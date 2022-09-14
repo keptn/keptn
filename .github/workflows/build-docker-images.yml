@@ -23,10 +23,10 @@ on:
       version:
         type: string
         required: true
-#      datetime:
-#        type: string
-#        required: false
-#        default: ''
+      datetime:
+        type: string
+        required: false
+        default: ''
 #      gitSha: 
 #        type: string
 #        required: true
