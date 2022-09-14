@@ -253,7 +253,7 @@ jobs:
           "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}"
         ]
       should-run: ${{ matrix.config.should-run }}
-#      should-push-image: ${{ matrix.config.should-push-image }}
+      should-push-image: ${{ matrix.config.should-push-image }}
 #      docker-test-target: ${{ matrix.config.docker-test-target }}
 #      working-dir: ${{ matrix.config.working-dir }}
 #      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
