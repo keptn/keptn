@@ -247,11 +247,11 @@ jobs:
     secrets: inherit
     with:
       artifact: ${{ matrix.config.artifact }}
-      tags: |
-        [
-          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}",
-          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}"
-        ]
+#      tags: |
+#        [
+#          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}",
+#          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}"
+#        ]
       version: ${{ needs.prepare_ci_run.outputs.VERSION }}
       datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
