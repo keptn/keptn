@@ -5,9 +5,9 @@ on:
       artifact:
         type: string
         required: true
-#      tags:
-#        type: string
-#        required: true
+      tags:
+        type: string
+        required: true
 #      config:
 #        type: string
 #        required: true
