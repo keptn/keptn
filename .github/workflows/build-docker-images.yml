@@ -27,10 +27,10 @@ on:
         type: string
         required: false
         default: ''
-#      gitSha: 
-#        type: string
-#        required: true
-#        default: ''
+      gitSha: 
+        type: string
+        required: true
+        default: ''
 #      build-everything:
 #        type: boolean
 #        required: false
