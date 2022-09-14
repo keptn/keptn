@@ -12,7 +12,7 @@ on:
         type: string
         required: true
       should-push-image:
-        type: boolean
+        type: string
         required: true
 #      docker-test-target:
 #        type: string
