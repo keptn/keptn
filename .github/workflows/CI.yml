@@ -234,117 +234,29 @@ jobs:
           name: build-config
           path: build-config.env
 
-  ############################################################################
-  # Unit tests                                                               #
-  ############################################################################
-  unit-tests-and-build:
-    name: Unit Tests and Build
+    #######################################################################
+    # UNIT TEST AND BUILD PRODUCTION IMAGES
+    #######################################################################
+  unit-test-and-build-image:
+    name: Unit Tests and Build Image
     needs: prepare_ci_run
-    runs-on: ubuntu-20.04
     if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
-    env:
-      BRANCH: ${{ needs.prepare_ci_run.outputs.BRANCH }}
-      VERSION: ${{ needs.prepare_ci_run.outputs.VERSION }}
-      DATETIME: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-      GIT_SHA: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-
-      - name: Set up Go 1.x
-        if: matrix.config.artifact != 'bridge2'
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Set up gotestsum
-        if: matrix.config.artifact != 'bridge2'
-        run: go install gotest.tools/gotestsum@v1.8.1
-
-      - name: Test ${{ matrix.config.artifact }} # TODO add --race #8486 
-        if: matrix.config.artifact != 'bridge2' && ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (matrix.config.should-run == 'true'))
-        working-directory: ./${{ matrix.config.artifact}}
-        run: |
-          go mod download
-          gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
-
-    #######################################################################
-          # TESTS FOR BRIDGE
-    #######################################################################
-      - name: Install yarn
-        if: matrix.config.artifact == 'bridge2'
-        working-directory: bridge
-        run: |
-          if [[ '${{ matrix.config.docker-test-target }}' == 'bridge-server-test' ]]; then
-            cd ./server 
-          fi
-          yarn install --frozen-lockfile 
-
-      - name: Bridge lint checks
-        if: matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-code-style'
-        working-directory: bridge
-        run: yarn prettier:check && yarn lint:check
-
-      - name: UI-Test
-        if: matrix.config.docker-test-target == 'builder-test-ui'
-        working-directory: bridge
-        run: |
-         ./cypress/run-tests.sh   
-
-      - name: Bridge unit test
-        if: matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target != 'builder-test-ui'
-        working-directory: bridge
-        run: |
-          if [[ '${{ matrix.config.docker-test-target }}' == 'bridge-server-test' ]]; then
-            cd ./server 
-          fi
-          yarn test
-
-      - name: Report test coverage for bridge-server
-        if: matrix.config.should-push-image == 'false' && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'bridge-server-test'
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: false
-          flags: bridge-server
-
-      - name: Upload Test Screenshots
-        if: always() && matrix.config.artifact == 'bridge2' && matrix.config.docker-test-target == 'builder-test-ui'
-        uses: actions/upload-artifact@v3
-        with:
-          name: bridge-e2e-screenshots
-          path: ./bridge/shared/screenshots
-
-    # REPORT COVERAGE
-      - name: Report test coverage for ${{ matrix.config.artifact }}
-        if: matrix.config.should-push-image == 'true'
-        uses: codecov/codecov-action@v3
-        with:
-            fail_ci_if_error: false
-            flags: ${{ matrix.config.artifact }}
-
-    #######################################################################
-    # BUILD PRODUCTION IMAGES
-    #######################################################################
-
-      - name: Build and push Docker Images
-        if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-        uses: ./.github/workflows/build-docker-images.yml
-        with:
-          artifact: ${{ matrix.config.artifact }}
-          working-dir: ./${{ matrix.config.artifact}}
-          tags: |
-            [
-              "keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}",
-              "keptndev/${{ matrix.config.artifact }}:${{ env.VERSION }}.${{ env.DATETIME }}"
-            ]
-          version: ${{ env.VERSION }}
-          datetime: ${{ env.DATETIME }}
-          gitSha: ${{ env.GIT_SHA }}
-          should-push-image: ${{ matrix.config.should-push-image }}
-          should-run: ${{ matrix.config.should-run }}
-          build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
+    uses: ./.github/workflows/build-docker-images.yml
+    secrets: inherit
+    with:
+      artifact: ${{ matrix.config.artifact }}
+      tags: |
+        [
+          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}",
+          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}"
+        ]
+      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+      gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+      config: ${{ matrix.config }}
+      build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
