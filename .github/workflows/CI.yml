@@ -260,7 +260,7 @@ jobs:
       datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
       build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
-      go-version: "$GO_VERSION"
+      go-version: ${{ env.GO_VERSION }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
