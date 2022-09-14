@@ -200,3 +200,42 @@ jobs:
         builder: ${{ steps.buildx.outputs.name }}
         cache-from: type=gha, scope=${{ github.workflow }}
         cache-to: type=gha, scope=${{ github.workflow }}
+
+    - name: Write docker image digest to file
+      if: inputs.should-push-image
+      env:
+        IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
+        IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
+      run: |
+        echo "${{ inputs.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
+
+    - name: Upload Digest file as artifact
+      if: inputs.should-push-image
+      uses: actions/upload-artifact@v3
+      env:
+        IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
+      with:
+        name: image-digests
+        path: ${{ env.IMAGE_DIGEST_FILENAME }}
+
+    - name: Sign container images
+      if: inputs.should-push-image
+      env:
+        COSIGN_EXPERIMENTAL: 1
+        TAGS: ${{ inputs.tags }}
+      run: |
+        for tag in $TAGS
+        do 
+          cosign sign $tag
+        done
+
+    - name: Verify container images
+      if: inputs.should-push-image
+      env:
+        COSIGN_EXPERIMENTAL: 1
+        TAGS: ${{ inputs.tags }}
+      run: |
+        for tag in $TAGS
+        do
+          cosign verify $tag
+        done
