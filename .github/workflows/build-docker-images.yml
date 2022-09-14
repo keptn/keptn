@@ -20,21 +20,21 @@ on:
       working-dir: 
         type: string
         required: true
-      version:
-        type: string
-        required: true
-      datetime:
-        type: string
-        required: false
-        default: ''
-      gitSha: 
-        type: string
-        required: true
-        default: ''
-      build-everything:
-        type: boolean
-        required: false
-        default: false
+#      version:
+#        type: string
+#        required: true
+#      datetime:
+#        type: string
+#        required: false
+#        default: ''
+#      gitSha: 
+#        type: string
+#        required: true
+#        default: ''
+#      build-everything:
+#        type: boolean
+#        required: false
+#        default: false
 defaults:
   run:
     shell: bash
@@ -182,7 +182,7 @@ jobs:
       if: inputs.should-push-image == 'true' && ( inputs.should-run == 'true' || inputs.build-everything == 'true' )
       uses: docker/build-push-action@v3
       with:
-        context: ./${{ inputs.artifact }}
+        context: ./${{ inputs.working-dir }}
         tags: ${{ fromJson(inputs.tags) }}
         build-args: |
           version=${{ inputs.version }}
