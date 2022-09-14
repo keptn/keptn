@@ -31,10 +31,10 @@ on:
         type: string
         required: true
         default: ''
-#      build-everything:
-#        type: boolean
-#        required: false
-#        default: false
+      build-everything:
+        type: boolean
+        required: false
+        default: false
 defaults:
   run:
     shell: bash
