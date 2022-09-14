@@ -8,7 +8,7 @@ on:
       tags:
         type: string
         required: true
-      matrix-config:
+      should-run:
         type: string
         required: true
 #      version:
