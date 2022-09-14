@@ -213,7 +213,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: ./${{ inputs.working-dir }}
-        tags: ${{ fromJson(inputs.tags) }}
+        tags: ${{ inputs.tags }}
         build-args: |
           version=${{ inputs.version }}
           buildTime=${{ inputs.datetime }}

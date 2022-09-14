@@ -255,10 +255,8 @@ jobs:
     with:
       artifact: ${{ matrix.config.artifact }}
       tags: |
-        [
-          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}",
-          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}"
-        ]
+        keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}
+        keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
       should-run: ${{ matrix.config.should-run }}
       should-push-image: ${{ matrix.config.should-push-image }}
       docker-test-target: ${{ matrix.config.docker-test-target }}
