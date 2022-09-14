@@ -1,10 +1,10 @@
 name: Build Docker Images
 on:
   workflow_call:
-#    inputs:
-#      artifact:
-#        type: string
-#        required: true
+    inputs:
+      artifact:
+        type: string
+        required: true
 #      tags:
 #        type: string
 #        required: true

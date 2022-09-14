@@ -240,13 +240,13 @@ jobs:
   unit-tests-and-build:
     name: Unit Tests and Build Image
     needs: prepare_ci_run
-#    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
+    if: needs.prepare_ci_run.outputs.BUILD_MATRIX_EMPTY == 'false'
     strategy:
       matrix: ${{ fromJson(needs.prepare_ci_run.outputs.BUILD_MATRIX) }}
     uses: ./.github/workflows/build-docker-images.yml
     secrets: inherit
-#    with:
-#      artifact: ${{ matrix.config.artifact }}
+    with:
+      artifact: ${{ matrix.config.artifact }}
 #      tags: |
 #        [
 #          "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}",
