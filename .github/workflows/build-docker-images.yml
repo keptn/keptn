@@ -40,7 +40,7 @@ defaults:
     shell: bash
 env:
   ARTIFACT: ${{ inputs.artifact }}
-  TAGS: ${{ fromJson(inputs.tags) }}
+  TAGS: ${{ inputs.tags }}
   SHOULD_RUN: ${{ inputs.should-run }}
   SHOULD_PUSH_IMAGE: ${{ inputs.should-push-image }}
   DOCKER_TEST_TARGET: ${{ inputs.docker-test-target }}
