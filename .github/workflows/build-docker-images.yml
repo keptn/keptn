@@ -49,6 +49,7 @@ env:
   DATETIME: ${{ inputs.datetime }}
   GIT_SHA: ${{ inputs.gitSha }}
   BUILD_EVERYTHING: ${{ inputs.build-everything }}
+  GO_VERSION: ${{inputs.go-version}}
 jobs:
   unit_test:
     name: Execute Unit Tests
@@ -66,6 +67,7 @@ jobs:
         echo "DATETIME $DATETIME"
         echo "GIT_SHA $GIT_SHA"
         echo "BUILD_EVERYTHING $BUILD_EVERYTHING"
+        echo "GO_VERSION $GO_VERSION"
 
     - name: Check out code
       uses: actions/checkout@v3
