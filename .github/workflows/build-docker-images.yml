@@ -11,9 +11,9 @@ on:
       should-run:
         type: string
         required: true
-      should-push-image:
-        type: boolean
-        required: true
+#      should-push-image:
+#        type: boolean
+#        required: true
 #      docker-test-target:
 #        type: string
 #        required: true
