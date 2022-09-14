@@ -253,11 +253,13 @@ jobs:
           "keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}"
         ]
       should-run: ${{ matrix.config.should-run }}
-#      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
-#      datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
-#      gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
-#      config: ${{ matrix.config }}
-#      build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
+      should-push-image: ${{ matrix.config.should-push-image }}
+      docker-test-target: ${{ matrix.config.docker-test-target }}
+      working-dir: ${{ matrix.config.working-dir }}
+      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
+      datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
+      gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}
+      build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
 
   unit-tests-cli:
     name: Unit Tests CLI (multi OS/arch)
