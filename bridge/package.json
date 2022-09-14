@@ -98,7 +98,7 @@
     "@types/d3": "7.4.0",
     "@types/dompurify": "2.3.4",
     "@types/jest": "28.1.8",
-    "@types/lodash": "4.14.184",
+    "@types/lodash": "4.14.185",
     "@types/lodash-es": "4.17.6",
     "@types/marked": "4.0.7",
     "@types/node": "14.18.28",
