@@ -45,37 +45,11 @@ on:
 defaults:
   run:
     shell: bash
-env:
-  ARTIFACT: ${{ inputs.artifact }}
-  TAGS: ${{ inputs.tags }}
-  SHOULD_RUN: ${{ inputs.should-run }}
-  SHOULD_PUSH_IMAGE: ${{ inputs.should-push-image }}
-  DOCKER_TEST_TARGET: ${{ inputs.docker-test-target }}
-  WORKING_DIR: ${{ inputs.working-dir }}
-  VERSION: ${{ inputs.version }}
-  DATETIME: ${{ inputs.datetime }}
-  GIT_SHA: ${{ inputs.gitSha }}
-  BUILD_EVERYTHING: ${{ inputs.build-everything }}
-  GO_VERSION: ${{inputs.go-version}}
 jobs:
   unit_test:
     name: Execute Unit Tests
     runs-on: ubuntu-20.04
     steps:
-    - name: Print everything
-      run: |
-        echo "ARTIFACT $ARTIFACT"
-        echo "TAGS $TAGS"
-        echo "SHOULD_RUN $SHOULD_RUN"
-        echo "SHOULD_PUSH_IMAGE $SHOULD_PUSH_IMAGE"
-        echo "DOCKER_TEST_TARGET $DOCKER_TEST_TARGET"
-        echo "WORKING_DIR $WORKING_DIR"
-        echo "VERSION $VERSION"
-        echo "DATETIME $DATETIME"
-        echo "GIT_SHA $GIT_SHA"
-        echo "BUILD_EVERYTHING $BUILD_EVERYTHING"
-        echo "GO_VERSION $GO_VERSION"
-
     - name: Check out code
       uses: actions/checkout@v3
 
@@ -206,6 +180,9 @@ jobs:
       with:
         username: ${{ secrets.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
+
+    - name: Print working directory
+      run: pwd && ls
 
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
