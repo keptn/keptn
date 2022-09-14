@@ -212,7 +212,7 @@ jobs:
       if: inputs.should-push-image == 'true' && ( inputs.should-run == 'true' || inputs.build-everything == 'true' )
       uses: docker/build-push-action@v3
       with:
-        context: ./${{ inputs.working-dir }}
+        context: ${{ inputs.working-dir }}
         tags: ${{ inputs.tags }}
         build-args: |
           version=${{ inputs.version }}
