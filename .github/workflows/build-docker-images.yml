@@ -133,6 +133,9 @@ jobs:
     needs: unit_test
     if: (inputs.build-everything == 'true') || (inputs.build-installer == 'true')
     steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+      
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v2
@@ -180,11 +183,6 @@ jobs:
       with:
         username: ${{ secrets.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
-
-    - name: Print working directory
-      run: | 
-        echo $(pwd) 
-        echo $(ls)
 
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
