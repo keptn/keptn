@@ -20,9 +20,9 @@ on:
       working-dir: 
         type: string
         required: true
-#      version:
-#        type: string
-#        required: true
+      version:
+        type: string
+        required: true
 #      datetime:
 #        type: string
 #        required: false
