@@ -254,8 +254,8 @@ jobs:
         ]
       should-run: ${{ matrix.config.should-run }}
       should-push-image: ${{ matrix.config.should-push-image }}
-      docker-test-target: ${{ matrix.config.docker-test-target }}
-      working-dir: ${{ matrix.config.working-dir }}
+#      docker-test-target: ${{ matrix.config.docker-test-target }}
+#      working-dir: ${{ matrix.config.working-dir }}
 #      version: ${{ needs.prepare_ci_run.outputs.VERSION }}
 #      datetime: ${{ needs.prepare_ci_run.outputs.DATE }}${{ needs.prepare_ci_run.outputs.TIME }}
 #      gitSha: ${{ needs.prepare_ci_run.outputs.GIT_SHA }}

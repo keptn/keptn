@@ -14,12 +14,12 @@ on:
       should-push-image:
         type: boolean
         required: true
-      docker-test-target:
-        type: string
-        required: true
-      working-dir: 
-        type: string
-        required: true
+#      docker-test-target:
+#        type: string
+#        required: true
+#      working-dir: 
+#        type: string
+#        required: true
 #      version:
 #        type: string
 #        required: true
@@ -47,149 +47,149 @@ jobs:
     steps:
     - name: Test
       run: echo "got invoked"
-    - name: Check out code
-      uses: actions/checkout@v3
-
-    - name: Set up Go 1.x
-      if: inputs.artifact != 'bridge2'
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GO_VERSION }}
-
-    - name: Set up gotestsum
-      if: inputs.artifact != 'bridge2'
-      run: go install gotest.tools/gotestsum@v1.8.1
-
-    - name: Test ${{ inputs.artifact }} # TODO add --race #8486 
-      if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
-      working-directory: ./${{ inputs.artifact }}
-      run: |
-        go mod download
-        gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
-
-    #######################################################################
-          # TESTS FOR BRIDGE
-    #######################################################################
-    - name: Install yarn
-      if: inputs.artifact == 'bridge2'
-      working-directory: bridge
-      run: |
-        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
-          cd ./server 
-        fi
-        yarn install --frozen-lockfile 
-
-    - name: Bridge lint checks
-      if: inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-code-style'
-      working-directory: bridge
-      run: yarn prettier:check && yarn lint:check
-
-    - name: UI-Test
-      if: inputs.docker-test-target == 'builder-test-ui'
-      working-directory: bridge
-      run: |
-       ./cypress/run-tests.sh   
-
-    - name: Bridge unit test
-      if: inputs.artifact == 'bridge2' && inputs.docker-test-target != 'builder-test-ui'
-      working-directory: bridge
-      run: |
-        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
-          cd ./server 
-        fi
-        yarn test
-
-    - name: Report test coverage for bridge-server
-      if: inputs.should-push-image == 'false' && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'bridge-server-test'
-      uses: codecov/codecov-action@v3
-      with:
-        fail_ci_if_error: false
-        flags: bridge-server
-
-    - name: Upload Test Screenshots
-      if: always() && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-test-ui'
-      uses: actions/upload-artifact@v3
-      with:
-        name: bridge-e2e-screenshots
-        path: ./bridge/shared/screenshots
-
-    # REPORT COVERAGE
-    - name: Report test coverage for ${{ inputs.artifact }}
-      if: inputs.should-push-image == 'true'
-      uses: codecov/codecov-action@v3
-      with:
-          fail_ci_if_error: false
-          flags: ${{ inputs.artifact }}
-
-    #######################################################################
-    # BUILD PRODUCTION IMAGES
-    #######################################################################
-  build_image:
-    name: Build and push Docker Image
-    runs-on: ubuntu-20.04
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
-    steps:
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v2
-      with:
-          install: true
-
-    - name: Set up Cosign
-      uses: sigstore/cosign-installer@v2.5.1
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-
-    - name: Login to GitHub Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: "ghcr.io"
-        username: "keptn-bot"
-        password: ${{ secrets.KEPTN_BOT_TOKEN }}
-
-    - name: Login to Quay.io
-      uses: docker/login-action@v2
-      with:
-        registry: "quay.io"
-        username: ${{ secrets.QUAY_USER }}
-        password: ${{ secrets.QUAY_TOKEN }}
-    
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        # Key is named differently to avoid collision
-        key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-multi-buildx
-
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      # only run docker login on pushes; also for PRs, but only if this is not a fork
-      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
-      # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
-      # that's fine, but it means we can't push images to dockerhub
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-
-    - name: "Docker Build keptn/${{ inputs.artifact }}"
-      id: docker_build_image
-      if: inputs.should-push-image == 'true' && ( inputs.should-run == 'true' || inputs.build-everything == 'true' )
-      uses: docker/build-push-action@v3
-      with:
-        context: ./${{ inputs.working-dir }}
-        tags: ${{ fromJson(inputs.tags) }}
-        build-args: |
-          version=${{ inputs.version }}
-          buildTime=${{ inputs.datetime }}
-          gitSha=${{ inputs.gitSha }}
-        push: ${{ inputs.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
-        pull: true
-        builder: ${{ steps.buildx.outputs.name }}
-        cache-from: type=gha, scope=${{ github.workflow }}
-        cache-to: type=gha, scope=${{ github.workflow }}
+#    - name: Check out code
+#      uses: actions/checkout@v3
+#
+#    - name: Set up Go 1.x
+#      if: inputs.artifact != 'bridge2'
+#      uses: actions/setup-go@v3
+#      with:
+#        go-version: ${{ env.GO_VERSION }}
+#
+#    - name: Set up gotestsum
+#      if: inputs.artifact != 'bridge2'
+#      run: go install gotest.tools/gotestsum@v1.8.1
+#
+#    - name: Test ${{ inputs.artifact }} # TODO add --race #8486 
+#      if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
+#      working-directory: ./${{ inputs.artifact }}
+#      run: |
+#        go mod download
+#        gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
+#
+#    #######################################################################
+#          # TESTS FOR BRIDGE
+#    #######################################################################
+#    - name: Install yarn
+#      if: inputs.artifact == 'bridge2'
+#      working-directory: bridge
+#      run: |
+#        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
+#          cd ./server 
+#        fi
+#        yarn install --frozen-lockfile 
+#
+#    - name: Bridge lint checks
+#      if: inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-code-style'
+#      working-directory: bridge
+#      run: yarn prettier:check && yarn lint:check
+#
+#    - name: UI-Test
+#      if: inputs.docker-test-target == 'builder-test-ui'
+#      working-directory: bridge
+#      run: |
+#       ./cypress/run-tests.sh   
+#
+#    - name: Bridge unit test
+#      if: inputs.artifact == 'bridge2' && inputs.docker-test-target != 'builder-test-ui'
+#      working-directory: bridge
+#      run: |
+#        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
+#          cd ./server 
+#        fi
+#        yarn test
+#
+#    - name: Report test coverage for bridge-server
+#      if: inputs.should-push-image == 'false' && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'bridge-server-test'
+#      uses: codecov/codecov-action@v3
+#      with:
+#        fail_ci_if_error: false
+#        flags: bridge-server
+#
+#    - name: Upload Test Screenshots
+#      if: always() && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-test-ui'
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: bridge-e2e-screenshots
+#        path: ./bridge/shared/screenshots
+#
+#    # REPORT COVERAGE
+#    - name: Report test coverage for ${{ inputs.artifact }}
+#      if: inputs.should-push-image == 'true'
+#      uses: codecov/codecov-action@v3
+#      with:
+#          fail_ci_if_error: false
+#          flags: ${{ inputs.artifact }}
+#
+#    #######################################################################
+#    # BUILD PRODUCTION IMAGES
+#    #######################################################################
+#  build_image:
+#    name: Build and push Docker Image
+#    runs-on: ubuntu-20.04
+#    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
+#    steps:
+#    - name: Set up Docker Buildx
+#      id: buildx
+#      uses: docker/setup-buildx-action@v2
+#      with:
+#          install: true
+#
+#    - name: Set up Cosign
+#      uses: sigstore/cosign-installer@v2.5.1
+#
+#    - name: Login to Docker Hub
+#      uses: docker/login-action@v2
+#      with:
+#        username: ${{ secrets.REGISTRY_USER }}
+#        password: ${{ secrets.REGISTRY_PASSWORD }}
+#
+#    - name: Login to GitHub Container Registry
+#      uses: docker/login-action@v2
+#      with:
+#        registry: "ghcr.io"
+#        username: "keptn-bot"
+#        password: ${{ secrets.KEPTN_BOT_TOKEN }}
+#
+#    - name: Login to Quay.io
+#      uses: docker/login-action@v2
+#      with:
+#        registry: "quay.io"
+#        username: ${{ secrets.QUAY_USER }}
+#        password: ${{ secrets.QUAY_TOKEN }}
+#    
+#    - name: Cache Docker layers
+#      uses: actions/cache@v3
+#      with:
+#        path: /tmp/.buildx-cache
+#        # Key is named differently to avoid collision
+#        key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+#        restore-keys: |
+#          ${{ runner.os }}-multi-buildx
+#
+#    - name: Login to Docker Hub
+#      uses: docker/login-action@v2
+#      # only run docker login on pushes; also for PRs, but only if this is not a fork
+#      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
+#      # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+#      # that's fine, but it means we can't push images to dockerhub
+#      with:
+#        username: ${{ secrets.REGISTRY_USER }}
+#        password: ${{ secrets.REGISTRY_PASSWORD }}
+#
+#    - name: "Docker Build keptn/${{ inputs.artifact }}"
+#      id: docker_build_image
+#      if: inputs.should-push-image == 'true' && ( inputs.should-run == 'true' || inputs.build-everything == 'true' )
+#      uses: docker/build-push-action@v3
+#      with:
+#        context: ./${{ inputs.working-dir }}
+#        tags: ${{ fromJson(inputs.tags) }}
+#        build-args: |
+#          version=${{ inputs.version }}
+#          buildTime=${{ inputs.datetime }}
+#          gitSha=${{ inputs.gitSha }}
+#        push: ${{ inputs.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
+#        pull: true
+#        builder: ${{ steps.buildx.outputs.name }}
+#        cache-from: type=gha, scope=${{ github.workflow }}
+#        cache-to: type=gha, scope=${{ github.workflow }}
