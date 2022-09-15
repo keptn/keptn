@@ -42,6 +42,10 @@ on:
       go-version:
         type: string
         required: true
+      sign-images:
+        type: boolean
+        required: false
+        default: false
 defaults:
   run:
     shell: bash
@@ -204,7 +208,7 @@ jobs:
         cache-to: type=gha, scope=${{ github.workflow }}
 
     - name: Write docker image digest to file
-      if: inputs.should-push-image
+      if: inputs.should-push-image && inputs.sign-images
       env:
         IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
         IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
@@ -212,7 +216,7 @@ jobs:
         echo "${{ inputs.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
 
     - name: Upload Digest file as artifact
-      if: inputs.should-push-image
+      if: inputs.should-push-image && inputs.sign-images
       uses: actions/upload-artifact@v3
       env:
         IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
@@ -221,7 +225,7 @@ jobs:
         path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
     - name: Sign container images
-      if: inputs.should-push-image
+      if: inputs.should-push-image && inputs.sign-images
       env:
         COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
@@ -232,7 +236,7 @@ jobs:
         done
 
     - name: Verify container images
-      if: inputs.should-push-image
+      if: inputs.should-push-image && inputs.sign-images
       env:
         COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
