@@ -42,10 +42,6 @@ on:
       go-version:
         type: string
         required: true
-      sign-images:
-        type: string
-        required: false
-        default: 'true'
 defaults:
   run:
     shell: bash
@@ -201,14 +197,14 @@ jobs:
           version=${{ inputs.version }}
           buildTime=${{ inputs.datetime }}
           gitSha=${{ inputs.gitSha }}
-        push: ${{ inputs.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
+        push: ${{ inputs.should-push-image == 'true' }}
         pull: true
         builder: ${{ steps.buildx.outputs.name }}
         cache-from: type=gha, scope=${{ github.workflow }}
         cache-to: type=gha, scope=${{ github.workflow }}
 
     - name: Write docker image digest to file
-      if: inputs.should-push-image == 'true' && inputs.sign-images == 'true'
+      if: inputs.should-push-image == 'true'
       env:
         IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
         IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
@@ -216,7 +212,7 @@ jobs:
         echo "${{ inputs.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
 
     - name: Upload Digest file as artifact
-      if: inputs.should-push-image == 'true' && inputs.sign-images == 'true'
+      if: inputs.should-push-image == 'true'
       uses: actions/upload-artifact@v3
       env:
         IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
@@ -225,7 +221,7 @@ jobs:
         path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
     - name: Sign container images
-      if: inputs.should-push-image == 'true' && inputs.sign-images == 'true'
+      if: inputs.should-push-image == 'true'
       env:
         COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
@@ -236,7 +232,7 @@ jobs:
         done
 
     - name: Verify container images
-      if: inputs.should-push-image == 'true' && inputs.sign-images == 'true'
+      if: inputs.should-push-image == 'true'
       env:
         COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
