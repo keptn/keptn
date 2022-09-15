@@ -78,7 +78,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		// otherwise, it can happen that an attempt to create a new project with an upstream that is already in use
 		// leaves the local directory, which will prevent further attempts to create the project, even when the upstream is properly set to an empty repo
 		rollbackFunc()
-		return errors.ErrProjectAlreadyExists
+		return errors.ErrProjectRepositoryNotEmpty
 	}
 
 	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point

@@ -95,7 +95,7 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
 	err := p.CreateProject(project)
 
-	require.Equal(t, errors2.ErrProjectAlreadyExists, err)
+	require.Equal(t, errors2.ErrProjectRepositoryNotEmpty, err)
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)

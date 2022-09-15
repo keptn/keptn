@@ -31,6 +31,8 @@ func OnAPIError(c *gin.Context, err error) {
 
 	if check, resourceType := alreadyExists(err); check {
 		SetConflictErrorResponse(c, resourceType+" already exists")
+	} else if errors.Is(err, errors2.ErrProjectRepositoryNotEmpty) {
+		SetConflictErrorResponse(c, "Project already exists with an already initialized GIT repository")
 	} else if errors.Is(err, errors2.ErrInvalidGitToken) || errors.Is(err, errors2.ErrAuthenticationRequired) || errors.Is(err, errors2.ErrAuthorizationFailed) {
 		SetFailedDependencyErrorResponse(c, "Invalid git token")
 	} else if errors.Is(err, errors2.ErrCredentialsNotFound) {
