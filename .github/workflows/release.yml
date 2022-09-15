@@ -207,7 +207,6 @@ jobs:
       build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
       go-version: ${{ needs.prepare.outputs.GO_VERSION }}
       build-everything: "true"
-      sign-image: "true"
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)

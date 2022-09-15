@@ -45,7 +45,7 @@ on:
       sign-images:
         type: string
         required: false
-        default: 'false'
+        default: 'true'
 defaults:
   run:
     shell: bash
