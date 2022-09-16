@@ -424,24 +424,24 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### Common settings
 
-| Name                                    | Description                                                                               | Value           |
-| --------------------------------------- | ----------------------------------------------------------------------------------------- | --------------- |
-| `logLevel`                              | Global log level for all Keptn services                                                   | `info`          |
-| `prefixPath`                            | URL prefix for all Keptn URLs                                                             | `""`            |
-| `keptnSpecVersion`                      | Version of the Keptn Spec definitions to be used                                          | `latest`        |
-| `strategy.type`                         | Strategy to use to replace existing Keptn pods                                            | `RollingUpdate` |
-| `strategy.rollingUpdate.maxSurge`       | Maximum number of additional pods to be spun up during rolling updates                    | `1`             |
-| `strategy.rollingUpdate.maxUnavailable` | Maximum number of unavailable pods during rolling updates                                 | `0`             |
-| `podSecurityContext`                    | Set the default pod security context for all pods                                         |                 |
-| `podSecurityContext.enabled`            | Enable the default pod security context for all pods                                      | `true`          |
-| `containerSecurityContext`              | Set the default container security context for all containers                             |                 |
-| `containerSecurityContext.enabled`      | Enable the default container security context for all containers                          | `true`          |
-| `nodeSelector`                          | Default node labels for pod assignment                                                    | `{}`            |
-| `podAffinity.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`            |
-| `podAffinity.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`            |
-| `nodeAffinityPreset.type`               | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard` | `""`            |
-| `nodeAffinityPreset.key`                | Node label key to match Ignored if `affinity` is set.                                     | `""`            |
-| `nodeAffinityPreset.values`             | Node label values to match. Ignored if `affinity` is set.                                 | `[]`            |
-| `affinity`                              | Affinity for pod assignment                                                               | `{}`            |
-| `tolerations`                           | Toleration labels for pod assignment                                                      | `[]`            |
+| Name                                    | Description                                                                                                                              | Value           |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | --------------- |
+| `logLevel`                              | Global log level for all Keptn services                                                                                                  | `info`          |
+| `prefixPath`                            | URL prefix for all Keptn URLs                                                                                                            | `""`            |
+| `keptnSpecVersion`                      | Version of the Keptn Spec definitions to be used                                                                                         | `latest`        |
+| `strategy.type`                         | Strategy to use to replace existing Keptn pods                                                                                           | `RollingUpdate` |
+| `strategy.rollingUpdate.maxSurge`       | Maximum number of additional pods to be spun up during rolling updates                                                                   | `1`             |
+| `strategy.rollingUpdate.maxUnavailable` | Maximum number of unavailable pods during rolling updates                                                                                | `0`             |
+| `podSecurityContext`                    | Set the default pod security context for all pods                                                                                        |                 |
+| `podSecurityContext.enabled`            | Enable the default pod security context for all pods                                                                                     | `true`          |
+| `containerSecurityContext`              | Set the default container security context for all containers                                                                            |                 |
+| `containerSecurityContext.enabled`      | Enable the default container security context for all containers                                                                         | `true`          |
+| `nodeSelector`                          | Default node labels for pod assignment                                                                                                   | `{}`            |
+| `podAffinity.podAffinityPreset`         | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`. Can be overridden by service specific values.       | `""`            |
+| `podAffinity.podAntiAffinityPreset`     | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`. Can be overridden by service specific values.  | `""`            |
+| `nodeAffinityPreset.type`               | Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`. Can be overridden by service specific values. | `""`            |
+| `nodeAffinityPreset.key`                | Node label key to match Ignored if `affinity` is set. Can be overridden by service specific values.                                      | `""`            |
+| `nodeAffinityPreset.values`             | Node label values to match. Ignored if `affinity` is set. Can be overridden by service specific values.                                  | `[]`            |
+| `affinity`                              | Affinity for pod assignment. Can be overridden by service specific values.                                                               | `{}`            |
+| `tolerations`                           | Toleration labels for pod assignment. Can be overridden by service specific values.                                                      | `[]`            |
 
