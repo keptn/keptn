@@ -439,6 +439,14 @@ spec:
         {{- end }}
       serviceAccountName: keptn-default
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiGatewayNginx.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.apiGatewayNginx.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.apiGatewayNginx.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.apiGatewayNginx.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        {{- include "keptn.affinities.pods" (dict "value" .Values.apiGatewayNginx.podAffinity "default" .Values.podAffinity "component" "api-gateway-nginx" "context" . ) | indent 8 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.apiGatewayNginx.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "api-gateway-nginx" "context" . ) | indent 8 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service
