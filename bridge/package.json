@@ -87,7 +87,7 @@
     "@angular/language-service": "12.2.16",
     "@babel/core": "7.18.10",
     "@compodoc/compodoc": "1.1.19",
-    "@cypress/schematic": "2.0.3",
+    "@cypress/schematic": "2.1.1",
     "@storybook/addon-actions": "6.5.12",
     "@storybook/addon-essentials": "6.5.12",
     "@storybook/addon-interactions": "6.5.12",
