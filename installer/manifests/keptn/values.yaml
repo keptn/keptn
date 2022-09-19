@@ -854,7 +854,7 @@ resourceService:
       memory: "32Mi"
       cpu: "25m"
     limits:
-      memory: "64Mi"
+      memory: "256Mi"
       cpu: "200m"
 
 ## @section MongoDB Datastore
