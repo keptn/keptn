@@ -7,6 +7,7 @@ on:
         required: false
 env:
   NODE_VERSION: 16
+  GO_VERSION: "~1.18"
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
@@ -92,6 +93,7 @@ jobs:
       BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
       BUILD_MATRIX: ${{ steps.check_modified_files.outputs.BUILD_MATRIX }}
       BUILD_MATRIX_EMPTY: ${{ steps.check_modified_files.outputs.BUILD_MATRIX_EMPTY }}
+      GO_VERSION: ${{ steps.get_go_version.outputs.GO_VERSION }}
     steps:
       - name: Check SemVer input
         env:
@@ -166,6 +168,13 @@ jobs:
           KEPTN_SPEC_VERSION=$(git describe --tags)
           echo "::set-output name=keptn-spec-version::${KEPTN_SPEC_VERSION}"
 
+      - name: Get GO-Version
+        id: get_go_version
+        env:
+          GO_VERSION: ${{ env.GO_VERSION }}
+        run: |
+          echo "::set-output name=GO_VERSION::$GO_VERSION"
+
       - name: Prepare artifact build matrix
         id: check_modified_files
         env:
@@ -178,97 +187,29 @@ jobs:
   # Build Docker Images
   ############################################################################
   docker_build:
+    name: Unit Tests and Build Image
     needs: prepare
-    name: Docker Build
-    runs-on: ubuntu-20.04
     strategy:
-      fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
-    permissions:
-      id-token: write # Needed for cosign OIDC authentication against Github
-    env:
-      BRANCH: ${{ needs.prepare.outputs.branch }}
-      VERSION: ${{ needs.prepare.outputs.next-version }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Set up Cosign
-        uses: sigstore/cosign-installer@v2.5.1
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: "ghcr.io"
-          username: "keptn-bot"
-          password: ${{ secrets.KEPTN_BOT_TOKEN }}
-
-      - name: Login to Quay.io
-        uses: docker/login-action@v2
-        with:
-          registry: "quay.io"
-          username: ${{ secrets.QUAY_USER }}
-          password: ${{ secrets.QUAY_TOKEN }}
-
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: |
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-          build-args: |
-            version=${{ env.VERSION }}
-            buildTime=${{ needs.prepare.outputs.datetime }}
-            gitSha=${{ needs.prepare.outputs.git_sha }}
-          push: ${{ matrix.config.should-push-image }}
-          pull: true
-
-      - name: Write docker image digest to file
-        if: matrix.config.should-push-image
-        env:
-          IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
-          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
-        run: |
-          echo "${{ matrix.config.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
-
-      - name: Upload Digest file as artifact
-        if: matrix.config.should-push-image
-        uses: actions/upload-artifact@v3
-        env:
-          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
-        with:
-          name: image-digests
-          path: ${{ env.IMAGE_DIGEST_FILENAME }}
-
-      - name: Sign container images
-        if: matrix.config.should-push-image
-        env:
-          COSIGN_EXPERIMENTAL: 1
-        run: |
-          cosign sign 'keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-          cosign sign 'quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-          cosign sign 'ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-
-      - name: Verify container images
-        if: matrix.config.should-push-image
-        env:
-          COSIGN_EXPERIMENTAL: 1
-        run: |
-          cosign verify 'keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-          cosign verify 'quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
-          cosign verify 'ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}'
+    uses: ./.github/workflows/test-and-build-docker-images.yml
+    secrets: inherit
+    with:
+      artifact: ${{ matrix.config.artifact }}
+      tags: |
+        keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+        quay.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+        ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+      should-run: ${{ matrix.config.should-run }}
+      should-push-image: ${{ matrix.config.should-push-image }}
+      docker-test-target: ${{ matrix.config.docker-test-target }}
+      working-dir: ${{ matrix.config.working-dir }}
+      version: ${{ needs.prepare.outputs.next-version }}
+      datetime: ${{ needs.prepare.outputs.DATE }}${{ needs.prepare.outputs.TIME }}
+      gitSha: ${{ needs.prepare.outputs.git_sha }}
+      build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
+      go-version: ${{ needs.prepare.outputs.GO_VERSION }}
+      build-everything: "true"
+      execute-tests: "false"
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
