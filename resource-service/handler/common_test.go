@@ -1,10 +1,16 @@
 package handler
 
 import (
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/resource-service/errors"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
-	"github.com/go-git/go-git/v5/plumbing/transport"
-	"github.com/go-git/go-git/v5/plumbing/transport/http"
+	gittransport "github.com/go-git/go-git/v5/plumbing/transport"
+	githttp "github.com/go-git/go-git/v5/plumbing/transport/http"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/resource-service/common_models"
 )
@@ -14,7 +20,7 @@ func Test_getAuthMethod(t *testing.T) {
 		name           string
 		gitCredentials *common_models.GitCredentials
 		wantErr        bool
-		expectedOutput transport.AuthMethod
+		expectedOutput gittransport.AuthMethod
 	}{
 		{
 			name:           "no credentials",
@@ -33,7 +39,7 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "user",
 			},
 			wantErr: false,
-			expectedOutput: &http.BasicAuth{
+			expectedOutput: &githttp.BasicAuth{
 				Username: "user",
 				Password: "some-token",
 			},
@@ -55,7 +61,7 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "user",
 			},
 			wantErr: false,
-			expectedOutput: &http.BasicAuth{
+			expectedOutput: &githttp.BasicAuth{
 				Username: "user",
 				Password: "some-token",
 			},
@@ -71,7 +77,7 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "",
 			},
 			wantErr: false,
-			expectedOutput: &http.BasicAuth{
+			expectedOutput: &githttp.BasicAuth{
 				Username: "keptnuser",
 				Password: "some-token",
 			},
@@ -134,6 +140,99 @@ func Test_getAuthMethod(t *testing.T) {
 			if err != nil && auth != tt.expectedOutput {
 				t.Errorf("getAuthMethod() auth = %v, expectedOutput %v", err, tt.wantErr)
 			}
+		})
+	}
+}
+
+func TestOnAPIError(t *testing.T) {
+
+	ginContext := func(w *httptest.ResponseRecorder) *gin.Context {
+		gin.SetMode(gin.TestMode)
+		ctx, _ := gin.CreateTestContext(w)
+		ctx.Request = &http.Request{
+			Header: make(http.Header),
+		}
+
+		return ctx
+	}
+
+	tests := []struct {
+		name           string
+		recorder       *httptest.ResponseRecorder
+		err            error
+		wantStatusCode int
+	}{
+		{
+			name:           "ErrProjectAlreadyExists -> 409 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrProjectAlreadyExists,
+			wantStatusCode: http.StatusConflict,
+		},
+		{
+			name:           "errors.ErrProjectRepositoryNotEmpty -> 409 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrProjectRepositoryNotEmpty,
+			wantStatusCode: http.StatusConflict,
+		},
+		{
+			name:           "errors.ErrInvalidGitToken -> 424 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrInvalidGitToken,
+			wantStatusCode: http.StatusFailedDependency,
+		},
+		{
+			name:           "errors.ErrAuthenticationRequired -> 424 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrAuthenticationRequired,
+			wantStatusCode: http.StatusFailedDependency,
+		},
+		{
+			name:           "errors.ErrAuthorizationFailed -> 424 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrAuthorizationFailed,
+			wantStatusCode: http.StatusFailedDependency,
+		},
+		{
+			name:           " errors.ErrCredentialsNotFound -> 404 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrCredentialsNotFound,
+			wantStatusCode: http.StatusNotFound,
+		},
+		{
+			name:           "errors.ErrMalformedCredentials -> 424 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrMalformedCredentials,
+			wantStatusCode: http.StatusFailedDependency,
+		},
+		{
+			name:           "errors.ErrCredentialsInvalidRemoteURL -> 400 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrCredentialsInvalidRemoteURL,
+			wantStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:           "errors.ErrCredentialsTokenMustNotBeEmpty -> 400 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrCredentialsTokenMustNotBeEmpty,
+			wantStatusCode: http.StatusBadRequest,
+		},
+		{
+			name:           "errors.ErrRepositoryNotFound -> 404 ",
+			recorder:       httptest.NewRecorder(),
+			err:            errors.ErrRepositoryNotFound,
+			wantStatusCode: http.StatusNotFound,
+		},
+		{
+			name:           "error -> 500 ",
+			recorder:       httptest.NewRecorder(),
+			err:            fmt.Errorf("some other err"),
+			wantStatusCode: http.StatusInternalServerError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			OnAPIError(ginContext(tt.recorder), tt.err)
+			assert.Equal(t, tt.wantStatusCode, tt.recorder.Code)
 		})
 	}
 }

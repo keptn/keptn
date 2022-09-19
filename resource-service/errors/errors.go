@@ -23,6 +23,7 @@ func (e *ResourceServiceError) Error() string {
 
 var ErrProjectNotFound = New("project not found")
 var ErrProjectAlreadyExists = New("project already exists")
+var ErrProjectRepositoryNotEmpty = New("project repository is not empty")
 
 // Stage specific errors
 
