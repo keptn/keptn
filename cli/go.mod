@@ -82,9 +82,9 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.22.13 // indirect
-	k8s.io/apimachinery v0.22.13 // indirect
-	k8s.io/client-go v0.22.13 // indirect
+	k8s.io/api v0.22.14 // indirect
+	k8s.io/apimachinery v0.22.14 // indirect
+	k8s.io/client-go v0.22.14 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
