@@ -53,7 +53,7 @@ jobs:
   unit_test:
     name: Execute Unit Tests
     runs-on: ubuntu-20.04
-    if: inputs.execute-tests == "true"
+    if: inputs.execute-tests == 'true'
     steps:
     - name: Check out code
       uses: actions/checkout@v3
