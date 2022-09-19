@@ -45,7 +45,7 @@ on:
       execute-tests:
         type: string
         required: false
-        default: "true"
+        default: 'true'
 defaults:
   run:
     shell: bash
