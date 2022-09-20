@@ -68,7 +68,7 @@ jobs:
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.19"
+            PLATFORM_VERSION: "1.22"
             CLUSTER_NAME: "keptn-integration-test-1"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
@@ -77,7 +77,7 @@ jobs:
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.22"
+            PLATFORM_VERSION: "1.24"
             CLUSTER_NAME: "keptn-integration-test-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
@@ -269,7 +269,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v0.8.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
-          location: "us-east1-b"
+          location: "europe-west2-a"
           use_auth_provider: true
 
       - name: Install Istio
