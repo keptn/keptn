@@ -43,6 +43,9 @@ func Test_ImportCorrectManifest(t *testing.T) {
 
 	// Make API call with ZIP file
 	responseCode, err := ImportUploadZipToProject("v1/import", projectName, "./sample-package.zip")
+	if err != nil {
+		t.Logf("%s %v", err.Error(), err)
+	}
 	require.Nil(t, err)
 	require.Equal(t, 200, responseCode, fmt.Sprintf("Expected response status 200 but got %d", responseCode))
 
