@@ -144,7 +144,12 @@ func ImportUploadZipToProject(urlPath, projectName, filePath string) (int, error
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("x-token", token)
 
-	rsp, _ := client.Do(req)
+	rsp, err := client.Do(req)
+
+	if err != nil {
+		return 500, err
+	}
+
 	if rsp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(rsp.Body)
 		if err != nil {
