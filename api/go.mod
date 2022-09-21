@@ -22,7 +22,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.34.0
 	golang.org/x/exp v0.0.0-20220916125017-b168a2c6b86b
-	golang.org/x/net v0.0.0-20220909164309-bea034e7d591
+	golang.org/x/net v0.0.0-20220920203100-d0c6ba3f52d9
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -88,7 +88,7 @@ replace (
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
 	github.com/gobuffalo/packr/v2 => github.com/gobuffalo/packr/v2 v2.3.2
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/net => golang.org/x/net v0.0.0-20220909164309-bea034e7d591
+	golang.org/x/net => golang.org/x/net v0.0.0-20220920203100-d0c6ba3f52d9
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
