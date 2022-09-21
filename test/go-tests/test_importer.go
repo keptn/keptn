@@ -139,7 +139,7 @@ func ImportUploadZipToProject(urlPath, projectName, filePath string) (int, error
 		return 400, err
 	}
 	writer.Close()
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s?project=%s", fmt.Sprintf("%s/%s", keptnApiUrl, urlPath), projectName), bytes.NewReader(body.Bytes()))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s?project=%s", keptnApiUrl, urlPath, projectName), bytes.NewReader(body.Bytes()))
 	if err != nil {
 		return 400, err
 	}
