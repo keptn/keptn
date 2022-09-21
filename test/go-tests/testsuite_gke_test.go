@@ -15,7 +15,7 @@ func Test_GKE(t *testing.T) {
 	//t.Run("Test_Webhook", Test_Webhook)
 	//t.Run("Test_ExecutingWebhookTargetingClusterInternalAddressesFails", Test_ExecutingWebhookTargetingClusterInternalAddressesFails)
 	//
-	//t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 	//t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 	//
 	//t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
@@ -32,7 +32,7 @@ func Test_GKE(t *testing.T) {
 	//t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	//t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	//t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
-	t.Run("Test_ImportCorrectManifest", Test_ImportCorrectManifest)
-	t.Run("Test_ImportCorrectManifestNonExistingProject", Test_ImportCorrectManifestNonExistingProject)
-	t.Run("Test_ImportMalformedZipFileCorrectName", Test_ImportMalformedZipFileCorrectName)
+	//t.Run("Test_ImportCorrectManifest", Test_ImportCorrectManifest)
+	//t.Run("Test_ImportCorrectManifestNonExistingProject", Test_ImportCorrectManifestNonExistingProject)
+	//t.Run("Test_ImportMalformedZipFileCorrectName", Test_ImportMalformedZipFileCorrectName)
 }
