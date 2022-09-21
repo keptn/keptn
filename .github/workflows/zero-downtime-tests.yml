@@ -215,7 +215,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v0.8.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
-          location: "us-east1-b"
+          location: "europe-west2"
 
       - name: Install Keptn
         id: keptn_install
