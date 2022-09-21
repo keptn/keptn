@@ -248,7 +248,7 @@ jobs:
 
           # create registry and cluster
           k3d registry create container-registry.localhost --port 12345
-          k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use "$AIRGAPPED_REGISTRY_URL"
+          k3d cluster create mykeptn --k3s-arg "--no-deploy=traefik@server:*" --agents 1 --k3s-arg "--no-deploy=servicelb@server:*" --k3s-arg "--kube-proxy-arg=conntrack-max-per-core=0@server:*" --registry-use "$AIRGAPPED_REGISTRY_URL"
           kubectl config use-context k3d-mykeptn
 
       - name: Authenticate to Google Cloud
