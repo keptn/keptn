@@ -15,9 +15,6 @@ on:
         required: false
         description: "Check this if you don't want the test namespaces to stay alive after the test run"
         default: false
-env:
-  META_KEPTN_VERSION: 0.13.2
-  META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
     shell: bash
