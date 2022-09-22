@@ -146,6 +146,9 @@ func Test_ProvisioningURL(t *testing.T) {
 	require.Nil(t, err)
 
 	resp, err := ApiPOSTRequest(baseProjectPath, createProjectRequestData, 3)
+	if err != nil {
+		t.Logf("error: %s %+v", err.Error(), err)
+	}
 	require.Nil(t, err)
 	if resp.Response().StatusCode != 201 {
 		fullResponse, _ := io.ReadAll(resp.Response().Body)
