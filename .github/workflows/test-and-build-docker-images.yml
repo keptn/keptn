@@ -96,9 +96,9 @@ jobs:
 
     - name: Does caching work
       env:
-        cache-hit: ${{ steps.cache-npm.outputs.cache-hit }}
+        cache_hit: ${{ steps.cache-npm.outputs.cache-hit }}
       continue-on-error: true
-      run: echo "cache-hit $cache-hit"
+      run: echo "cache-hit $cache_hit"
 
     - name: Install yarn
       if: inputs.artifact == 'bridge2'
