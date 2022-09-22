@@ -84,7 +84,7 @@ jobs:
       if: inputs.artifact == 'bridge2'
       uses: actions/setup-node@v3
       with:
-        node-version-file: '.nvmrc'
+        node-version-file: 'bridge/.nvmrc'
         cache: 'yarn'
         cache-dependency-path: bridge/yarn.lock
 
