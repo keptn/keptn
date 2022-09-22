@@ -80,6 +80,14 @@ jobs:
     #######################################################################
           # TESTS FOR BRIDGE
     #######################################################################
+    - name: Cache global node modules
+      if: inputs.artifact == 'bridge2'
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: 'bridge/.nvmrc'
+        cache: 'yarn'
+        cache-dependency-path: '**/yarn.lock'
+
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       if: inputs.artifact == 'bridge2'
