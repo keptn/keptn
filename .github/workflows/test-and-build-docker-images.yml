@@ -86,7 +86,6 @@ jobs:
       working-directory: bridge
       run: |
         echo "::set-output name=dir::$(yarn cache dir)"
-        echo "::set-output name=version::$(yarn -v)"
     
     - name: Setup yarn cache
       uses: actions/cache@v2
@@ -98,7 +97,7 @@ jobs:
           ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
         restore-keys: |
-          ${{ runner.os }}-yarn-
+          ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
 
     - name: Install yarn
       if: inputs.artifact == 'bridge2'
