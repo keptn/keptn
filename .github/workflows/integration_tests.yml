@@ -66,7 +66,7 @@ jobs:
 #            USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "GKE"
             PLATFORM_VERSION: "1.22"
-            CLUSTER_NAME: "keptn-integration-tests-1"
+            CLUSTER_NAME: "keptn-int-test-debugging"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
