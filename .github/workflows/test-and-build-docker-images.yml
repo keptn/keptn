@@ -83,6 +83,7 @@ jobs:
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       if: inputs.artifact == 'bridge2'
+      working-directory: bridge
       run: |
         echo "::set-output name=dir::$(yarn cache dir)"
         echo "::set-output name=version::$(yarn -v)
