@@ -82,7 +82,7 @@ jobs:
     #######################################################################
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
-      if: inputs.artifact != 'bridge2'
+      if: inputs.artifact == 'bridge2'
       run: |
         echo "::set-output name=dir::$(yarn cache dir)"
         echo "::set-output name=version::$(yarn -v)
@@ -90,7 +90,7 @@ jobs:
     - name: Setup yarn cache
       uses: actions/cache@v2
       id: yarn-cache
-      if: inputs.artifact != 'bridge2'
+      if: inputs.artifact == 'bridge2'
       with:
         path: |
           **/node_modules
