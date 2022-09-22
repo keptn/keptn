@@ -43,6 +43,9 @@ func Test_ImportCorrectManifest(t *testing.T) {
 
 	// Make API call with ZIP file
 	responseCode, err := ImportUploadZipToProject("v1/import", projectName, "./sample-package.zip")
+	if err != nil {
+		t.Logf("%s %v", err.Error(), err)
+	}
 	require.Nil(t, err)
 	require.Equal(t, 200, responseCode, fmt.Sprintf("Expected response status 200 but got %d", responseCode))
 
@@ -136,7 +139,7 @@ func ImportUploadZipToProject(urlPath, projectName, filePath string) (int, error
 		return 400, err
 	}
 	writer.Close()
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s?project=%s", fmt.Sprintf("%s/%s", keptnApiUrl, urlPath), projectName), bytes.NewReader(body.Bytes()))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s?project=%s", keptnApiUrl, urlPath, projectName), bytes.NewReader(body.Bytes()))
 	if err != nil {
 		return 400, err
 	}
@@ -144,7 +147,12 @@ func ImportUploadZipToProject(urlPath, projectName, filePath string) (int, error
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	req.Header.Set("x-token", token)
 
-	rsp, _ := client.Do(req)
+	rsp, err := client.Do(req)
+
+	if err != nil {
+		return 500, err
+	}
+
 	if rsp.StatusCode != http.StatusOK {
 		bodyBytes, err := io.ReadAll(rsp.Body)
 		if err != nil {
