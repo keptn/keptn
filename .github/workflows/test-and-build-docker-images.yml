@@ -88,6 +88,14 @@ jobs:
         cache: 'yarn'
         cache-dependency-path: bridge/yarn.lock
 
+    - name: Setup yarn caching for bridge server
+      if: inputs.docker-test-target == 'bridge-server-test'
+      uses: actions/setup-node@v3
+      with:
+        node-version-file: 'bridge/server/.nvmrc'
+        cache: 'yarn'
+        cache-dependency-path: bridge/server/yarn.lock
+
     - name: Install yarn
       if: inputs.artifact == 'bridge2'
       working-directory: bridge
