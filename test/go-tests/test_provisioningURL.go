@@ -3,6 +3,7 @@ package go_tests
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"testing"
 	"time"
@@ -84,7 +85,7 @@ data:
  * @Issue 7149
  */
 func Test_ProvisioningURL(t *testing.T) {
-	projectName := "url-provisioning1"
+	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
@@ -147,7 +148,8 @@ func Test_ProvisioningURL(t *testing.T) {
 	resp, err := ApiPOSTRequest(baseProjectPath, createProjectRequestData, 3)
 	require.Nil(t, err)
 	if resp.Response().StatusCode != 201 {
-		t.Logf("%+v %s", resp.Response().Body, resp.Response().Body)
+		fullResponse, _ := io.ReadAll(resp.Response().Body)
+		t.Logf("%+v", string(fullResponse))
 	}
 	require.Equal(t, 201, resp.Response().StatusCode)
 
@@ -184,7 +186,7 @@ func Test_ProvisioningURL(t *testing.T) {
 }
 
 func Test_ProvisioningURL_hiddenURL(t *testing.T) {
-	projectName := "url-provisioning2"
+	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
