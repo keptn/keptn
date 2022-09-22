@@ -228,12 +228,13 @@ var projectOld = &models.ExpandedProjectOld{
 			},
 		},
 	},
-	GitRemoteURI:    "http://some-url2",
-	GitUser:         "user2",
-	InsecureSkipTLS: true,
-	GitProxyURL:     "url2",
-	GitProxyScheme:  "http2",
-	GitProxyUser:    "proxy-user2",
+	GitRemoteURI:              "http://some-url2",
+	GitUser:                   "user2",
+	InsecureSkipTLS:           true,
+	GitProxyURL:               "url2",
+	GitProxyScheme:            "http2",
+	GitProxyUser:              "proxy-user2",
+	IsUpstreamAutoProvisioned: true,
 }
 
 var projectOldToNew = &apimodels.ExpandedProject{
@@ -259,6 +260,7 @@ var projectOldToNew = &apimodels.ExpandedProject{
 			},
 		},
 	},
+	IsUpstreamAutoProvisioned: true,
 }
 
 func TestProjectCredentialsMigration_TransformNewModel(t *testing.T) {
