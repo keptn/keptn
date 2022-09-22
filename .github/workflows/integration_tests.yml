@@ -269,7 +269,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v0.8.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
-          location: "europe-west2"
+          location: "europe-west1-b"
           use_auth_provider: true
 
       - name: Install Istio
