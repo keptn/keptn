@@ -64,7 +64,7 @@ jobs:
       with:
         go-version: ${{ inputs.go-version }}
         cache: true
-        cache-dependency-path: ${{inputs.working-dir}}go.sum
+        cache-dependency-path: '**/go.sum'
 
     - name: Set up gotestsum
       if: inputs.artifact != 'bridge2'
@@ -86,9 +86,7 @@ jobs:
       with:
         node-version-file: 'bridge/.nvmrc'
         cache: 'yarn'
-        cache-dependency-path: |
-          bridge/yarn.lock
-          bridge/server/yarn.lock
+        cache-dependency-path: '**/yarn.lock'
 
     - name: Install yarn
       if: inputs.artifact == 'bridge2'
