@@ -13,7 +13,7 @@ require (
 	github.com/otiai10/copy v1.7.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
+	golang.org/x/crypto v0.0.0-20220924013350-4ba4fb4dd9e7
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.22.15
@@ -86,7 +86,7 @@ require (
 
 replace (
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220919173607-35f4265a4bc0
+	golang.org/x/crypto => golang.org/x/crypto 4ba4fb4dd9e7
 	golang.org/x/net => golang.org/x/net v0.0.0-20220921203646-d300de134e69
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
