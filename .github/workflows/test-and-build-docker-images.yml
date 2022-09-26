@@ -64,7 +64,7 @@ jobs:
       with:
         go-version: ${{ inputs.go-version }}
         cache: true
-        cache-dependency-path: '${{ inputs.working-dir }}/go.sum'
+        cache-dependency-path: '${{ inputs.working-dir }}go.sum'
 
     - name: Set up gotestsum
       if: inputs.artifact != 'bridge2'
