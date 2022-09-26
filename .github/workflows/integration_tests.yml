@@ -189,7 +189,7 @@ jobs:
       # load build-config
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
+        uses: c-py/action-dotenv-to-setenv@v4
         with:
           env-file: ./dist/build-config/build-config.env
 
@@ -756,7 +756,7 @@ jobs:
 
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
+        uses: c-py/action-dotenv-to-setenv@v4
         with:
           env-file: ./dist/build-config/build-config.env
 
@@ -937,7 +937,7 @@ jobs:
       # load build-config
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
+        uses: c-py/action-dotenv-to-setenv@v4
         with:
           env-file: ./dist/build-config/build-config.env
 
