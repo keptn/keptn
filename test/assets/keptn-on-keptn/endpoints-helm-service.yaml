@@ -1,2 +1,0 @@
-deploymentURIsLocal:
-  - "http://keptn-$STAGE-helm-service.keptn-$STAGE:8080"

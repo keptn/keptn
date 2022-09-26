@@ -1,2 +1,0 @@
-deploymentURIsLocal:
-  - "http://keptn-$STAGE-jmeter-service.keptn-$STAGE:8080"
