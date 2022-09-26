@@ -84,7 +84,7 @@ data:
  * @Issue 7149
  */
 func Test_ProvisioningURL(t *testing.T) {
-	projectName := "url-provisioning1"
+	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
@@ -181,7 +181,7 @@ func Test_ProvisioningURL(t *testing.T) {
 }
 
 func Test_ProvisioningURL_hiddenURL(t *testing.T) {
-	projectName := "url-provisioning2"
+	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
