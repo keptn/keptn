@@ -150,7 +150,7 @@ jobs:
           install: true
 
     - name: Set up Cosign
-      uses: sigstore/cosign-installer@v2.6.0
+      uses: sigstore/cosign-installer@v2.7.0
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
