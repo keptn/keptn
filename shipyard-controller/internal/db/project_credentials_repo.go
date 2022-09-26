@@ -101,6 +101,7 @@ func TransformGitCredentials(project *models.ExpandedProjectOld) *apimodels.Expa
 			RemoteURL: project.GitRemoteURI,
 			User:      project.GitUser,
 		},
+		IsUpstreamAutoProvisioned: project.IsUpstreamAutoProvisioned,
 	}
 
 	if strings.HasPrefix(project.GitRemoteURI, "http") {
