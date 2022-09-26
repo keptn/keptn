@@ -70,11 +70,16 @@ jobs:
       if: inputs.artifact != 'bridge2'
       run: go install gotest.tools/gotestsum@v1.8.1
 
+    - name: Download Go dependencies
+      if: inputs.artifact != 'bridge2'
+      working-directory: ./${{ inputs.artifact }}
+      run: |
+        go mod download
+
     - name: Test ${{ inputs.artifact }} # TODO add --race #8486 
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
       working-directory: ./${{ inputs.artifact }}
       run: |
-        go mod download
         gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
     #######################################################################
