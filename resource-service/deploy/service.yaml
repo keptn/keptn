@@ -42,7 +42,7 @@ spec:
         #     port: 8080
         #   initialDelaySeconds: 10
         #   periodSeconds: 5
-          image: keptndev/resource-service:latest
+          image: docker.io/keptndev/resource-service
           env:
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'
@@ -65,8 +65,8 @@ spec:
             limits:
               # limits is high on purpose to enable Debugging using skaffold
               # you can monitor memory usage using "kubectl -n keptn top pods"
-              memory: "512Mi"
-              cpu: "100m"
+              memory: "812Mi"
+              cpu: "500m"
           volumeMounts:
           - mountPath: /data/config
             name: resource-volume
