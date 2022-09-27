@@ -1,4 +1,4 @@
-FROM node:14-alpine3.15 as bridge-builder
+FROM node:18-alpine3.15 as bridge-builder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -13,7 +13,7 @@ COPY . /usr/src/app
 
 RUN yarn build
 
-FROM node:14-alpine3.15 as bridge-server-builder
+FROM node:18-alpine3.15 as bridge-server-builder
 
 ARG version=develop
 ENV VERSION="${version}"
@@ -32,7 +32,7 @@ RUN yarn build && \
 
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
-FROM node:14-alpine3.15 as production
+FROM node:18-alpine3.15 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
