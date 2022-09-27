@@ -282,7 +282,7 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -332,7 +332,7 @@ func TestProjectManager_UpdateProject_WithMigration(t *testing.T) {
 
 	require.Nil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -388,7 +388,7 @@ func TestProjectManager_UpdateProject_WithMigration_CannotPull(t *testing.T) {
 
 	require.NotNil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -449,7 +449,7 @@ func TestProjectManager_UpdateProject_WithMigration_MigrationFailsOnFirstTry(t *
 
 	require.Nil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -502,7 +502,7 @@ isUsingDirectoryStructure: true`), nil
 
 	require.Nil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -556,7 +556,7 @@ func TestProjectManager_UpdateProject_WithMigration_InvalidMetadata(t *testing.T
 
 	require.NotNil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -614,7 +614,7 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 
 	require.NotNil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -791,7 +791,7 @@ func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 
 	require.NotNil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -830,7 +830,7 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 
 	require.NotNil(t, err)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
@@ -894,7 +894,7 @@ func TestProjectManager_DeleteProject_CannotDeleteDirectory(t *testing.T) {
 func getTestProjectManagerFields() projectManagerTestFields {
 	return projectManagerTestFields{
 		git: &common_mock.IGitMock{
-			ResetHardFunc:         func(gitContext common_models.GitContext) error { return nil },
+			ResetHardFunc:         func(gitContext common_models.GitContext, revision string) error { return nil },
 			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
 			ProjectRepoExistsFunc: func(projectName string) bool { return true },
 			CloneRepoFunc:         func(gitContext common_models.GitContext) (bool, error) { return true, nil },
