@@ -619,12 +619,16 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 			return err
 		}
 
-		return currentRepo.Push(&git.PushOptions{
+		err = currentRepo.Push(&git.PushOptions{
 			RemoteName:      tmpOrigin,
 			Auth:            newContext.AuthMethod,
 			Force:           true,
 			InsecureSkipTLS: retrieveInsecureSkipTLS(newContext.Credentials),
 		})
+		if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", newContext.Project, mapError(err))
+		}
+		return nil
 	})
 	if err != nil {
 		return mapError(err)
