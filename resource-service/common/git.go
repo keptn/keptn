@@ -638,6 +638,10 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 		return mapError(err)
 	}
 
+	if err := currentRepo.DeleteRemote(tmpOrigin); err != nil {
+		return mapError(err)
+	}
+
 	return nil
 }
 
