@@ -2057,9 +2057,9 @@ func TestValidateShipyardStagesUnchaged(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			err := validateShipyardStagesUnchaged(tt.oldProject, tt.newProject)
+			err := validateShipyardStagesUnchanged(tt.oldProject, tt.newProject)
 			if (err != nil) != tt.err {
-				t.Errorf("validateShipyardStagesUnchaged(): got %s, want %t", err.Error(), tt.err)
+				t.Errorf("validateShipyardStagesUnchanged(): got %s, want %t", err.Error(), tt.err)
 			}
 		})
 	}
