@@ -786,7 +786,7 @@ func TestUpdate_UpdateGitRepositorySecretFails(t *testing.T) {
 	assert.NotNil(t, err)
 	rollback()
 	require.Len(t, secretStore.UpdateSecretCalls(), 1)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 
 }
 
@@ -843,6 +843,9 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
+	secretStore.DeleteSecretFunc = func(name string) error {
+		return nil
+	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return rollbackProjectData, nil
 	}
@@ -877,13 +880,11 @@ func TestUpdate_UpdateProjectInConfigurationStoreFails(t *testing.T) {
 		ProjectName: *params.Name,
 	}
 	assert.Equal(t, expectedProjectUpdate, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 
 	// rollbacks
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
-	assert.Equal(t, rollbackSecretsData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
-	assert.Equal(t, rollbackProjectData.GitCredentials.RemoteURL, configStore.UpdateProjectCalls()[1].Project.GitCredentials.RemoteURL)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.DeleteSecretCalls()[0].Name)
 }
 
 func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
@@ -934,6 +935,9 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
 
 		return map[string][]byte{"git-credentials": rollbackSecretData}, nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
+		return nil
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
@@ -992,12 +996,12 @@ func TestUpdate_UpdateProjectShipyardResourceFails(t *testing.T) {
 	}
 
 	assert.Equal(t, expectedProjectUpdateInConfigSvc, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 
 	// rollbacks
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
-	assert.Equal(t, rollbackSecretData, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[2].Name)
+	assert.Equal(t, rollbackSecretData, secretStore.UpdateSecretCalls()[2].Content["git-credentials"])
 	assert.Equal(t, rollbackProjectData, configStore.UpdateProjectCalls()[1].Project)
 
 }
@@ -1055,6 +1059,9 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
@@ -1123,7 +1130,7 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, updateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
 	assert.Equal(t, newSecretsEncoded, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
@@ -1131,8 +1138,8 @@ func TestUpdate_UpdateProjectInRepositoryFails(t *testing.T) {
 	// rollbacks
 	assert.Equal(t, toModelProject(*oldProject), configStore.UpdateProjectCalls()[1].Project)
 	assert.Equal(t, rollbackShipyardResourceData, configStore.UpdateProjectResourceCalls()[1].Resource)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[1].Name)
-	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[1].Content["git-credentials"])
+	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[2].Name)
+	assert.Equal(t, oldSecretsEncoded, secretStore.UpdateSecretCalls()[2].Content["git-credentials"])
 
 }
 
@@ -1187,6 +1194,9 @@ func TestUpdate(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
@@ -1263,7 +1273,7 @@ func TestUpdate(t *testing.T) {
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
 	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
@@ -1316,6 +1326,9 @@ func TestUpdate_FromProvisionedRepository(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
@@ -1381,7 +1394,7 @@ func TestUpdate_FromProvisionedRepository(t *testing.T) {
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
 	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
@@ -1440,6 +1453,9 @@ func TestUpdate_ShouldWorkWithEmptyGitUser(t *testing.T) {
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
 		return nil
 	}
+	secretStore.DeleteSecretFunc = func(name string) error {
+		return nil
+	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
 		return oldProjectData, nil
 	}
@@ -1514,7 +1530,7 @@ func TestUpdate_ShouldWorkWithEmptyGitUser(t *testing.T) {
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
 	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
@@ -1570,6 +1586,9 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
@@ -1645,7 +1664,7 @@ func TestUpdateNoInsecureParameter(t *testing.T) {
 		ResourceURI:     common.Stringp("shipyard.yaml")}
 
 	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
-	assert.Equal(t, "git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
+	assert.Equal(t, "tmp-git-credentials-my-project", secretStore.UpdateSecretCalls()[0].Name)
 	assert.Equal(t, updateSecretsData, secretStore.UpdateSecretCalls()[0].Content["git-credentials"])
 	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
 	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
@@ -1688,6 +1707,9 @@ func TestUpdate_WithEmptyShipyard_ShallNotUpdateResource(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
@@ -1765,6 +1787,9 @@ func TestUpdate_WithEmptyGitCredentials_ShallNotUpdateResource(t *testing.T) {
 	}
 
 	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	secretStore.DeleteSecretFunc = func(name string) error {
 		return nil
 	}
 	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
