@@ -268,13 +268,52 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 		AuthMethod:  auth,
 	}
 
+	newCredentials := &common_models.GitCredentials{
+		RemoteURL: "my-new-remote-uri",
+		User:      "my-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token: "my-new-token",
+		},
+	}
+
+	newAuth, _ := getAuthMethod(newCredentials)
+
+	expectedNewGitContext := common_models.GitContext{
+		Project:     "my-project",
+		Credentials: newCredentials,
+		AuthMethod:  newAuth,
+	}
+
 	fields := getTestProjectManagerFields()
+
+	fields.credentialReader.GetCredentialsFunc = func(secretName string) (*common_models.GitCredentials, error) {
+		if secretName == common.GetTemporaryUpstreamCredentialsSecretName("my-project") {
+			return &common_models.GitCredentials{
+				User: "my-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token: "my-new-token",
+				},
+				RemoteURL: "my-new-remote-uri",
+			}, nil
+		}
+		return &common_models.GitCredentials{
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
+		}, nil
+	}
 
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
+	}
+
+	fields.git.MoveToNewUpstreamFunc = func(currentContext common_models.GitContext, newContext common_models.GitContext) error {
+		return nil
 	}
 
 	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
@@ -284,6 +323,7 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 
 	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[1].Project, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -294,6 +334,10 @@ func TestProjectManager_UpdateProject(t *testing.T) {
 	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
 	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
 	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
+
+	require.Len(t, fields.git.MoveToNewUpstreamCalls(), 1)
+	require.Equal(t, expectedGitContext, fields.git.MoveToNewUpstreamCalls()[0].CurrentContext)
+	require.Equal(t, expectedNewGitContext, fields.git.MoveToNewUpstreamCalls()[0].NewContext)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")

@@ -35,7 +35,7 @@ import (
 // 			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
 // 				panic("mock out the MigrateProject method")
 // 			},
-// 			MoveToUpstreamFunc: func(context common_models.GitContext, context2 common_models.GitContext) error {
+// 			MoveToNewUpstreamFunc: func(currentContext common_models.GitContext, newContext common_models.GitContext) error {
 // 				panic("mock out the MoveToNewUpstream method")
 // 			},
 // 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
@@ -84,8 +84,8 @@ type IGitMock struct {
 	// MigrateProjectFunc mocks the MigrateProject method.
 	MigrateProjectFunc func(gitContext common_models.GitContext, newMetadatacontent []byte) error
 
-	// MoveToUpstreamFunc mocks the MoveToNewUpstream method.
-	MoveToUpstreamFunc func(context common_models.GitContext, context2 common_models.GitContext) error
+	// MoveToNewUpstreamFunc mocks the MoveToNewUpstream method.
+	MoveToNewUpstreamFunc func(currentContext common_models.GitContext, newContext common_models.GitContext) error
 
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common_models.GitContext) bool
@@ -155,11 +155,11 @@ type IGitMock struct {
 			NewMetadatacontent []byte
 		}
 		// MoveToNewUpstream holds details about calls to the MoveToNewUpstream method.
-		MoveToUpstream []struct {
-			// Context is the context argument value.
-			Context common_models.GitContext
-			// Context2 is the context2 argument value.
-			Context2 common_models.GitContext
+		MoveToNewUpstream []struct {
+			// CurrentContext is the currentContext argument value.
+			CurrentContext common_models.GitContext
+			// NewContext is the newContext argument value.
+			NewContext common_models.GitContext
 		}
 		// ProjectExists holds details about calls to the ProjectExists method.
 		ProjectExists []struct {
@@ -203,7 +203,7 @@ type IGitMock struct {
 	lockGetDefaultBranch   sync.RWMutex
 	lockGetFileRevision    sync.RWMutex
 	lockMigrateProject     sync.RWMutex
-	lockMoveToUpstream     sync.RWMutex
+	lockMoveToNewUpstream  sync.RWMutex
 	lockProjectExists      sync.RWMutex
 	lockProjectRepoExists  sync.RWMutex
 	lockPull               sync.RWMutex
@@ -453,38 +453,38 @@ func (mock *IGitMock) MigrateProjectCalls() []struct {
 	return calls
 }
 
-// MoveToNewUpstream calls MoveToUpstreamFunc.
-func (mock *IGitMock) MoveToNewUpstream(context common_models.GitContext, context2 common_models.GitContext) error {
-	if mock.MoveToUpstreamFunc == nil {
-		panic("IGitMock.MoveToUpstreamFunc: method is nil but IGit.MoveToNewUpstream was just called")
+// MoveToNewUpstream calls MoveToNewUpstreamFunc.
+func (mock *IGitMock) MoveToNewUpstream(currentContext common_models.GitContext, newContext common_models.GitContext) error {
+	if mock.MoveToNewUpstreamFunc == nil {
+		panic("IGitMock.MoveToNewUpstreamFunc: method is nil but IGit.MoveToNewUpstream was just called")
 	}
 	callInfo := struct {
-		Context  common_models.GitContext
-		Context2 common_models.GitContext
+		CurrentContext common_models.GitContext
+		NewContext     common_models.GitContext
 	}{
-		Context:  context,
-		Context2: context2,
+		CurrentContext: currentContext,
+		NewContext:     newContext,
 	}
-	mock.lockMoveToUpstream.Lock()
-	mock.calls.MoveToUpstream = append(mock.calls.MoveToUpstream, callInfo)
-	mock.lockMoveToUpstream.Unlock()
-	return mock.MoveToUpstreamFunc(context, context2)
+	mock.lockMoveToNewUpstream.Lock()
+	mock.calls.MoveToNewUpstream = append(mock.calls.MoveToNewUpstream, callInfo)
+	mock.lockMoveToNewUpstream.Unlock()
+	return mock.MoveToNewUpstreamFunc(currentContext, newContext)
 }
 
-// MoveToUpstreamCalls gets all the calls that were made to MoveToNewUpstream.
+// MoveToNewUpstreamCalls gets all the calls that were made to MoveToNewUpstream.
 // Check the length with:
-//     len(mockedIGit.MoveToUpstreamCalls())
-func (mock *IGitMock) MoveToUpstreamCalls() []struct {
-	Context  common_models.GitContext
-	Context2 common_models.GitContext
+//     len(mockedIGit.MoveToNewUpstreamCalls())
+func (mock *IGitMock) MoveToNewUpstreamCalls() []struct {
+	CurrentContext common_models.GitContext
+	NewContext     common_models.GitContext
 } {
 	var calls []struct {
-		Context  common_models.GitContext
-		Context2 common_models.GitContext
+		CurrentContext common_models.GitContext
+		NewContext     common_models.GitContext
 	}
-	mock.lockMoveToUpstream.RLock()
-	calls = mock.calls.MoveToUpstream
-	mock.lockMoveToUpstream.RUnlock()
+	mock.lockMoveToNewUpstream.RLock()
+	calls = mock.calls.MoveToNewUpstream
+	mock.lockMoveToNewUpstream.RUnlock()
 	return calls
 }
 

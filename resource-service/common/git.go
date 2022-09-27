@@ -622,7 +622,7 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 		err = currentRepo.Push(&git.PushOptions{
 			RemoteName:      tmpOrigin,
 			Auth:            newContext.AuthMethod,
-			Force:           true,
+			Force:           false,
 			InsecureSkipTLS: retrieveInsecureSkipTLS(newContext.Credentials),
 		})
 		if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
