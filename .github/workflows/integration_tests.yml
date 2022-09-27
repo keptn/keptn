@@ -70,7 +70,6 @@ jobs:
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
 #          - CLOUD_PROVIDER: "GKE"
@@ -79,9 +78,9 @@ jobs:
 #            KUBECONFIG: ""
 #            PLATFORM: "kubernetes"
 #            KEPTN_SERVICE_TYPE: "LoadBalancer"
-#            REMOTE_EXECUTION_PLANE: "false"
 #            COLLECT_RESOURCE_LIMITS: "true"
 #            USE_RESOURCE_SERVICE_DIRECTORY: "true"
+
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -91,7 +90,6 @@ jobs:
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
-      REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
       GO_VERSION: "~1.18"
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
