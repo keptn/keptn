@@ -690,6 +690,21 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
+	fields.git.CheckUpstreamConnectionFunc = func(gitContext common_models.GitContext) error {
+		return nil
+	}
+	fields.credentialReader.GetCredentialsFunc = func(secretName string) (*common_models.GitCredentials, error) {
+		if secretName == common.GetTemporaryUpstreamCredentialsSecretName("my-project") {
+			return nil, errors2.ErrCredentialsNotFound
+		}
+		return &common_models.GitCredentials{
+			User: "my-user",
+			HttpsAuth: &apimodels.HttpsGitAuth{
+				Token: "my-token",
+			},
+			RemoteURL: "my-remote-uri",
+		}, nil
+	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
 	}
@@ -717,13 +732,6 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -778,8 +786,9 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+	require.Equal(t, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName), fields.credentialReader.GetCredentialsCalls()[1].Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -814,8 +823,9 @@ func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
 
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+	require.Equal(t, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName), fields.credentialReader.GetCredentialsCalls()[1].Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -850,8 +860,9 @@ func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *
 
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 1)
+	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
+	require.Equal(t, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName), fields.credentialReader.GetCredentialsCalls()[1].Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
@@ -861,7 +872,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 }
 
-func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
+func TestProjectManager_UpdateProject_CheckoutUpstreamConnectionFails(t *testing.T) {
 	project := models.UpdateProjectParams{
 		Project: models.Project{ProjectName: "my-project"},
 	}
@@ -877,44 +888,8 @@ func TestProjectManager_UpdateProject_CannotGetDefaultBranch(t *testing.T) {
 	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
 		return true
 	}
-	fields.fileWriter.FileExistsFunc = func(path string) bool {
-		return true
-	}
-	fields.git.GetDefaultBranchFunc = func(gitContext common_models.GitContext) (string, error) {
-		return "", errors.New("oops")
-	}
-
-	p := NewProjectManager(fields.git, fields.credentialReader, fields.fileWriter)
-	err := p.UpdateProject(project)
-
-	require.NotNil(t, err)
-
-	require.Len(t, fields.credentialReader.GetCredentialsCalls(), 2)
-	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
-
-	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-	require.Empty(t, fields.git.CheckoutBranchCalls())
-}
-
-func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
-	project := models.UpdateProjectParams{
-		Project: models.Project{ProjectName: "my-project"},
-	}
-
-	expectedGitContext := common_models.GitContext{
-		Project:     "my-project",
-		Credentials: &credentials,
-		AuthMethod:  auth,
-	}
-
-	fields := getTestProjectManagerFields()
-
-	fields.git.ProjectExistsFunc = func(gitContext common_models.GitContext) bool {
-		return true
+	fields.git.CheckUpstreamConnectionFunc = func(gitContext common_models.GitContext) error {
+		return errors.New("oops")
 	}
 	fields.fileWriter.FileExistsFunc = func(path string) bool {
 		return true
@@ -933,13 +908,6 @@ func TestProjectManager_UpdateProject_CheckoutBranchFails(t *testing.T) {
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.GetDefaultBranchCalls(), 1)
-	require.Equal(t, fields.git.GetDefaultBranchCalls()[0].GitContext, expectedGitContext)
-
-	require.Len(t, fields.git.CheckoutBranchCalls(), 1)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].GitContext, expectedGitContext)
-	require.Equal(t, fields.git.CheckoutBranchCalls()[0].Branch, "main")
 }
 
 func TestProjectManager_DeleteProject(t *testing.T) {
