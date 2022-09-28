@@ -3,7 +3,6 @@ package go_tests
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"testing"
 	"time"
@@ -150,10 +149,6 @@ func Test_ProvisioningURL(t *testing.T) {
 		t.Logf("error: %s %+v", err.Error(), err)
 	}
 	require.Nil(t, err)
-	if resp.Response().StatusCode != 201 {
-		fullResponse, _ := io.ReadAll(resp.Response().Body)
-		t.Logf("%+v", string(fullResponse))
-	}
 	require.Equal(t, 201, resp.Response().StatusCode)
 
 	t.Logf("Getting project %s with a provisioned Gitea Upstream", projectName)
