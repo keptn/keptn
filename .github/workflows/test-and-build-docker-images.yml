@@ -73,8 +73,7 @@ jobs:
     - name: Download Go dependencies
       if: inputs.artifact != 'bridge2'
       working-directory: ./${{ inputs.artifact }}
-      run: |
-        go mod download
+      run: go mod download
 
     - name: Test ${{ inputs.artifact }} # TODO add --race #8486 
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
@@ -89,8 +88,7 @@ jobs:
       id: yarn-cache-dir-path
       if: inputs.artifact == 'bridge2'
       working-directory: bridge
-      run: |
-        echo "::set-output name=dir::$(yarn cache dir)"
+      run: echo "::set-output name=dir::$(yarn cache dir)"
     
     - name: Setup yarn cache
       uses: actions/cache@v2
@@ -98,7 +96,8 @@ jobs:
       if: inputs.artifact == 'bridge2'
       with:
         path: |
-          **/node_modules
+          ${{ inputs.working-dir }}node_modules
+          ${{ inputs.working-dir }}server/node_modules
           ${{ steps.yarn-cache-dir-path.outputs.dir }}
         key: ${{ runner.os }}-yarn-${{ inputs.docker-test-target }}-${{ hashFiles('**/yarn.lock') }}
 
