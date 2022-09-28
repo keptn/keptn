@@ -145,50 +145,52 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 		AuthMethod:  auth,
 	}
 
-	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
-		return kerrors.ErrProjectNotFound
-	}
-
 	tmpCredentials, err := p.credentialReader.GetCredentials(common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
-	if err != nil {
-		if errors.Is(err, kerrors.ErrCredentialsNotFound) {
-			// if we do not find any temporary credentials, this means we do not need to update anything
-			logger.Infof("No changed git upstream credentials found for project '%s'. No changes to be performed.", project.ProjectName)
-		} else {
-			logger.Errorf("Could not fetch temporary upstream credentials for project '%s': %v", project.ProjectName, err)
-		}
-	}
-
-	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
-	if err != nil {
-		return fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
-	}
-
-	// check out the default branch to check interaction with current upstream is working
-	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
-		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
+	if err != nil && !errors.Is(err, kerrors.ErrCredentialsNotFound) {
+		logger.Errorf("Could not fetch temporary upstream credentials for project '%s': %v", project.ProjectName, err)
 	}
 
 	// if we have new credentials, move the state from the current upstream to the new upstream
-	if tmpCredentials != nil && tmpCredentials.RemoteURL != currentCredentials.RemoteURL {
-		tmpAuth, err := getAuthMethod(tmpCredentials)
-		if err != nil {
-			return fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
-		}
-		tmpGitContext := common_models.GitContext{
-			Project:     project.ProjectName,
-			Credentials: tmpCredentials,
-			AuthMethod:  tmpAuth,
-		}
-		if err := p.git.MoveToNewUpstream(gitContext, tmpGitContext); err != nil {
-			return err
-		}
+	if tmpCredentials != nil {
+		return p.updateUpstreamCredentials(gitContext, project, tmpCredentials, currentCredentials)
 	} else if project.Migrate {
+		if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
+			return kerrors.ErrProjectNotFound
+		}
 		if err := p.migrateProject(project, gitContext); err != nil {
 			return err
 		}
 	}
 
+	return nil
+}
+
+func (p ProjectManager) updateUpstreamCredentials(gitContext common_models.GitContext, project models.UpdateProjectParams, tmpCredentials *common_models.GitCredentials, currentCredentials *common_models.GitCredentials) error {
+	tmpAuth, err := getAuthMethod(tmpCredentials)
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+	tmpGitContext := common_models.GitContext{
+		Project:     project.ProjectName,
+		Credentials: tmpCredentials,
+		AuthMethod:  tmpAuth,
+	}
+	if tmpCredentials.RemoteURL != currentCredentials.RemoteURL {
+		if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
+			return kerrors.ErrProjectNotFound
+		}
+		// check out the default branch to check interaction with current upstream is working
+		if err := p.git.CheckUpstreamConnection(gitContext); err != nil {
+			return fmt.Errorf("could not establish connection to current upstream URL %s of project %s: %w", gitContext.Credentials.RemoteURL, project.ProjectName, err)
+		}
+		return p.git.MoveToNewUpstream(gitContext, tmpGitContext)
+	} else {
+		if !p.git.ProjectExists(tmpGitContext) || !p.isProjectInitialized(project.ProjectName) {
+			return kerrors.ErrProjectNotFound
+		}
+		// check connection to the current repo with changed credentials (e.g. updated token)
+		return p.git.CheckUpstreamConnection(tmpGitContext)
+	}
 	return nil
 }
 

@@ -42,6 +42,7 @@ type IGit interface {
 	MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error
 	ResetHard(gitContext common_models.GitContext, revision string) error
 	MoveToNewUpstream(currentContext common_models.GitContext, newContext common_models.GitContext) error
+	CheckUpstreamConnection(gitContext common_models.GitContext) error
 }
 
 type Git struct {
@@ -642,6 +643,13 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 		return mapError(err)
 	}
 
+	return nil
+}
+
+func (g *Git) CheckUpstreamConnection(gitContext common_models.GitContext) error {
+	if err := g.Pull(gitContext); err != nil {
+		return mapError(err)
+	}
 	return nil
 }
 

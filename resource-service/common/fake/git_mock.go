@@ -14,6 +14,9 @@ import (
 //
 // 		// make and configure a mocked common.IGit
 // 		mockedIGit := &IGitMock{
+// 			CheckUpstreamConnectionFunc: func(gitContext common_models.GitContext) error {
+// 				panic("mock out the CheckUpstreamConnection method")
+// 			},
 // 			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 // 				panic("mock out the CheckoutBranch method")
 // 			},
@@ -63,6 +66,9 @@ import (
 //
 // 	}
 type IGitMock struct {
+	// CheckUpstreamConnectionFunc mocks the CheckUpstreamConnection method.
+	CheckUpstreamConnectionFunc func(gitContext common_models.GitContext) error
+
 	// CheckoutBranchFunc mocks the CheckoutBranch method.
 	CheckoutBranchFunc func(gitContext common_models.GitContext, branch string) error
 
@@ -107,6 +113,11 @@ type IGitMock struct {
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CheckUpstreamConnection holds details about calls to the CheckUpstreamConnection method.
+		CheckUpstreamConnection []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
+		}
 		// CheckoutBranch holds details about calls to the CheckoutBranch method.
 		CheckoutBranch []struct {
 			// GitContext is the gitContext argument value.
@@ -196,20 +207,52 @@ type IGitMock struct {
 			Message string
 		}
 	}
-	lockCheckoutBranch     sync.RWMutex
-	lockCloneRepo          sync.RWMutex
-	lockCreateBranch       sync.RWMutex
-	lockGetCurrentRevision sync.RWMutex
-	lockGetDefaultBranch   sync.RWMutex
-	lockGetFileRevision    sync.RWMutex
-	lockMigrateProject     sync.RWMutex
-	lockMoveToNewUpstream  sync.RWMutex
-	lockProjectExists      sync.RWMutex
-	lockProjectRepoExists  sync.RWMutex
-	lockPull               sync.RWMutex
-	lockPush               sync.RWMutex
-	lockResetHard          sync.RWMutex
-	lockStageAndCommitAll  sync.RWMutex
+	lockCheckUpstreamConnection sync.RWMutex
+	lockCheckoutBranch          sync.RWMutex
+	lockCloneRepo               sync.RWMutex
+	lockCreateBranch            sync.RWMutex
+	lockGetCurrentRevision      sync.RWMutex
+	lockGetDefaultBranch        sync.RWMutex
+	lockGetFileRevision         sync.RWMutex
+	lockMigrateProject          sync.RWMutex
+	lockMoveToNewUpstream       sync.RWMutex
+	lockProjectExists           sync.RWMutex
+	lockProjectRepoExists       sync.RWMutex
+	lockPull                    sync.RWMutex
+	lockPush                    sync.RWMutex
+	lockResetHard               sync.RWMutex
+	lockStageAndCommitAll       sync.RWMutex
+}
+
+// CheckUpstreamConnection calls CheckUpstreamConnectionFunc.
+func (mock *IGitMock) CheckUpstreamConnection(gitContext common_models.GitContext) error {
+	if mock.CheckUpstreamConnectionFunc == nil {
+		panic("IGitMock.CheckUpstreamConnectionFunc: method is nil but IGit.CheckUpstreamConnection was just called")
+	}
+	callInfo := struct {
+		GitContext common_models.GitContext
+	}{
+		GitContext: gitContext,
+	}
+	mock.lockCheckUpstreamConnection.Lock()
+	mock.calls.CheckUpstreamConnection = append(mock.calls.CheckUpstreamConnection, callInfo)
+	mock.lockCheckUpstreamConnection.Unlock()
+	return mock.CheckUpstreamConnectionFunc(gitContext)
+}
+
+// CheckUpstreamConnectionCalls gets all the calls that were made to CheckUpstreamConnection.
+// Check the length with:
+//     len(mockedIGit.CheckUpstreamConnectionCalls())
+func (mock *IGitMock) CheckUpstreamConnectionCalls() []struct {
+	GitContext common_models.GitContext
+} {
+	var calls []struct {
+		GitContext common_models.GitContext
+	}
+	mock.lockCheckUpstreamConnection.RLock()
+	calls = mock.calls.CheckUpstreamConnection
+	mock.lockCheckUpstreamConnection.RUnlock()
+	return calls
 }
 
 // CheckoutBranch calls CheckoutBranchFunc.

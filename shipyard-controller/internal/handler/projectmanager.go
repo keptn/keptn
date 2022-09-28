@@ -231,12 +231,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 	}
 
-	// new project content in configuration service
+	// new project content in resource service
 	projectToUpdate := apimodels.Project{
 		ProjectName: *params.Name,
 	}
 
-	// project content in configuration service to rollback
+	// project content in resource service to rollback
 	projectToRollback := apimodels.Project{
 		CreationDate:    oldProject.CreationDate,
 		ProjectName:     oldProject.ProjectName,

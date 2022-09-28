@@ -25,7 +25,8 @@ func (p CreateProjectParams) Validate() error {
 // swagger:model UpdateProjectParams
 type UpdateProjectParams struct {
 	Project
-	Migrate bool `json:"migrate"`
+	ChangeUpstreamURL bool `json:"changeUpstreamURL"`
+	Migrate           bool `json:"migrate"`
 }
 
 func (p UpdateProjectParams) Validate() error {
