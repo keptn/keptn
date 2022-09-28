@@ -91,7 +91,7 @@ jobs:
       run: echo "::set-output name=dir::$(yarn cache dir)"
     
     - name: Setup yarn cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       id: yarn-cache
       if: inputs.artifact == 'bridge2'
       with:
