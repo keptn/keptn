@@ -267,10 +267,6 @@ jobs:
           location: "europe-west2"
           use_auth_provider: true
 
-      - name: Install Istio
-        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # no need to install istio on minishift or GKE (pre-installed)
-        run: test/utils/install_istio.sh
-
       - name: Push images to airgapped registry
         if: env.RUN_AIRGAPPED_TEST == 'true'
         timeout-minutes: 15
@@ -502,11 +498,6 @@ jobs:
         if: always() && env.CLOUD_PROVIDER != 'GKE'
         timeout-minutes: 5
         run: helm uninstall keptn -n ${KEPTN_NAMESPACE} --wait
-
-      - name: Uninstall Istio
-        if: always() && env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # istio was not installed on minishift or GKE, so no need to uninstall it
-        timeout-minutes: 5
-        run: test/utils/uninstall_istio.sh
 
       - name: Cleanup test namespace
         if: always() && env.CLOUD_PROVIDER == 'GKE'
