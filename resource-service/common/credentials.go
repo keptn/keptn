@@ -60,11 +60,11 @@ func (kr K8sCredentialReader) GetCredentials(secretName string) (*common_models.
 }
 
 func GetUpstreamCredentialsSecretName(projectName string) string {
-	return fmt.Sprintf("git-credentials-%s", projectName)
+	return fmt.Sprintf("%s%s", upstreamCredentialsPrefix, projectName)
 }
 
 func GetTemporaryUpstreamCredentialsSecretName(projectName string) string {
-	return fmt.Sprintf("tmp-git-credentials-%s", projectName)
+	return fmt.Sprintf("%s%s", tmpUpstreamCredentialsPrefix, projectName)
 }
 
 func GetKeptnNamespace() string {
