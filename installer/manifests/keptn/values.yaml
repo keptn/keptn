@@ -512,9 +512,6 @@ bridge:
     mongoConnectionString: ""
   ## @param bridge.authMsg Overrides Keptn auth command displayed inside the Bridge user menu
   authMsg: ""
-  d3:
-    ## @param bridge.d3.enabled If disabled, Highcharts will be used instead of D3
-    enabled: true
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
   podAffinity:
