@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { KtbEvaluationChartComponent } from './ktb-evaluation-chart.component';
 import { EvaluationsMock } from '../../../_services/_mockData/evaluations.mock';
 import { AppUtils } from '../../../_utils/app.utils';
@@ -10,31 +9,10 @@ import { ResultTypes } from '../../../../../shared/models/result-types';
 import { IEvaluationData } from '../../../../../shared/models/trace';
 import { EvaluationHistory } from '../../../_interfaces/evaluation-history';
 import { EventTypes } from '../../../../../shared/interfaces/event-types';
-import { Component, Input } from '@angular/core';
-import { DtButtonModule } from '@dynatrace/barista-components/button';
-import { DtButtonGroupModule } from '@dynatrace/barista-components/button-group';
-import { DtChartModule } from '@dynatrace/barista-components/chart';
-import { DtIconModule } from '@dynatrace/barista-components/icon';
-import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-list';
-import { FlexModule } from '@angular/flex-layout';
-import { KtbHeatmapModule } from '../../ktb-heatmap/ktb-heatmap.module';
-import { KtbPipeModule } from '../../../_pipes/ktb-pipe.module';
-import { DateFormatPipe, MomentModule } from 'ngx-moment';
-import { KtbChartModule } from '../../ktb-chart/ktb-chart.module';
-import { CommonModule } from '@angular/common';
-import { TChartType } from '../ktb-evaluation-details-utils';
+import { DateFormatPipe } from 'ngx-moment';
 import { IndicatorResult } from '../../../../../shared/interfaces/indicator-result';
+import { KtbEvaluationChartModule } from './ktb-evaluation-chart.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-
-@Component({
-  selector: 'ktb-evaluation-chart-legacy',
-  template: '',
-})
-class FakeKtbEvaluationChartLegacyComponent {
-  @Input() evaluationData: unknown;
-  @Input() chartType: TChartType = 'heatmap';
-  @Input() evaluationHistory: unknown;
-}
 
 describe(KtbEvaluationChartComponent.name, () => {
   let component: KtbEvaluationChartComponent;
@@ -45,23 +23,7 @@ describe(KtbEvaluationChartComponent.name, () => {
   beforeEach(async () => {
     // disable legacy chart (prevent "animate" error during tests)
     await TestBed.configureTestingModule({
-      declarations: [FakeKtbEvaluationChartLegacyComponent, KtbEvaluationChartComponent],
-      imports: [
-        CommonModule,
-        DtButtonGroupModule,
-        DtButtonModule,
-        DtChartModule,
-        DtIconModule.forRoot({
-          svgIconLocation: `assets/icons/{{name}}.svg`,
-        }),
-        DtKeyValueListModule,
-        FlexModule,
-        KtbChartModule,
-        KtbHeatmapModule,
-        KtbPipeModule,
-        MomentModule,
-        HttpClientTestingModule,
-      ],
+      imports: [KtbEvaluationChartModule, HttpClientTestingModule],
       providers: [DateFormatPipe],
     }).compileComponents();
 
@@ -72,6 +34,7 @@ describe(KtbEvaluationChartComponent.name, () => {
     data.data.evaluationHistory = undefined;
     mockEvaluation = Trace.fromJSON(data);
     dataService = TestBed.inject(DataService);
+    mockUIElements();
   });
 
   describe('input, ngOnInit', () => {
@@ -316,6 +279,14 @@ describe(KtbEvaluationChartComponent.name, () => {
         })
       ),
     };
+  }
+
+  function mockUIElements(): void {
+    Object.defineProperty(SVGElement.prototype, 'getComputedTextLength', {
+      value: jest.fn().mockReturnValue(1),
+      writable: false,
+    });
+    document.elementFromPoint = jest.fn().mockReturnValue(null);
   }
 
   function getIndicatorResults(counter: number): IndicatorResult[] {

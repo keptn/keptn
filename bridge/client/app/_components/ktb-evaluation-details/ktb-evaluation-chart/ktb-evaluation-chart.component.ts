@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { filter, map, takeUntil, tap } from 'rxjs/operators';
-import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
+import { filter, takeUntil, tap } from 'rxjs/operators';
 import { FeatureFlagsService } from '../../../_services/feature-flags.service';
 import {
   createDataPoints,
@@ -32,9 +31,6 @@ import { IndicatorResult } from '../../../../../shared/interfaces/indicator-resu
 export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
   private readonly unsubscribe$ = new Subject<void>();
   private _evaluationData: IEvaluationSelectionData = { shouldSelect: false };
-  public d3Enabled$ = this.featureFlagService.featureFlags$.pipe(
-    map((featureFlags: IClientFeatureFlags) => featureFlags.D3_ENABLED)
-  );
   public chartType: TChartType | null = 'heatmap';
   public selectedIdentifier = '';
   public dataPoints?: IDataPoint[];

@@ -327,9 +327,7 @@ describe('Automatic provisioning message', () => {
     showApiToken: true,
     authType: 'OAUTH',
     user: 'claus.keptn-dev@ruxitlabs.com',
-    featureFlags: {
-      D3_ENABLED: true,
-    },
+    featureFlags: {},
   };
 
   beforeEach(() => {

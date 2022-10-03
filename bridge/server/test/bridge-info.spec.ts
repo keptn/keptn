@@ -40,9 +40,7 @@ describe('Test /bridgeInfo', () => {
       cliDownloadLink: 'https://github.com/keptn/keptn/releases',
       enableVersionCheckFeature: true,
       showApiToken: true,
-      featureFlags: {
-        D3_ENABLED: true,
-      },
+      featureFlags: {},
       authType: 'NONE',
       automaticProvisioningMsg: provMsg.trim(),
       authMsg: authMsg,
