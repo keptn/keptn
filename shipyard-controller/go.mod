@@ -22,9 +22,9 @@ require (
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.22.15
-	k8s.io/apimachinery v0.22.15
-	k8s.io/client-go v0.22.15
+	k8s.io/api v0.24.6
+	k8s.io/apimachinery v0.24.6
+	k8s.io/client-go v0.24.6
 )
 
 require github.com/kelseyhightower/envconfig v1.4.0
@@ -97,7 +97,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
+	k8s.io/kube-openapi v0.0.0-20220328201542-3ee0da9b0b42 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
