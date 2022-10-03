@@ -27,27 +27,16 @@
   </div>
 </div>
 
-<div *ngIf="d3Enabled$ | async; else legacyChart">
-  <ktb-heatmap
-    *ngIf="chartType === 'heatmap' && dataPoints"
-    [dataPoints]="dataPoints"
-    [selectedIdentifier]="selectedIdentifier"
-    (selectedIdentifierChange)="dataPointChanged($event)"
-  >
-  </ktb-heatmap>
-  <ktb-chart
-    *ngIf="chartPoints && chartType === 'chart'"
-    [chartItems]="chartPoints"
-    [xLabels]="chartXLabels"
-    [xTooltipLabels]="chartTooltipLabels"
-  ></ktb-chart>
-</div>
-<ng-template #legacyChart>
-  <ktb-evaluation-chart-legacy
-    *ngIf="chartType"
-    [chartType]="chartType"
-    [evaluationData]="evaluationData"
-    [evaluationHistory]="evaluationData.evaluation?.data?.evaluationHistory ?? []"
-    (selectedEvaluationChange)="selectedEvaluationChange.emit($event)"
-  ></ktb-evaluation-chart-legacy>
-</ng-template>
+<ktb-heatmap
+  *ngIf="chartType === 'heatmap' && dataPoints"
+  [dataPoints]="dataPoints"
+  [selectedIdentifier]="selectedIdentifier"
+  (selectedIdentifierChange)="dataPointChanged($event)"
+>
+</ktb-heatmap>
+<ktb-chart
+  *ngIf="chartPoints && chartType === 'chart'"
+  [chartItems]="chartPoints"
+  [xLabels]="chartXLabels"
+  [xTooltipLabels]="chartTooltipLabels"
+></ktb-chart>
