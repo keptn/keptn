@@ -100,7 +100,7 @@
     "@types/lodash": "4.14.185",
     "@types/lodash-es": "4.17.6",
     "@types/marked": "4.0.7",
-    "@types/node": "14.18.28",
+    "@types/node": "14.18.31",
     "@types/semver": "7.3.12",
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.33.1",
@@ -127,7 +127,7 @@
     "prettier": "2.7.1",
     "ts-node": "10.9.1",
     "typescript": "4.3.5",
-    "webpack-bundle-analyzer": "4.5.0"
+    "webpack-bundle-analyzer": "4.6.1"
   },
   "resolutions": {
     "minimist": "1.2.6",

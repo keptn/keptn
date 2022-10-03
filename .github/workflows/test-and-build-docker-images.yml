@@ -99,6 +99,7 @@ jobs:
           ${{ inputs.working-dir }}node_modules
           ${{ inputs.working-dir }}server/node_modules
           ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          /home/runner/.cache/Cypress
         key: ${{ runner.os }}-yarn-${{ inputs.docker-test-target }}-${{ hashFiles('**/yarn.lock') }}
 
     - name: Install yarn
