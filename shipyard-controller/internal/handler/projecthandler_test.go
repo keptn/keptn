@@ -705,7 +705,7 @@ func TestUpdateProject(t *testing.T) {
 			expectedHTTPStatus: http.StatusOK,
 		},
 		{
-			name: "Update project with validator failed",
+			name: "Update project with remoteURL validator failed",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
@@ -743,14 +743,10 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake2.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake2.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return fmt.Errorf("some err")
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload2,
-			expectedHTTPStatus: http.StatusBadRequest,
+			expectedHTTPStatus: http.StatusOK,
 		},
 		{
 			name: "Update project with invalid token",
@@ -1233,11 +1229,11 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 			provisioningURL: "some-url",
 		},
 		{
-			name: "invalid params",
+			name: "valid params #2",
 			params: models.UpdateProjectParams{
 				Name: &projectName,
 			},
-			wantErr:         true,
+			wantErr:         false,
 			provisioningURL: "",
 		},
 		{
