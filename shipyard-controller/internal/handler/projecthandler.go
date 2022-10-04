@@ -133,12 +133,8 @@ func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *model
 		}
 	}
 
-	if p.AutomaticProvisioningURL != "" && updateProjectParams.GitCredentials == nil {
-		return nil
-	}
-
 	if updateProjectParams.GitCredentials == nil {
-		return fmt.Errorf("gitCredentials cannot be empty")
+		return nil
 	}
 
 	if err := common.ValidateGitRemoteURL(updateProjectParams.GitCredentials.RemoteURL); err != nil {
@@ -389,9 +385,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
-		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
-		return
+	if params.GitCredentials != nil && params.GitCredentials.RemoteURL != "" {
+		if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+			SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+			return
+		}
 	}
 
 	common.LockProject(*params.Name)
