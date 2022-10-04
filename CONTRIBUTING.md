@@ -177,7 +177,7 @@ git checkout feature/123/foo
 git rebase master
 git push --set-upstream origin feature/123/foo
 ```
-Make sure you sign-off your commits. To do this automatically check [this](https://github.com/keptn/keptn/blob/master/CONTRIBUTING.md#auto-signoff-commit-messages). Finally, go to GitHub and create a Pull Request. There should be a PR template already prepared for you.
+Make sure you sign off your commits. To do this automatically check [this](https://github.com/keptn/keptn/blob/master/CONTRIBUTING.md#auto-signoff-commit-messages). Finally, go to GitHub and create a Pull Request. There should be a PR template already prepared for you.
 If not, you will find it at `.github/pull_request_template.md`.
 Please describe what this PR is about and add a link to relevant GitHub issues.
 If you changed something that is visible to the user, please add a screenshot.
@@ -254,11 +254,13 @@ Your PR will usually be reviewed by the Keptn team within a couple of days, but 
 
 ### Auto signoff commit messages
 
+
+
 We have a DCO check which runs on every PR to check if the commit has been signed off.
 
 you can do 
 ```bash
-git commit -ammend --signoff
+git commit --amend --signoff
 ```
 
 or something like
@@ -266,9 +268,9 @@ or something like
 git rebase HEAD~2 --signoff
 ```
 
-to signoff commits, but it is inconvenient. You can automate this process.
+to sign off commits, but it is inconvenient. You can automate this process.
 
-To automatically signoff commits  : 
+To automatically sign off commits  : 
 ``` bash
 touch .git/hooks/prepare-commit-msg
 ```
