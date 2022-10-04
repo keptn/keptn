@@ -288,7 +288,9 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	// copy by value
 
 	updateProject := *oldProject
-	updateProject.GitCredentials = toSecureGitCredentials(params.GitCredentials)
+	if params.GitCredentials != nil {
+		updateProject.GitCredentials = toSecureGitCredentials(params.GitCredentials)
+	}
 	if params.GitCredentials != nil && params.GitCredentials.RemoteURL != "" {
 		updateProject.IsUpstreamAutoProvisioned = false
 	}

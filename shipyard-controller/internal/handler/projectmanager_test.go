@@ -1387,6 +1387,97 @@ func TestUpdate_FromProvisionedRepository(t *testing.T) {
 	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
 }
 
+func TestUpdate_NoCredentialsFromProvisioned(t *testing.T) {
+
+	secretStore := &fake.SecretStoreMock{}
+	projectMVRepo := &db_mock.ProjectMVRepoMock{}
+	eventRepo := &db_mock.EventRepoMock{}
+	configStore := &common_mock.ConfigurationStoreMock{}
+	sequenceQueueRepo := &db_mock.SequenceQueueRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{}
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{}
+
+	oldSecretsData, _ := json.Marshal(apimodels.GitAuthCredentials{
+		User: "provisioned-user",
+		HttpsAuth: &apimodels.HttpsGitAuth{
+			Token: "my-provisioned-token",
+		},
+		RemoteURL: "http://provisioned.url",
+	})
+
+	gitCredentials := apimodels.GitAuthCredentialsSecure{
+		RemoteURL: "http://provisioned.url",
+		User:      "provisioned-user",
+	}
+
+	oldProjectData := &apimodels.ExpandedProject{
+		CreationDate:              "old-creationdate",
+		GitCredentials:            &gitCredentials,
+		ProjectName:               "my-project",
+		Shipyard:                  "",
+		ShipyardVersion:           "v1",
+		IsUpstreamAutoProvisioned: true,
+	}
+
+	secretStore.GetSecretFunc = func(name string) (map[string][]byte, error) {
+
+		return map[string][]byte{"git-credentials": oldSecretsData}, nil
+	}
+
+	secretStore.UpdateSecretFunc = func(name string, content map[string][]byte) error {
+		return nil
+	}
+	projectMVRepo.GetProjectFunc = func(projectName string) (*apimodels.ExpandedProject, error) {
+		return oldProjectData, nil
+	}
+
+	configStore.UpdateProjectFunc = func(project apimodels.Project) error {
+		return nil
+	}
+
+	configStore.UpdateProjectResourceFunc = func(projectName string, resource *apimodels.Resource) error {
+		return nil
+	}
+
+	projectMVRepo.UpdateProjectFunc = func(prj *apimodels.ExpandedProject) error {
+		return nil
+	}
+
+	instance := NewProjectManager(configStore, secretStore, projectMVRepo, sequenceExecutionRepo, eventRepo, sequenceQueueRepo, eventQueueRepo)
+	myShipyard := "my-shipyard"
+
+	params := &models.UpdateProjectParams{
+		GitCredentials: nil,
+		Name:           common.Stringp("my-project"),
+		Shipyard:       &myShipyard,
+	}
+	err, rollback := instance.Update(params)
+	assert.Nil(t, err)
+	rollback()
+
+	projectUpdateData := apimodels.Project{
+		ProjectName: *params.Name,
+	}
+
+	projectDBUpdateData := &apimodels.ExpandedProject{
+		CreationDate:              "old-creationdate",
+		GitCredentials:            &gitCredentials,
+		ProjectName:               "my-project",
+		Shipyard:                  "my-shipyard",
+		ShipyardVersion:           "v1",
+		IsUpstreamAutoProvisioned: true,
+	}
+
+	expectedUpdateShipyardResourceData := &apimodels.Resource{
+		ResourceContent: *params.Shipyard,
+		ResourceURI:     common.Stringp("shipyard.yaml")}
+
+	assert.Equal(t, projectUpdateData, configStore.UpdateProjectCalls()[0].Project)
+	assert.Len(t, secretStore.UpdateSecretCalls(), 0)
+	assert.Equal(t, projectDBUpdateData, projectMVRepo.UpdateProjectCalls()[0].Prj)
+	assert.Equal(t, expectedUpdateShipyardResourceData, configStore.UpdateProjectResourceCalls()[0].Resource)
+}
+
 func TestUpdate_ShouldWorkWithEmptyGitUser(t *testing.T) {
 
 	secretStore := &fake.SecretStoreMock{}
