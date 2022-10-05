@@ -3,6 +3,7 @@ package common
 import (
 	"errors"
 	"fmt"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io"
 	"io/ioutil"
 	"os"
@@ -783,4 +784,21 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 		logger.Debug("Could not resolve unsupported object for path: ", path)
 		return nil, object.ErrUnsupportedObject
 	}
+}
+
+// mapError translates errors that are specific to the go-git library to errors that are understood by the other resource-service components
+func mapError(err error) error {
+	if errors.Is(err, git.ErrNonFastForwardUpdate) {
+		return kerrors.ErrNonFastForwardUpdate
+	}
+	if errors.Is(err, transport.ErrAuthenticationRequired) {
+		return kerrors.ErrAuthenticationRequired
+	}
+	if errors.Is(err, transport.ErrAuthorizationFailed) {
+		return kerrors.ErrAuthorizationFailed
+	}
+	if errors.Is(err, git.ErrForceNeeded) {
+		return kerrors.ErrForceNeeded
+	}
+	return err
 }
