@@ -9,6 +9,7 @@ func Test_K3S(t *testing.T) {
 	t.Run("Test_ResourceServiceBasic", Test_ResourceServiceBasic)
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
 	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
+	t.Run("Test_multipleIntegrations", Test_multipleIntegrations)
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
 	t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)

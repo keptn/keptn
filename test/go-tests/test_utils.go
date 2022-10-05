@@ -432,6 +432,26 @@ func CreateSubscription(t *testing.T, serviceName string, subscription models.Ev
 	return subscriptionResponse.ID, nil
 }
 
+func GetWebhookYamlWithSubscriptionIDs(t *testing.T, taskTypes []string, projectName string, webhookYamlWithSubscriptionIDs string) string {
+	for _, taskType := range taskTypes {
+		eventType := keptnv2.GetTriggeredEventType(taskType)
+		if strings.HasSuffix(taskType, "-finished") {
+			eventType = keptnv2.GetFinishedEventType(strings.TrimSuffix(taskType, "-finished"))
+		}
+		subscriptionID, err := CreateSubscription(t, "webhook-service", models.EventSubscription{
+			Event: eventType,
+			Filter: models.EventSubscriptionFilter{
+				Projects: []string{projectName},
+			},
+		})
+		require.Nil(t, err)
+
+		subscriptionPlaceholder := fmt.Sprintf("${%s-sub-id}", taskType)
+		webhookYamlWithSubscriptionIDs = strings.Replace(webhookYamlWithSubscriptionIDs, subscriptionPlaceholder, subscriptionID, -1)
+	}
+	return webhookYamlWithSubscriptionIDs
+}
+
 func GetApiCredentials() (string, string, error) {
 	keptnApiTokenProvider, err := kubeutils.NewAPITokenProvider(false)
 	if err != nil {
