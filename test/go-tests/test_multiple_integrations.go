@@ -279,7 +279,7 @@ func RegisterEchoIntegration(t *testing.T) func() {
 	require.Nil(t, err)
 
 	echoServiceManifestContent := strings.ReplaceAll(echoServiceK8sManifestEcho, "${distributor-image}", distributorImage)
-	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "echo-service")
+	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${queue-group}", "echo")
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-endpoint}", apiEndpoint)
 	echoServiceManifestContent = strings.ReplaceAll(echoServiceManifestContent, "${api-token}", apiToken)
 
