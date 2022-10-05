@@ -18,7 +18,6 @@ import (
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
@@ -1078,122 +1077,6 @@ func (s *BaseSuite) Test_getGitKeptnEmail(c *C) {
 		}
 	}
 
-}
-
-func Test_getAuthMethod(t *testing.T) {
-	tests := []struct {
-		name           string
-		gitContext     common_models.GitContext
-		wantErr        bool
-		expectedOutput transport.AuthMethod
-	}{
-		{
-			name: "valid credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "https://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						Token:           "some-token",
-						InsecureSkipTLS: false,
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr: false,
-			expectedOutput: &http.BasicAuth{
-				Username: "user",
-				Password: "some-token",
-			},
-		},
-		{
-			name: "valid credentials no user",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "https://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						Token:           "some-token",
-						InsecureSkipTLS: false,
-					},
-					User: "",
-				},
-				Project: "my-proj",
-			},
-			wantErr: false,
-			expectedOutput: &http.BasicAuth{
-				Username: "keptnuser",
-				Password: "some-token",
-			},
-		},
-		{
-			name: "invalid credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "https://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						InsecureSkipTLS: false,
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr:        false,
-			expectedOutput: nil,
-		},
-		{
-			name: "invalid ssh credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "ssh://some.url",
-					SshAuth: &apimodels.SshGitAuth{
-						PrivateKey:     "private-key",
-						PrivateKeyPass: "password",
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr:        true,
-			expectedOutput: nil,
-		},
-		{
-			name: "dumb credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "ssh://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						Token:           "some",
-						InsecureSkipTLS: false,
-						Proxy: &apimodels.ProxyGitAuth{
-							URL:      "",
-							Scheme:   "",
-							User:     "hate",
-							Password: "",
-						},
-					},
-					SshAuth: &apimodels.SshGitAuth{
-						PrivateKey:     "",
-						PrivateKeyPass: "password",
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr:        true,
-			expectedOutput: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			auth, err := getAuthMethod(tt.gitContext)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if err != nil && auth != tt.expectedOutput {
-				t.Errorf("getAuthMethod() auth = %v, expectedOutput %v", err, tt.wantErr)
-			}
-		})
-	}
 }
 
 func (s *BaseSuite) NewGitContext() common_models.GitContext {
