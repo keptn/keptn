@@ -34,6 +34,8 @@ type IGit interface {
 	GetDefaultBranch(gitContext common_models.GitContext) (string, error)
 	MigrateProject(gitContext common_models.GitContext, newMetadatacontent []byte) error
 	ResetHard(gitContext common_models.GitContext, revision string) error
+	MoveToNewUpstream(currentContext common_models.GitContext, newContext common_models.GitContext) error
+	CheckUpstreamConnection(gitContext common_models.GitContext) error
 }
 
 type Git struct {
@@ -537,6 +539,68 @@ func (g *Git) ProjectRepoExists(project string) bool {
 		}
 	}
 	return false
+}
+
+func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newContext common_models.GitContext) error {
+	if err := g.Pull(currentContext); err != nil {
+		return err
+	}
+
+	currentRepo, currentRepoWorktree, err := g.getWorkTree(currentContext)
+	if err != nil {
+		return err
+	}
+
+	tmpOrigin := "tmp-origin"
+
+	if _, err := currentRepo.CreateRemote(&config.RemoteConfig{
+		Name: tmpOrigin,
+		URLs: []string{newContext.Credentials.RemoteURL},
+	}); err != nil {
+		return mapError(err)
+	}
+
+	if err := g.fetch(currentContext, currentRepo); err != nil {
+		return err
+	}
+	branches, err := currentRepo.Branches()
+	err = branches.ForEach(func(branch *plumbing.Reference) error {
+		err := currentRepoWorktree.Checkout(&git.CheckoutOptions{Branch: branch.Name()})
+		if err != nil {
+			return err
+		}
+
+		err = currentRepo.Push(&git.PushOptions{
+			RemoteName:      tmpOrigin,
+			Auth:            newContext.AuthMethod,
+			Force:           false,
+			InsecureSkipTLS: retrieveInsecureSkipTLS(newContext.Credentials),
+		})
+		if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+			return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", newContext.Project, mapError(err))
+		}
+		return nil
+	})
+	if err != nil {
+		return mapError(err)
+	}
+
+	if err := ensureRemoteMatchesCredentials(currentRepo, newContext); err != nil {
+		return mapError(err)
+	}
+
+	if err := currentRepo.DeleteRemote(tmpOrigin); err != nil {
+		return mapError(err)
+	}
+
+	return nil
+}
+
+func (g *Git) CheckUpstreamConnection(gitContext common_models.GitContext) error {
+	if err := g.Pull(gitContext); err != nil {
+		return mapError(err)
+	}
+	return nil
 }
 
 func (g *Git) MigrateProject(gitContext common_models.GitContext, newMetadataContent []byte) error {

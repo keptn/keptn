@@ -919,6 +919,72 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 	}
 }
 
+func (s *BaseSuite) TestGit_MoveToNewUpstream(c *C) {
+	g := NewGit(GogitReal{})
+
+	// make empty local remotes
+	oldURL := TESTPATH + "/oldrepo"
+	emptyOldUrl, err := filepath.Abs(oldURL)
+	c.Assert(err, IsNil)
+
+	_, err = git.PlainInit(emptyOldUrl, true)
+	c.Assert(err, IsNil)
+
+	newURL := TESTPATH + "/newrepo"
+	emptyNewUrl, err := filepath.Abs(newURL)
+	c.Assert(err, IsNil)
+
+	_, err = git.PlainInit(emptyNewUrl, true)
+	c.Assert(err, IsNil)
+
+	// make local repo pointing at our old remote
+	localRepo, err := git.PlainInit(TESTPATH+"/repo1", false)
+	c.Assert(err, IsNil)
+	err = configureGitUser(localRepo)
+	c.Assert(err, IsNil)
+
+	_, err = localRepo.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{emptyOldUrl},
+	})
+	c.Assert(err, IsNil)
+
+	// push some first change to remote
+	c.Assert(err, IsNil)
+	w2, err := localRepo.Worktree()
+	c.Assert(err, IsNil)
+	err = write("f.txt", "init repo", c, w2)
+	c.Assert(err, IsNil)
+	commit("f.txt", c, w2)
+	push(localRepo, c)
+
+	httpCredentials := apimodels.HttpsGitAuth{
+		Token: "mytoken",
+	}
+
+	oldRepoContext := common_models.GitContext{Project: "repo1",
+		Credentials: &common_models.GitCredentials{
+			User:      "u2",
+			HttpsAuth: &httpCredentials,
+			RemoteURL: emptyOldUrl,
+		}}
+
+	newRepoContext := common_models.GitContext{Project: "repo1",
+		Credentials: &common_models.GitCredentials{
+			User:      "u2",
+			HttpsAuth: &httpCredentials,
+			RemoteURL: emptyNewUrl,
+		}}
+
+	err = g.MoveToNewUpstream(oldRepoContext, newRepoContext)
+	c.Assert(err, IsNil)
+
+	remotes, err := localRepo.Remotes()
+	c.Assert(err, IsNil)
+	c.Assert(remotes, HasLen, 1)
+	c.Assert(strings.HasSuffix(remotes[0].Config().URLs[0], "/newrepo"), Equals, true)
+}
+
 func (s *BaseSuite) TestGit_MigrateProject(c *C) {
 	g := NewGit(GogitReal{})
 
