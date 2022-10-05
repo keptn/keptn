@@ -184,14 +184,13 @@ func (p ProjectManager) updateUpstreamCredentials(gitContext common_models.GitCo
 			return fmt.Errorf("could not establish connection to current upstream URL %s of project %s: %w", gitContext.Credentials.RemoteURL, project.ProjectName, err)
 		}
 		return p.git.MoveToNewUpstream(gitContext, tmpGitContext)
-	} else {
-		if !p.git.ProjectExists(tmpGitContext) || !p.isProjectInitialized(project.ProjectName) {
-			return kerrors.ErrProjectNotFound
-		}
-		// check connection to the current repo with changed credentials (e.g. updated token)
-		return p.git.CheckUpstreamConnection(tmpGitContext)
 	}
-	return nil
+	if !p.git.ProjectExists(tmpGitContext) || !p.isProjectInitialized(project.ProjectName) {
+		return kerrors.ErrProjectNotFound
+	}
+	// check connection to the current repo with changed credentials (e.g. updated token)
+	return p.git.CheckUpstreamConnection(tmpGitContext)
+
 }
 
 // migrateProject migrates the branch-based structure for representing stages to the new directory-based format,
