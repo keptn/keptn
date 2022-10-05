@@ -834,7 +834,7 @@ resourceService:
   ## @param resourceService.gracePeriod Resource Service termination grace period
   gracePeriod: 60
   ## @param resourceService.fsGroup Configure file system group ID to be used in Resource Service
-  fsGroup: 1001
+  fsGroup: 65532
   ## @param resourceService.preStopHookTime Resource Service pre stop timeout
   preStopHookTime: 20
   ## @param resourceService.sidecars Add additional sidecar containers to the Resource Service
