@@ -120,6 +120,14 @@ jobs:
             KEPTN_SERVICE_TYPE: "LoadBalancer"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
+          - CLUSTER_NAME: "keptn-integration-tests-7"
+            CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.21"
+            KUBECONFIG: ""
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "LoadBalancer"
+            COLLECT_RESOURCE_LIMITS: "true"
+            USE_RESOURCE_SERVICE_DIRECTORY: "true"
 
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
