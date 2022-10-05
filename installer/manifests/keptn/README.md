@@ -281,7 +281,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `resourceService.affinity`                          | Affinity for pod assignment                                                               | `{}`               |
 | `resourceService.tolerations`                       | Toleration labels for pod assignment                                                      | `[]`               |
 | `resourceService.gracePeriod`                       | Resource Service termination grace period                                                 | `60`               |
-| `resourceService.fsGroup`                           | Configure file system group ID to be used in Resource Service                             | `1001`             |
+| `resourceService.fsGroup`                           | Configure file system group ID to be used in Resource Service                             | `65532`            |
 | `resourceService.preStopHookTime`                   | Resource Service pre stop timeout                                                         | `20`               |
 | `resourceService.sidecars`                          | Add additional sidecar containers to the Resource Service                                 | `[]`               |
 | `resourceService.extraVolumeMounts`                 | Add additional volume mounts to the Resource Service                                      | `[]`               |
