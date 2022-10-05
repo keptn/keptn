@@ -31,10 +31,14 @@ exclude-results:
   - 0d0be3bd1e192a82b005349145ac9ec4137dab3a02099e57a8c89748b619f13b
   - bc8cc2f5bb21b281b4ca50e2d0bab82dbcf5392da4564b2ae18c8ecf7cb0c6c8
   - e5a483bb8bbcdd26f8b7db2f451f492c2978bd9db522cb384fb50bb5681b9681 # Passwords And Secrets - Generic Token
+  - c805fe07ba349214460c368898895ae616c50ec79e46d9d40e94272c5d6a8d6c # Passwords And Secrets - Generic Token
   - 4ef48a3cfcfd890249cabb4dd660d51c29bfb85ef88fe620829f003047fac511 # Passwords And Secrets - Generic Secret
   - 74ac15a6d15188e6b2d93a08cd1e4855d387df99d857b92a3afeb78c82823df2 # Passwords And Secrets - Generic Secret
+  - b89b020ac7a659ae45e379bb3ac206271a47ae44b18596f10812e158a99bc896 # Passwords And Secrets - Generic Secret
   - 411f4f33f25eaaa867427de7e7da7cf93cf7d199af8f64e9f3db6c53dfbf81c5 # Passwords And Secrets - Generic Password
   - 6f6f45c3cbf2c9dc81cd558689679b736661aa5179f28390212014b9219ef665 # Passwords And Secrets - Generic Password
+  - 3d427a787434849adbe1bfd15e8fca43873e9ef0ce95754c34b742e68930864e # Passwords And Secrets - Generic Password
+  - 19d3802bcbbe45f967d4b50e15859d1e9049207d9782bdce33b5060145e432a1 # Passwords And Secrets - Generic Password
   - b0580d43427e2e999ebe97a4b7fcf40d847142f4f0ade9b2456669099dff6444 # Volume Mount With OS Directory Write Permissions
   - 2ac80ac90542db8d379c3075bff8a26c1469a03a67a32fa0a30239083ca03f39 # Shared Service Account
   - e538929a5650928240e78a9f0780ee65795cb40f15566daa3d84dfd3f24e1052 # Shared Service Account
@@ -60,8 +64,8 @@ exclude-results:
   - 4b216a9b7f0568297fba8b4825e2b8943a0eb27385e8535c819a977cba515818 # Seccomp Profile Is Not Configured (keptn-mongo)
   - bd8c6b7f619749ad82084201c39bb58bbfc5583460fe7343b8d1c85634ea9354 # Readiness Probe Is Not Configured (keptn-nats)
   - 04d88617184e80069c91abbc4862e1d6c22c1daa3df65defe3ed8db22dcf77e3 # Readiness Probe Is Not Configured (bridge)
-  - ad326fac8fd2061eac08443fe680cac5e1d69e10263fd2d10c684244531df951 # RBAC Roles with Read Secrets Permissions (keptn-manage-secrets)
-  - 67afa6782e729582aefd22b86bb37b77bf3bc16f220b1ab5b974ba8d75634a81 # RBAC Roles with Read Secrets Permissions (keptn-get-secrets)
+  - 7b8393b2e188d755e968afe3083ecb5ad83432057e30ec1e70e20aed96165ee2 # RBAC Roles with Read Secrets Permissions (keptn-manage-secrets)
+  - 502698ad650836bf6ffa94a8fee7e2d6b5a07db842741f99628134d7b8b52ecc # RBAC Roles with Read Secrets Permissions (keptn-get-secrets)
   - 3bad58ab140899b337343fb64ca49e6e40cbdbdf930155a2641957e622529c81 # Container Running With Low UID (api-gateway-nginx)
   - 9ce219fa776ca728af1894aa78201671f615fba4939e654dbd1ea71364ee729e # Container Running With Low UID (mongo-db)
 no-color: false
