@@ -67,6 +67,9 @@ func NewProjectMVRepo(projectRepo ProjectRepo, eventRepo EventRepo, sequenceExec
 // CreateProject creates a project
 func (mv *MongoDBProjectMVRepo) CreateProject(prj *apimodels.ExpandedProject) error {
 	existingProject, err := mv.GetProject(prj.ProjectName)
+	if err != nil {
+		log.Debugf("Issue with retrieving project, %s", err.Error())
+	}
 	if existingProject != nil {
 		return nil
 	}
@@ -82,6 +85,7 @@ func (mv *MongoDBProjectMVRepo) CreateProject(prj *apimodels.ExpandedProject) er
 func (mv *MongoDBProjectMVRepo) UpdateShipyard(projectName string, shipyardContent string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
+		log.Debugf("Issue with retrieving project, %s", err.Error())
 		return err
 	}
 

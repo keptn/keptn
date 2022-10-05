@@ -129,6 +129,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams, options mod
 	}
 	err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 	if err != nil {
+		log.Debugf("Issue with git secret, %s", err.Error())
 		return err, nilRollback
 	}
 
