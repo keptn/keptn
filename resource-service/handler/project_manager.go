@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,7 +10,7 @@ import (
 	"github.com/keptn/go-utils/pkg/common/retry"
 	"github.com/keptn/keptn/resource-service/common"
 	"github.com/keptn/keptn/resource-service/common_models"
-	"github.com/keptn/keptn/resource-service/errors"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	"gopkg.in/yaml.v3"
 )
@@ -44,12 +45,12 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 
 	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
 	auth, err := getAuthMethod(credentials)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
@@ -62,7 +63,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 	// if yes, we can definitely say that this is an attempt to create the same project again
 
 	if p.fileSystem.FileExists(projectDirectory) {
-		return errors.ErrProjectAlreadyExists
+		return kerrors.ErrProjectAlreadyExists
 	}
 
 	rollbackFunc := func() {
@@ -78,13 +79,13 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 		// otherwise, it can happen that an attempt to create a new project with an upstream that is already in use
 		// leaves the local directory, which will prevent further attempts to create the project, even when the upstream is properly set to an empty repo
 		rollbackFunc()
-		return errors.ErrProjectRepositoryNotEmpty
+		return kerrors.ErrProjectRepositoryNotEmpty
 	}
 
 	// check if the repository directory is here - this should be the case, as the upstream clone needs to be available at this point
 	if !p.git.ProjectRepoExists(project.ProjectName) {
 		rollbackFunc()
-		return errors.ErrRepositoryNotFound
+		return kerrors.ErrRepositoryNotFound
 	}
 
 	newProjectMetadata := &common.ProjectMetadata{
@@ -128,37 +129,34 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 	common.LockProject(project.ProjectName)
 	defer common.UnlockProject(project.ProjectName)
 
-	credentials, err := p.credentialReader.GetCredentials(project.ProjectName)
+	currentCredentials, err := p.credentialReader.GetCredentials(project.ProjectName)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotRetrieveCredentials, project.ProjectName, err)
 	}
 
-	auth, err := getAuthMethod(credentials)
+	auth, err := getAuthMethod(currentCredentials)
 	if err != nil {
-		return fmt.Errorf(errors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+		return fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
 	}
 
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
-		Credentials: credentials,
+		Credentials: currentCredentials,
 		AuthMethod:  auth,
 	}
 
-	if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
-		return errors.ErrProjectNotFound
+	tmpCredentials, err := p.credentialReader.GetCredentials(common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
+	if err != nil && !errors.Is(err, kerrors.ErrCredentialsNotFound) {
+		logger.Errorf("Could not fetch temporary upstream credentials for project '%s': %v", project.ProjectName, err)
 	}
 
-	defaultBranch, err := p.git.GetDefaultBranch(gitContext)
-	if err != nil {
-		return fmt.Errorf("could not determine default branch of project %s: %w", project.ProjectName, err)
-	}
-
-	// check out the default branch to check interaction with upstream is working
-	if err := p.git.CheckoutBranch(gitContext, defaultBranch); err != nil {
-		return fmt.Errorf("could not check out branch %s of project %s: %w", defaultBranch, project.ProjectName, err)
-	}
-
-	if project.Migrate {
+	// if we have new credentials, move the state from the current upstream to the new upstream
+	if tmpCredentials != nil {
+		return p.updateUpstreamCredentials(gitContext, project, tmpCredentials, currentCredentials)
+	} else if project.Migrate {
+		if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
+			return kerrors.ErrProjectNotFound
+		}
 		if err := p.migrateProject(project, gitContext); err != nil {
 			return err
 		}
@@ -167,7 +165,35 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 	return nil
 }
 
-// MigrateProject migrates the branch-based structure for representing stages to the new directory-based format,
+func (p ProjectManager) updateUpstreamCredentials(gitContext common_models.GitContext, project models.UpdateProjectParams, tmpCredentials *common_models.GitCredentials, currentCredentials *common_models.GitCredentials) error {
+	tmpAuth, err := getAuthMethod(tmpCredentials)
+	if err != nil {
+		return fmt.Errorf(kerrors.ErrMsgCouldNotEstablishAuthMethod, project.ProjectName, err)
+	}
+	tmpGitContext := common_models.GitContext{
+		Project:     project.ProjectName,
+		Credentials: tmpCredentials,
+		AuthMethod:  tmpAuth,
+	}
+	if tmpCredentials.RemoteURL != currentCredentials.RemoteURL {
+		if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {
+			return kerrors.ErrProjectNotFound
+		}
+		// check out the default branch to check interaction with current upstream is working
+		if err := p.git.CheckUpstreamConnection(gitContext); err != nil {
+			return fmt.Errorf("could not establish connection to current upstream URL %s of project %s: %w", gitContext.Credentials.RemoteURL, project.ProjectName, err)
+		}
+		return p.git.MoveToNewUpstream(gitContext, tmpGitContext)
+	}
+	if !p.git.ProjectExists(tmpGitContext) || !p.isProjectInitialized(project.ProjectName) {
+		return kerrors.ErrProjectNotFound
+	}
+	// check connection to the current repo with changed credentials (e.g. updated token)
+	return p.git.CheckUpstreamConnection(tmpGitContext)
+
+}
+
+// migrateProject migrates the branch-based structure for representing stages to the new directory-based format,
 // where each stage is represented as a directory within the main branch
 func (p ProjectManager) migrateProject(project models.UpdateProjectParams, gitContext common_models.GitContext) error {
 	metadata, err := p.getProjectMetadate(project.ProjectName)
