@@ -2,7 +2,7 @@ name: "Security Scans"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * 1-5' # run tests at 1 AM (UTC), every monday (1)
+    - cron: '0 0 * * 1-5' # run tests at 10 PM (UTC), from Mo-Fr (1-5)
 
 defaults:
   run:
