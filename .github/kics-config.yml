@@ -68,6 +68,12 @@ exclude-results:
   - 502698ad650836bf6ffa94a8fee7e2d6b5a07db842741f99628134d7b8b52ecc # RBAC Roles with Read Secrets Permissions (keptn-get-secrets)
   - 3bad58ab140899b337343fb64ca49e6e40cbdbdf930155a2641957e622529c81 # Container Running With Low UID (api-gateway-nginx)
   - 9ce219fa776ca728af1894aa78201671f615fba4939e654dbd1ea71364ee729e # Container Running With Low UID (mongo-db)
+  - 3a383aa24a0a1a73ee7d3e055d48ad275dedf34547ccd28ca06ebf3a553b1d51 # Service Does Not Target Pod (nats)
+  - 520f3b83e0bc997029d615149226cb4e1b16c4d91cf516f0f05f0ea8d02169d6 # Service Does Not Target Pod (nats)
+  - 629271a20ed757ba3c6e1d1fefe1e7b3484128d790d11a4ec8a36fc366086afc # Service Does Not Target Pod (nats)
+  - a4a30d2d7f72452f86e09d8bab84034ecec540931297a87182231cc2c24f6b0c # Root Container Not Mounted Read-only (api-gateway-nginx)
+  - 4444bd158bf76fa8c476b717781c0710eeade16543e6e11284eaf8cfd94a9666 # Root Container Not Mounted Read-only (keptn-mongo)
+  - 34dc3488b1ef80904157a6136166768f9c46ce2e9a7b0dc92c4397632fd88c46 # Liveness Probe Is Not Defined (bridge)
 no-color: false
 no-progress: true
 preview-lines: 5
