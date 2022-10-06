@@ -127,7 +127,7 @@ jobs:
         # create a markdown file that contains details about the error
         echo "---" > security-scan-failure.md
         echo "title: 'Security Scan failed'" >> security-scan-failure.md
-        echo "labels: ['type:critical', 'area:core']" >> security-scan-failure.md
+        echo "labels: 'type:critical'" >> security-scan-failure.md
         echo "---" >> security-scan-failure.md
         echo "" >> security-scan-failure.md
         echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> security-scan-failure.md
