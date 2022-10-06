@@ -119,7 +119,11 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams, options mod
 		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
 	}
 
-	err := pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodeGitCredentials(params.GitCredentials))
+	decodedCredentials, err := decodeGitCredentials(*params.GitCredentials)
+	if err != nil {
+		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
+	}
+	err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 	if err != nil {
 		return err, nilRollback
 	}
@@ -222,8 +226,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	if params.GitCredentials != nil {
+		decodedCredentials, err := decodeGitCredentials(*params.GitCredentials)
+		if err != nil {
+			return fmt.Errorf("could not update project '%s': %w", *params.Name, err), nilRollback
+		}
 		// create a temporary secret containing the new git upstream credentials
-		err = pm.updateGITRepositorySecret(getTemporaryUpstreamCredentialSecretName(*params.Name), decodeGitCredentials(params.GitCredentials))
+		err = pm.updateGITRepositorySecret(getTemporaryUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 
 		// no roll back needed since updating the git repository secret was the first operation
 		if err != nil {
@@ -261,8 +269,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 
 	// if the update was successful, replace the previous git upstream credentials with the new ones
 	if params.GitCredentials != nil {
+		decodedCredentials, err := decodeGitCredentials(*params.GitCredentials)
+		if err != nil {
+			return fmt.Errorf("could not update project '%s': %w", *params.Name, err), nilRollback
+		}
 		// try to update git repository secret
-		err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodeGitCredentials(params.GitCredentials))
+		err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 		if err != nil {
 			log.Errorf("Error occurred while updating the project in credentials secret: %s", err.Error())
 			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
@@ -612,23 +624,66 @@ func stageInArrayOfStages(comparedStage string, stages []*apimodels.ExpandedStag
 	return false
 }
 
-func decodeGitCredentials(oldCredentials *apimodels.GitAuthCredentials) *apimodels.GitAuthCredentials {
-	if oldCredentials == nil {
-		return nil
+func decodeGitCredentials(oldCredentials apimodels.GitAuthCredentials) (*apimodels.GitAuthCredentials, error) {
+	credentials := &apimodels.GitAuthCredentials{
+		RemoteURL: oldCredentials.RemoteURL,
+		User:      oldCredentials.User,
+	}
+	if oldCredentials.HttpsAuth != nil {
+		httpsAuth, err := decodeHttpsAuth(*oldCredentials.HttpsAuth)
+		if err != nil {
+			return nil, err
+		}
+
+		credentials.HttpsAuth = httpsAuth
 	}
 
-	credentials := oldCredentials
-	if oldCredentials.HttpsAuth != nil && oldCredentials.HttpsAuth.Certificate != "" {
-		decodedPemCertificate, _ := base64.StdEncoding.DecodeString(oldCredentials.HttpsAuth.Certificate)
-		credentials.HttpsAuth.Certificate = string(decodedPemCertificate)
+	if oldCredentials.SshAuth != nil {
+		sshAuth, err := decodeSshAuth(*oldCredentials.SshAuth)
+		if err != nil {
+			return nil, err
+		}
+		credentials.SshAuth = sshAuth
 	}
 
-	if oldCredentials.SshAuth != nil && oldCredentials.SshAuth.PrivateKey != "" {
-		decodedPrivateKey, _ := base64.StdEncoding.DecodeString(oldCredentials.SshAuth.PrivateKey)
-		credentials.SshAuth.PrivateKey = string(decodedPrivateKey)
-	}
+	return credentials, nil
+}
 
-	return credentials
+func decodeHttpsAuth(in apimodels.HttpsGitAuth) (*apimodels.HttpsGitAuth, error) {
+	httpsAuth := &apimodels.HttpsGitAuth{
+		Token:           in.Token,
+		InsecureSkipTLS: in.InsecureSkipTLS,
+	}
+	if in.Certificate != "" {
+		decodedPemCertificate, err := base64.StdEncoding.DecodeString(in.Certificate)
+		if err != nil {
+			return nil, err
+		}
+		httpsAuth.Certificate = string(decodedPemCertificate)
+	}
+	if in.Proxy != nil {
+		httpsAuth.Proxy = &apimodels.ProxyGitAuth{
+			URL:      in.Proxy.URL,
+			Scheme:   in.Proxy.Scheme,
+			User:     in.Proxy.User,
+			Password: in.Proxy.Password,
+		}
+	}
+	return httpsAuth, nil
+}
+
+func decodeSshAuth(in apimodels.SshGitAuth) (*apimodels.SshGitAuth, error) {
+	sshAuth := &apimodels.SshGitAuth{
+		PrivateKeyPass: in.PrivateKeyPass,
+	}
+	if in.PrivateKey != "" {
+		decodedPrivateKey, err := base64.StdEncoding.DecodeString(in.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		sshAuth.PrivateKey = string(decodedPrivateKey)
+	}
+	return sshAuth, nil
 }
 
 func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apimodels.ExpandedProject) error {
