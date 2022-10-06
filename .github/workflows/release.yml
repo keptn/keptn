@@ -113,7 +113,7 @@ jobs:
           fi
 
       - name: Checkout repo
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
@@ -243,14 +243,14 @@ jobs:
     needs: [prepare, docker_build, build-helm-charts, build-cli]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
           path: keptn
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Checkout helm-charts repo
-        uses: actions/checkout@v3.0.2
+        uses: actions/checkout@v2
         with:
           repository: keptn/helm-charts
           path: helm-charts

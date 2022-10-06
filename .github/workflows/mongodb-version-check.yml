@@ -19,7 +19,7 @@ jobs:
       KEPTN_VERSION: ${{ steps.get_keptn_mongodb_version.outputs.MONGODB_VERSION }}
     steps:
     - name: Check out code
-      uses: actions/checkout@v3.0.2
+      uses: actions/checkout@v2
 
     - name: Get Keptn MongoDB version
       id: get_keptn_mongodb_version
