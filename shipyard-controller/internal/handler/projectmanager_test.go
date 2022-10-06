@@ -2665,6 +2665,7 @@ func TestDecodeGitCredentials(t *testing.T) {
 	tests := []struct {
 		oldProject *apimodels.GitAuthCredentials
 		newProject *apimodels.GitAuthCredentials
+		wantError  bool
 	}{
 		{
 			oldProject: &apimodels.GitAuthCredentials{
@@ -2804,12 +2805,38 @@ func TestDecodeGitCredentials(t *testing.T) {
 				},
 			},
 		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					Token:           "git-token",
+					InsecureSkipTLS: true,
+					Certificate:     "encoded-cert",
+				},
+			},
+			newProject: nil,
+			wantError:  true,
+		},
+		{
+			oldProject: &apimodels.GitAuthCredentials{
+				RemoteURL: "git-url",
+				User:      "git-user",
+				SshAuth: &apimodels.SshGitAuth{
+					PrivateKey:     "encoded-key",
+					PrivateKeyPass: "pass",
+				},
+			},
+			newProject: nil,
+			wantError:  true,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run("", func(t *testing.T) {
-			newProject := decodeGitCredentials(tt.oldProject)
+			newProject, err := decodeGitCredentials(*tt.oldProject)
 			require.Equal(t, tt.newProject, newProject)
+			require.Equal(t, tt.wantError, err != nil)
 		})
 	}
 }
