@@ -119,11 +119,14 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams, options mod
 		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
 	}
 
-	decodedCredentials, err := decodeGitCredentials(*params.GitCredentials)
-	if err != nil {
-		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
+	var decodedCredentials *apimodels.GitAuthCredentials
+	var err error
+	if params.GitCredentials != nil {
+		decodedCredentials, err = decodeGitCredentials(*params.GitCredentials)
+		if err != nil {
+			return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
+		}
 	}
-
 	err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 	if err != nil {
 		return err, nilRollback
