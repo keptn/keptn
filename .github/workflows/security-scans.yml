@@ -114,3 +114,34 @@ jobs:
           echo "::endgroup::"
           # Docs on how to configure exceptions: https://hub.armosec.io/docs/exceptions
           kubescape scan framework ${{ matrix.kubescape-framework }} -v -t ${{ env.FAILURE_PERCENTAGE }} --exceptions ./.github/.kubescape/exceptions.json --controls-config ./.github/.kubescape/controls-inputs.json ${{ env.CHART_TO_SCAN }} --enable-color
+  
+  create_issue:
+    name: Create GitHub Issue
+    runs-on: ubuntu-22.04
+    needs: security-scans
+    if: failure()
+    steps:
+    - name: Formulate bug issue
+      id: formulate_bug_issue
+      run: |
+        # create a markdown file that contains details about the error
+        echo "---" > security-scan-failure.md
+        echo "title: 'Security Scan failed'" >> security-scan-failure.md
+        echo "labels: 'type:critical'" >> security-scan-failure.md
+        echo "---" >> security-scan-failure.md
+        echo "" >> security-scan-failure.md
+        echo "* Link to run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> security-scan-failure.md
+        if [[ $GITHUB_EVENT_NAME == 'schedule' ]]; then
+          echo "* Triggered by: Scheduled build" >> security-scan-failure.md
+        else
+          echo "* Triggered by: @$GITHUB_ACTOR" >> security-scan-failure.md
+        fi
+        echo "" >> security-scan-failure.md
+        echo "Note: This issue was auto-generated from [security-scan.yml](.github/workflows/security-scan.yml)" >> security-scan-failure.md
+
+    - name: Create issue if versions differ
+      uses: JasonEtco/create-an-issue@v2.6
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        filename: security-scan-failure.md
