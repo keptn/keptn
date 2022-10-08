@@ -2,8 +2,9 @@ package models
 
 import (
 	"encoding/base64"
-	"github.com/keptn/keptn/resource-service/errors"
 	"strings"
+
+	"github.com/keptn/keptn/resource-service/errors"
 )
 
 type ResourceContent string
@@ -63,7 +64,7 @@ func (rc ResourceContext) Validate() error {
 }
 
 type GetResourcesQuery struct {
-	GitCommitID string `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
+	GitCommitID string `json:"gitCommitID,omitempty" form:"gitCommitID"`
 	NextPageKey string `json:"nextPageKey,omitempty" form:"nextPageKey"`
 	PageSize    int64  `json:"pageSize,omitempty" form:"pageSize"`
 }
@@ -81,7 +82,7 @@ func (p GetResourcesParams) Validate() error {
 }
 
 type GetResourceQuery struct {
-	GitCommitID string `json:"gitCommitID,omitEmpty" form:"gitCommitID"`
+	GitCommitID string `json:"gitCommitID,omitempty" form:"gitCommitID"`
 }
 
 type GetResourceParams struct {
