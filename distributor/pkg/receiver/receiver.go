@@ -5,12 +5,13 @@ import (
 	"errors"
 	"fmt"
 
+	"sync"
+	"time"
+
 	"github.com/keptn/keptn/distributor/pkg/model"
 	nats2 "github.com/keptn/keptn/distributor/pkg/natsconnection"
 	"github.com/keptn/keptn/distributor/pkg/poller"
 	"github.com/keptn/keptn/distributor/pkg/utils"
-	"sync"
-	"time"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/keptn/go-utils/pkg/api/models"
@@ -136,13 +137,13 @@ func (n *NATSEventReceiver) sendEventForSubscriptions(subscriptions []models.Eve
 		// add to CloudEvents cache
 		n.ceCache.Add(subscription.ID, keptnEvent.ID)
 
-		defer func() {
+		defer func(subscription models.EventSubscription) {
 			// after some time, remove the cache entry
 			go func() {
 				<-time.After(10 * time.Second)
 				n.ceCache.Remove(subscription.ID, keptnEvent.ID)
 			}()
-		}()
+		}(subscription)
 
 		// add subscription ID as additional information to the keptn event
 		if err := keptnEvent.AddTemporaryData("distributor", model.AdditionalSubscriptionData{SubscriptionID: subscription.ID}, models.AddTemporaryDataOptions{OverwriteIfExisting: true}); err != nil {
