@@ -5,6 +5,7 @@
         "prerelease": false,
         "bump-minor-pre-major": true,
         "bump-patch-for-minor-pre-major": true,
+        "release-type": "go",
         "include-v-in-tag": false,
         "draft": false,
         "extra-files": [
