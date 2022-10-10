@@ -56,7 +56,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -155,4 +155,4 @@ metadata:
     app.kubernetes.io/name: shipyard-controller
 data:
   git-remote-url-denylist: |-
-{{ .Values.git.remoteURLDenyList | default "" | indent 4 }}
+{{ .Values.features.git.remoteURLDenyList | default "" | indent 4 }}
