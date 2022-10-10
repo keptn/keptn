@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: docker.io/keptndev/shipyard-controller
+    - image: docker.io/mowies/shipyard-controller
       docker:
         dockerfile: Dockerfile
         target: production
@@ -12,6 +12,6 @@ build:
           debugBuild: true
 deploy:
   kubectl:
-    defaultNamespace: keptn
+    defaultNamespace: keptn-test-2736-1
     manifests:
       - deploy/service.yaml
