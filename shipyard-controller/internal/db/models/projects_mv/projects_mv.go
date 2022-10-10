@@ -46,7 +46,7 @@ func (s *ServiceUpdate) GetBSONUpdate() (bson.D, error) {
 	changeSet := bson.M{}
 
 	if s.deployedImage != "" {
-		changeSet["stages.$.services.$[service].deployedImage"] = s.DeployedImage()
+		changeSet["stages.$[stage].services.$[service].deployedImage"] = s.DeployedImage()
 	}
 
 	if s.eventTypeUpdate != nil {
@@ -58,7 +58,7 @@ func (s *ServiceUpdate) GetBSONUpdate() (bson.D, error) {
 		if strings.Contains(s.eventTypeUpdate.EventType, ".") {
 			encodedEventType = dbcommon.EncodeKey(s.eventTypeUpdate.EventType)
 		}
-		changeSet["stages.$.services.$[service].lastEventTypes."+encodedEventType] = encodedEventInfo
+		changeSet["stages.$[stage].services.$[service].lastEventTypes."+encodedEventType] = encodedEventInfo
 	}
 
 	update := bson.D{

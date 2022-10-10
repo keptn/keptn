@@ -153,6 +153,9 @@ func TestMongoDBProjectsRepo_UpdateProjectService(t *testing.T) {
 
 	require.Empty(t, projectInfo.Stages[0].Services[1].DeployedImage)
 	require.Empty(t, projectInfo.Stages[0].Services[1].LastEventTypes)
+
+	require.Empty(t, projectInfo.Stages[1].Services[0].DeployedImage)
+	require.Empty(t, projectInfo.Stages[1].Services[0].LastEventTypes)
 }
 
 func TestMongoDBKeyEncodingProjectsRepo_UpdateProjectService(t *testing.T) {

@@ -25,8 +25,8 @@ func TestServiceUpdate_GetBSONUpdate(t *testing.T) {
 
 	expectedUpdate := bson.D{
 		{"$set", bson.M{
-			"stages.$.services.$[service].deployedImage": "my-image",
-			"stages.$.services.$[service].lastEventTypes.my~pevent~ptype": map[string]interface{}{
+			"stages.$[stage].services.$[service].deployedImage": "my-image",
+			"stages.$[stage].services.$[service].lastEventTypes.my~pevent~ptype": map[string]interface{}{
 				"eventId":      "my-event-id",
 				"keptnContext": "my-context-id",
 			},
@@ -47,7 +47,7 @@ func TestServiceUpdate_GetBSONOnlyDeployedImage(t *testing.T) {
 
 	expectedUpdate := bson.D{
 		{"$set", bson.M{
-			"stages.$.services.$[service].deployedImage": "my-image",
+			"stages.$[stage].services.$[service].deployedImage": "my-image",
 		}},
 	}
 
@@ -71,7 +71,7 @@ func TestServiceUpdate_GetBSONUpdateOnlyEventUpdate(t *testing.T) {
 
 	expectedUpdate := bson.D{
 		{"$set", bson.M{
-			"stages.$.services.$[service].lastEventTypes.my~pevent~ptype": map[string]interface{}{
+			"stages.$[stage].services.$[service].lastEventTypes.my~pevent~ptype": map[string]interface{}{
 				"eventId":      "my-event-id",
 				"keptnContext": "my-context-id",
 			},
