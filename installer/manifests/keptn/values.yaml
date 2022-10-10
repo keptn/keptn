@@ -6,8 +6,10 @@ global:
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
   initContainers:
+    ## @param global.initContainers.image Init container image to enable staggered rollout of Keptn
     image: "busybox"
-    version: "1.35.0"
+    ## @param global.initContainers.tag Init container image tag to enable staggered rollout of Keptn
+    tag: "1.35.0"
 
 
 ## @section MongoDB

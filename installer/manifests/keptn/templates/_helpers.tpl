@@ -465,7 +465,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-nats" -}}
 - name: "wait-for-nats"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "{{ .Values.nats.nameOverride }}"
@@ -474,7 +474,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
 - name: "wait-for-keptn-mongo"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "keptn-mongo"
@@ -483,7 +483,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
 - name: "wait-for-mongodb-datastore"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "mongodb-datastore"
@@ -492,7 +492,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
 - name: "wait-for-shipyard-controller"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "shipyard-controller"
@@ -501,7 +501,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-secret-service" -}}
 - name: "wait-for-secret-service"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "secret-service"
@@ -510,7 +510,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-api-service" -}}
 - name: "wait-for-secret-service"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "api-service"
@@ -519,7 +519,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-resource-service" -}}
 - name: "wait-for-resource-service"
-  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.version }}"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
     value: "resource-service"
