@@ -194,16 +194,16 @@ jobs:
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
   ############################################################################
-  build-helm-charts:
-    needs: [release-please, prepare]
-    name: Build Helm Charts
-    uses: ./.github/workflows/build-helm-charts.yml
-    secrets: inherit
-    with:
-      branch: ${{ needs.prepare.outputs.branch }}
-      version: ${{ needs.release-please.outputs.tag_name }}
-      keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
-      release: false
+#  build-helm-charts:
+#    needs: [release-please, prepare]
+#    name: Build Helm Charts
+#    uses: ./.github/workflows/build-helm-charts.yml
+#    secrets: inherit
+#    with:
+#      branch: ${{ needs.prepare.outputs.branch }}
+#      version: ${{ needs.release-please.outputs.tag_name }}
+#      keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
+#      release: false
 
   ############################################################################
   # Build CLI
