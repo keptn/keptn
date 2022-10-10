@@ -130,7 +130,6 @@ func (m *MongoDBProjectsRepo) UpdateProjectService(projectName, stageName, servi
 
 	filter := bson.D{
 		{"projectName", projectName},
-		//{"stages.stageName", stageName},
 	}
 
 	arrayFilter := options.FindOneAndUpdate().SetArrayFilters(options.ArrayFilters{
