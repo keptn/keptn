@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.6](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.5...0.19.6) (2022-10-10)
+
+
+### Bug Fixes
+
+* Add newline ([651fc5c](https://github.com/philipp-hinteregger/keptn-fork/commit/651fc5cd1ebf2e606d7293c66f22bf8e155112a3))
+* Disable login steps ([9a4e0b3](https://github.com/philipp-hinteregger/keptn-fork/commit/9a4e0b37d4fdbc51e808b36cc8b9863d684d8d97))
+
 ## [0.19.5](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.4...0.19.5) (2022-10-10)
 
 
