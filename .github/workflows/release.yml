@@ -103,7 +103,7 @@ jobs:
     name: Prepare release run
     runs-on: ubuntu-20.04
     needs: release-please
-    if: needs.release-please.outputs.release_create == 'true'
+    if: needs.release-please.outputs.releases_created == 'true'
     outputs:
       branch: ${{ steps.current_branch.outputs.branch }}
       keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
