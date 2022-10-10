@@ -120,7 +120,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Extract branch name
         id: extract_branch
@@ -229,7 +229,7 @@ jobs:
         with:
           fetch-depth: 0
           path: keptn
-          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Checkout helm-charts repo
         uses: actions/checkout@v3
@@ -237,7 +237,7 @@ jobs:
           repository: keptn/helm-charts
           path: helm-charts
           ref: gh-pages
-          token: ${{ secrets.KEPTN_BOT_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Node.js
         uses: actions/setup-node@v3.5.0
@@ -269,7 +269,7 @@ jobs:
       - name: Upload Release Assets
         working-directory: keptn
         env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
@@ -278,7 +278,7 @@ jobs:
 
       - name: Upload helm charts
         env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
@@ -293,7 +293,7 @@ jobs:
       - name: Attach docker image digests to release
         working-directory: keptn
         env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DIGEST_FILE: "digests.csv"
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
@@ -304,6 +304,6 @@ jobs:
       - name: Attach Helm provenance public key to release
         working-directory: keptn
         env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
