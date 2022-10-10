@@ -6,6 +6,7 @@
         "bump-minor-pre-major": true,
         "bump-patch-for-minor-pre-major": true,
         "release-type": "go",
+        "last-release-sha": "fab0926cdd6c59274d0da8f036e023a554208e85",
         "include-v-in-tag": false,
         "draft": false,
         "extra-files": [
