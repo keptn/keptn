@@ -222,7 +222,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-20.04
-    needs: [release-please, prepare, docker_build, build-helm-charts, build-cli]
+    needs: [release-please, prepare, docker_build, build-cli]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
