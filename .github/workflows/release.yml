@@ -180,7 +180,7 @@ jobs:
         quay.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
         ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
       should-run: ${{ matrix.config.should-run }}
-      should-push-image: ${{ matrix.config.should-push-image }}
+      should-push-image: false
       docker-test-target: ${{ matrix.config.docker-test-target }}
       working-dir: ${{ matrix.config.working-dir }}
       version: ${{ needs.release-please.outputs.tag_name }}
@@ -203,7 +203,7 @@ jobs:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.release-please.outputs.tag_name }}
       keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
-      release: true
+      release: false
 
   ############################################################################
   # Build CLI
@@ -214,7 +214,7 @@ jobs:
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.release-please.outputs.tag_name }}
-      release: true
+      release: false
 
   ############################################################################
   # Release
