@@ -20,7 +20,7 @@ echo "-----------------------------------------------------------------------"
 helm template keptn "${KEPTN_HELM_CHART}" -n "${KEPTN_NAMESPACE}" \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
-global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}library/busybox1.35.0,\
+global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}library/busybox,\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
 nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
@@ -31,7 +31,7 @@ apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/ngin
 helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --create-namespace --wait --timeout 12m \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
-global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}library/busybox:1.35.0,\
+global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}library/busybox,\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
 nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
