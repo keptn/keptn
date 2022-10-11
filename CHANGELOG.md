@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.8](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.7...0.19.8) (2022-10-11)
+
+
+### Bug Fixes
+
+* Remove newline ([3428a49](https://github.com/philipp-hinteregger/keptn-fork/commit/3428a497c425499207fe588f87458203b875bb77))
+
 ## [0.19.7](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.6...0.19.7) (2022-10-11)
 
 
