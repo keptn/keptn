@@ -286,20 +286,20 @@ jobs:
 #          git commit --signoff -m "Keptn Release $RELEASE_TAG"
 #          git push
 
-      - name: Attach docker image digests to release
-        working-directory: keptn
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DIGEST_FILE: "digests.csv"
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
-        run: |
-          cat ../dist/image-digests/digest-*.txt >> $DIGEST_FILE
+#      - name: Attach docker image digests to release
+#        working-directory: keptn
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          DIGEST_FILE: "digests.csv"
+#          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+#        run: |
+#          cat ../dist/image-digests/digest-*.txt >> $DIGEST_FILE
+#
+#          gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
 
-          gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
-
-      - name: Attach Helm provenance public key to release
-        working-directory: keptn
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
-        run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
+#      - name: Attach Helm provenance public key to release
+#        working-directory: keptn
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
+#        run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
