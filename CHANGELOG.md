@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.11](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.10...0.19.11) (2022-10-11)
+
+
+### Bug Fixes
+
+* Add two newlines ([c18975d](https://github.com/philipp-hinteregger/keptn-fork/commit/c18975d05f0854e9033847a52b1bbfdf31cee3e7))
+* Use dynamic branch for release-please ([47f2971](https://github.com/philipp-hinteregger/keptn-fork/commit/47f2971762ae2678d9b754005cb22f0d1df60db9))
+
 ## [0.19.10](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.9...0.19.10) (2022-10-11)
 
 
