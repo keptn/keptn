@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.20.0](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.11...0.20.0) (2022-10-11)
+
+
+### Features
+
+* New file ([cebd9f5](https://github.com/philipp-hinteregger/keptn-fork/commit/cebd9f5f8eb4bce62670c0b0210f29eb6eba4e3e))
+
 ## [0.19.11](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.10...0.19.11) (2022-10-11)
 
 
