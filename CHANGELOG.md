@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.10](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.9...0.19.10) (2022-10-11)
+
+
+### Bug Fixes
+
+* Disable attachment to release ([52b6df0](https://github.com/philipp-hinteregger/keptn-fork/commit/52b6df077b497e8af6650a4d62c737b098986198))
+
 ## [0.19.9](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.8...0.19.9) (2022-10-11)
 
 
