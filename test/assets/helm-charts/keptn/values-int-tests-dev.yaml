@@ -5,3 +5,9 @@ global:
 shipyardController:
   gracePeriod: 10
   preStopHookTime: 5
+
+nats:
+  podAnnotations:
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+logLevel: "debug"
