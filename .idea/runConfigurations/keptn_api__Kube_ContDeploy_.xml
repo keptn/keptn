@@ -1,10 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="keptn/api [Kube ContDeploy]" type="google-container-tools-skaffold-run-config" factoryName="google-container-tools-skaffold-run-config-dev" show_console_on_std_err="false" show_console_on_std_out="false">
     <option name="allowRunningInParallel" value="false" />
-    <option name="buildEnvironment" />
     <option name="cleanupDeployments" value="true" />
-    <option name="deployToCurrentContext" value="true" />
-    <option name="deployToMinikube" value="false" />
     <option name="envVariables">
       <map>
         <entry key="debugBuild" value="true" />
@@ -12,24 +9,9 @@
     </option>
     <option name="imageRepositoryOverride" />
     <option name="kubernetesContext" />
-    <option name="mappings">
-      <list />
-    </option>
-    <option name="moduleDeploymentType" value="DEPLOY_EVERYTHING" />
-    <option name="projectPathOnTarget" />
-    <option name="resourceDeletionTimeoutMins" value="2" />
-    <option name="selectedOptions">
-      <list />
-    </option>
     <option name="skaffoldConfigurationFilePath" value="$PROJECT_DIR$/api/skaffold.yaml" />
-    <option name="skaffoldModules">
-      <list />
-    </option>
     <option name="skaffoldNamespace" />
     <option name="skaffoldProfile" />
-    <option name="skaffoldWatchMode" value="ON_DEMAND" />
-    <option name="statusCheck" value="true" />
-    <option name="verbosity" value="WARN" />
     <method v="2" />
   </configuration>
 </component>
