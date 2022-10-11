@@ -5,7 +5,7 @@
         "changelog-path": "CHANGELOG.md",
         "prerelease": false,
         "bump-minor-pre-major": true,
-        "bump-patch-for-minor-pre-major": true,
+        "bump-patch-for-minor-pre-major": false,
         "release-type": "go",
         "include-v-in-tag": false,
         "draft": false,
