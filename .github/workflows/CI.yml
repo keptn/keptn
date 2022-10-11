@@ -167,16 +167,16 @@ jobs:
         env:
           BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
           BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           # determine version
-          npx standard-version@^9.3.1 \
-            --skip.commit \
-            --skip.tag \
-            --skip.changelog
+          npx release-please@^14.11.0 release-pr \
+          --token="$GH_TOKEN" \
+          --repo-url=keptn/keptn \
+          --dry-run=true > release-please-output
 
-          GIT_NEXT_TAG=$(cat VERSION.txt)
-          git checkout HEAD -- VERSION.txt
+          GIT_NEXT_TAG=$(cat release-please-output | grep 'title: chore(main): release' | cut -d ' ' -f4)
           
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
