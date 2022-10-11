@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.19.7](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.6...0.19.7) (2022-10-11)
+
+
+### Bug Fixes
+
+* Do not upload helm charts ([4a5f022](https://github.com/philipp-hinteregger/keptn-fork/commit/4a5f02265e1158dbc399e7788f0f59feb614ff98))
+
 ## [0.19.6](https://github.com/philipp-hinteregger/keptn-fork/compare/0.19.5...0.19.6) (2022-10-10)
 
 
