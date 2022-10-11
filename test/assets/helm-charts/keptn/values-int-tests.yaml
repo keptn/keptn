@@ -9,3 +9,5 @@ shipyardController:
 nats:
   podAnnotations:
     cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+
+logLevel: "debug"

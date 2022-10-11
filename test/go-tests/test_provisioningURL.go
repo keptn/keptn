@@ -149,6 +149,9 @@ func Test_ProvisioningURL(t *testing.T) {
 		t.Logf("error: %s %+v", err.Error(), err)
 	}
 	require.Nil(t, err)
+	if resp.Response().StatusCode != 201 {
+		t.Logf("%+v %s", resp.Response().Body, resp.Response().Body)
+	}
 	require.Equal(t, 201, resp.Response().StatusCode)
 
 	t.Logf("Getting project %s with a provisioned Gitea Upstream", projectName)
