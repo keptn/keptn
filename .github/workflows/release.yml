@@ -270,10 +270,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
-        run: |
-          #gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
-          #gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz.prov
-          gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
+        run: gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
 
       - name: Upload helm charts
         env:
