@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: shipyard-controller
-  namespace: keptn-test-2736-1
+  namespace: keptn
   labels:
     app.kubernetes.io/name: shipyard-controller
     app.kubernetes.io/instance: keptn
@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
-        image: docker.io/mowies/shipyard-controller #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
+        image: docker.io/keptndev/shipyard-controller #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
         env:
           - name: DEBUG_UI_ENABLED
             value: 'false'
@@ -93,7 +93,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: shipyard-controller
-  namespace: keptn-test-2736-1
+  namespace: keptn
   labels:
     app.kubernetes.io/name: shipyard-controller
     app.kubernetes.io/instance: keptn

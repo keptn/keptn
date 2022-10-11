@@ -29,7 +29,7 @@ data:
         },
         "httpResponse": {
           "body": {
-            "gitRemoteURL": "http://gitea-http:3000/%s/url-provisioning123",
+            "gitRemoteURL": "http://gitea-http:3000/%s/url-provisioning",
             "gitToken":     "%s",
             "gitUser":      "%s"
           },
@@ -84,7 +84,7 @@ data:
  * @Issue 7149
  */
 func Test_ProvisioningURL(t *testing.T) {
-	projectName := "url-provisioning123"
+	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
@@ -187,7 +187,7 @@ func Test_ProvisioningURL(t *testing.T) {
 }
 
 func Test_ProvisioningURL_hiddenURL(t *testing.T) {
-	projectName := "url-provisioning123"
+	projectName := "url-provisioning"
 	mockserverConfigFileName := "mockserver-config.yaml"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 	mockServerIP := "http://mockserver:1080"
