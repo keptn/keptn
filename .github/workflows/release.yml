@@ -98,7 +98,7 @@ jobs:
         with:
           command: manifest
           token: ${{ secrets.GITHUB_TOKEN }}
-          default-branch: master
+          default-branch: ${{ github.ref_name }}
 
   prepare:
     name: Prepare release run
