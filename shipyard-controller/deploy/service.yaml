@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
-        image: keptndev/shipyard-controller:0.18.1-dev #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
+        image: docker.io/keptndev/shipyard-controller #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
         env:
           - name: DEBUG_UI_ENABLED
             value: 'false'
@@ -80,13 +80,13 @@ spec:
         - containerPort: 9090
         resources:
           requests:
-            memory: "32Mi"
-            cpu: "50m"
+            memory: "500Mi"
+            cpu: "500m"
           limits:
             # limits is high on purpose to enable Debugging using skaffold
             # you can monitor memory usage using "kubectl -n keptn top pods"
-            memory: "256Mi"
-            cpu: "100m"
+            memory: "500Mi"
+            cpu: "500m"
       terminationGracePeriodSeconds: 60
 ---
 apiVersion: v1

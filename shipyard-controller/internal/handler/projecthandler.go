@@ -289,12 +289,14 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	params := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
+		log.Debugf("bad json %s", err.Error())
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize, AutomaticProvisioningURL: ph.Env.AutomaticProvisioningURL}
 	if err := projectValidator.Validate(params); err != nil {
+		log.Debugf("invalid project %s", err.Error())
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
 		return
 	}
@@ -320,6 +322,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 		isAutoProvisioned = true
 	} else if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+		log.Debugf("invalid URL %s", err.Error())
 		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 		return
 	}
@@ -338,6 +341,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		}
 
 		rollback()
+		log.Debugf("rolled back %s", err.Error())
 		if errors.Is(err, common.ErrProjectAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
