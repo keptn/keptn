@@ -433,5 +433,17 @@ describe('Sequences', () => {
         .selectSequence(keptnContext)
         .assertSequenceDeepLink(project, keptnContext, 'production');
     });
+
+    it('should show no tooltip/overlay when hovering over time', () => {
+      const project = 'sockshop';
+      const keptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
+      sequencePage.visit(project).selectSequence(keptnContext).assertTimeOverlay(false);
+    });
+
+    it('should show tooltip/overlay when hovering over time', () => {
+      const project = 'sockshop';
+      const keptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
+      sequencePage.visit(project).selectSequence(keptnContext).hoverOverStageStartTime('dev').assertTimeOverlay();
+    });
   });
 });
