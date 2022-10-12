@@ -21,7 +21,6 @@ spec:
       serviceAccountName: keptn-webhook-service
       initContainers:
         {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
-        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
         {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
         {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
       containers:
