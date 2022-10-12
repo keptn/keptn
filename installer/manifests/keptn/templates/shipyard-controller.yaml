@@ -23,8 +23,10 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       initContainers:
         {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
-        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
         {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
+        {{- if not .Values.mongo.external.connectionString }}
+          {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
+        {{- end }}
       containers:
         - name: shipyard-controller
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
