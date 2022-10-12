@@ -18,7 +18,7 @@ require (
 	github.com/stretchr/testify v1.8.0
 	github.com/swaggo/swag v1.8.6
 	github.com/tryvium-travels/memongo v0.6.1
-	go.mongodb.org/mongo-driver v1.10.2
+	go.mongodb.org/mongo-driver v1.10.3
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	gopkg.in/yaml.v3 v3.0.1
