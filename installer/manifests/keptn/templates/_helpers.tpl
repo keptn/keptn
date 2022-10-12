@@ -468,8 +468,8 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "{{ .Values.nats.nameOverride }}"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://{{ .Values.nats.nameOverride }}:8222"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
@@ -477,8 +477,8 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "keptn-mongo"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://keptn-mongo:27017"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
@@ -486,8 +486,8 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "mongodb-datastore"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://mongodb-datastore:8080/health"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
@@ -495,8 +495,8 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "shipyard-controller"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://shipyard-controller:8080/health"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-secret-service" -}}
@@ -504,8 +504,8 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "secret-service"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://secret-service:8080/v1/secret"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-api-service" -}}
@@ -513,8 +513,8 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "api-service"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://api-service:8080/health"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-resource-service" -}}
@@ -522,7 +522,7 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "resource-service"
-  command: ['sh', '-c', 'until nslookup $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+    value: "http://resource-service:8080/heatlh"
+  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 

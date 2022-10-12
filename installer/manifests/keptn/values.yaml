@@ -7,9 +7,9 @@ global:
     tag: ""
   initContainers:
     ## @param global.initContainers.image Init container image to enable staggered rollout of Keptn
-    image: "busybox"
+    image: "curlimages/curl"
     ## @param global.initContainers.tag Init container image tag to enable staggered rollout of Keptn
-    tag: "1.35.0"
+    tag: "7.85.0"
 
 
 ## @section MongoDB

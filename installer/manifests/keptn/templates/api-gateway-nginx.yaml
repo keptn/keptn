@@ -383,11 +383,6 @@ spec:
     spec:
       {{- include "keptn.apiGatewayNginx.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 60 }}
-      initContainers:
-        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
-        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
-        {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
-        {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
       containers:
         - name: api-gateway-nginx
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.apiGatewayNginx.image "global" .Values.apiGatewayNginx "defaultTag" .Values.apiGatewayNginx.image.tag) | quote }}
