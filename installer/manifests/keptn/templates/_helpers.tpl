@@ -469,7 +469,7 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://{{ .Values.nats.nameOverride }}:8222"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
@@ -478,7 +478,7 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://keptn-mongo:27017"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
@@ -487,7 +487,7 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://mongodb-datastore:8080/health"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
@@ -496,7 +496,7 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://shipyard-controller:8080/health"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-secret-service" -}}
@@ -505,7 +505,7 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://secret-service:8080/v1/secret"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-api-service" -}}
@@ -514,7 +514,7 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://api-service:8080/health"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-resource-service" -}}
@@ -523,6 +523,6 @@ Usage:
   env:
   - name: "ENDPOINT"
     value: "http://resource-service:8080/heatlh"
-  command: ['sh', '-c', 'until curl $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
 {{- end -}}
 
