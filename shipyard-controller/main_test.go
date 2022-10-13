@@ -830,6 +830,10 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 		if states == nil || len(states.States) == 0 {
 			return false
 		}
+		state := states.States[0]
+		if len(state.Stages) == 0 {
+			return false
+		}
 		return true
 	}, 10*time.Second, 100*time.Millisecond)
 
