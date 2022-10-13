@@ -76,6 +76,10 @@ func TestUnfoldMap(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, err := UnfoldMap(tt.args.toAdd)
+			if err != nil {
+				t.Log(err)
+			}
+			t.Log(got)
 			if !tt.wantErr(t, err, fmt.Sprintf("AddToData(%v)", tt.args.toAdd)) {
 				return
 			}

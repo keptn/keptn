@@ -75,10 +75,12 @@ func JSONPathToJSONObj(input []string) (string, error) {
 		for i := 0; i < len(pathParts)-1; i++ {
 			node := currentNode.GetChild(pathParts[i])
 			if node == nil {
+				fmt.Sprintf("node is nil. pathparts: %v", pathParts[i])
 				child := newInnerNode()
 				currentNode.AddChild(pathParts[i], child)
 				currentNode = child
 			} else {
+				fmt.Sprintf("node is NOT nil. pathparts: %v | node: %v", pathParts[i], node)
 				if cn, ok := node.(*innerNode); ok {
 					currentNode = cn
 				} else {
