@@ -46,11 +46,23 @@
           ></span>
         </div>
         <p class="m-0">|</p>
-        <p
-          *ngIf="currentSequence.traces.length !== 0; else showLoadingSpinner"
-          class="m-0"
-          [textContent]="currentSequence.getStageTime(stage) | date: 'HH:mm'"
-        ></p>
+        <div
+          *ngIf="
+            currentSequence.traces.length !== 0 && currentSequence.getStageTime(stage) as time;
+            else showLoadingSpinner
+          "
+        >
+          <ng-template #overlay>
+            <span [attr.uitestid]="stage + 'StartTimeDetail'">{{ time | amDateFormat: 'YYYY-MM-DD HH:mm:ss' }}</span>
+          </ng-template>
+          <p
+            class="m-0"
+            [attr.uitestid]="stage + 'StartTime'"
+            [textContent]="time | date: 'HH:mm'"
+            [dtOverlay]="overlay"
+          ></p>
+        </div>
+
         <ng-template #showLoadingSpinner>
           <ktb-loading-spinner class="smaller" aria-label="Fetching events ..."></ktb-loading-spinner>
         </ng-template>
