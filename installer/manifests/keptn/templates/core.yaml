@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/name: bridge
 type: Opaque
 data:
-  BASIC_AUTH_USERNAME: {{ default "keptn" .Values.keptnUsername | b64enc | quote }}
+  BASIC_AUTH_USERNAME: {{ default "keptn" .Values.bridge.keptnUsername | b64enc | quote }}
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
 {{- end }}
