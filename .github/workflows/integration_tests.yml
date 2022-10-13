@@ -149,7 +149,7 @@ jobs:
             fi
           fi
 
-          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
+          echo "BRANCH=$(echo ${BRANCH})" >> $GITHUB_OUTPUT
 
       - name: Find latest successful run ID
         id: last_run_id
@@ -167,7 +167,7 @@ jobs:
               (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
-          echo "::set-output name=RUN_ID::$RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
@@ -215,7 +215,7 @@ jobs:
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
 
-          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "HELM_CHART_NAME=$(echo ${HELM_CHART_NAME})" >> $GITHUB_OUTPUT
 
       # setup cloud provider kubernetes instance
       - name: Install and start Minishift
@@ -424,7 +424,7 @@ jobs:
           fi
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
-          echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
+          echo "KEPTN_ENDPOINT=$(echo ${KEPTN_ENDPOINT})" >> $GITHUB_OUTPUT
 
       - name: Prepare test run
         id: prepare_test_run
@@ -800,7 +800,7 @@ jobs:
             echo "" >> integration-tests-failed.md
             echo "Note: This issue was auto-generated from [integration_tests.yml](.github/workflows/integration_tests.yml)" >> integration-tests-failed.md
 
-            echo "##[set-output name=INTEGRATION_TESTS_FAILED;]true"
+            echo "INTEGRATION_TESTS_FAILED=true" >> $GITHUB_OUTPUT
           else
             echo "Integration tests passed, moving on..."
           fi
