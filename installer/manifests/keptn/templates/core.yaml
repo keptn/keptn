@@ -52,7 +52,7 @@ metadata:
     app.kubernetes.io/name: bridge
 type: Opaque
 data:
-  BASIC_AUTH_USERNAME: {{ "keptn" | b64enc | quote }}
+  BASIC_AUTH_USERNAME: {{ default "keptn" .Values.keptnUsername | b64enc | quote }}
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
 {{- end }}
@@ -108,6 +108,11 @@ spec:
                 secretKeyRef:
                   name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
                   key: keptn-api-token
+            - name: "USERNAME"
+              valueFrom:
+                secretKeyRef:
+                  key:  keptnUsername
+                  name: bridge-credentials
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
             - name: ENABLE_VERSION_CHECK

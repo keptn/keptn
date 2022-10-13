@@ -40,6 +40,8 @@ mongo:
 
 prefixPath: ""
 
+keptnUsername: ""
+
 keptnSpecVersion: latest
 
 features:
