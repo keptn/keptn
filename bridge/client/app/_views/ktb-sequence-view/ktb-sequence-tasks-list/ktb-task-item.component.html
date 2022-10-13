@@ -14,7 +14,7 @@
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
           <div *ngIf="task.time">
             <ng-template #overlay>
-              <span>{{ task.time | amDateFormat: dateUtil.getDateTimeFormat() }}</span>
+              <span>{{ task.time | amDateFormat: 'YYYY-MM-DD HH:mm:ss' }}</span>
             </ng-template>
             <p
               class="m-0 mt-1 mb-1 mr-2"
