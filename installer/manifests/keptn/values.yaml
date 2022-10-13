@@ -68,12 +68,6 @@ mongo:
       cpu: 1000m
       memory: 500Mi
 
-prefixPath: ""
-
-keptnUsername: ""
-
-keptnSpecVersion: latest
-
 features:
   debugUI:
     ## @param features.debugUI.enabled Enable debugUI interface for shipyard-controller
@@ -1231,6 +1225,9 @@ logLevel: "info"
 
 ## @param prefixPath URL prefix for all Keptn URLs
 prefixPath: ""
+
+## @param login Username for Keptn Bridge
+keptnUsername: ""
 
 ## @param keptnSpecVersion Version of the Keptn Spec definitions to be used
 keptnSpecVersion: latest
