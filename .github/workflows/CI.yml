@@ -147,7 +147,7 @@ jobs:
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
-          echo "BUILD_EVERYTHING=$(echo ${BUILD_EVERYTHING})" >> $GITHUB_ENV
+          echo "BUILD_EVERYTHING=$(echo ${BUILD_EVERYTHING})" >> $GITHUB_OUTPUT
 
       - name: Prepare artifacts with changes
         id: check_modified_files
@@ -196,21 +196,21 @@ jobs:
           echo "VERSION=${VERSION}"
           echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
 
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}" >> $GITHUB_OUTPUT
       - name: Get current date and time
         id: get_datetime
         env:
           GO_VERSION: ${{ env.GO_VERSION }}
         run: |
-          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-          echo "TIME=$(date +'%H%M')" >> $GITHUB_ENV
-          echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_ENV
+          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "TIME=$(date +'%H%M')" >> $GITHUB_OUTPUT
+          echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_OUTPUT
 
       - name: Get GO-Version
         id: get_go_version
         run: |
-          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_ENV
+          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_OUTPUT
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
