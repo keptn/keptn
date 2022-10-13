@@ -126,9 +126,9 @@ jobs:
       - name: Get current date and time
         id: get_datetime
         run: |
-          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-          echo "TIME=$(date +'%H%M')" >> $GITHUB_ENV
-          echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_ENV
+          echo "::set-output name=DATE::$(date +'%Y%m%d')"
+          echo "::set-output name=TIME::$(date +'%H%M')"
+          echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
 
       - name: Find next version number
         id: version_number
@@ -149,14 +149,14 @@ jobs:
           fi
 
           NEXT_VERSION=$(cat VERSION.txt)
-          echo "next-version=${NEXT_VERSION}" >> $GITHUB_ENV
+          echo "::set-output name=next-version::${NEXT_VERSION}"
           git checkout HEAD -- VERSION.txt
 
       - name: Find current branch
         id: current_branch
         run: |
           branch=${GITHUB_REF#refs/heads/}
-          echo "branch=${branch}" >> $GITHUB_ENV
+          echo "::set-output name=branch::${branch}"
 
       - name: Get keptn spec version
         id: keptn_spec_version
@@ -164,14 +164,14 @@ jobs:
           git submodule update --init
           cd specification
           KEPTN_SPEC_VERSION=$(git describe --tags)
-          echo "keptn-spec-version=${KEPTN_SPEC_VERSION}" >> $GITHUB_ENV
+          echo "::set-output name=keptn-spec-version::${KEPTN_SPEC_VERSION}"
 
       - name: Get GO-Version
         id: get_go_version
         env:
           GO_VERSION: ${{ env.GO_VERSION }}
         run: |
-          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_ENV
+          echo "::set-output name=GO_VERSION::$GO_VERSION"
 
       - name: Prepare artifact build matrix
         id: check_modified_files
@@ -323,7 +323,7 @@ jobs:
             npx standard-version@^9.3.1
           fi
 
-          echo "tag-name=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
+          echo "::set-output name=tag-name::$(git describe --tags --abbrev=0)"
 
           echo "Fetching previously deleted old tags..."
           git fetch origin --tags -f

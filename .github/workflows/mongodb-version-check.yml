@@ -25,14 +25,14 @@ jobs:
       id: get_keptn_mongodb_version
       run: |
         MONGODB_VERSION=$(cd ./installer/manifests/keptn/ && helm dependency list | grep -e "mongodb" | awk '{print $2}')
-        echo "MONGODB_VERSION=$MONGODB_VERSION" >> $GITHUB_ENV
+        echo "::set-output name=MONGODB_VERSION::$MONGODB_VERSION"
   
     - name: "Get latest Bitnami/MongoDB version"
       id: get_bitnami_mongodb_version
       run: |
         helm repo add bitnami https://charts.bitnami.com/bitnami
         MONGODB_VERSION=$(helm search repo bitnami | grep -e "mongodb " | awk '{print $2}')
-        echo "MONGODB_VERSION=$MONGODB_VERSION" >> $GITHUB_ENV
+        echo "::set-output name=MONGODB_VERSION::$MONGODB_VERSION"
 
     - name: "Compare MongoDB Chart versions"
       id: compare_mongodb_versions
@@ -44,7 +44,7 @@ jobs:
         if [[ "$KEPTN_VERSION" != "$BITNAMI_VERSION" ]]; then
           CREATE_ISSUE=true
         fi
-        echo "CREATE_ISSUE=$CREATE_ISSUE" >> $GITHUB_ENV
+        echo "::set-output name=CREATE_ISSUE::$CREATE_ISSUE"
 
   create_issue:
     name: Create GitHub Issue

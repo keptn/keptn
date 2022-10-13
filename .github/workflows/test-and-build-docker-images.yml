@@ -88,7 +88,7 @@ jobs:
       id: yarn-cache-dir-path
       if: inputs.artifact == 'bridge2'
       working-directory: bridge
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_ENV
+      run: echo "::set-output name=dir::$(yarn cache dir)"
     
     - name: Setup yarn cache
       uses: actions/cache@v3
