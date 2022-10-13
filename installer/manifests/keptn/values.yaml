@@ -1226,7 +1226,7 @@ logLevel: "info"
 ## @param prefixPath URL prefix for all Keptn URLs
 prefixPath: ""
 
-## @param login Username for Keptn Bridge
+## @param keptnUsername for Keptn Bridge login
 keptnUsername: ""
 
 ## @param keptnSpecVersion Version of the Keptn Spec definitions to be used
