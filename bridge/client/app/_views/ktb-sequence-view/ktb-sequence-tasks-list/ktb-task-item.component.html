@@ -138,7 +138,7 @@
           <p class="m-0">
             <span *ngIf="subTask.time">
               <ng-template #subTaskTimeOverlay>
-                <span>{{ subTask.time | amDateFormat: dateUtil.getDateTimeFormat() }}</span>
+                <span>{{ subTask.time | amDateFormat: 'YYYY-MM-DD HH:mm:ss' }}</span>
               </ng-template>
               <span
                 class="mr-2"
