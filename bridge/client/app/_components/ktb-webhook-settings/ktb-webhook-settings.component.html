@@ -184,11 +184,14 @@
     </div>
     <ng-template #sendStartedOverlay>
       <p>
-        If you subscribe your webhook to a task event of type triggered, the corresponding started and finished events
-        are sent automatically.
+        If you subscribe your webhook to a task event of type triggered, the corresponding started event is sent
+        automatically. Consequently, the receiving service does not need to send the started event back to keptn webhook
+        service.
         <br /><br />
-        To move the responsibility of sending the started event to the webhook receiver, select the option 'by webhook
-        receiver'.
+        Delegating the started event to the receiving service will block the task execution until the receiving service
+        sends the started event. However, this allows users to send data from the system back to Keptn and gives
+        accurate timings. To move the responsibility of sending the started event to the webhook receiver, select the
+        option 'by webhook receiver'.
       </p>
     </ng-template>
   </div>
@@ -205,11 +208,14 @@
     </div>
     <ng-template #sendFinishedOverlay>
       <p>
-        If you subscribe your webhook to a task event of type triggered, the corresponding started and finished events
-        are sent automatically.
+        If you subscribe your webhook to a task event of type triggered, the corresponding finished event is sent
+        automatically. Consequently, the receiving service does not need to send the finished event back to keptn
+        webhook service.
         <br /><br />
-        To move the responsibility of sending the finished event to the webhook receiver, select the option 'by webhook
-        receiver'. This is especially required for webhooks that trigger a long-running task.
+        Delegating the finished event to the receiving service will block the task execution until the receiving service
+        sends the finished event. However, this allows users to send data from the system back to Keptn and gives
+        accurate timings. To move the responsibility of sending the finished event to the webhook receiver, select the
+        option 'by webhook receiver'.
       </p>
     </ng-template>
   </div>
