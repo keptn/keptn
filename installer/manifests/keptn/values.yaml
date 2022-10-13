@@ -512,8 +512,8 @@ bridge:
     mongoConnectionString: ""
   ## @param bridge.authMsg Overrides Keptn auth command displayed inside the Bridge user menu
   authMsg: ""
-  ## @param bridge.keptnUsername Keptn username for Bridge user login
-  keptnUsername: ""
+  ## @param bridge.basicAuthUsername Keptn auth username for Bridge user login
+  basicAuthUsername: ""
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
   podAffinity:

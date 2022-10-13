@@ -4,7 +4,7 @@
 {{- $apiToken = index $apisecret.data "keptn-api-token" }}
 {{- end -}}
 
-{{- $bridgeUsername := default "keptn" .Values.bridge.keptnUsername | b64enc | quote }}
+{{- $bridgeUsername := default "keptn" .Values.bridge.basicAuthUsername | b64enc | quote }}
 {{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
 {{- if $bridgesecret }}
