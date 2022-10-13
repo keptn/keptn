@@ -36,26 +36,26 @@ jobs:
       fail-fast: false
       matrix:
         include:
-#          - CLOUD_PROVIDER: "minishift-on-GHA"
-#            PLATFORM: "openshift"
-#            PLATFORM_VERSION: "3.11"
-#            KEPTN_SERVICE_TYPE: "ClusterIP"
-#            COLLECT_RESOURCE_LIMITS: "true"
-#            USE_RESOURCE_SERVICE_DIRECTORY: "false"
-#          - CLOUD_PROVIDER: "k3s-on-GHA"
-#            PLATFORM_VERSION: "v1.22.8+k3s1" # see https://github.com/rancher/k3s/releases
-#            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "NodePort"
-#            COLLECT_RESOURCE_LIMITS: "false"
-#            USE_RESOURCE_SERVICE_DIRECTORY: "false"
-#          - CLOUD_PROVIDER: "k3s-on-GHA"
-#            PLATFORM_VERSION: "v1.24.4+k3s1" # see https://github.com/rancher/k3s/releases
-#            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-#            PLATFORM: "kubernetes"
-#            KEPTN_SERVICE_TYPE: "NodePort"
-#            COLLECT_RESOURCE_LIMITS: "false"
-#            USE_RESOURCE_SERVICE_DIRECTORY: "true"
+          - CLOUD_PROVIDER: "minishift-on-GHA"
+            PLATFORM: "openshift"
+            PLATFORM_VERSION: "3.11"
+            KEPTN_SERVICE_TYPE: "ClusterIP"
+            COLLECT_RESOURCE_LIMITS: "true"
+            USE_RESOURCE_SERVICE_DIRECTORY: "false"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            PLATFORM_VERSION: "v1.22.8+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE_DIRECTORY: "false"
+          - CLOUD_PROVIDER: "k3s-on-GHA"
+            PLATFORM_VERSION: "v1.24.4+k3s1" # see https://github.com/rancher/k3s/releases
+            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+            PLATFORM: "kubernetes"
+            KEPTN_SERVICE_TYPE: "NodePort"
+            COLLECT_RESOURCE_LIMITS: "false"
+            USE_RESOURCE_SERVICE_DIRECTORY: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v5.4.6" # see https://github.com/k3d-io/k3d/releases
             KUBECONFIG: ""
