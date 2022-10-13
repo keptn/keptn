@@ -21,8 +21,10 @@ func Test_Openshift(t *testing.T) {
 	t.Run("Test_ManageSecrets_CreateUpdateAndDeleteSecret", Test_ManageSecrets_CreateUpdateAndDeleteSecret)
 	t.Run("Test_SequenceQueue_TriggerMultiple", Test_SequenceQueue_TriggerMultiple)
 	t.Run("Test_Webhook_Migrator", Test_Webhook_Migrator)
+	t.Run("Test_CreateProjectWithCustomBranchName", Test_CreateProjectWithCustomBranchName)
 
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+	t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)

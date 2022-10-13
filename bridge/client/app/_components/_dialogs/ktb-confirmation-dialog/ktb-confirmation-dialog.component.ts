@@ -1,9 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { Sequence } from '../../../_models/sequence';
+import { SequenceState } from '../../../_models/sequenceState';
 
 export type SequenceConfirmDialogData = {
-  sequence: Sequence;
+  sequence: SequenceState;
   confirmCallback: (params: SequenceConfirmDialogData) => void;
 };
 

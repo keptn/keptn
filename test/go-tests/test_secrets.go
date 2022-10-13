@@ -2,11 +2,11 @@ package go_tests
 
 import (
 	"context"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"testing"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/stretchr/testify/require"
-	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,6 +59,12 @@ func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
 	require.Nil(t, err)
 
 	// check if associated role was deleted
-	_, err = k8s.RbacV1().Roles(ns).Get(context.TODO(), "keptn-secrets-default-read", v1.GetOptions{})
-	require.True(t, errors.IsNotFound(err))
+	role, err = k8s.RbacV1().Roles(ns).Get(context.TODO(), "keptn-secrets-default-read", v1.GetOptions{})
+	if err != nil {
+		require.True(t, errors.IsNotFound(err))
+	} else {
+		// if the role is still there - e.g. due to a secret having been created in another test, check if the references to the secret names have been deleted properly
+		require.NotContains(t, role.Rules[0].ResourceNames, secret1)
+		require.NotContains(t, role.Rules[0].ResourceNames, secret2)
+	}
 }

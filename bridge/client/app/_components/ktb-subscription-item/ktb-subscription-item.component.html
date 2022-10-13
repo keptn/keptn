@@ -1,13 +1,13 @@
 <ng-container *ngIf="projectName && subscription as subscription">
   <span class="pl-3 pr-4" [textContent]="name"></span>
   <span class="bold pl-3 pr-2">subscribes to:</span>
-  <span class="mr-1 pr-3" [textContent]="subscription.formattedEvent"></span>
+  <span class="mr-1 pr-3" [textContent]="getFormattedEvent(subscription)"></span>
   <span class="bold pr-2">in projects:</span>
-  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('projects') || 'all'"></span>
+  <span class="mr-1 pr-3" [textContent]="formatFilter(subscription.filter, 'projects') || 'all'"></span>
   <span class="bold pr-2">in stages:</span>
-  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('stages') || 'all'"></span>
+  <span class="mr-1 pr-3" [textContent]="formatFilter(subscription.filter, 'stages') || 'all'"></span>
   <span class="bold pr-2">for services:</span>
-  <span class="mr-1 pr-3" [textContent]="subscription.formatFilter('services') || 'all'"></span>
+  <span class="mr-1 pr-3" [textContent]="formatFilter(subscription.filter, 'services') || 'all'"></span>
   <div>
     <ng-container *ngIf="subscription.id; else oldSubscription">
       <button
@@ -54,7 +54,9 @@
     type="subscription"
     [(dialogState)]="deleteState"
     [deleteMessage]="
-      subscription.isGlobal ? 'Deleting this subscription will affect all projects. Please be certain.' : undefined
+      isGlobal(subscription.filter)
+        ? 'Deleting this subscription will affect all projects. Please be certain.'
+        : undefined
     "
     [name]="name"
     (confirmClicked)="deleteSubscription()"

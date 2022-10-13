@@ -2,6 +2,8 @@ import { Component, Input, TemplateRef, ViewChild } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Trace } from '../../_models/trace';
 import { DataService } from '../../_services/data.service';
+import { catchError, finalize } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'ktb-payload-viewer',
@@ -36,23 +38,24 @@ export class KtbPayloadViewerComponent {
   constructor(private dataService: DataService, private dialog: MatDialog) {}
 
   showEventPayloadDialog(): void {
-    if (this.eventPayloadDialog) {
-      this.event = undefined;
-      this.loading = true;
-      this.dataService.getEvent(this.type, this.project, this.stage, this.service).subscribe(
-        (event) => {
-          this.event = event;
-          this.loading = false;
-          this.error = undefined;
-        },
-        (err) => {
-          this.event = undefined;
-          this.loading = false;
-          this.error = err;
-        }
-      );
-      this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog);
+    if (!this.eventPayloadDialog) {
+      return;
     }
+
+    this.event = undefined;
+    this.error = undefined;
+    this.loading = true;
+    this.dataService
+      .getEvent(this.type, this.project, this.stage, this.service)
+      .pipe(
+        catchError((err) => {
+          this.error = err;
+          return of(undefined);
+        }),
+        finalize(() => (this.loading = false))
+      )
+      .subscribe((event) => (this.event = event));
+    this.eventPayloadDialogRef = this.dialog.open(this.eventPayloadDialog);
   }
 
   closeDialog(): void {

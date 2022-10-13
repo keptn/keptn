@@ -7,6 +7,7 @@ on:
         required: false
 env:
   NODE_VERSION: 16
+  GO_VERSION: "~1.18"
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
@@ -92,6 +93,7 @@ jobs:
       BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
       BUILD_MATRIX: ${{ steps.check_modified_files.outputs.BUILD_MATRIX }}
       BUILD_MATRIX_EMPTY: ${{ steps.check_modified_files.outputs.BUILD_MATRIX_EMPTY }}
+      GO_VERSION: ${{ steps.get_go_version.outputs.GO_VERSION }}
     steps:
       - name: Check SemVer input
         env:
@@ -164,6 +166,13 @@ jobs:
           KEPTN_SPEC_VERSION=$(git describe --tags)
           echo "::set-output name=keptn-spec-version::${KEPTN_SPEC_VERSION}"
 
+      - name: Get GO-Version
+        id: get_go_version
+        env:
+          GO_VERSION: ${{ env.GO_VERSION }}
+        run: |
+          echo "::set-output name=GO_VERSION::$GO_VERSION"
+
       - name: Prepare artifact build matrix
         id: check_modified_files
         env:
@@ -176,74 +185,29 @@ jobs:
   # Build Docker Images
   ############################################################################
   docker_build:
+    name: Unit Tests and Build Image
     needs: prepare
-    name: Docker Build
-    runs-on: ubuntu-20.04
     strategy:
-      fail-fast: false
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
-    env:
-      BRANCH: ${{ needs.prepare.outputs.branch }}
-      VERSION: ${{ needs.prepare.outputs.next-version }}
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.REGISTRY_USER }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v2
-        with:
-          registry: "ghcr.io"
-          username: "keptn-bot"
-          password: ${{ secrets.KEPTN_BOT_TOKEN }}
-
-      - name: Login to Quay.io
-        uses: docker/login-action@v2
-        with:
-          registry: "quay.io"
-          username: ${{ secrets.QUAY_USER }}
-          password: ${{ secrets.QUAY_TOKEN }}
-
-      - id: docker_build_image
-        name: "Docker Build keptn/${{ matrix.config.artifact }}"
-        uses: docker/build-push-action@v3
-        with:
-          context: ${{ matrix.config.working-dir }}
-          tags: |
-            keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            quay.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-            ghcr.io/keptn/${{ matrix.config.artifact }}:${{ env.VERSION }}
-          build-args: |
-            version=${{ env.VERSION }}
-            buildTime=${{ needs.prepare.outputs.datetime }}
-            gitSha=${{ needs.prepare.outputs.git_sha }}
-          push: ${{ matrix.config.should-push-image }}
-          pull: true
-
-      - name: Write docker image digest to file
-        if: matrix.config.should-push-image
-        env:
-          IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
-          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
-        run: |
-          echo "${{ matrix.config.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
-
-      - name: Upload Digest file as artifact
-        if: matrix.config.should-push-image
-        uses: actions/upload-artifact@v3
-        env:
-          IMAGE_DIGEST_FILENAME: "./digest-${{ matrix.config.artifact }}.txt"
-        with:
-          name: image-digests
-          path: ${{ env.IMAGE_DIGEST_FILENAME }}
+    uses: ./.github/workflows/test-and-build-docker-images.yml
+    secrets: inherit
+    with:
+      artifact: ${{ matrix.config.artifact }}
+      tags: |
+        keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+        quay.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+        ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+      should-run: ${{ matrix.config.should-run }}
+      should-push-image: ${{ matrix.config.should-push-image }}
+      docker-test-target: ${{ matrix.config.docker-test-target }}
+      working-dir: ${{ matrix.config.working-dir }}
+      version: ${{ needs.prepare.outputs.next-version }}
+      datetime: ${{ needs.prepare.outputs.DATE }}${{ needs.prepare.outputs.TIME }}
+      gitSha: ${{ needs.prepare.outputs.git_sha }}
+      build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
+      go-version: ${{ needs.prepare.outputs.GO_VERSION }}
+      build-everything: "true"
+      execute-tests: "false"
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
@@ -252,6 +216,7 @@ jobs:
     needs: prepare
     name: Build Helm Charts
     uses: ./.github/workflows/build-helm-charts.yml
+    secrets: inherit
     with:
       branch: ${{ needs.prepare.outputs.branch }}
       version: ${{ needs.prepare.outputs.next-version }}
@@ -293,7 +258,7 @@ jobs:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: ${{ env.NODE_VERSION }}
 
@@ -398,6 +363,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
+          gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz.prov
           gh release upload "$RELEASE_TAG" ../dist/keptn-cli/*.tar.gz
 
       - name: Upload helm charts
@@ -406,6 +372,7 @@ jobs:
           RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
         run: |
           mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
+          mv ./dist/keptn-installer/*.tgz.prov ./helm-charts/packages
           cd ./helm-charts
           helm repo index ./ --url https://charts.keptn.sh/ --merge ./index.yaml
           git add *.tgz
@@ -423,3 +390,10 @@ jobs:
           cat ../dist/image-digests/digest-*.txt >> $DIGEST_FILE
 
           gh release upload "$RELEASE_TAG" "$DIGEST_FILE"
+
+      - name: Attach Helm provenance public key to release
+        working-directory: keptn
+        env:
+          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
+          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+        run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'

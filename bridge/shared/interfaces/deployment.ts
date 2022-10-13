@@ -1,4 +1,4 @@
-import { ISequence, SequenceState } from './sequence';
+import { ISequenceState, SequenceStatus } from './sequence';
 import { Trace } from '../models/trace';
 import { ResultTypes } from '../models/result-types';
 
@@ -8,13 +8,13 @@ export interface Deployment {
   service: string;
   image?: string;
   labels: { [key: string]: string };
-  state: SequenceState; // useful for polling; if finished then just fetch/update openRemediations
+  state: SequenceStatus; // useful for polling; if finished then just fetch/update openRemediations
 }
 
 export interface SubSequence {
   name: string;
   time: string;
-  state: SequenceState;
+  state: SequenceStatus;
   type: string;
   result: ResultTypes;
   id: string;
@@ -24,11 +24,11 @@ export interface SubSequence {
 
 export interface IStageDeployment {
   name: string;
-  state: SequenceState;
+  state: SequenceStatus;
   lastTimeUpdated: string;
   hasEvaluation: boolean;
   latestEvaluation?: Trace;
-  openRemediations: ISequence[];
+  openRemediations: ISequenceState[];
   approvalInformation?: {
     trace: Trace;
     deployedImage?: string;

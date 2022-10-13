@@ -121,7 +121,7 @@ func (s SecretHandler) UpdateSecret(c *gin.Context) {
 // @Failure      500    {object}  model.Error  "Internal Server Error"
 // @Router       /secret [delete]
 func (s SecretHandler) DeleteSecret(c *gin.Context) {
-	params := &DeleteSecretQueryParams{}
+	params := &model.DeleteSecretQueryParams{}
 	if err := c.ShouldBindQuery(params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormatMsg, err.Error()))
 		return
@@ -158,11 +158,25 @@ func (s SecretHandler) DeleteSecret(c *gin.Context) {
 // @Description  <span class="oauth-scopes">Required OAuth scopes: ${prefix}secrets:read</span>
 // @Tags         Secrets
 // @Security     ApiKeyAuth
+// @Param        name   query  string  false  "The name of the secret"
+// @Param        scope  query  string  false  "The scope of the secret"
 // @Success      200  {object}  model.GetSecretsResponse  "OK"
 // @Failure      500  {object}  model.Error               "Internal Server Error"
 // @Router       /secret [get]
 func (s SecretHandler) GetSecrets(c *gin.Context) {
-	secrets, err := s.SecretManager.GetSecrets()
+	params := &model.GetSecretQueryParams{}
+	if err := c.ShouldBindQuery(params); err != nil {
+		SetBadRequestErrorResponse(c, fmt.Sprintf(ErrInvalidRequestFormatMsg, err.Error()))
+		return
+	}
+	secret := model.Secret{
+		SecretMetadata: model.SecretMetadata{
+			Name:  params.Name,
+			Scope: params.Scope,
+		},
+		Data: nil,
+	}
+	secrets, err := s.SecretManager.GetSecrets(secret)
 	if err != nil {
 		SetInternalServerErrorResponse(c, fmt.Sprintf(ErrGetSecretMsg, err.Error()))
 		return
@@ -170,9 +184,4 @@ func (s SecretHandler) GetSecrets(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 	c.JSON(http.StatusOK, model.GetSecretsResponse{Secrets: secrets})
-}
-
-type DeleteSecretQueryParams struct {
-	Name  string `form:"name" binding:"required"`
-	Scope string `form:"scope" binding:"required"`
 }

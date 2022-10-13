@@ -17,7 +17,6 @@ class Trace extends ts {
   finished?: boolean;
   source?: string;
   label?: string;
-  heatmapLabel?: string;
   icon?: DtIconType;
   image?: string;
   plainEvent?: string;
@@ -109,14 +108,6 @@ class Trace extends ts {
     return this.data.action?.name;
   }
 
-  public isApprovalTriggered(): boolean {
-    return this.type === EventTypes.APPROVAL_TRIGGERED;
-  }
-
-  public isDirectDeployment(): boolean {
-    return this.type === EventTypes.DEPLOYMENT_FINISHED && this.data?.deployment?.deploymentstrategy === 'direct';
-  }
-
   private isApproved(): boolean {
     return this.data.approval?.result === ApprovalStates.APPROVED;
   }
@@ -129,10 +120,6 @@ class Trace extends ts {
     return Object.keys(this.data.labels || {}).length > 0;
   }
 
-  getProblemTitle(): string | undefined {
-    return this.data.problem?.ProblemTitle;
-  }
-
   getIcon(): DtIconType {
     if (!this.icon) {
       this.icon = EVENT_ICONS[this.getShortType()] || EVENT_ICONS.default;
@@ -142,17 +129,6 @@ class Trace extends ts {
 
   getChartLabel(): string {
     return this.data.labels?.buildId ?? moment(this.time).format('YYYY-MM-DD HH:mm');
-  }
-
-  getHeatmapLabel(): string {
-    if (!this.heatmapLabel) {
-      this.heatmapLabel = this.getChartLabel();
-    }
-    return this.heatmapLabel;
-  }
-
-  setHeatmapLabel(label: string): void {
-    this.heatmapLabel = label;
   }
 
   isStarted(): boolean {
@@ -175,20 +151,8 @@ class Trace extends ts {
     return !!this.traces.find((e) => e.isEvaluationInvalidation() && e.triggeredid === this.id);
   }
 
-  getRemediationAction(): Trace | undefined {
-    return this.findTrace((t) => t.isRemediationAction());
-  }
-
   getDeploymentUrl(): string | undefined {
     return this.data.deployment?.deploymentURIsPublic?.find(() => true);
-  }
-
-  findLastTrace(comp: (args: Trace) => boolean): Trace | undefined {
-    if (comp(this)) {
-      return this;
-    } else {
-      return this.traces.reduce((result: Trace | undefined, trace) => trace.findTrace(comp) || result, undefined);
-    }
   }
 
   getProblemDetails(): string | undefined {

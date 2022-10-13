@@ -14,6 +14,9 @@ import (
 //
 // 		// make and configure a mocked common.IGit
 // 		mockedIGit := &IGitMock{
+// 			CheckUpstreamConnectionFunc: func(gitContext common_models.GitContext) error {
+// 				panic("mock out the CheckUpstreamConnection method")
+// 			},
 // 			CheckoutBranchFunc: func(gitContext common_models.GitContext, branch string) error {
 // 				panic("mock out the CheckoutBranch method")
 // 			},
@@ -35,6 +38,9 @@ import (
 // 			MigrateProjectFunc: func(gitContext common_models.GitContext, newMetadatacontent []byte) error {
 // 				panic("mock out the MigrateProject method")
 // 			},
+// 			MoveToNewUpstreamFunc: func(currentContext common_models.GitContext, newContext common_models.GitContext) error {
+// 				panic("mock out the MoveToNewUpstream method")
+// 			},
 // 			ProjectExistsFunc: func(gitContext common_models.GitContext) bool {
 // 				panic("mock out the ProjectExists method")
 // 			},
@@ -47,7 +53,7 @@ import (
 // 			PushFunc: func(gitContext common_models.GitContext) error {
 // 				panic("mock out the Push method")
 // 			},
-// 			ResetHardFunc: func(gitContext common_models.GitContext) error {
+// 			ResetHardFunc: func(gitContext common_models.GitContext, revision string) error {
 // 				panic("mock out the ResetHard method")
 // 			},
 // 			StageAndCommitAllFunc: func(gitContext common_models.GitContext, message string) (string, error) {
@@ -60,6 +66,9 @@ import (
 //
 // 	}
 type IGitMock struct {
+	// CheckUpstreamConnectionFunc mocks the CheckUpstreamConnection method.
+	CheckUpstreamConnectionFunc func(gitContext common_models.GitContext) error
+
 	// CheckoutBranchFunc mocks the CheckoutBranch method.
 	CheckoutBranchFunc func(gitContext common_models.GitContext, branch string) error
 
@@ -81,6 +90,9 @@ type IGitMock struct {
 	// MigrateProjectFunc mocks the MigrateProject method.
 	MigrateProjectFunc func(gitContext common_models.GitContext, newMetadatacontent []byte) error
 
+	// MoveToNewUpstreamFunc mocks the MoveToNewUpstream method.
+	MoveToNewUpstreamFunc func(currentContext common_models.GitContext, newContext common_models.GitContext) error
+
 	// ProjectExistsFunc mocks the ProjectExists method.
 	ProjectExistsFunc func(gitContext common_models.GitContext) bool
 
@@ -94,13 +106,18 @@ type IGitMock struct {
 	PushFunc func(gitContext common_models.GitContext) error
 
 	// ResetHardFunc mocks the ResetHard method.
-	ResetHardFunc func(gitContext common_models.GitContext) error
+	ResetHardFunc func(gitContext common_models.GitContext, revision string) error
 
 	// StageAndCommitAllFunc mocks the StageAndCommitAll method.
 	StageAndCommitAllFunc func(gitContext common_models.GitContext, message string) (string, error)
 
 	// calls tracks calls to the methods.
 	calls struct {
+		// CheckUpstreamConnection holds details about calls to the CheckUpstreamConnection method.
+		CheckUpstreamConnection []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
+		}
 		// CheckoutBranch holds details about calls to the CheckoutBranch method.
 		CheckoutBranch []struct {
 			// GitContext is the gitContext argument value.
@@ -148,6 +165,13 @@ type IGitMock struct {
 			// NewMetadatacontent is the newMetadatacontent argument value.
 			NewMetadatacontent []byte
 		}
+		// MoveToNewUpstream holds details about calls to the MoveToNewUpstream method.
+		MoveToNewUpstream []struct {
+			// CurrentContext is the currentContext argument value.
+			CurrentContext common_models.GitContext
+			// NewContext is the newContext argument value.
+			NewContext common_models.GitContext
+		}
 		// ProjectExists holds details about calls to the ProjectExists method.
 		ProjectExists []struct {
 			// GitContext is the gitContext argument value.
@@ -172,6 +196,8 @@ type IGitMock struct {
 		ResetHard []struct {
 			// GitContext is the gitContext argument value.
 			GitContext common_models.GitContext
+			// Revision is the revision argument value.
+			Revision string
 		}
 		// StageAndCommitAll holds details about calls to the StageAndCommitAll method.
 		StageAndCommitAll []struct {
@@ -181,19 +207,52 @@ type IGitMock struct {
 			Message string
 		}
 	}
-	lockCheckoutBranch     sync.RWMutex
-	lockCloneRepo          sync.RWMutex
-	lockCreateBranch       sync.RWMutex
-	lockGetCurrentRevision sync.RWMutex
-	lockGetDefaultBranch   sync.RWMutex
-	lockGetFileRevision    sync.RWMutex
-	lockMigrateProject     sync.RWMutex
-	lockProjectExists      sync.RWMutex
-	lockProjectRepoExists  sync.RWMutex
-	lockPull               sync.RWMutex
-	lockPush               sync.RWMutex
-	lockResetHard          sync.RWMutex
-	lockStageAndCommitAll  sync.RWMutex
+	lockCheckUpstreamConnection sync.RWMutex
+	lockCheckoutBranch          sync.RWMutex
+	lockCloneRepo               sync.RWMutex
+	lockCreateBranch            sync.RWMutex
+	lockGetCurrentRevision      sync.RWMutex
+	lockGetDefaultBranch        sync.RWMutex
+	lockGetFileRevision         sync.RWMutex
+	lockMigrateProject          sync.RWMutex
+	lockMoveToNewUpstream       sync.RWMutex
+	lockProjectExists           sync.RWMutex
+	lockProjectRepoExists       sync.RWMutex
+	lockPull                    sync.RWMutex
+	lockPush                    sync.RWMutex
+	lockResetHard               sync.RWMutex
+	lockStageAndCommitAll       sync.RWMutex
+}
+
+// CheckUpstreamConnection calls CheckUpstreamConnectionFunc.
+func (mock *IGitMock) CheckUpstreamConnection(gitContext common_models.GitContext) error {
+	if mock.CheckUpstreamConnectionFunc == nil {
+		panic("IGitMock.CheckUpstreamConnectionFunc: method is nil but IGit.CheckUpstreamConnection was just called")
+	}
+	callInfo := struct {
+		GitContext common_models.GitContext
+	}{
+		GitContext: gitContext,
+	}
+	mock.lockCheckUpstreamConnection.Lock()
+	mock.calls.CheckUpstreamConnection = append(mock.calls.CheckUpstreamConnection, callInfo)
+	mock.lockCheckUpstreamConnection.Unlock()
+	return mock.CheckUpstreamConnectionFunc(gitContext)
+}
+
+// CheckUpstreamConnectionCalls gets all the calls that were made to CheckUpstreamConnection.
+// Check the length with:
+//     len(mockedIGit.CheckUpstreamConnectionCalls())
+func (mock *IGitMock) CheckUpstreamConnectionCalls() []struct {
+	GitContext common_models.GitContext
+} {
+	var calls []struct {
+		GitContext common_models.GitContext
+	}
+	mock.lockCheckUpstreamConnection.RLock()
+	calls = mock.calls.CheckUpstreamConnection
+	mock.lockCheckUpstreamConnection.RUnlock()
+	return calls
 }
 
 // CheckoutBranch calls CheckoutBranchFunc.
@@ -437,6 +496,41 @@ func (mock *IGitMock) MigrateProjectCalls() []struct {
 	return calls
 }
 
+// MoveToNewUpstream calls MoveToNewUpstreamFunc.
+func (mock *IGitMock) MoveToNewUpstream(currentContext common_models.GitContext, newContext common_models.GitContext) error {
+	if mock.MoveToNewUpstreamFunc == nil {
+		panic("IGitMock.MoveToNewUpstreamFunc: method is nil but IGit.MoveToNewUpstream was just called")
+	}
+	callInfo := struct {
+		CurrentContext common_models.GitContext
+		NewContext     common_models.GitContext
+	}{
+		CurrentContext: currentContext,
+		NewContext:     newContext,
+	}
+	mock.lockMoveToNewUpstream.Lock()
+	mock.calls.MoveToNewUpstream = append(mock.calls.MoveToNewUpstream, callInfo)
+	mock.lockMoveToNewUpstream.Unlock()
+	return mock.MoveToNewUpstreamFunc(currentContext, newContext)
+}
+
+// MoveToNewUpstreamCalls gets all the calls that were made to MoveToNewUpstream.
+// Check the length with:
+//     len(mockedIGit.MoveToNewUpstreamCalls())
+func (mock *IGitMock) MoveToNewUpstreamCalls() []struct {
+	CurrentContext common_models.GitContext
+	NewContext     common_models.GitContext
+} {
+	var calls []struct {
+		CurrentContext common_models.GitContext
+		NewContext     common_models.GitContext
+	}
+	mock.lockMoveToNewUpstream.RLock()
+	calls = mock.calls.MoveToNewUpstream
+	mock.lockMoveToNewUpstream.RUnlock()
+	return calls
+}
+
 // ProjectExists calls ProjectExistsFunc.
 func (mock *IGitMock) ProjectExists(gitContext common_models.GitContext) bool {
 	if mock.ProjectExistsFunc == nil {
@@ -568,13 +662,15 @@ func (mock *IGitMock) ResetHard(gitContext common_models.GitContext, revision st
 	}
 	callInfo := struct {
 		GitContext common_models.GitContext
+		Revision   string
 	}{
 		GitContext: gitContext,
+		Revision:   revision,
 	}
 	mock.lockResetHard.Lock()
 	mock.calls.ResetHard = append(mock.calls.ResetHard, callInfo)
 	mock.lockResetHard.Unlock()
-	return mock.ResetHardFunc(gitContext)
+	return mock.ResetHardFunc(gitContext, revision)
 }
 
 // ResetHardCalls gets all the calls that were made to ResetHard.
@@ -582,9 +678,11 @@ func (mock *IGitMock) ResetHard(gitContext common_models.GitContext, revision st
 //     len(mockedIGit.ResetHardCalls())
 func (mock *IGitMock) ResetHardCalls() []struct {
 	GitContext common_models.GitContext
+	Revision   string
 } {
 	var calls []struct {
 		GitContext common_models.GitContext
+		Revision   string
 	}
 	mock.lockResetHard.RLock()
 	calls = mock.calls.ResetHard

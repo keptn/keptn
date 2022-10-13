@@ -2425,11 +2425,25 @@ func TestEvaluateObjectives(t *testing.T) {
 			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
-					TimeStart:        "2019-10-20T07:57:27.152330783Z",
-					TimeEnd:          "2019-10-22T08:57:27.152330783Z",
-					Result:           "", // not set by the tested function
-					Score:            0,  // not calculated by tested function
-					IndicatorResults: nil,
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // not set by the tested function
+					Score:     0,  // not calculated by tested function
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 0,
+							Value: &keptnv2.SLIResult{
+								Metric:  "a_different_metric",
+								Value:   0,
+								Success: false,
+								Message: "no value received from SLI provider",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "fail",
+						},
+					},
 				},
 				EventData: keptnv2.EventData{
 					Result:  "",

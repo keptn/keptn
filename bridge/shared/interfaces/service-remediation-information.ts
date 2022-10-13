@@ -1,8 +1,8 @@
-import { ISequence } from './sequence';
+import { ISequenceState } from './sequence';
 
 export interface ServiceRemediationInformation {
   stages: {
     name: string;
-    remediations: ISequence[];
+    remediations: ISequenceState[];
   }[];
 }

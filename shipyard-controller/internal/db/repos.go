@@ -1,8 +1,11 @@
 package db
 
 import (
-	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	mvmodels "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"time"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	"go.mongodb.org/mongo-driver/bson"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -24,7 +27,6 @@ type UniformRepo interface {
 	CreateUniformIntegration(integration apimodels.Integration) error
 	CreateOrUpdateUniformIntegration(integration apimodels.Integration) error
 	CreateOrUpdateSubscription(integrationID string, subscription apimodels.EventSubscription) error
-	DeleteServiceFromSubscriptions(subscriptionName string) error
 	DeleteSubscription(integrationID, subscriptionID string) error
 	GetSubscription(integrationID, subscriptionID string) (*apimodels.EventSubscription, error)
 	GetSubscriptions(integrationID string) ([]apimodels.EventSubscription, error)
@@ -74,6 +76,7 @@ type ProjectRepo interface {
 	GetProject(projectName string) (*apimodels.ExpandedProject, error)
 	CreateProject(project *apimodels.ExpandedProject) error
 	UpdateProject(project *apimodels.ExpandedProject) error
+	UpdateProjectService(projectName, stageName, serviceName string, properties mvmodels.ServiceUpdate) error
 	UpdateProjectUpstream(projectName string, uri string, user string) error
 	DeleteProject(projectName string) error
 }
@@ -98,4 +101,10 @@ type SequenceExecutionRepo interface {
 	ResumeContext(eventScope models.EventScope) error
 	IsContextPaused(eventScope models.EventScope) bool
 	Clear(projectName string) error
+}
+
+//go:generate moq --skip-ensure -pkg db_mock -out ./mock/dbdump_mock.go . DBDumpRepo
+type DBDumpRepo interface {
+	GetDump(collectionName string) ([]bson.M, error)
+	ListAllCollections() ([]string, error)
 }

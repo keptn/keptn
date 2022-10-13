@@ -55,3 +55,7 @@ type UpdateProjectResponse struct {
 type DeleteProjectResponse struct {
 	Message string `json:"message"`
 }
+
+type InternalCreateProjectOptions struct {
+	IsUpstreamAutoProvisioned bool
+}

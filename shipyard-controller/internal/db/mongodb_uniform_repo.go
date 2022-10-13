@@ -4,13 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/keptn/keptn/shipyard-controller/internal/db/common"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/sirupsen/logrus"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 const uniformCollectionName = "keptnUniform"
@@ -70,6 +73,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateUniformIntegration(integration apimodel
 
 	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
 	if integration.Subscriptions == nil {
+		logrus.Warnf("Invalid '%s' integration format during Integration create: 'Subscriptions' field is null", integration.Name)
 		integration.Subscriptions = []apimodels.EventSubscription{}
 	}
 	_, err = collection.InsertOne(ctx, integration)
@@ -88,6 +92,7 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateUniformIntegration(integration 
 
 	// ensure that we have an empty array of subscriptions if it was nil before, to be able to use $push later
 	if integration.Subscriptions == nil {
+		logrus.Warnf("Invalid '%s' integration format during Integration update: 'Subscriptions' field is null", integration.Name)
 		integration.Subscriptions = []apimodels.EventSubscription{}
 	}
 
@@ -133,6 +138,12 @@ func (mdbrepo *MongoDBUniformRepo) CreateOrUpdateSubscription(integrationID stri
 	opts := options.Update().SetUpsert(true)
 	filter := bson.D{{"_id", integration.ID}}
 	update := bson.M{"$push": bson.M{"subscriptions": subscription}}
+
+	if integration.Subscriptions == nil {
+		logrus.Warnf("Invalid '%s' integration format during Subscriptions update: 'Subscriptions' field is null", integration.Name)
+		integration.Subscriptions = []apimodels.EventSubscription{subscription}
+		update = bson.M{"$set": integration}
+	}
 
 	if updateExisting {
 		filter = bson.D{{"_id", integration.ID}, {"subscriptions.id", subscription.ID}}
@@ -329,7 +340,7 @@ func (mdbrepo *MongoDBUniformRepo) getCollectionAndContext() (*mongo.Collection,
 func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUniformIntegrationsParams, collection *mongo.Collection, ctx context.Context) ([]apimodels.Integration, error) {
 	searchOptions := mdbrepo.getSearchOptions(searchParams)
 	cur, err := collection.Find(ctx, searchOptions)
-	defer closeCursor(ctx, cur)
+	defer common.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
@@ -347,63 +358,4 @@ func (mdbrepo *MongoDBUniformRepo) findIntegrations(searchParams models.GetUnifo
 	}
 
 	return result, nil
-}
-
-func (mdbrepo *MongoDBUniformRepo) DeleteServiceFromSubscriptions(subscriptionName string) error {
-	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
-	if err != nil {
-		return err
-	}
-	defer cancel()
-
-	filter := bson.D{{"subscriptions.filter.services", subscriptionName}}
-
-	cur, err := collection.Find(ctx, filter)
-	defer closeCursor(ctx, cur)
-
-	if err != nil && err != mongo.ErrNoDocuments {
-		return err
-	}
-
-	for cur.Next(ctx) {
-		integration := &apimodels.Integration{}
-		if err := cur.Decode(integration); err != nil {
-			//log the error, but continue
-			logger.Errorf("could not decode integration: %s", err.Error())
-		}
-
-		totalSub := len(integration.Subscriptions)
-		for i := 0; i < totalSub; i++ {
-			subscription := &integration.Subscriptions[i]
-			newServices := []string{}
-
-			//remove subscription if it concerns only the deleted service
-			if len(subscription.Filter.Services) == 1 && subscription.Filter.Services[0] == subscriptionName {
-				copy(integration.Subscriptions[i:], integration.Subscriptions[i+1:])
-				integration.Subscriptions[totalSub-1] = apimodels.EventSubscription{}
-				integration.Subscriptions = integration.Subscriptions[:totalSub-1]
-				totalSub = len(integration.Subscriptions)
-				i--
-				continue
-			}
-
-			//otherwise remove service
-			for j, _ := range subscription.Filter.Services {
-				service := &subscription.Filter.Services[j]
-				if *service != subscriptionName {
-					newServices = append(newServices, *service)
-				}
-			}
-			subscription.Filter.Services = newServices
-		}
-		opts := options.Update().SetUpsert(true)
-		filter := bson.D{{"_id", integration.ID}}
-		update := bson.D{{"$set", integration}}
-
-		_, err = collection.UpdateOne(ctx, filter, update, opts)
-		if err != nil {
-			return err
-		}
-	}
-	return nil
 }

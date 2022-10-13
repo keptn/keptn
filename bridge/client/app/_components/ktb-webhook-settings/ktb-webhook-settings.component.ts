@@ -5,8 +5,6 @@ import { IWebhookConfigClient, WebhookConfigMethod } from '../../../../shared/in
 import { DtOverlayConfig } from '@dynatrace/barista-components/overlay';
 import { SelectTreeNode } from '../ktb-tree-list-select/ktb-tree-list-select.component';
 import { IClientSecret } from '../../../../shared/interfaces/secret';
-import { ActivatedRoute } from '@angular/router';
-import { map } from 'rxjs/operators';
 
 type ControlType = 'method' | 'url' | 'payload' | 'proxy' | 'header' | 'sendFinished' | 'sendStarted';
 
@@ -32,10 +30,12 @@ export class KtbWebhookSettingsComponent implements OnInit {
     pinnable: true,
     originY: 'center',
   };
-  public projectName$ = this.route.paramMap.pipe(map((params) => params.get('projectName')));
 
   public _eventType?: string;
   public eventDataSource?: SelectTreeNode[];
+
+  @Input()
+  public project: string | undefined;
 
   @Input()
   set eventType(eventType: string | undefined) {
@@ -122,7 +122,7 @@ export class KtbWebhookSettingsComponent implements OnInit {
     return this.header.controls as FormGroup[];
   }
 
-  constructor(private route: ActivatedRoute) {
+  constructor() {
     this.webhookConfigForm.statusChanges.subscribe((status: 'INVALID' | 'VALID') => {
       this.validityChanged.next(status === 'VALID');
     });

@@ -1,7 +1,7 @@
 import { OpenRemediationsResponse } from '../../../../shared/fixtures/open-remediations-response.mock';
 import { ResultTypes } from '../../../../shared/models/result-types';
-import { SequenceState } from '../../../../shared/interfaces/sequence';
-import { Sequence } from '../../_models/sequence';
+import { SequenceStatus } from '../../../../shared/interfaces/sequence';
+import { SequenceState } from '../../_models/sequenceState';
 
 const updatedDeploymentMock = {
   state: 'finished',
@@ -334,7 +334,7 @@ const expectedDeploymentMock = {
 
 const stageDeploymentDeliveryFinishedPass = {
   name: 'dev',
-  state: SequenceState.FINISHED,
+  state: SequenceStatus.FINISHED,
   lastTimeUpdated: '2021-10-13T10:49:30.005Z',
   openRemediations: [],
   subSequences: [
@@ -343,7 +343,7 @@ const stageDeploymentDeliveryFinishedPass = {
       type: 'sh.keptn.event.dev.delivery.triggered',
       result: ResultTypes.PASSED,
       time: '2021-10-13T10:45:03.780Z',
-      state: SequenceState.FINISHED,
+      state: SequenceStatus.FINISHED,
       id: '08e89fdb-02db-4fc7-a5fd-386d03e1c4a9',
       message: 'Finished release',
       hasPendingApproval: false,
@@ -354,7 +354,7 @@ const stageDeploymentDeliveryFinishedPass = {
 
 const stageDeploymentRollBackFinishedPass = {
   name: 'dev',
-  state: SequenceState.FINISHED,
+  state: SequenceStatus.FINISHED,
   lastTimeUpdated: '2021-10-13T10:49:30.005Z',
   openRemediations: [],
   subSequences: [
@@ -363,7 +363,7 @@ const stageDeploymentRollBackFinishedPass = {
       type: 'sh.keptn.event.dev.rollback.triggered',
       result: ResultTypes.PASSED,
       time: '2021-10-13T11:45:03.780Z',
-      state: SequenceState.FINISHED,
+      state: SequenceStatus.FINISHED,
       id: '08e89fdb-02db-4fc7-a5fd-386d03e1c4a1',
       message: 'Finished rollback',
       hasPendingApproval: false,
@@ -378,7 +378,7 @@ const serviceRemediationInformationDevWithRemediation = {
       name: 'dev',
       config: 'configString',
       remediations: [
-        Sequence.fromJSON({
+        SequenceState.fromJSON({
           name: 'remediation',
           problemTitle: 'Failure rate increase',
           project: 'sockshop',
@@ -393,10 +393,10 @@ const serviceRemediationInformationDevWithRemediation = {
                 type: 'sh.keptn.event.get-action.started',
               },
               name: 'dev',
-              state: SequenceState.STARTED,
+              state: SequenceStatus.STARTED,
             },
           ],
-          state: SequenceState.STARTED,
+          state: SequenceStatus.STARTED,
           time: '2021-11-04T04:51:21.557Z',
         }),
       ],
@@ -410,7 +410,7 @@ const serviceRemediationInformationProductionWithRemediation = {
       name: 'production',
       config: 'configString',
       remediations: [
-        Sequence.fromJSON({
+        SequenceState.fromJSON({
           name: 'remediation',
           problemTitle: 'Failure rate increase',
           project: 'sockshop',
@@ -425,10 +425,10 @@ const serviceRemediationInformationProductionWithRemediation = {
                 type: 'sh.keptn.event.get-action.started',
               },
               name: 'production',
-              state: SequenceState.STARTED,
+              state: SequenceStatus.STARTED,
             },
           ],
-          state: SequenceState.STARTED,
+          state: SequenceStatus.STARTED,
           time: '2021-11-04T04:51:21.557Z',
         }),
       ],
@@ -442,7 +442,7 @@ const mergedSubsequencesDeliveryRollback = [
     type: 'sh.keptn.event.dev.rollback.triggered',
     result: ResultTypes.PASSED,
     time: '2021-10-13T11:45:03.780Z',
-    state: SequenceState.FINISHED,
+    state: SequenceStatus.FINISHED,
     id: '08e89fdb-02db-4fc7-a5fd-386d03e1c4a1',
     message: 'Finished rollback',
     hasPendingApproval: false,
@@ -452,7 +452,7 @@ const mergedSubsequencesDeliveryRollback = [
     type: 'sh.keptn.event.dev.delivery.triggered',
     result: ResultTypes.PASSED,
     time: '2021-10-13T10:45:03.780Z',
-    state: SequenceState.FINISHED,
+    state: SequenceStatus.FINISHED,
     id: '08e89fdb-02db-4fc7-a5fd-386d03e1c4a9',
     message: 'Finished release',
     hasPendingApproval: false,
@@ -464,7 +464,7 @@ const defaultSubsequenceDelivery = {
   type: 'sh.keptn.event.staging.delivery.triggered',
   result: ResultTypes.PASSED,
   time: '2021-10-13T10:49:30.202Z',
-  state: SequenceState.FINISHED,
+  state: SequenceStatus.FINISHED,
   id: '3cbb5949-3852-4073-a70d-27ec52e04b93',
   message: '',
   hasPendingApproval: false,
@@ -475,7 +475,7 @@ const subSequencesFailedAndPassed = [
   {
     ...defaultSubsequenceDelivery,
     result: ResultTypes.FAILED,
-    state: SequenceState.FINISHED,
+    state: SequenceStatus.FINISHED,
   },
 ];
 
@@ -484,7 +484,7 @@ const subSequencesPassedLoading = [
   {
     ...defaultSubsequenceDelivery,
     result: ResultTypes.PASSED,
-    state: SequenceState.STARTED,
+    state: SequenceStatus.STARTED,
   },
 ];
 
@@ -494,12 +494,12 @@ const subSequencesWarningFailed = [
   {
     ...defaultSubsequenceDelivery,
     result: ResultTypes.WARNING,
-    state: SequenceState.FINISHED,
+    state: SequenceStatus.FINISHED,
   },
   {
     ...defaultSubsequenceDelivery,
     result: ResultTypes.FAILED,
-    state: SequenceState.STARTED,
+    state: SequenceStatus.STARTED,
   },
 ];
 
@@ -507,18 +507,18 @@ const subSequencesWarning = [
   {
     ...defaultSubsequenceDelivery,
     result: ResultTypes.WARNING,
-    state: SequenceState.FINISHED,
+    state: SequenceStatus.FINISHED,
   },
   {
     ...defaultSubsequenceDelivery,
     result: ResultTypes.PASSED,
-    state: SequenceState.STARTED,
+    state: SequenceStatus.STARTED,
   },
 ];
 
 const stageDeploymentEmpty = {
   name: 'dev',
-  state: SequenceState.STARTED,
+  state: SequenceStatus.STARTED,
   lastTimeUpdated: '2021-10-13T10:49:30.005Z',
   openRemediations: [],
   subSequences: [],

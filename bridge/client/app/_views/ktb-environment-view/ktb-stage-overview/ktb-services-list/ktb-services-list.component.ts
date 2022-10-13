@@ -11,7 +11,7 @@ import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { Service } from '../../../../_models/service';
 import { DateUtil } from '../../../../_utils/date.utils';
 import { DataService } from '../../../../_services/data.service';
-import { Sequence } from '../../../../_models/sequence';
+import { SequenceState } from '../../../../_models/sequenceState';
 import { EvaluationBadgeVariant } from '../../../../_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
 
 const DEFAULT_PAGE_SIZE = 3;
@@ -92,7 +92,7 @@ export class KtbServicesListComponent implements DoCheck {
     ];
   }
 
-  getSequenceLink(sequence: Sequence, service: Service): string[] {
+  getSequenceLink(sequence: SequenceState, service: Service): string[] {
     return ['/project', this.projectName, 'sequence', sequence.shkeptncontext, 'stage', service.stage];
   }
 

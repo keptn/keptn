@@ -4,8 +4,8 @@ go 1.18
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	github.com/keptn/go-utils v0.18.0
-	github.com/sirupsen/logrus v1.8.1
+	github.com/keptn/go-utils v0.19.0
+	github.com/sirupsen/logrus v1.9.0
 )
 
 require (
@@ -38,7 +38,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/net v0.0.0-20220624214902-1bab6f366d9e // indirect
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
+	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -46,9 +46,9 @@ require (
 )
 
 replace (
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.8.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	golang.org/x/net => golang.org/x/net v0.0.0-20220708220712-1185a9018129
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
+	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
+	golang.org/x/net => golang.org/x/net v0.0.0-20221004154528-8021a29435af
 	golang.org/x/text => golang.org/x/text v0.3.7
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.2.8
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1

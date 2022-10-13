@@ -18,7 +18,7 @@ func GetTaskSequenceInStage(stageName, taskSequenceName string, shipyard *keptnv
 
 	for _, taskSequence := range stage.Sequences {
 		if taskSequence.Name == taskSequenceName {
-			log.Infof("Found matching task sequence %s in stage %s", taskSequence.Name, stage.Name)
+			log.Debugf("Found matching task sequence %s in stage %s", taskSequence.Name, stage.Name)
 			if len(taskSequence.Tasks) == 0 {
 				return nil, fmt.Errorf("task sequence %s does not contain any tasks", taskSequenceName)
 			}
@@ -92,20 +92,20 @@ func ObjToJSON(obj interface{}) string {
 	return string(indent)
 }
 
-func ExtractEventKind(event apimodels.KeptnContextExtendedCE) (string, error) {
+func ExtractEventKind(event apimodels.KeptnContextExtendedCE) (string, *keptnv2.EventData, error) {
 	eventData := &keptnv2.EventData{}
 	err := keptnv2.Decode(event.Data, eventData)
 	if err != nil {
 		log.Errorf("Could not parse event data: %v", err)
-		return "", err
+		return "", nil, err
 	}
 
 	if event.Type == nil {
-		return "", errors.New("event does not contain a type")
+		return "", nil, errors.New("event does not contain a type")
 	}
-	statusType, err := keptnv2.ParseEventKind(*event.Type)
+	eventKind, err := keptnv2.ParseEventKind(*event.Type)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
-	return statusType, nil
+	return eventKind, eventData, nil
 }

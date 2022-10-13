@@ -23,6 +23,7 @@ func (e *ResourceServiceError) Error() string {
 
 var ErrProjectNotFound = New("project not found")
 var ErrProjectAlreadyExists = New("project already exists")
+var ErrProjectRepositoryNotEmpty = New("project repository is not empty")
 
 // Stage specific errors
 
@@ -99,6 +100,7 @@ var ErrInvalidCredentials = New("credentials need to have ssh or http auth metho
 // Error messages
 
 const ErrMsgCouldNotRetrieveCredentials = "could not read credentials for project %s: %w"
+const ErrMsgCouldNotEstablishAuthMethod = "could not establish auth method for project %s: %w"
 const ErrMsgInvalidRequestFormat = "Invalid request format"
 const ErrMsgCouldNotSetUser = "could not set git user: %w"
 const ErrMsgCouldNotCreatePath = "could not create path %s: %w"

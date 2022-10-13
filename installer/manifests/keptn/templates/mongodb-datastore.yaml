@@ -44,7 +44,7 @@ spec:
             - name: PREFIX_PATH
               value: "{{ .Values.prefixPath }}"
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
             - name: MONGODB_USER
@@ -80,7 +80,15 @@ spec:
       volumes:
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
-      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 8 "context" . )}}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.mongodbDatastore.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.mongodbDatastore.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.mongodbDatastore.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        {{- include "keptn.affinities.pods" (dict "value" .Values.mongodbDatastore.podAffinity "default" .Values.podAffinity "component" "mongodb-datastore" "context" . ) | indent 8 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.mongodbDatastore.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "mongodb-datastore" "context" . ) | indent 8 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service

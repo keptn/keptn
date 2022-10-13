@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
 	"testing"
@@ -93,7 +95,7 @@ func Test_createOrApplyKeptnContext(t *testing.T) {
 
 func TestPostEventHandlerFunc(t *testing.T) {
 
-	topicName := "my-topic"
+	eventType := "sh.keptn.event.task.started"
 	natsServer, shutdown := runNATSServer()
 
 	defer shutdown()
@@ -105,7 +107,7 @@ func TestPostEventHandlerFunc(t *testing.T) {
 
 	receivedMessage := false
 
-	_, err = natsClient.Subscribe(topicName, func(msg *nats2.Msg) {
+	_, err = natsClient.Subscribe(eventType, func(msg *nats2.Msg) {
 		receivedMessage = true
 	})
 
@@ -115,18 +117,19 @@ func TestPostEventHandlerFunc(t *testing.T) {
 		HTTPRequest: nil,
 		Body: &models.KeptnContextExtendedCE{
 			Contenttype:    "application/json",
-			Data:           map[string]interface{}{},
+			Data:           map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
 			Extensions:     nil,
 			ID:             "",
 			Shkeptncontext: "",
 			Source:         stringp("test-source"),
 			Specversion:    "1.0",
 			Time:           strfmt.DateTime{},
-			Type:           &topicName,
+			Type:           &eventType,
+			Triggeredid:    "triggeredid",
 		},
 	}
 
-	got := PostEventHandlerFunc(params, nil)
+	got := PostEventHandlerFunc(false)(params, nil)
 
 	verifyHTTPResponse(got, http.StatusOK, t)
 
@@ -136,26 +139,23 @@ func TestPostEventHandlerFunc(t *testing.T) {
 }
 
 func TestPostEventHandlerFunc_NoNatsConnection(t *testing.T) {
-
+	eventType := "sh.keptn.event.task.started"
 	eventHandlerInstance = nil
-	topicName := "my-topic"
 
 	params := event.PostEventParams{
 		HTTPRequest: nil,
 		Body: &models.KeptnContextExtendedCE{
-			Contenttype:    "application/json",
-			Data:           map[string]interface{}{},
-			Extensions:     nil,
-			ID:             "",
-			Shkeptncontext: "",
-			Source:         stringp("test-source"),
-			Specversion:    "1.0",
-			Time:           strfmt.DateTime{},
-			Type:           &topicName,
+			Contenttype: "application/json",
+			Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+			Source:      stringp("test-source"),
+			Specversion: "1.0",
+			Time:        strfmt.DateTime{},
+			Type:        &eventType,
+			Triggeredid: "triggeredid",
 		},
 	}
 
-	got := PostEventHandlerFunc(params, nil)
+	got := PostEventHandlerFunc(false)(params, nil)
 
 	verifyHTTPResponse(got, http.StatusInternalServerError, t)
 }
@@ -207,6 +207,49 @@ func runNATSServer() (*server.Server, func()) {
 	return svr, func() { svr.Shutdown() }
 }
 
+func TestEventHandler_ReceivingInvalidEvents(t *testing.T) {
+	type fields struct {
+		EventPublisher eventPublisher
+	}
+	type args struct {
+		event models.KeptnContextExtendedCE
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantCtx bool
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "invalid event type",
+			fields: fields{
+				EventPublisher: &handlers_mock.EventPublisherMock{
+					PublishFunc: func(event apimodels.KeptnContextExtendedCE) error {
+						return nil
+					},
+				},
+			},
+			args:    args{event: models.KeptnContextExtendedCE{Type: stringp("garbage")}},
+			wantCtx: false,
+			wantErr: assert.Error,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			eh := &EventHandler{
+				EventPublisher:         tt.fields.EventPublisher,
+				EventValidationEnabled: true,
+			}
+			got, err := eh.PostEvent(tt.args.event)
+			if !tt.wantErr(t, err, fmt.Sprintf("PostEvent(%v)", tt.args.event)) {
+				return
+			}
+			assert.Equal(t, tt.wantCtx, got != nil)
+		})
+	}
+}
+
 func TestEventHandler_PostEvent(t *testing.T) {
 	mockPublisher := &handlers_mock.EventPublisherMock{
 		PublishFunc: func(event apimodels.KeptnContextExtendedCE) error {
@@ -217,18 +260,16 @@ func TestEventHandler_PostEvent(t *testing.T) {
 		EventPublisher: mockPublisher,
 	}
 
-	topicName := "my-topic"
+	eventType := "sh.keptn.event.task.started"
 
 	testEvent := models.KeptnContextExtendedCE{
-		Contenttype:    "application/json",
-		Data:           map[string]interface{}{},
-		Extensions:     nil,
-		ID:             "",
-		Shkeptncontext: "",
-		Source:         stringp("test-source"),
-		Specversion:    "1.0",
-		Time:           strfmt.DateTime{},
-		Type:           &topicName,
+		Contenttype: "application/json",
+		Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+		Source:      stringp("test-source"),
+		Specversion: "1.0",
+		Time:        strfmt.DateTime{},
+		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -255,19 +296,18 @@ func TestEventHandler_PostEvent_UseAvailableKeptnContext(t *testing.T) {
 		EventPublisher: mockPublisher,
 	}
 
-	topicName := "my-topic"
+	eventType := "sh.keptn.event.task.started"
 
 	keptnContext := uuid.New().String()
 	testEvent := models.KeptnContextExtendedCE{
 		Contenttype:    "application/json",
-		Data:           map[string]interface{}{},
-		Extensions:     nil,
-		ID:             "",
+		Data:           map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
 		Shkeptncontext: keptnContext,
 		Source:         stringp("test-source"),
 		Specversion:    "1.0",
 		Time:           strfmt.DateTime{},
-		Type:           &topicName,
+		Type:           &eventType,
+		Triggeredid:    "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -295,18 +335,15 @@ func TestEventHandler_PostEvent_SetDefaultSource(t *testing.T) {
 		EventPublisher: mockPublisher,
 	}
 
-	topicName := "my-topic"
+	eventType := "sh.keptn.event.task.started"
 
 	testEvent := models.KeptnContextExtendedCE{
-		Contenttype:    "application/json",
-		Data:           map[string]interface{}{},
-		Extensions:     nil,
-		ID:             "",
-		Shkeptncontext: "",
-		Source:         nil,
-		Specversion:    "1.0",
-		Time:           strfmt.DateTime{},
-		Type:           &topicName,
+		Contenttype: "application/json",
+		Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+		Specversion: "1.0",
+		Time:        strfmt.DateTime{},
+		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -332,18 +369,16 @@ func TestEventHandler_PostEvent_ReplaceInvalidWithDefaultSource(t *testing.T) {
 		EventPublisher: mockPublisher,
 	}
 
-	topicName := "my-topic"
+	eventType := "sh.keptn.event.task.started"
 
 	testEvent := models.KeptnContextExtendedCE{
-		Contenttype:    "application/json",
-		Data:           map[string]interface{}{},
-		Extensions:     nil,
-		ID:             "",
-		Shkeptncontext: "",
-		Source:         stringp(":my-source"),
-		Specversion:    "1.0",
-		Time:           strfmt.DateTime{},
-		Type:           &topicName,
+		Contenttype: "application/json",
+		Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+		Source:      stringp(":my-source"),
+		Specversion: "1.0",
+		Time:        strfmt.DateTime{},
+		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)
@@ -369,18 +404,16 @@ func TestEventHandler_PostEvent_SendFails(t *testing.T) {
 		EventPublisher: mockPublisher,
 	}
 
-	topicName := "my-topic"
+	eventType := "sh.keptn.event.task.started"
 
 	testEvent := models.KeptnContextExtendedCE{
-		Contenttype:    "application/json",
-		Data:           map[string]interface{}{},
-		Extensions:     nil,
-		ID:             "",
-		Shkeptncontext: "",
-		Source:         stringp("test-source"),
-		Specversion:    "1.0",
-		Time:           strfmt.DateTime{},
-		Type:           &topicName,
+		Contenttype: "application/json",
+		Data:        map[string]interface{}{"project": "pr", "stage": "st", "service": "svc"},
+		Source:      stringp("test-source"),
+		Specversion: "1.0",
+		Time:        strfmt.DateTime{},
+		Type:        &eventType,
+		Triggeredid: "triggeredid",
 	}
 
 	got, err := eh.PostEvent(testEvent)

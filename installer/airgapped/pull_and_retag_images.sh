@@ -15,11 +15,11 @@ if [[ "$KEPTN_TAG" == *"dev"* ]]; then
 fi
 
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
-  "bitnami/mongodb:4.4.13-debian-10-r52"
+  "bitnami/mongodb:5.0.10-debian-11-r3"
   "nats:2.7.2-alpine"
   "natsio/nats-server-config-reloader:0.6.3"
   "natsio/prometheus-nats-exporter:0.9.1"
-  "nginxinc/nginx-unprivileged:1.22.0-alpine"
+  "nginxinc/nginx-unprivileged:1.23.1-alpine"
 )
 IMAGES_CONTROL_PLANE=(
   "${DOCKER_ORG}/api:${KEPTN_TAG}"

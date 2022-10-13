@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	common2 "github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"time"
 
 	"github.com/jeremywohl/flatten"
@@ -31,6 +32,7 @@ const (
 
 // ErrNoEventFound indicates that no event could be found
 var ErrNoEventFound = errors.New("no matching event found")
+var ErrEventAlreadyExists = errors.New("event already exists")
 
 // MongoDBEventsRepo retrieves and stores events in a mongodb collection
 type MongoDBEventsRepo struct {
@@ -53,7 +55,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
@@ -147,7 +149,7 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
@@ -201,7 +203,7 @@ func (mdbrepo *MongoDBEventsRepo) InsertEvent(project string, event apimodels.Ke
 
 	existingEvent := collection.FindOne(ctx, bson.M{"id": event.ID})
 	if existingEvent.Err() == nil || existingEvent.Err() != mongo.ErrNoDocuments {
-		return errors.New("event with ID " + event.ID + " already exists in collection")
+		return ErrEventAlreadyExists
 	}
 
 	_, err = collection.InsertOne(ctx, eventInterface)
@@ -224,7 +226,7 @@ func (mdbrepo *MongoDBEventsRepo) DeleteEvent(project, eventID string, status co
 		log.Errorf("Could not delete event %s : %s\n", eventID, err.Error())
 		return err
 	}
-	log.Infof("Deleted event %s", eventID)
+	log.Debugf("Deleted event %s", eventID)
 	return nil
 }
 

@@ -70,7 +70,7 @@ export function createChartPoints(evaluationHistory: Trace[]): ChartItem[] {
 }
 
 export function createChartXLabels(evaluationHistory: Trace[]): Record<number, string> {
-  const mapEvaluationToLabel = (evaluation: Trace): string => evaluation.getHeatmapLabel();
+  const mapEvaluationToLabel = (evaluation: Trace): string => evaluation.getChartLabel();
   const mapDatesToDuplicateCounterAndSetOccurrences =
     (dict: Record<string, number | undefined>): FuncDateToDict =>
     (date) => {

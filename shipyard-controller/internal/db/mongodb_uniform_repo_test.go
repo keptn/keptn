@@ -2,12 +2,16 @@ package db
 
 import (
 	"fmt"
-	apimodels "github.com/keptn/go-utils/pkg/api/models"
-	"github.com/keptn/keptn/shipyard-controller/models"
-	"github.com/stretchr/testify/require"
+
 	"sync"
 	"testing"
 	"time"
+
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/keptn/shipyard-controller/models"
+	"github.com/stretchr/testify/require"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type integrationTest struct {
@@ -120,6 +124,7 @@ func generateIntegrations() []apimodels.Integration {
 		Name:          "integraiton5",
 		Subscriptions: []apimodels.EventSubscription{},
 	}
+
 	return []apimodels.Integration{integration1, integration2, integration3, integration4, integration5}
 }
 func TestMongoDBUniformRepo_InsertAndRetrieve(t *testing.T) {
@@ -573,36 +578,6 @@ func TestMongoDBUniformRepo_ConcurrentlyUpdateSubscription(t *testing.T) {
 	require.Len(t, integrations[0].Subscriptions, 1)
 }
 
-func TestMongoDBUniformRepo_RemoveByServiceName(t *testing.T) {
-	testIntegrations := generateIntegrations()
-	wantedSubscriptions := []int{2, 1, 2, 0, 0} //checking that subscriptions with empty services are deleted
-
-	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
-
-	// insert our integration entities
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[0])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[1])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[2])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[3])
-	mdbrepo.CreateOrUpdateUniformIntegration(testIntegrations[4])
-
-	integrations, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: "sv1"})
-	require.Len(t, integrations, 4)
-
-	err := mdbrepo.DeleteServiceFromSubscriptions("sv1")
-	require.Nil(t, err)
-
-	integrations, _ = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{Service: "sv1"})
-	require.Equal(t, 0, len(integrations))
-
-	for i, ti := range testIntegrations {
-		fetchedIntegration, _ := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: ti.ID})
-		require.Equal(t, ti.Name, fetchedIntegration[0].Name)
-		require.Equal(t, wantedSubscriptions[i], len(fetchedIntegration[0].Subscriptions))
-	}
-
-}
-
 func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 	testIntegration := apimodels.Integration{
 		ID:   "i1",
@@ -654,4 +629,54 @@ func TestMongoDBUniformRepo_UpdateVersionInfo(t *testing.T) {
 
 	// make sure the subscriptions are not touched by the version update
 	require.Len(t, updated.Subscriptions, 3)
+}
+
+func TestMongoDBUniformRepo_CreateOrUpdateUniformIntegration(t *testing.T) {
+	testIntegration := apimodels.Integration{
+		ID:            "i6",
+		Name:          "integration6",
+		Subscriptions: nil,
+	}
+
+	testSubscription := apimodels.EventSubscription{
+		Event: "a-topic",
+		Filter: apimodels.EventSubscriptionFilter{
+			Projects: []string{"project"},
+			Stages:   []string{"a-stage"},
+			Services: []string{"a-service"},
+		},
+	}
+
+	mdbrepo := NewMongoDBUniformRepo(GetMongoDBConnectionInstance())
+
+	collection, ctx, cancel, err := mdbrepo.getCollectionAndContext()
+	require.Nil(t, err)
+
+	defer cancel()
+
+	// Creating integration with null subscriptions parameter
+
+	opts := options.Update().SetUpsert(true)
+	filter := bson.D{{"_id", testIntegration.ID}}
+	update := bson.D{{"$set", testIntegration}}
+
+	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	require.Nil(t, err)
+
+	integrations, err := mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i6"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 0)
+	require.Nil(t, integrations[0].Subscriptions)
+
+	// Adding subscription to the integration
+
+	err = mdbrepo.CreateOrUpdateSubscription("i6", testSubscription)
+	require.Nil(t, err)
+
+	integrations, err = mdbrepo.GetUniformIntegrations(models.GetUniformIntegrationsParams{ID: "i6"})
+	require.Nil(t, err)
+	require.Len(t, integrations, 1)
+	require.Len(t, integrations[0].Subscriptions, 1)
+	require.EqualValues(t, testSubscription, integrations[0].Subscriptions[0])
 }

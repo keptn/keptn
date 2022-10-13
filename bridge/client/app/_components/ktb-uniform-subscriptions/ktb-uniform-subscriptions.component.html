@@ -14,7 +14,7 @@
         'add'
       ]"
       class="mb-2"
-      *ngIf="uniformRegistration.canEditSubscriptions(); else disabledButton"
+      *ngIf="canEditSubscriptions(uniformRegistration); else disabledButton"
     >
       <dt-icon name="plus-add"></dt-icon>
       Add subscription
@@ -32,10 +32,10 @@
     </ng-template>
     <div class="subscription-list">
       <ktb-subscription-item
-        *ngFor="let subscription of uniformRegistration.getSubscriptions(projectName); let index = index"
+        *ngFor="let subscription of getSubscriptions(uniformRegistration, projectName); let index = index"
         [subscription]="subscription"
         [integrationId]="uniformRegistration.id"
-        [isWebhookService]="uniformRegistration.isWebhookService"
+        [isWebhookService]="isWebhookService(uniformRegistration)"
         [projectName]="projectName"
         name="Subscription {{ index + 1 }}"
         (subscriptionDeleted)="deleteSubscription($event)"

@@ -36,7 +36,7 @@ describe('AppHeaderComponent', () => {
           authType: '',
           cliDownloadLink: '',
           enableVersionCheckFeature: false,
-          featureFlags: { D3_ENABLED: false, RESOURCE_SERVICE_ENABLED: false },
+          featureFlags: {},
           showApiToken: false,
         },
       };

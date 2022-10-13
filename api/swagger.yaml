@@ -63,13 +63,17 @@ paths:
           description: Error
           schema:
             $ref: "#/definitions/error"
+        400:
+          description: Invalid Event Payload Error
+          schema:
+            $ref: "#/definitions/error"
   /import:
     post:
       tags:
         - Import
       operationId: import
-      summary: "Alpha: Import a zip package"
-      description: "This API is still in alpha state and we do not recommend its usage outside of testing purposes"
+      summary: "Import a zip package"
+      description: "Import a zip package to create services, secrets and webhook subscriptions, as well as add resources to Keptn"
       parameters:         
         - in: formData
           name: configPackage

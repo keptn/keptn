@@ -1,23 +1,27 @@
 package go_tests
 
 import (
+	"archive/zip"
 	"context"
 	b64 "encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"k8s.io/client-go/kubernetes"
-	k8sretry "k8s.io/client-go/util/retry"
+	"k8s.io/utils/strings/slices"
 
 	v12 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/keptn/go-utils/pkg/common/strutils"
@@ -445,48 +449,6 @@ func GetApiCredentials() (string, string, error) {
 		keptnAPIURL = "http://" + serviceIP + "/api"
 	}
 	return apiToken, keptnAPIURL, nil
-}
-
-func ScaleDownUniform(deployments []string) error {
-	for _, deployment := range deployments {
-		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), 0); err != nil {
-			// log the error but continue
-			fmt.Println("could not scale down deployment: " + err.Error())
-		}
-	}
-	return nil
-}
-
-func ScaleDeployment(useInClusterConfig bool, deployment string, namespace string, replicas int32) error {
-	clientset, err := kubeutils.GetClientSet(useInClusterConfig)
-	if err != nil {
-		return err
-	}
-	deploymentsClient := clientset.AppsV1().Deployments(namespace)
-
-	retryErr := k8sretry.RetryOnConflict(k8sretry.DefaultRetry, func() error {
-		// Retrieve the latest version of Deployment before attempting update
-		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
-		result, getErr := deploymentsClient.Get(context.TODO(), deployment, metav1.GetOptions{})
-		if getErr != nil {
-			return fmt.Errorf("Failed to get latest version of Deployment: %v", getErr)
-		}
-
-		result.Spec.Replicas = &replicas
-		_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions{})
-		return updateErr
-	})
-	return retryErr
-}
-
-func ScaleUpUniform(deployments []string, replicas int) error {
-	for _, deployment := range deployments {
-		if err := ScaleDeployment(false, deployment, GetKeptnNameSpaceFromEnv(), int32(replicas)); err != nil {
-			// log the error but continue
-			fmt.Println("could not scale up deployment: " + err.Error())
-		}
-	}
-	return nil
 }
 
 func waitForDeploymentToBeRolledOut(useInClusterConfig bool, deploymentName string, namespace string) error {
@@ -1049,6 +1011,62 @@ func GetGiteaUser() string {
 	return "gitea_admin"
 }
 
+func GetRepositoryBranches(project string) (*http.Response, error) {
+	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
+	defer closeInternalKeptnAPI()
+	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/gitea-http", "3002", "3000")
+
+	if err != nil {
+		return nil, err
+	}
+
+	token, err := GetGiteaToken()
+	if err != nil {
+		return nil, err
+	}
+	user := GetGiteaUser()
+
+	repoAPIPath := fmt.Sprintf("/api/v1/repos/%s/%s/branches?access_token=%s", user, project, token)
+	resp, err := internalKeptnAPI.Get(repoAPIPath, 5)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.Response().StatusCode != 200 {
+		return nil, fmt.Errorf("could not fetch branches for repository %s", project)
+	}
+
+	return resp.Response(), err
+}
+
+type BranchBody struct {
+	Name string `json:"name"`
+}
+
+func VerifyMainRepositoryBranchName(project string, branchName string) (bool, error) {
+	resp, err := GetRepositoryBranches(project)
+	if err != nil {
+		return false, err
+	}
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return false, err
+	}
+
+	var jsonMap []BranchBody
+	err = json.Unmarshal(bodyBytes, &jsonMap)
+	if err != nil {
+		return false, err
+	}
+
+	for _, branch := range jsonMap {
+		if branch.Name == branchName {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // RecreateGitUpstreamRepository creates a kubernetes job that (re)creates the upstream repo for a project on the internal gitea instance
 func RecreateGitUpstreamRepository(project string) error {
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
@@ -1140,4 +1158,106 @@ func checkResourceInResponse(resources models.Resources, resourceName string) er
 func resetTestPath(t *testing.T, path string) {
 	err := os.Chdir(path)
 	require.Nil(t, err)
+}
+
+func createZipFileFromDirectory(source, target string, needBaseDir bool) error {
+	zipfile, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer zipfile.Close()
+
+	archive := zip.NewWriter(zipfile)
+	defer archive.Close()
+
+	info, err := os.Stat(source)
+	if err != nil {
+		return err
+	}
+
+	var baseDir string
+	if info.IsDir() {
+		baseDir = filepath.Base(source)
+	}
+
+	filepath.Walk(source, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		header, err := zip.FileInfoHeader(info)
+		if err != nil {
+			return err
+		}
+
+		if baseDir != "" {
+			if needBaseDir {
+				header.Name = filepath.Join(baseDir, strings.TrimPrefix(path, source))
+			} else {
+				path := strings.TrimPrefix(path, source)
+				if len(path) > 0 && (path[0] == '/' || path[0] == '\\') {
+					path = path[1:]
+				}
+				if len(path) == 0 {
+					return nil
+				}
+				header.Name = path
+			}
+		}
+
+		if info.IsDir() {
+			header.Name += "/"
+		} else {
+			header.Method = zip.Deflate
+		}
+
+		writer, err := archive.CreateHeader(header)
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		file, err := os.Open(path)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+		_, err = io.Copy(writer, file)
+		return err
+	})
+
+	return err
+}
+
+func checkIfSecretExists(secretName, namespace string) error {
+	clientset, err := kubeutils.GetClientSet(false)
+	if err != nil {
+		return err
+	}
+
+	_, err = clientset.CoreV1().Secrets(namespace).Get(context.TODO(), secretName, v1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func CheckIfWebhookSubscriptionExists(project, event string) (bool, error) {
+	webhookIntegration, err := GetIntegrationWithName("webhook-service")
+
+	if err != nil {
+		return false, err
+	}
+
+	for _, subscription := range webhookIntegration.Subscriptions {
+		if slices.Contains(subscription.Filter.Projects, project) && subscription.Event == event {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }

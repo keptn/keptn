@@ -40,10 +40,7 @@ standard.args = {
   projects: [{ projectName: 'pod-tato-head' } as Project, { projectName: 'sockshop' } as Project],
   info: {
     bridgeInfo: {
-      featureFlags: {
-        RESOURCE_SERVICE_ENABLED: true,
-        D3_ENABLED: true,
-      },
+      featureFlags: {},
       cliDownloadLink: '',
       enableVersionCheckFeature: true,
       showApiToken: true,

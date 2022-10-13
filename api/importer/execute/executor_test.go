@@ -328,3 +328,51 @@ func TestKeptnAPIExecutor_PushResource(t *testing.T) {
 		)
 	}
 }
+
+func TestKeptnAPIExecutor_ActionSupported(t *testing.T) {
+	mockKeptnEndpointProvider := &fake.KeptnEndpointProviderMock{
+		GetControlPlaneEndpointFunc: func() string {
+			return "someserver.somewhere"
+		},
+		GetSecretsServiceEndpointFunc: func() string {
+			return "someserver.somewherelese"
+		},
+	}
+
+	kae := newKeptnExecutor(mockKeptnEndpointProvider, nil)
+
+	tests := []struct {
+		name      string
+		action    string
+		supported bool
+	}{
+		{
+			name:      "create_service_action_allowed",
+			action:    model.CreateServiceAction,
+			supported: true,
+		},
+		{
+			name:      "create_webhook_action_allowed",
+			action:    model.CreateWebhookAction,
+			supported: true,
+		},
+		{
+			name:      "create_secret_action_allowed",
+			action:    model.CreateSecretAction,
+			supported: true,
+		},
+		{
+			name:      "invalid_action_not_allowed",
+			action:    "create_invalid_resource",
+			supported: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(
+			tt.name, func(t *testing.T) {
+				supported := kae.ActionSupported(tt.action)
+				assert.Equal(t, tt.supported, supported, fmt.Sprintf("Action support for %s should be %t but is %t", tt.action, tt.supported, supported))
+			})
+	}
+}

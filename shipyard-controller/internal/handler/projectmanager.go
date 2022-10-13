@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/configurationstore"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"github.com/keptn/keptn/shipyard-controller/internal/secretstore"
-	"strconv"
-	"strings"
-	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
@@ -27,9 +28,15 @@ const errUpdateProject = "failed to update project '%s': %w"
 type IProjectManager interface {
 	Get() ([]*apimodels.ExpandedProject, error)
 	GetByName(projectName string) (*apimodels.ExpandedProject, error)
-	Create(params *models.CreateProjectParams) (error, common.RollbackFunc)
+	Create(params *models.CreateProjectParams, internalOptions models.InternalCreateProjectOptions) (error, common.RollbackFunc)
 	Update(params *models.UpdateProjectParams) (error, common.RollbackFunc)
 	Delete(projectName string) (string, error)
+}
+
+func WithHideAutoProvisionedURL(hideAutoProvisionedURL bool) func(pm *ProjectManager) {
+	return func(pm *ProjectManager) {
+		pm.hideAutoProvisionedURL = hideAutoProvisionedURL
+	}
 }
 
 type ProjectManager struct {
@@ -40,6 +47,7 @@ type ProjectManager struct {
 	EventRepository         db.EventRepo
 	SequenceQueueRepo       db.SequenceQueueRepo
 	EventQueueRepo          db.EventQueueRepo
+	hideAutoProvisionedURL  bool
 }
 
 var nilRollback = func() error {
@@ -53,7 +61,8 @@ func NewProjectManager(
 	sequenceExecutionRepo db.SequenceExecutionRepo,
 	eventRepo db.EventRepo,
 	sequenceQueueRepo db.SequenceQueueRepo,
-	eventQueueRepo db.EventQueueRepo) *ProjectManager {
+	eventQueueRepo db.EventQueueRepo,
+	opts ...func(pm *ProjectManager)) *ProjectManager {
 	projectUpdater := &ProjectManager{
 		ConfigurationStore:      configurationStore,
 		SecretStore:             secretStore,
@@ -63,6 +72,10 @@ func NewProjectManager(
 		SequenceQueueRepo:       sequenceQueueRepo,
 		EventQueueRepo:          eventQueueRepo,
 	}
+
+	for _, o := range opts {
+		o(projectUpdater)
+	}
 	return projectUpdater
 }
 
@@ -71,6 +84,11 @@ func (pm *ProjectManager) Get() ([]*apimodels.ExpandedProject, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	for _, project := range allProjects {
+		pm.modifyProjectResponse(project)
+	}
+
 	return allProjects, nil
 }
 
@@ -82,17 +100,36 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 	if project == nil {
 		return nil, common.ErrProjectNotFound
 	}
+
+	pm.modifyProjectResponse(project)
+
 	return project, err
 }
 
-func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+func (pm *ProjectManager) modifyProjectResponse(project *apimodels.ExpandedProject) {
+	if project.IsUpstreamAutoProvisioned && pm.hideAutoProvisionedURL {
+		project.GitCredentials.User = ""
+		project.GitCredentials.RemoteURL = ""
+	}
+}
+
+func (pm *ProjectManager) Create(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 
 	if err := pm.checkForExistingProject(params); err != nil {
 		return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
 	}
 
-	err := pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
+	var decodedCredentials *apimodels.GitAuthCredentials
+	var err error
+	if params.GitCredentials != nil {
+		decodedCredentials, err = decodeGitCredentials(*params.GitCredentials)
+		if err != nil {
+			return fmt.Errorf("could not create project '%s': %w", *params.Name, err), nilRollback
+		}
+	}
+	err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 	if err != nil {
+		log.Debugf("Issue with git secret, %s", err.Error())
 		return err, nilRollback
 	}
 
@@ -102,7 +139,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 
 	rollbackFunc := func() error {
 		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
-		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
+		if err := pm.deleteGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name)); err != nil {
 			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
 			return common.ErrChangesRollback
 		}
@@ -123,7 +160,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 			return common.ErrChangesRollback
 		}
 		log.Infof("Rollback: Try to delete GIT repository credentials secret for project %s", *params.Name)
-		if err := pm.deleteGITRepositorySecret(*params.Name); err != nil {
+		if err := pm.deleteGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name)); err != nil {
 			log.Errorf("Rollback failed: Unable to delete GIT repository credentials secret for project %s: %s", *params.Name, err.Error())
 			return common.ErrChangesRollback
 		}
@@ -152,7 +189,7 @@ func (pm *ProjectManager) Create(params *models.CreateProjectParams) (error, com
 		return fmt.Errorf("failed to upload shipyard resource for project '%s'", *params.Name), rollbackFunc
 	}
 
-	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard); err != nil {
+	if err := pm.createProjectInRepository(params, decodedShipyard, shipyard, options); err != nil {
 		log.Errorf("Error occurred creating project in respository: %s", err.Error())
 		return fmt.Errorf("failed to create project '%s'", *params.Name), rollbackFunc
 	}
@@ -194,8 +231,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	}
 
 	if params.GitCredentials != nil {
-		// try to update git repository secret
-		err = pm.updateGITRepositorySecret(*params.Name, decodeGitCredentials(params.GitCredentials))
+		decodedCredentials, err := decodeGitCredentials(*params.GitCredentials)
+		if err != nil {
+			return fmt.Errorf("could not update project '%s': %w", *params.Name, err), nilRollback
+		}
+		// create a temporary secret containing the new git upstream credentials
+		err = pm.updateGITRepositorySecret(getTemporaryUpstreamCredentialSecretName(*params.Name), decodedCredentials)
 
 		// no roll back needed since updating the git repository secret was the first operation
 		if err != nil {
@@ -203,12 +244,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 		}
 	}
 
-	// new project content in configuration service
+	// new project content in resource service
 	projectToUpdate := apimodels.Project{
 		ProjectName: *params.Name,
 	}
 
-	// project content in configuration service to rollback
+	// project content in resource service to rollback
 	projectToRollback := apimodels.Project{
 		CreationDate:    oldProject.CreationDate,
 		ProjectName:     oldProject.ProjectName,
@@ -222,12 +263,34 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	if err != nil {
 		log.Errorf("Error occurred while updating the project in configuration store: %s", err.Error())
 		return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
-			// try to rollback already updated git repository secret
-			if err := pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
+			// try to delete the temporary git repository secret holding the new credentials
+			if err := pm.deleteGITRepositorySecret(getTemporaryUpstreamCredentialSecretName(*params.Name)); err != nil {
 				return common.ErrChangesRollback
 			}
 			// try to rollback already updated project in configuration store
 			return pm.ConfigurationStore.UpdateProject(projectToRollback)
+		}
+	}
+
+	// if the update was successful, replace the previous git upstream credentials with the new ones
+	if params.GitCredentials != nil {
+		decodedCredentials, err := decodeGitCredentials(*params.GitCredentials)
+		if err != nil {
+			return fmt.Errorf("could not update project '%s': %w", *params.Name, err), nilRollback
+		}
+		// try to update git repository secret
+		err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), decodedCredentials)
+		if err != nil {
+			log.Errorf("Error occurred while updating the project in credentials secret: %s", err.Error())
+			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
+				// try to rollback already updated project in configuration store
+				return pm.ConfigurationStore.UpdateProject(projectToRollback)
+			}
+		}
+		tmpSecretName := getTemporaryUpstreamCredentialSecretName(*params.Name)
+		if err := pm.deleteGITRepositorySecret(tmpSecretName); err != nil {
+			// log the error in this case, but continue, as deleting the temporary secret is not a blocker for updating the project credentials
+			log.Errorf("Could not delete temporary secret %s: %v", tmpSecretName, err)
 		}
 	}
 
@@ -248,7 +311,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			log.Errorf("Error occurred while updating the project shipyard in configuration store: %s", err.Error())
 			return fmt.Errorf(errUpdateProject, projectToUpdate.ProjectName, err), func() error {
 				// try to rollback already updated git repository secret
-				if err = pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials); err != nil {
+				if err = pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), rollbackSecretCredentials); err != nil {
 					return common.ErrChangesRollback
 				}
 				// try to rollback already updated project in configuration store
@@ -260,7 +323,12 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 	// copy by value
 
 	updateProject := *oldProject
-	updateProject.GitCredentials = toSecureGitCredentials(params.GitCredentials)
+	if params.GitCredentials != nil {
+		updateProject.GitCredentials = toSecureGitCredentials(params.GitCredentials)
+	}
+	if params.GitCredentials != nil && params.GitCredentials.RemoteURL != "" {
+		updateProject.IsUpstreamAutoProvisioned = false
+	}
 	if isShipyardPresent {
 		updateProject.Shipyard = *params.Shipyard
 	}
@@ -283,7 +351,7 @@ func (pm *ProjectManager) Update(params *models.UpdateProjectParams) (error, com
 			}
 
 			// try to rollback already updated git repository secret
-			return pm.updateGITRepositorySecret(*params.Name, rollbackSecretCredentials)
+			return pm.updateGITRepositorySecret(getUpstreamCredentialSecretName(*params.Name), rollbackSecretCredentials)
 		}
 	}
 
@@ -354,7 +422,7 @@ func (pm *ProjectManager) deleteProjectSequenceCollections(projectName string) {
 	}
 }
 
-func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard) error {
+func (pm *ProjectManager) createProjectInRepository(params *models.CreateProjectParams, decodedShipyard []byte, shipyard *keptnv2.Shipyard, options models.InternalCreateProjectOptions) error {
 
 	var expandedStages []*apimodels.ExpandedStage
 
@@ -367,12 +435,13 @@ func (pm *ProjectManager) createProjectInRepository(params *models.CreateProject
 	}
 
 	p := &apimodels.ExpandedProject{
-		CreationDate:    strconv.FormatInt(time.Now().UnixNano(), 10),
-		ProjectName:     *params.Name,
-		Shipyard:        string(decodedShipyard),
-		ShipyardVersion: shipyardVersion,
-		GitCredentials:  toSecureGitCredentials(params.GitCredentials),
-		Stages:          expandedStages,
+		CreationDate:              strconv.FormatInt(time.Now().UnixNano(), 10),
+		ProjectName:               *params.Name,
+		Shipyard:                  string(decodedShipyard),
+		ShipyardVersion:           shipyardVersion,
+		GitCredentials:            toSecureGitCredentials(params.GitCredentials),
+		Stages:                    expandedStages,
+		IsUpstreamAutoProvisioned: options.IsUpstreamAutoProvisioned,
 	}
 
 	err := pm.ProjectMaterializedView.CreateProject(p)
@@ -401,13 +470,13 @@ func (pm *ProjectManager) getGITRepositorySecret(projectName string) (*apimodels
 	return nil, nil
 }
 
-func (pm *ProjectManager) updateGITRepositorySecret(projectName string, credentials *apimodels.GitAuthCredentials) error {
+func (pm *ProjectManager) updateGITRepositorySecret(secretName string, credentials *apimodels.GitAuthCredentials) error {
 
 	credsEncoded, err := json.Marshal(credentials)
 	if err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
 	}
-	if err := pm.SecretStore.UpdateSecret("git-credentials-"+projectName, map[string][]byte{
+	if err := pm.SecretStore.UpdateSecret(secretName, map[string][]byte{
 		"git-credentials": credsEncoded,
 	}); err != nil {
 		return fmt.Errorf("could not store git credentials: %s", err.Error())
@@ -415,13 +484,13 @@ func (pm *ProjectManager) updateGITRepositorySecret(projectName string, credenti
 	return nil
 }
 
-func (pm *ProjectManager) deleteGITRepositorySecret(projectName string) error {
-	log.Infof("deleting git credentials for project %s", projectName)
+func (pm *ProjectManager) deleteGITRepositorySecret(secretName string) error {
+	log.Infof("deleting git credentials for project %s", secretName)
 
-	if err := pm.SecretStore.DeleteSecret("git-credentials-" + projectName); err != nil {
+	if err := pm.SecretStore.DeleteSecret(secretName); err != nil {
 		return fmt.Errorf("could not delete git credentials: %s", err.Error())
 	}
-	log.Infof("deleted git credentials for project %s", projectName)
+	log.Infof("deleted git credentials for project %s", secretName)
 	return nil
 
 }
@@ -524,7 +593,7 @@ func toInsecureGitCredentials(credentials *apimodels.GitAuthCredentialsSecure) *
 
 }
 
-func validateShipyardStagesUnchaged(oldProject *apimodels.ExpandedProject, newProject *apimodels.ExpandedProject) error {
+func validateShipyardStagesUnchanged(oldProject *apimodels.ExpandedProject, newProject *apimodels.ExpandedProject) error {
 	if len(newProject.Stages) != len(oldProject.Stages) {
 		return fmt.Errorf("unallowed addition/removal of project stages")
 	}
@@ -560,23 +629,69 @@ func stageInArrayOfStages(comparedStage string, stages []*apimodels.ExpandedStag
 	return false
 }
 
-func decodeGitCredentials(oldCredentials *apimodels.GitAuthCredentials) *apimodels.GitAuthCredentials {
-	if oldCredentials == nil {
-		return nil
+func decodeGitCredentials(oldCredentials apimodels.GitAuthCredentials) (*apimodels.GitAuthCredentials, error) {
+	if oldCredentials == (apimodels.GitAuthCredentials{}) {
+		return nil, nil
+	}
+	credentials := &apimodels.GitAuthCredentials{
+		RemoteURL: oldCredentials.RemoteURL,
+		User:      oldCredentials.User,
+	}
+	if oldCredentials.HttpsAuth != nil {
+		httpsAuth, err := decodeHttpsAuth(*oldCredentials.HttpsAuth)
+		if err != nil {
+			return nil, err
+		}
+
+		credentials.HttpsAuth = httpsAuth
 	}
 
-	credentials := oldCredentials
-	if oldCredentials.HttpsAuth != nil && oldCredentials.HttpsAuth.Certificate != "" {
-		decodedPemCertificate, _ := base64.StdEncoding.DecodeString(oldCredentials.HttpsAuth.Certificate)
-		credentials.HttpsAuth.Certificate = string(decodedPemCertificate)
+	if oldCredentials.SshAuth != nil {
+		sshAuth, err := decodeSshAuth(*oldCredentials.SshAuth)
+		if err != nil {
+			return nil, err
+		}
+		credentials.SshAuth = sshAuth
 	}
 
-	if oldCredentials.SshAuth != nil && oldCredentials.SshAuth.PrivateKey != "" {
-		decodedPrivateKey, _ := base64.StdEncoding.DecodeString(oldCredentials.SshAuth.PrivateKey)
-		credentials.SshAuth.PrivateKey = string(decodedPrivateKey)
-	}
+	return credentials, nil
+}
 
-	return credentials
+func decodeHttpsAuth(in apimodels.HttpsGitAuth) (*apimodels.HttpsGitAuth, error) {
+	httpsAuth := &apimodels.HttpsGitAuth{
+		Token:           in.Token,
+		InsecureSkipTLS: in.InsecureSkipTLS,
+	}
+	if in.Certificate != "" {
+		decodedPemCertificate, err := base64.StdEncoding.DecodeString(in.Certificate)
+		if err != nil {
+			return nil, err
+		}
+		httpsAuth.Certificate = string(decodedPemCertificate)
+	}
+	if in.Proxy != nil {
+		httpsAuth.Proxy = &apimodels.ProxyGitAuth{
+			URL:      in.Proxy.URL,
+			Scheme:   in.Proxy.Scheme,
+			User:     in.Proxy.User,
+			Password: in.Proxy.Password,
+		}
+	}
+	return httpsAuth, nil
+}
+
+func decodeSshAuth(in apimodels.SshGitAuth) (*apimodels.SshGitAuth, error) {
+	sshAuth := &apimodels.SshGitAuth{
+		PrivateKeyPass: in.PrivateKeyPass,
+	}
+	if in.PrivateKey != "" {
+		decodedPrivateKey, err := base64.StdEncoding.DecodeString(in.PrivateKey)
+		if err != nil {
+			return nil, err
+		}
+		sshAuth.PrivateKey = string(decodedPrivateKey)
+	}
+	return sshAuth, nil
 }
 
 func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apimodels.ExpandedProject) error {
@@ -602,9 +717,17 @@ func validateShipyardUpdate(params *models.UpdateProjectParams, oldProject *apim
 		Stages:          expandedStages,
 	}
 
-	err := validateShipyardStagesUnchaged(oldProject, newProject)
+	err := validateShipyardStagesUnchanged(oldProject, newProject)
 	if err != nil {
 		return common.ErrInvalidStageChange
 	}
 	return nil
+}
+
+func getUpstreamCredentialSecretName(projectName string) string {
+	return fmt.Sprintf("git-credentials-%s", projectName)
+}
+
+func getTemporaryUpstreamCredentialSecretName(projectName string) string {
+	return fmt.Sprintf("tmp-git-credentials-%s", projectName)
 }

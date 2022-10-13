@@ -63,6 +63,14 @@ spec:
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.webhookService.gracePeriod | default 60 }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.webhookService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.webhookService.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.webhookService.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.webhookService.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        {{- include "keptn.affinities.pods" (dict "value" .Values.webhookService.podAffinity "default" .Values.podAffinity "component" "webhook-service" "context" . ) | indent 8 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.webhookService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "webhook-service" "context" . ) | indent 8 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service

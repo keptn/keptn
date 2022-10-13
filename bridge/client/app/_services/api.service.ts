@@ -11,10 +11,8 @@ import { UniformRegistrationLogResponse } from '../../../shared/interfaces/unifo
 import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
-import { UniformSubscription } from '../_models/uniform-subscription';
 import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
-import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { KeptnService } from '../../../shared/models/keptn-service';
 import { ServiceState } from '../../../shared/models/service-state';
@@ -32,6 +30,10 @@ import { IService } from '../../../shared/interfaces/service';
 import { IProjectResult } from '../../../shared/interfaces/project-result';
 import { IGitDataExtended, IProject } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
+import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-execution-result';
+import { SequenceStatus } from '../../../shared/interfaces/sequence';
+import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
+import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
 
 @Injectable({
   providedIn: 'root',
@@ -174,9 +176,9 @@ export class ApiService {
     return this.http.get<IProjectResult>(url, { params });
   }
 
-  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<UniformRegistrationResult[]> {
+  public getUniformRegistrations(uniformDates: { [key: string]: string }): Observable<IUniformRegistration[]> {
     const url = `${this._baseUrl}/uniform/registration`;
-    return this.http.post<UniformRegistrationResult[]>(url, uniformDates);
+    return this.http.post<IUniformRegistration[]>(url, uniformDates);
   }
 
   public getUniformRegistrationInfo(integrationId: string): Observable<UniformRegistrationInfo> {
@@ -184,14 +186,14 @@ export class ApiService {
     return this.http.get<UniformRegistrationInfo>(url);
   }
 
-  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<UniformSubscription> {
+  public getUniformSubscription(integrationId: string, subscriptionId: string): Observable<IUniformSubscription> {
     const url = `${this._baseUrl}/controlPlane/v1/uniform/registration/${integrationId}/subscription/${subscriptionId}`;
-    return this.http.get<UniformSubscription>(url);
+    return this.http.get<IUniformSubscription>(url);
   }
 
   public updateUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription/${subscription.id}`;
@@ -200,7 +202,7 @@ export class ApiService {
 
   public createUniformSubscription(
     integrationId: string,
-    subscription: Partial<UniformSubscription>,
+    subscription: IUniformSubscription,
     webhookConfig?: IWebhookConfigClient
   ): Observable<Record<string, unknown>> {
     const url = `${this._baseUrl}/uniform/registration/${integrationId}/subscription`;
@@ -339,6 +341,16 @@ export class ApiService {
       excludeInvalidated: 'true',
       limit: limit?.toString() || '50',
       ...(fromTime && { fromTime }),
+    };
+    return this.http.get<EventResult>(url, { params });
+  }
+
+  public getTracesByIds(projectName: string, ids: string[]): Observable<EventResult> {
+    const url = `${this._baseUrl}/mongodb-datastore/event/type/${EventTypes.EVALUATION_FINISHED}`;
+    const params = {
+      filter: `data.project:${projectName} AND source:${KeptnService.LIGHTHOUSE_SERVICE} AND id:${ids.join(',')}`,
+      excludeInvalidated: 'true',
+      limit: ids.length.toString(),
     };
     return this.http.get<EventResult>(url, { params });
   }
@@ -491,5 +503,18 @@ export class ApiService {
 
   public getLookAndFeelConfig(): Observable<WindowConfig | undefined> {
     return this.http.get<WindowConfig | undefined>(environment.appConfigUrl);
+  }
+
+  public getSequenceExecution(params: {
+    project: string;
+    stage?: string;
+    service?: string;
+    name?: string;
+    status?: SequenceStatus;
+    keptnContext?: string;
+    pageSize?: number;
+    nextPageKey?: number;
+  }): Observable<SequenceExecutionResult> {
+    return this.http.get<SequenceExecutionResult>(`${this._baseUrl}/controlPlane/v1/sequence-execution`, { params });
   }
 }

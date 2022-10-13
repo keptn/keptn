@@ -3,7 +3,6 @@ import { EventTypes } from '../../shared/interfaces/event-types';
 import { Project } from '../models/project';
 import { SequenceResult } from '../interfaces/sequence-result';
 import { EventResult } from '../interfaces/event-result';
-import { UniformRegistration } from '../models/uniform-registration';
 import { UniformRegistrationLogResponse } from '../../shared/interfaces/uniform-registration-log';
 import { Resource, ResourceResponse } from '../../shared/interfaces/resource';
 import https from 'https';
@@ -15,6 +14,7 @@ import { ComponentLogger } from '../utils/logger';
 import { IProjectResult } from '../../shared/interfaces/project-result';
 import { EnvType } from '../interfaces/configuration';
 import { IClientSecret } from '../../shared/interfaces/secret';
+import { IUniformRegistration } from '../../shared/interfaces/uniform-registration';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -180,8 +180,8 @@ export class ApiService {
   public getUniformRegistrations(
     accessToken: string | undefined,
     integrationId?: string
-  ): Promise<AxiosResponse<UniformRegistration[]>> {
-    return this.axios.get<UniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`, {
+  ): Promise<AxiosResponse<IUniformRegistration[]>> {
+    return this.axios.get<IUniformRegistration[]>(`${this.baseUrl}/controlPlane/v1/uniform/registration`, {
       params: {
         ...(integrationId && { id: integrationId }),
       },

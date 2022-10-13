@@ -12,12 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type deleteProjectCmdParams struct {
-	KeepServices *bool
-}
-
-var deleteProjectParams *deleteProjectCmdParams
-
 // delProjectCmd represents the project command
 var delProjectCmd = &cobra.Command{
 	Use:   "project PROJECTNAME",
@@ -70,34 +64,6 @@ var delProjectCmd = &cobra.Command{
 		logging.PrintLog(fmt.Sprintf("Connecting to server %s", endPoint.String()), logging.VerboseLevel)
 
 		if !mocking {
-			if deleteProjectParams.KeepServices == nil || !*deleteProjectParams.KeepServices {
-				apiProject, err := api.ProjectsV1().GetProject(project)
-
-				if err != nil {
-					logging.PrintLog("Could not retrieve information about project "+project.ProjectName+": "+*err.Message, logging.InfoLevel)
-					return fmt.Errorf("Could not retrieve information about project %s: %s", project.ProjectName, *err.Message)
-				} else if apiProject == nil {
-					msg := "Project " + project.ProjectName + " not found"
-					logging.PrintLog(msg, logging.InfoLevel)
-					return fmt.Errorf(msg)
-				}
-
-				if len(apiProject.Stages) > 0 {
-					fmt.Println("Deleting services of project " + project.ProjectName + "...")
-					for _, service := range apiProject.Stages[0].Services {
-						logging.PrintLog("Deleting service "+service.ServiceName, logging.InfoLevel)
-						deleteResp, err := api.APIV1().DeleteService(project.ProjectName, service.ServiceName)
-						if err != nil {
-							logging.PrintLog("Delete service was unsuccessful", logging.InfoLevel)
-							return fmt.Errorf("Delete service was unsuccessful. %s", *err.Message)
-						}
-						logging.PrintLog("Service deleted successfully", logging.InfoLevel)
-						if len(deleteResp.Message) > 0 {
-							logging.PrintLog(deleteResp.Message, logging.InfoLevel)
-						}
-					}
-				}
-			}
 
 			deleteResp, err := api.APIV1().DeleteProject(project)
 			if err != nil {
@@ -119,6 +85,4 @@ var delProjectCmd = &cobra.Command{
 
 func init() {
 	deleteCmd.AddCommand(delProjectCmd)
-	deleteProjectParams = &deleteProjectCmdParams{}
-	deleteProjectParams.KeepServices = delProjectCmd.Flags().BoolP("keep-services", "", false, "Indicate whether the helm releases that are part of the project should be deleted as well, or not")
 }

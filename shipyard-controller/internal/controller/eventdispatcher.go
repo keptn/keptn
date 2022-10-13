@@ -70,7 +70,19 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 	}
 
 	if skipQueue {
-		return e.eventSender.Send(context.TODO(), event.Event)
+		if err := e.eventSender.Send(context.TODO(), event.Event); err != nil {
+			return err
+		}
+		log.
+			WithFields(log.Fields{
+				"source":       eventScope.EventSource,
+				"keptncontext": eventScope.KeptnContext,
+				"project":      eventScope.Project,
+				"service":      eventScope.Service,
+				"stage":        eventScope.Stage,
+			}).
+			Infof("[DISPATCHED] Event '%s'", eventScope.EventType)
+		return nil
 	}
 	if e.theClock.Now().UTC().Equal(event.TimeStamp) || e.theClock.Now().UTC().After(event.TimeStamp) {
 		// try to send event immediately
@@ -82,6 +94,15 @@ func (e *EventDispatcher) Add(event models.DispatcherEvent, skipQueue bool) erro
 				return err
 			}
 		} else {
+			log.
+				WithFields(log.Fields{
+					"source":       eventScope.EventSource,
+					"keptncontext": eventScope.KeptnContext,
+					"project":      eventScope.Project,
+					"service":      eventScope.Service,
+					"stage":        eventScope.Stage,
+				}).
+				Infof("[DISPATCHED] Event '%s'", eventScope.EventType)
 			return nil
 		}
 	}
@@ -168,12 +189,22 @@ func (e *EventDispatcher) dispatchEvents() {
 		}
 
 		if err := e.tryToSendEvent(*eventScope, models.DispatcherEvent{Event: *ce, TimeStamp: time.Now().UTC()}); err != nil {
-			log.Errorf("could not send CloudEvent: %s", err.Error())
+			log.Errorf("could not dispatch event with type '%s' and context '%s': %s", eventScope.EventType, eventScope.KeptnContext, err.Error())
 			continue
+		} else {
+			log.
+				WithFields(log.Fields{
+					"source":       eventScope.EventSource,
+					"keptncontext": eventScope.KeptnContext,
+					"project":      eventScope.Project,
+					"service":      eventScope.Service,
+					"stage":        eventScope.Stage,
+				}).
+				Infof("[DISPATCHED] Event '%s'", eventScope.EventType)
 		}
 
 		if err := e.eventQueueRepo.DeleteQueuedEvent(queueItem.EventID); err != nil {
-			log.Errorf("could not delete event from event queue: %s", err.Error())
+			log.Errorf("could not delete event with id %s from event queue: %s", queueItem.EventID, err.Error())
 			continue
 		}
 	}
@@ -202,6 +233,7 @@ func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event mod
 			EventData: keptnv2.EventData{
 				Project: eventScope.Project,
 				Stage:   eventScope.Stage,
+				Service: eventScope.Service,
 			},
 		},
 		Status: []string{apimodels.SequenceStartedState},

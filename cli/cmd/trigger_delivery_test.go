@@ -256,8 +256,8 @@ func TestCheckImageNonAvailabilityD(t *testing.T) {
 
 		err := triggerDeliveryCmd.PreRunE(triggerDeliveryCmd, []string{})
 
-		Expected := "Provided image not found: Tag not found"
-		if err == nil || err.Error() != Expected {
+		Expected := "tag '0.7.5' not found"
+		if err == nil || !strings.Contains(err.Error(), Expected) {
 			t.Errorf("Error actual = %v, and Expected = %v.", err, Expected)
 		}
 	}

@@ -77,8 +77,8 @@
             *dtRowDef="let row; columns: ['name', 'version', 'host', 'namespace', 'location', 'subscription']"
             class="pointer"
             [class.active]="selectedUniformRegistrationId.id === toUniformRegistration(row).id"
-            [class.disabled]="!toUniformRegistration(row).hasSubscriptions(params.projectName)"
-            [disabled]="toUniformRegistration(row).hasSubscriptions(params.projectName)"
+            [class.disabled]="!hasSubscriptions(toUniformRegistration(row), params.projectName)"
+            [disabled]="hasSubscriptions(toUniformRegistration(row), params.projectName)"
             [dtOverlay]="noRegistration"
             (click)="setSelectedUniformRegistration(row, params.projectName)"
           >
@@ -104,7 +104,7 @@
               [alignment]="'left'"
               class="mb-2"
               [expanded]="true"
-              *ngIf="selectedUniformRegistration.isChangeable()"
+              *ngIf="isChangeable(selectedUniformRegistration)"
             >
               <ktb-expandable-tile-header>
                 <h3 class="mt-0 mb-0">Subscriptions</h3>

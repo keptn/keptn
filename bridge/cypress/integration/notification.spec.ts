@@ -4,11 +4,11 @@ import { ServicesSettingsPage } from '../support/pageobjects/ServicesSettingsPag
 import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
 import DashboardPage from '../support/pageobjects/DashboardPage';
 import BasePage from '../support/pageobjects/BasePage';
+import { interceptMain } from '../support/intercept';
 
 describe('Test notifications', () => {
   beforeEach(() => {
-    cy.intercept('GET', 'api/v1/metadata', { fixture: 'metadata.json' }).as('metadataCmpl');
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoEnableResourceService.mock' });
+    interceptMain();
 
     cy.intercept('POST', 'api/hasUnreadUniformRegistrationLogs', {
       statusCode: 200,
@@ -99,7 +99,7 @@ describe('Test notifications', () => {
       body: {},
     }).as('createProjectUrl');
 
-    cy.visit('/').wait('@metadataCmpl');
+    cy.visit('/').wait('@metadata');
     dashboardPage
       .clickCreateNewProjectButton()
       .typeProjectName(PROJECT_NAME)

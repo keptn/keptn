@@ -223,8 +223,7 @@
         Configure secrets for the scope keptn-webhook-service under the menu entry
         <a
           uitestid="ktb-webhook-secret-creation-link"
-          *ngIf="projectName$ | async as projectName"
-          [routerLink]="['/project', projectName, 'settings', 'uniform', 'secrets', 'add']"
+          [routerLink]="['/project', project, 'settings', 'uniform', 'secrets', 'add']"
           [queryParams]="{ scope: 'keptn-webhook-service' }"
           ><span class="bold">Secrets</span></a
         >

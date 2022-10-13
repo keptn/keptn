@@ -2,8 +2,8 @@ import { ChangeDetectionStrategy, Component, Input, ViewEncapsulation } from '@a
 import { DtTableDataSource } from '@dynatrace/barista-components/table';
 import { DateUtil } from '../../../_utils/date.utils';
 import { Router } from '@angular/router';
-import { ISequence } from '../../../../../shared/interfaces/sequence';
-import { getLastStageName } from '../../../_models/sequence';
+import { ISequenceState } from '../../../../../shared/interfaces/sequence';
+import { getLastStageName } from '../../../_models/sequenceState';
 
 @Component({
   selector: 'ktb-sequence-state-list',
@@ -14,15 +14,15 @@ import { getLastStageName } from '../../../_models/sequence';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class KtbSequenceStateListComponent {
-  private _sequenceStates: ISequence[] = [];
-  public dataSource: DtTableDataSource<ISequence> = new DtTableDataSource();
+  private _sequenceStates: ISequenceState[] = [];
+  public dataSource: DtTableDataSource<ISequenceState> = new DtTableDataSource();
 
   @Input()
-  get sequenceStates(): ISequence[] {
+  get sequenceStates(): ISequenceState[] {
     return this._sequenceStates;
   }
 
-  set sequenceStates(value: ISequence[]) {
+  set sequenceStates(value: ISequenceState[]) {
     if (this._sequenceStates !== value) {
       this._sequenceStates = value;
       this.updateDataSource();
@@ -35,7 +35,7 @@ export class KtbSequenceStateListComponent {
     this.dataSource = new DtTableDataSource(this.sequenceStates);
   }
 
-  selectSequence(event: { sequence: ISequence; stage?: string }): void {
+  selectSequence(event: { sequence: ISequenceState; stage?: string }): void {
     const stage = event.stage || getLastStageName(event.sequence);
     this.router.navigate([
       '/project',
@@ -46,7 +46,7 @@ export class KtbSequenceStateListComponent {
     ]);
   }
 
-  toSequence(value: unknown): ISequence {
-    return value as ISequence;
+  toSequence(value: unknown): ISequenceState {
+    return value as ISequenceState;
   }
 }

@@ -17,6 +17,8 @@ func NewDebugController(debugHandler handler.IDebugHandler, projectHandler handl
 func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 	apiGroup.Static("/ui", "./debug-ui")
 
+	apiGroup.Static("/swagger-ui", "./swagger-ui-debug")
+
 	apiGroup.GET("/", func(c *gin.Context) {
 		c.Redirect(302, "/ui")
 	})
@@ -26,7 +28,14 @@ func (controller DebugController) Inject(apiGroup *gin.RouterGroup) {
 		seq.GET("/project", controller.ProjectHandler.GetAllProjects)
 		seq.GET("/project/:project", controller.DebugHandler.GetAllSequencesForProject)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext", controller.DebugHandler.GetSequenceByID)
+		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/stage/:stage/blocking", controller.DebugHandler.GetBlockingSequences)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event", controller.DebugHandler.GetAllEvents)
 		seq.GET("/project/:project/shkeptncontext/:shkeptncontext/event/:eventId", controller.DebugHandler.GetEventByID)
+	}
+
+	dbdump := apiGroup.Group("/dbdump")
+	{
+		dbdump.GET("/listcollections", controller.DebugHandler.ListAllCollections)
+		dbdump.GET("/collection/:collectionName", controller.DebugHandler.GetDatabaseDump)
 	}
 }

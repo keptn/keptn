@@ -57,6 +57,50 @@ func (o *PostEventOK) WriteResponse(rw http.ResponseWriter, producer runtime.Pro
 	}
 }
 
+// PostEventBadRequestCode is the HTTP code returned for type PostEventBadRequest
+const PostEventBadRequestCode int = 400
+
+/*PostEventBadRequest Invalid Event Payload Error
+
+swagger:response postEventBadRequest
+*/
+type PostEventBadRequest struct {
+
+	/*
+	  In: Body
+	*/
+	Payload *models.Error `json:"body,omitempty"`
+}
+
+// NewPostEventBadRequest creates PostEventBadRequest with default headers values
+func NewPostEventBadRequest() *PostEventBadRequest {
+
+	return &PostEventBadRequest{}
+}
+
+// WithPayload adds the payload to the post event bad request response
+func (o *PostEventBadRequest) WithPayload(payload *models.Error) *PostEventBadRequest {
+	o.Payload = payload
+	return o
+}
+
+// SetPayload sets the payload to the post event bad request response
+func (o *PostEventBadRequest) SetPayload(payload *models.Error) {
+	o.Payload = payload
+}
+
+// WriteResponse to the client
+func (o *PostEventBadRequest) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+
+	rw.WriteHeader(400)
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
+	}
+}
+
 // PostEventInternalServerErrorCode is the HTTP code returned for type PostEventInternalServerError
 const PostEventInternalServerErrorCode int = 500
 

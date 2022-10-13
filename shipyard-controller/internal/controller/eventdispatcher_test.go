@@ -302,6 +302,105 @@ func Test_EventIsSentImmediatelyAndOtherSequenceIsRunningButIsPaused(t *testing.
 	require.Len(t, eventQueueRepo.QueueEventCalls(), 0)
 }
 
+func Test_DispatcherEventFilterContainsService_EventIsSentImmediately(t *testing.T) {
+
+	timeNow := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)
+
+	data := keptnv2.EventData{
+		Project: "my-project",
+		Stage:   "my-stage",
+		Service: "my-service",
+	}
+	event1, _ := keptnv2.KeptnEvent(keptnv2.GetStartedEventType("task"), "source", data).WithKeptnContext("my-context").Build()
+	dispatcherEvent1 := models.DispatcherEvent{Event: keptnv2.ToCloudEvent(event1), TimeStamp: timeNow}
+
+	eventRepo := &db_mock.EventRepoMock{}
+	eventQueueRepo := &db_mock.EventQueueRepoMock{
+		GetEventQueueSequenceStatesFunc: func(filter models.EventQueueSequenceState) ([]models.EventQueueSequenceState, error) {
+			return nil, nil
+		},
+	}
+	eventSender := &fake.EventSender{}
+
+	mockClock := clock.NewMock()
+	mockClock.Set(timeNow)
+
+	eventQueueRepo.QueueEventFunc = func(item models.QueueItem) error {
+		return nil
+	}
+
+	eventQueueRepo.GetQueuedEventsFunc = func(timestamp time.Time) ([]models.QueueItem, error) {
+		var items []models.QueueItem
+		for _, i := range eventQueueRepo.QueueEventCalls() {
+			if timestamp.After(i.Item.Timestamp) {
+				items = append(items, i.Item)
+			}
+		}
+		return items, nil
+	}
+
+	eventQueueRepo.DeleteQueuedEventFunc = func(eventID string) error {
+		return nil
+	}
+
+	eventRepo.GetEventsFunc = func(project string, filter common.EventFilter, status ...common.EventStatus) ([]apimodels.KeptnContextExtendedCE, error) {
+		//return an event only if the filter has the service
+		return []apimodels.KeptnContextExtendedCE{{ID: *filter.ID, Specversion: "1.0", Source: common.Stringp("source"), Type: common.Stringp("my-type"), Data: keptnv2.EventData{
+			Project: "my-project",
+			Stage:   "my-stage",
+			Service: "my-service",
+		}}}, nil
+	}
+
+	sequenceExecutionRepo := &db_mock.SequenceExecutionRepoMock{
+		GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+			//return an event only if the filter has the service
+			if filter.Scope.Service == "my-service" {
+				return []models.SequenceExecution{
+					{Scope: filter.Scope,
+						Status: models.SequenceExecutionStatus{
+							State: apimodels.SequenceStartedState,
+						},
+					},
+				}, nil
+			}
+			//if filter is unset then this will make the test fail
+			return nil, errors.New("the filter is messed up")
+		},
+		IsContextPausedFunc: func(eventScope models.EventScope) bool {
+			return false
+		},
+	}
+
+	dispatcher := EventDispatcher{
+		eventRepo:             eventRepo,
+		eventQueueRepo:        eventQueueRepo,
+		eventSender:           eventSender,
+		theClock:              mockClock,
+		syncInterval:          10 * time.Second,
+		sequenceExecutionRepo: sequenceExecutionRepo,
+	}
+
+	err := dispatcher.Add(dispatcherEvent1, false)
+
+	require.Nil(t, err)
+	require.Equal(t, 0, len(eventSender.SentEvents))
+	require.Equal(t, 1, len(eventQueueRepo.QueueEventCalls()))
+	require.Equal(t, 2, len(sequenceExecutionRepo.GetCalls()))
+	require.Equal(t, "my-project", sequenceExecutionRepo.GetCalls()[0].Filter.Scope.Project)
+	require.Equal(t, "my-stage", sequenceExecutionRepo.GetCalls()[0].Filter.Scope.Stage)
+	require.Equal(t, "my-service", sequenceExecutionRepo.GetCalls()[0].Filter.Scope.Service)
+
+	require.Equal(t, "my-project", sequenceExecutionRepo.GetCalls()[1].Filter.Scope.Project)
+	require.Equal(t, "my-stage", sequenceExecutionRepo.GetCalls()[1].Filter.Scope.Stage)
+	require.Equal(t, "my-service", sequenceExecutionRepo.GetCalls()[1].Filter.Scope.Service)
+
+	require.Equal(t, "my-project", eventQueueRepo.QueueEventCalls()[0].Item.Scope.Project)
+	require.Equal(t, "my-service", eventQueueRepo.QueueEventCalls()[0].Item.Scope.Service)
+	require.Equal(t, "my-stage", eventQueueRepo.QueueEventCalls()[0].Item.Scope.Stage)
+
+}
+
 func Test_WhenTimeOfEventIsYounger_EventIsQueued(t *testing.T) {
 
 	timeBefore := time.Date(2021, 4, 21, 15, 00, 00, 0, time.UTC)

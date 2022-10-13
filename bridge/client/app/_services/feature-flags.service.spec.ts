@@ -28,9 +28,6 @@ describe('FeatureFlagsService', () => {
     const dataService = TestBed.inject(DataService);
     dataService.loadKeptnInfo();
     const flags = await firstValueFrom(service.featureFlags$);
-    expect(flags).toEqual({
-      RESOURCE_SERVICE_ENABLED: false,
-      D3_ENABLED: false,
-    });
+    expect(flags).toEqual({});
   });
 });

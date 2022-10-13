@@ -2,13 +2,16 @@ package controller_test
 
 import (
 	"errors"
+	"fmt"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/controller"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
-	"testing"
 
 	"github.com/keptn/go-utils/pkg/api/models"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	scmodels "github.com/keptn/keptn/shipyard-controller/models"
@@ -546,7 +549,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskFinished(t *testing.T) {
 
 			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 
-			smv.OnSequenceTaskFinished(event)
+			smv.OnSequenceTaskEvent(event)
 
 			if tt.expectUpdateStateToBeCalled {
 				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
@@ -659,7 +662,7 @@ func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testi
 
 		for i, event := range events {
 
-			smv.OnSequenceTaskFinished(event)
+			smv.OnSequenceTaskEvent(event)
 			call := SequenceStateRepo.UpdateSequenceStateCalls()[i]
 			require.Equal(t, event.ID, call.State.Stages[0].LatestEvent.ID)
 			if *event.Source == goodSource {
@@ -670,25 +673,6 @@ func TestSequenceStateMaterializedView_MultipleScoresOnSequenceFinished(t *testi
 			}
 		}
 	})
-}
-
-func TestSequenceStateMaterializedView_OnSequenceTaskStarted(t *testing.T) {
-	type args struct {
-		event models.KeptnContextExtendedCE
-	}
-	tests := []struct {
-		name   string
-		fields SequenceStateMVTestFields
-		args   args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
-			smv.OnSequenceTaskStarted(tt.args.event)
-		})
-	}
 }
 
 func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
@@ -833,7 +817,7 @@ func TestSequenceStateMaterializedView_OnSequenceTaskTriggered(t *testing.T) {
 
 			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 
-			smv.OnSequenceTaskTriggered(event)
+			smv.OnSequenceTaskEvent(event)
 
 			if tt.expectUpdateStateToBeCalled {
 				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
@@ -1150,6 +1134,262 @@ func TestSequenceStateMaterializedView_OnSubSequenceFinished(t *testing.T) {
 			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
 			smv.OnSubSequenceFinished(tt.args.event)
 			require.Equal(t, "aborted", tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0].State.Stages[0].State)
+		})
+	}
+}
+
+func TestSequenceStateMaterializedView_UpdateLastEventOfSequence(t *testing.T) {
+	testSequence := &models.SequenceStates{
+		States: []models.SequenceState{
+			{
+				Name:           "my-sequence",
+				Service:        "my-service",
+				Project:        "my-project",
+				Shkeptncontext: "my-context",
+				State:          "triggered",
+				Stages: []models.SequenceStateStage{
+					{
+						Name:              "my-stage",
+						LatestEvent:       &models.SequenceStateEvent{},
+						LatestFailedEvent: &models.SequenceStateEvent{},
+					},
+				},
+			},
+		},
+	}
+
+	tests := []struct {
+		name    string
+		fields  SequenceStateMVTestFields
+		event   apimodels.KeptnContextExtendedCE
+		want    apimodels.SequenceState
+		wantErr error
+	}{
+		{
+			name: "pass",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return testSequence, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			event: models.KeptnContextExtendedCE{
+				Data: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Status:  keptnv2.StatusSucceeded,
+					Result:  keptnv2.ResultPass,
+				},
+				Shkeptncontext: "my-context",
+				Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+			},
+			want: apimodels.SequenceState{
+				Project:        "my-project",
+				Service:        "my-service",
+				State:          "triggered",
+				Shkeptncontext: "my-context",
+				Stages: []apimodels.SequenceStateStage{
+					{
+						Name:  "my-stage",
+						State: string(keptnv2.StatusSucceeded),
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "strange",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return testSequence, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			event: models.KeptnContextExtendedCE{
+				Data: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Status:  "strange",
+					Result:  "result",
+				},
+				Shkeptncontext: "my-context",
+				Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+			},
+			want: apimodels.SequenceState{
+				Project:        "my-project",
+				Service:        "my-service",
+				State:          "triggered",
+				Shkeptncontext: "my-context",
+				Stages: []apimodels.SequenceStateStage{
+					{
+						Name:  "my-stage",
+						State: "strange",
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "aborted",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return testSequence, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			event: models.KeptnContextExtendedCE{
+				Data: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Status:  keptnv2.StatusAborted,
+					Result:  keptnv2.ResultPass,
+				},
+				Shkeptncontext: "my-context",
+				Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+			},
+			want: apimodels.SequenceState{
+				Project:        "my-project",
+				Service:        "my-service",
+				State:          "triggered",
+				Shkeptncontext: "my-context",
+				Stages: []apimodels.SequenceStateStage{
+					{
+						Name:  "my-stage",
+						State: "aborted",
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "failed",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return testSequence, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			event: models.KeptnContextExtendedCE{
+				Data: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Status:  keptnv2.StatusSucceeded,
+					Result:  keptnv2.ResultFailed,
+				},
+				Shkeptncontext: "my-context",
+				Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+			},
+			want: apimodels.SequenceState{
+				Project:        "my-project",
+				Service:        "my-service",
+				State:          "triggered",
+				Shkeptncontext: "my-context",
+				Stages: []apimodels.SequenceStateStage{
+					{
+						Name:  "my-stage",
+						State: string(keptnv2.StatusSucceeded),
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "failed #2",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return testSequence, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			event: models.KeptnContextExtendedCE{
+				Data: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Status:  keptnv2.StatusErrored,
+					Result:  keptnv2.ResultPass,
+				},
+				Shkeptncontext: "my-context",
+				Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+			},
+			want: apimodels.SequenceState{
+				Project:        "my-project",
+				Service:        "my-service",
+				State:          "triggered",
+				Shkeptncontext: "my-context",
+				Stages: []apimodels.SequenceStateStage{
+					{
+						Name:  "my-stage",
+						State: string(keptnv2.StatusErrored),
+					},
+				},
+			},
+			wantErr: nil,
+		},
+		{
+			name: "fail no sequence state",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			event: models.KeptnContextExtendedCE{
+				Data: keptnv2.EventData{
+					Project: "my-project",
+					Stage:   "my-stage",
+					Service: "my-service",
+					Status:  keptnv2.StatusSucceeded,
+					Result:  keptnv2.ResultPass,
+				},
+				Shkeptncontext: "my-context",
+				Type:           common.Stringp("sh.keptn.event.dev.sequence.finished"),
+			},
+			wantErr: fmt.Errorf("could not find sequence state for keptnContext my-context"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			smv := controller.NewSequenceStateMaterializedView(tt.fields.SequenceStateRepo)
+			out, err := smv.UpdateLastEventOfSequence(tt.event)
+			require.Equal(t, tt.wantErr, err)
+			if err == nil {
+				require.Equal(t, tt.want.Project, out.Project)
+				require.Equal(t, tt.want.Service, out.Service)
+				require.Equal(t, tt.want.State, out.State)
+				require.Equal(t, tt.want.Shkeptncontext, out.Shkeptncontext)
+				require.Equal(t, tt.want.Stages[0].Name, out.Stages[0].Name)
+				require.Equal(t, tt.want.Stages[0].State, out.Stages[0].State)
+			}
 		})
 	}
 }

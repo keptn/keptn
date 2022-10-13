@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"github.com/keptn/keptn/shipyard-controller/internal/handler/fake"
 	"github.com/keptn/keptn/shipyard-controller/internal/provisioner"
 	fake2 "github.com/keptn/keptn/shipyard-controller/internal/provisioner/fake"
-	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 
 	"github.com/stretchr/testify/require"
 
@@ -277,7 +278,7 @@ func TestCreateProject(t *testing.T) {
 	}
 
 	type fields struct {
-		ProjectManager        IProjectManager
+		ProjectManager        *fake.IProjectManagerMock
 		EventSender           common.EventSender
 		RepositoryProvisioner *fake2.IRepositoryProvisionerMock
 		EnvConfig             config.EnvConfig
@@ -304,7 +305,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with invalid payload",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrProjectAlreadyExists, func() error {
 
 							return nil
@@ -330,13 +331,18 @@ func TestCreateProject(t *testing.T) {
 			expectHttpStatus: http.StatusBadRequest,
 			fields: fields{
 				RemoteURLValidator: remoteURLValidator,
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
 			},
 		},
 		{
 			name: "Create project project already exists",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrProjectAlreadyExists, func() error { return nil }
 					},
 				},
@@ -357,7 +363,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project project resource-service cannot find repo",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return common.ErrConfigStoreUpstreamNotFound, func() error { return nil }
 					},
 				},
@@ -378,7 +384,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project creating project fails",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return errors.New("whoops"), func() error {
 							rollbackCalled = true
 							return nil
@@ -403,7 +409,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -424,7 +430,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with validator fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -449,7 +455,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with missing git credentials",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -474,7 +480,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning - fail",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -500,7 +506,7 @@ func TestCreateProject(t *testing.T) {
 			name: "Create project with provisioning",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
-					CreateFunc: func(params *models.CreateProjectParams) (error, common.RollbackFunc) {
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
 						return nil, func() error { return nil }
 					},
 				},
@@ -526,6 +532,40 @@ func TestCreateProject(t *testing.T) {
 			projectNameParam:     "my-project",
 			expectRollbackCalled: false,
 		},
+		{
+			name: "Create project with provisioning - validator should not be called",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
+						return nil, func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig: config.EnvConfig{ProjectNameMaxSize: 20, AutomaticProvisioningURL: "http://some-valid.url"},
+				RepositoryProvisioner: &fake2.IRepositoryProvisionerMock{
+					ProvideRepositoryFunc: func(projectName, namespace string) (*models.ProvisioningData, error) {
+						return &models.ProvisioningData{
+							GitRemoteURL: "http://some-valid-url.com",
+							GitToken:     "user",
+							GitUser:      "token",
+						}, nil
+					},
+				},
+				RemoteURLValidator: fake2.RequestValidatorMock{
+					ValidateFunc: func(url string) error {
+						return fmt.Errorf("some err")
+					},
+				},
+			},
+			jsonPayload:          exampleProvisioningPayload,
+			expectHttpStatus:     http.StatusOK,
+			projectNameParam:     "my-project",
+			expectRollbackCalled: false,
+		},
 	}
 
 	for _, tt := range tests {
@@ -545,6 +585,13 @@ func TestCreateProject(t *testing.T) {
 				provisioningCall := tt.fields.RepositoryProvisioner.ProvideRepositoryCalls()[0]
 				require.Equal(t, tt.projectNameParam, provisioningCall.ProjectName)
 				require.Equal(t, namespace, provisioningCall.Namespace)
+				if len(tt.fields.ProjectManager.CreateCalls()) == 1 {
+					require.Equal(t, tt.fields.ProjectManager.CreateCalls()[0].InternalOptions.IsUpstreamAutoProvisioned, true)
+				}
+			} else {
+				if len(tt.fields.ProjectManager.CreateCalls()) == 1 {
+					require.Equal(t, tt.fields.ProjectManager.CreateCalls()[0].InternalOptions.IsUpstreamAutoProvisioned, false)
+				}
 			}
 
 			rollbackCalled = false
@@ -658,7 +705,7 @@ func TestUpdateProject(t *testing.T) {
 			expectedHTTPStatus: http.StatusOK,
 		},
 		{
-			name: "Update project with validator failed",
+			name: "Update project with remoteURL validator failed",
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
@@ -696,14 +743,10 @@ func TestUpdateProject(t *testing.T) {
 				},
 				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
 				RepositoryProvisioner: &fake2.IRepositoryProvisionerMock{},
-				RemoteURLValidator: fake2.RequestValidatorMock{
-					ValidateFunc: func(url string) error {
-						return fmt.Errorf("some err")
-					},
-				},
+				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:        examplePayload2,
-			expectedHTTPStatus: http.StatusBadRequest,
+			expectedHTTPStatus: http.StatusOK,
 		},
 		{
 			name: "Update project with invalid token",
@@ -1186,11 +1229,11 @@ func Test_ProjectValidator_UpdateParams(t *testing.T) {
 			provisioningURL: "some-url",
 		},
 		{
-			name: "invalid params",
+			name: "valid params #2",
 			params: models.UpdateProjectParams{
 				Name: &projectName,
 			},
-			wantErr:         true,
+			wantErr:         false,
 			provisioningURL: "",
 		},
 		{

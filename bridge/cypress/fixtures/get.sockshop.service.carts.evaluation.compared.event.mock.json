@@ -1,0 +1,99 @@
+{
+  "events": [
+    {
+      "data": {
+        "evaluation": {
+          "comparedEvents": ["0c275de6-fbde-457e-b2f2-60f32a6acf54"],
+          "indicatorResults": [
+            {
+              "displayName": "",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=1",
+                  "targetValue": 1,
+                  "violated": false
+                }
+              ],
+              "score": 1,
+              "status": "pass",
+              "value": {
+                "metric": "http_response_time_seconds_main_page_sum",
+                "success": true,
+                "value": 0
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=0.5",
+                  "targetValue": 0.5,
+                  "violated": false
+                }
+              ]
+            },
+            {
+              "displayName": "",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+100%",
+                  "targetValue": 0,
+                  "violated": false
+                },
+                {
+                  "criteria": ">=-80%",
+                  "targetValue": 0,
+                  "violated": false
+                }
+              ],
+              "score": 1,
+              "status": "pass",
+              "value": {
+                "metric": "request_throughput",
+                "success": true,
+                "value": 0
+              },
+              "warningTargets": null
+            },
+            {
+              "displayName": "",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=100",
+                  "targetValue": 100,
+                  "violated": false
+                }
+              ],
+              "score": 1,
+              "status": "pass",
+              "value": {
+                "metric": "go_routines",
+                "success": true,
+                "value": 8
+              },
+              "warningTargets": null
+            }
+          ],
+          "result": "pass",
+          "score": 100,
+          "sloFileContent": "LS0tDQpzcGVjX3ZlcnNpb246ICcwLjEuMCcNCmNvbXBhcmlzb246DQogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiDQogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIg0KICBhZ2dyZWdhdGVfZnVuY3Rpb246IGF2Zw0Kb2JqZWN0aXZlczoNCiAgLSBzbGk6IGh0dHBfcmVzcG9uc2VfdGltZV9zZWNvbmRzX21haW5fcGFnZV9zdW0NCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PTEiDQogICAgd2FybmluZzoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0wLjUiDQogIC0gc2xpOiByZXF1ZXN0X3Rocm91Z2hwdXQNCiAgICBwYXNzOg0KICAgICAgLSBjcml0ZXJpYToNCiAgICAgICAgICAtICI8PSsxMDAlIg0KICAgICAgICAgIC0gIj49LTgwJSINCiAgLSBzbGk6IGdvX3JvdXRpbmVzDQogICAgcGFzczoNCiAgICAgIC0gY3JpdGVyaWE6DQogICAgICAgICAgLSAiPD0xMDAiDQp0b3RhbF9zY29yZToNCiAgcGFzczogIjkwJSINCiAgd2FybmluZzogIjc1JSI=",
+          "timeEnd": "2022-02-08T12:30:40.397Z",
+          "timeStart": "2022-02-08T12:30:12.455Z"
+        },
+        "project": "sockshop",
+        "result": "pass",
+        "service": "carts",
+        "stage": "staging",
+        "status": "succeeded"
+      },
+      "id": "91a77341-fe5e-43e1-a8a7-be9761b9cee5",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-02-08T12:30:57.052Z",
+      "type": "sh.keptn.event.evaluation.finished",
+      "shkeptncontext": "420f0822-9e51-48ec-8856-345c0b347924",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "d9492566-2c58-4e10-bdb5-2dfc99518fc2"
+    }
+  ]
+}

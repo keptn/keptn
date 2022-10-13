@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
@@ -55,8 +56,6 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkError(err.Error(), err)
 	}
 
-	responses := []string{}
-
 	if sdkErr := th.onStartedWebhookExecution(keptnHandler, event, webhook); sdkErr != nil {
 		return nil, sdkErr
 	}
@@ -69,6 +68,8 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 		return nil, sdkError(removeSecretsFromMessage(err.Error(), secretEnvVars), err)
 	}
 	eventAdapter.Add("env", secretEnvVars)
+
+	responses := []interface{}{}
 	responses, err = th.performWebhookRequests(*webhook, eventAdapter, responses)
 	if err != nil {
 		onError(err, secretEnvVars)
@@ -200,7 +201,8 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 	return nil
 }
 
-func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter, responses []string) ([]string, error) {
+func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter, responses []interface{}) ([]interface{}, error) {
+
 	executedRequests := 0
 	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
@@ -220,9 +222,27 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("could not execute request '%s': %s", request, err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		executedRequests = executedRequests + 1
-		responses = append(responses, response)
+
+		data := UnmarshalResponse(response)
+		responses = append(responses, data)
 	}
 	return responses, nil
+}
+
+//UnmarshalResponse attempts to create a json object out of the response as requested in https://github.com/keptn/keptn/issues/8256
+func UnmarshalResponse(response string) interface{} {
+	dat := map[string]interface{}{}
+
+	resp := []byte(response)
+
+	err := json.Unmarshal(resp, &dat)
+	if err != nil {
+		logger.Debugf("Webhook response is unmarshallable : %s, appending response as string", err.Error())
+		return response
+	}
+	logger.Debugf("Webhook response unmarshalled! %+v", dat)
+	return dat
+
 }
 
 func (th *TaskHandler) gatherSecretEnvVars(webhook lib.Webhook) (map[string]string, error) {
@@ -341,12 +361,13 @@ func (th *TaskHandler) getWebHookConfig(keptnHandler sdk.IKeptn, eventAdapter *l
 	if err != nil {
 		logger.Debugf("no webhook config found, err: %s", err.Error())
 	}
-	return nil, errors.New("no webhook config found")
+	return nil, errors.New("no valid webhook config found")
 }
 
 func getMatchingWebhookFromResource(resource *models.Resource, subscriptionID string) *lib.Webhook {
 	whConfig, err := lib.DecodeWebHookConfigYAML([]byte(resource.ResourceContent))
 	if err != nil {
+		logger.Warnf("Found a malformed webhook: %v", err)
 		return nil
 	}
 	for _, webhook := range whConfig.Spec.Webhooks {

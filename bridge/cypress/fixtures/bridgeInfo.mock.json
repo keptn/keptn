@@ -8,8 +8,5 @@
   "showApiToken": true,
   "authType": "OAUTH",
   "user": "claus.keptn-dev@ruxitlabs.com",
-  "featureFlags": {
-    "RESOURCE_SERVICE_ENABLED": false,
-    "D3_ENABLED": false
-  }
+  "featureFlags": {}
 }

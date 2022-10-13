@@ -20,19 +20,9 @@ type ISequenceWaitingHook interface {
 	OnSequenceWaiting(apimodels.KeptnContextExtendedCE)
 }
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetasktriggered.go . ISequenceTaskTriggeredHook
-type ISequenceTaskTriggeredHook interface {
-	OnSequenceTaskTriggered(apimodels.KeptnContextExtendedCE)
-}
-
-//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetaskstarted.go . ISequenceTaskStartedHook
-type ISequenceTaskStartedHook interface {
-	OnSequenceTaskStarted(apimodels.KeptnContextExtendedCE)
-}
-
-//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetaskfinished.go . ISequenceTaskFinishedHook
-type ISequenceTaskFinishedHook interface {
-	OnSequenceTaskFinished(apimodels.KeptnContextExtendedCE)
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencetaskevent.go . ISequenceTaskEventHook
+type ISequenceTaskEventHook interface {
+	OnSequenceTaskEvent(apimodels.KeptnContextExtendedCE)
 }
 
 //go:generate moq -pkg fake -skip-ensure -out ./fake/subsequencefinished.go . ISubSequenceFinishedHook

@@ -1,13 +1,24 @@
 package handler
 
 import (
+	"crypto/tls"
 	"errors"
+	"time"
+
 	"net/http"
+	"net/url"
 
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/resource-service/common_models"
 	errors2 "github.com/keptn/keptn/resource-service/errors"
 	"github.com/keptn/keptn/resource-service/models"
 	logger "github.com/sirupsen/logrus"
+
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/client"
+	nethttp "github.com/go-git/go-git/v5/plumbing/transport/http"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	ssh2 "golang.org/x/crypto/ssh"
 )
 
 const pathParamProjectName = "projectName"
@@ -20,7 +31,9 @@ func OnAPIError(c *gin.Context, err error) {
 
 	if check, resourceType := alreadyExists(err); check {
 		SetConflictErrorResponse(c, resourceType+" already exists")
-	} else if errors.Is(err, errors2.ErrInvalidGitToken) {
+	} else if errors.Is(err, errors2.ErrProjectRepositoryNotEmpty) {
+		SetConflictErrorResponse(c, "Project already exists with an already initialized GIT repository")
+	} else if errors.Is(err, errors2.ErrInvalidGitToken) || errors.Is(err, errors2.ErrAuthenticationRequired) || errors.Is(err, errors2.ErrAuthorizationFailed) {
 		SetFailedDependencyErrorResponse(c, "Invalid git token")
 	} else if errors.Is(err, errors2.ErrCredentialsNotFound) {
 		SetNotFoundErrorResponse(c, "Could not find credentials for upstream repository")
@@ -60,6 +73,55 @@ func resourceNotFound(err error) (bool, string) {
 		return true, "Resource"
 	}
 	return false, ""
+}
+
+func getAuthMethod(credentials *common_models.GitCredentials) (transport.AuthMethod, error) {
+	if credentials.SshAuth != nil {
+		publicKey, err := ssh.NewPublicKeys("git", []byte(credentials.SshAuth.PrivateKey), credentials.SshAuth.PrivateKeyPass)
+		if err != nil {
+			return nil, err
+		}
+		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+		return publicKey, nil
+
+	} else if credentials.HttpsAuth != nil {
+		if credentials.HttpsAuth.Proxy != nil {
+			customClient := &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: credentials.HttpsAuth.InsecureSkipTLS},
+					Proxy: http.ProxyURL(&url.URL{
+						Scheme: credentials.HttpsAuth.Proxy.Scheme,
+						User:   url.UserPassword(credentials.HttpsAuth.Proxy.User, credentials.HttpsAuth.Proxy.Password),
+						Host:   credentials.HttpsAuth.Proxy.URL,
+					}),
+				},
+
+				// 15 second timeout
+				Timeout: 15 * time.Second,
+
+				// don't follow redirect
+				CheckRedirect: func(req *http.Request, via []*http.Request) error {
+					return http.ErrUseLastResponse
+				},
+			}
+
+			// Istalling https protocol as a default one means that all the proxy traffic will be routed via secure connection
+			// To use unsecure conenction, InsecureSkipTLS parameter should be set to true and https protocol will be used without TLS verification
+			client.InstallProtocol("https", nethttp.NewClient(customClient))
+		}
+
+		if credentials.User == "" {
+			//we try the authentication anyway since in most git servers
+			//any user apart from an empty string is fine when we use a token
+			//this auth will fail in case user is using bitbucket
+			credentials.User = "keptnuser"
+		}
+		return &nethttp.BasicAuth{
+			Username: credentials.User,
+			Password: credentials.HttpsAuth.Token,
+		}, nil
+	}
+	return nil, nil
 }
 
 func SetFailedDependencyErrorResponse(c *gin.Context, msg string) {

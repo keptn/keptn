@@ -12,6 +12,7 @@ import (
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -515,6 +516,342 @@ func TestDebugManager_GetSequenceByID(t *testing.T) {
 			p, err := tt.fields.DebugManager.GetSequenceByID("", "")
 
 			assert.Equal(t, tt.expectedProjectsResult, p)
+			assert.Equal(t, tt.expectedErrorResult, err)
+		})
+	}
+}
+
+func TestDebugManager_GetBlockingSequences(t *testing.T) {
+
+	type fields struct {
+		DebugManager IDebugManager
+	}
+
+	sequences := []models.SequenceExecution{
+		{
+			ID:              "id",
+			SchemaVersion:   "version",
+			Sequence:        keptnv2.Sequence{},
+			Status:          models.SequenceExecutionStatus{},
+			Scope:           models.EventScope{},
+			InputProperties: nil,
+			TriggeredAt:     time.Time{},
+		},
+	}
+
+	tests := []struct {
+		name                    string
+		fields                  fields
+		expectedErrorResult     error
+		expectedSequencesResult []models.SequenceExecution
+	}{
+		{
+			name: "GET blocking sequences ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return sequences, nil
+							} else {
+								return nil, nil
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:     nil,
+			expectedSequencesResult: sequences,
+		},
+		{
+			name: "GET blocking sequences sequence not found",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return []models.SequenceExecution{}, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return sequences, nil
+							} else {
+								return nil, nil
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:     common.ErrSequenceNotFound,
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences sequence error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return nil, errors.New("error")
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return sequences, nil
+							} else {
+								return nil, nil
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences get blocking started error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return nil, errors.New("error")
+							} else {
+								return nil, nil
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences project not found error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return nil, errors.New("error")
+							} else {
+								return nil, nil
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, common.ErrProjectNotFound
+						},
+					},
+				},
+			},
+			expectedErrorResult:     common.ErrProjectNotFound,
+			expectedSequencesResult: nil,
+		},
+		{
+			name: "GET blocking sequences get blocking triggered error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					sequenceExecutionRepo: &db_mock.SequenceExecutionRepoMock{
+						GetFunc: func(filter models.SequenceExecutionFilter) ([]models.SequenceExecution, error) {
+
+							if filter.Status == nil {
+								return sequences, nil
+							}
+
+							filter2 := models.SequenceExecutionFilter{
+								Status: []string{apimodels.SequenceStartedState},
+							}
+
+							if filter.Status[0] == filter2.Status[0] {
+								return nil, nil
+							} else {
+								return nil, errors.New("error")
+							}
+						},
+					},
+					projectRepo: &db_mock.ProjectRepoMock{
+						GetProjectFunc: func(projectName string) (*apimodels.ExpandedProject, error) {
+							return nil, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult:     errors.New("error"),
+			expectedSequencesResult: nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := tt.fields.DebugManager.GetBlockingSequences("", "", "")
+
+			assert.Equal(t, tt.expectedSequencesResult, s)
+			assert.Equal(t, tt.expectedErrorResult, err)
+		})
+	}
+}
+
+func TestDebugManager_GetDatabaseDump(t *testing.T) {
+
+	type fields struct {
+		DebugManager IDebugManager
+	}
+
+	expected := []bson.M{{"id": "asdf"}}
+
+	tests := []struct {
+		name                string
+		fields              fields
+		expectedErrorResult error
+		expectedResult      []bson.M
+	}{
+		{
+			name: "GET databse dump ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						GetDumpFunc: func(collectionName string) ([]bson.M, error) {
+							return expected, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult: nil,
+			expectedResult:      expected,
+		},
+		{
+			name: "GET databse dump error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						GetDumpFunc: func(collectionName string) ([]bson.M, error) {
+							return nil, errors.New("error")
+						},
+					},
+				},
+			},
+			expectedErrorResult: errors.New("error"),
+			expectedResult:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := tt.fields.DebugManager.GetDatabaseDump("")
+
+			assert.Equal(t, tt.expectedResult, s)
+			assert.Equal(t, tt.expectedErrorResult, err)
+		})
+	}
+}
+
+func TestDebugManager_ListAllCollections(t *testing.T) {
+
+	type fields struct {
+		DebugManager IDebugManager
+	}
+
+	expected := []string{"collection1", "collection2"}
+
+	tests := []struct {
+		name                string
+		fields              fields
+		expectedErrorResult error
+		expectedResult      []string
+	}{
+		{
+			name: "GET databse dump ok",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						ListAllCollectionsFunc: func() ([]string, error) {
+							return expected, nil
+						},
+					},
+				},
+			},
+			expectedErrorResult: nil,
+			expectedResult:      expected,
+		},
+		{
+			name: "GET databse dump error",
+			fields: fields{
+				DebugManager: &DebugManager{
+					dbDumpRepo: &db_mock.DBDumpRepoMock{
+						ListAllCollectionsFunc: func() ([]string, error) {
+							return nil, errors.New("error")
+						},
+					},
+				},
+			},
+			expectedErrorResult: errors.New("error"),
+			expectedResult:      nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s, err := tt.fields.DebugManager.ListAllCollections()
+
+			assert.Equal(t, tt.expectedResult, s)
 			assert.Equal(t, tt.expectedErrorResult, err)
 		})
 	}

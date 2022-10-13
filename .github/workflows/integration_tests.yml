@@ -15,9 +15,6 @@ on:
         required: false
         description: "Check this if you don't want the test namespaces to stay alive after the test run"
         default: false
-env:
-  META_KEPTN_VERSION: 0.13.2
-  META_KEPTN_KEPTN_PROJECT: keptn
 defaults:
   run:
     shell: bash
@@ -46,45 +43,44 @@ jobs:
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
-            PLATFORM_VERSION: "v1.16.15+k3s1" # see https://github.com/rancher/k3s/releases
+            PLATFORM_VERSION: "v1.22.8+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
-            PLATFORM_VERSION: "v1.21.1+k3s1" # see https://github.com/rancher/k3s/releases
+            PLATFORM_VERSION: "v1.24.4+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
-            PLATFORM_VERSION: "v4.4.6" # see https://github.com/rancher/k3d/releases
+            PLATFORM_VERSION: "v5.4.6" # see https://github.com/k3d-io/k3d/releases
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "NodePort"
             RUN_AIRGAPPED_TEST: "true"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
-          - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.19"
-            CLUSTER_NAME: "keptn-integration-test-1"
+          - CLUSTER_NAME: "keptn-integration-tests-1"
+            CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.22"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            REMOTE_EXECUTION_PLANE: "true"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
-          - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.22"
-            CLUSTER_NAME: "keptn-integration-test-2"
+          - CLUSTER_NAME: "keptn-integration-tests-2"
+            CLOUD_PROVIDER: "GKE"
+            PLATFORM_VERSION: "1.24"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
             KEPTN_SERVICE_TYPE: "LoadBalancer"
-            REMOTE_EXECUTION_PLANE: "false"
             COLLECT_RESOURCE_LIMITS: "true"
             USE_RESOURCE_SERVICE_DIRECTORY: "true"
+
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -94,7 +90,6 @@ jobs:
       KEPTN_SERVICE_TYPE: ${{ matrix.KEPTN_SERVICE_TYPE }}
       RUN_AIRGAPPED_TEST: ${{ matrix.RUN_AIRGAPPED_TEST }}
       AIRGAPPED_REGISTRY_URL: "k3d-container-registry.localhost:12345"
-      REMOTE_EXECUTION_PLANE: ${{ matrix.REMOTE_EXECUTION_PLANE }}
       COLLECT_RESOURCE_LIMITS: ${{ matrix.COLLECT_RESOURCE_LIMITS }}
       GO_VERSION: "~1.18"
       TEST_REPORT_FOLDER: test-reports-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}
@@ -121,7 +116,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.5
+        uses: actions/cache@v3.0.10
         with:
           path: |
             ~/downloads
@@ -176,7 +171,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
+        uses: dawidd6/action-download-artifact@v2.23.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -189,7 +184,7 @@ jobs:
       # load build-config
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
+        uses: c-py/action-dotenv-to-setenv@v4
         with:
           env-file: ./dist/build-config/build-config.env
 
@@ -253,12 +248,12 @@ jobs:
 
           # create registry and cluster
           k3d registry create container-registry.localhost --port 12345
-          k3d cluster create mykeptn --k3s-server-arg '--no-deploy=traefik' --agents 1 --registry-use "$AIRGAPPED_REGISTRY_URL"
+          k3d cluster create mykeptn --k3s-arg "--no-deploy=traefik@server:*" --agents 1 --k3s-arg "--no-deploy=servicelb@server:*" --k3s-arg "--kube-proxy-arg=conntrack-max-per-core=0@server:*" --registry-use "$AIRGAPPED_REGISTRY_URL"
           kubectl config use-context k3d-mykeptn
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v0.8.0
+        uses: google-github-actions/auth@v0.8.1
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
           access_token_lifetime: "7200s"
@@ -269,12 +264,8 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v0.8.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
-          location: "us-east1-b"
+          location: "europe-west2"
           use_auth_provider: true
-
-      - name: Install Istio
-        if: env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # no need to install istio on minishift or GKE (pre-installed)
-        run: test/utils/install_istio.sh
 
       - name: Push images to airgapped registry
         if: env.RUN_AIRGAPPED_TEST == 'true'
@@ -508,11 +499,6 @@ jobs:
         timeout-minutes: 5
         run: helm uninstall keptn -n ${KEPTN_NAMESPACE} --wait
 
-      - name: Uninstall Istio
-        if: always() && env.CLOUD_PROVIDER != 'minishift-on-GHA' && env.CLOUD_PROVIDER != 'GKE' # istio was not installed on minishift or GKE, so no need to uninstall it
-        timeout-minutes: 5
-        run: test/utils/uninstall_istio.sh
-
       - name: Cleanup test namespace
         if: always() && env.CLOUD_PROVIDER == 'GKE'
         run: |
@@ -638,7 +624,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Set up Node
-        uses: actions/setup-node@v3.4.1
+        uses: actions/setup-node@v3.5.0
         with:
           node-version: 16
       - run: npm install ndjson-parse@1.0.4
@@ -650,7 +636,7 @@ jobs:
           path: ${{ env.TEST_REPORTS_PATH }}
 
       - name: Build multi-platform test report
-        uses: actions/github-script@v6.1.0
+        uses: actions/github-script@v6.3.2
         env:
           TEST_REPORTS_PATH: ${{ env.TEST_REPORTS_PATH }}
           FINAL_TEST_REPORTS_FOLDER: ${{ env.FINAL_TEST_REPORTS_FOLDER }}
@@ -727,7 +713,7 @@ jobs:
 
       - name: Generate Markdown Test Report
         run: |
-          npx tablemark-cli@v2.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
+          npx tablemark-cli@v3.0.0 "${{ env.FINAL_TEST_REPORT_FILEPATH_JSON }}" > "${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}" -N -c Test
 
       - name: Upload final JSON test report as an artifact
         if: always()
@@ -744,7 +730,7 @@ jobs:
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
+        uses: dawidd6/action-download-artifact@v2.23.0
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -756,7 +742,7 @@ jobs:
 
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
+        uses: c-py/action-dotenv-to-setenv@v4
         with:
           env-file: ./dist/build-config/build-config.env
 
@@ -827,195 +813,6 @@ jobs:
         with:
           filename: integration-tests-failed.md
 
-  #######################################################################
-  # This job deploys Keptn with Keptn                                   #
-  #######################################################################
-  deploy_keptn_with_keptn:
-    name: Deploy Keptn with Keptn
-    needs: integration-test
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-20.04
-    env:
-      BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
-          submodules: 'true'
-
-      - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
-        with:
-          # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: CI.yml
-          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
-          # directory where to extract artifacts to
-          path: ./dist
-
-      - name: Install Keptn CLI for META_KEPTN
-        id: install_keptn_cli
-        run: |
-          curl -sL https://get.keptn.sh | KEPTN_VERSION=${{ env.META_KEPTN_VERSION }} bash
-
-      - name: Authenticate Keptn CLI
-        id: authenticate_keptn_cli
-        run: |
-          keptn set config KubeContextCheck false
-          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
-
-      - name: Deploy Keptn with Keptn
-        id: deploy_keptn_with_keptn
-        run: |
-          KEPTN_HELM_CHART_FILENAME=$(ls dist/keptn-installer/keptn*.tgz | head -1)
-          KEPTN_INGRESS_TEMPLATE_FILENAME=test/assets/keptn-on-keptn/ingress.yaml
-          ENDPOINTS_TEMPLATE_BASE_PATH=test/assets/keptn-on-keptn
-
-          echo "Adding resources to meta keptn..."
-
-          keptn add-resource --project=${{ env.META_KEPTN_KEPTN_PROJECT }} --service=keptn --all-stages --resource=${KEPTN_HELM_CHART_FILENAME} --resourceUri=helm/keptn.tgz
-
-          echo "Adding ingresses and endpoints to all keptn-on-keptn stages..."
-
-          stages=('dev' 'hardening' 'production')
-          services=('keptn')
-          for SERVICE in "${services[@]}"; do
-            for STAGE in "${stages[@]}"; do
-              export SERVICE
-              export STAGE
-              envsubst < ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}.yaml > ${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}-${STAGE}.yaml
-              keptn add-resource \
-                --project=${{ env.META_KEPTN_KEPTN_PROJECT }} \
-                --service=${SERVICE} \
-                --stage=${STAGE} \
-                --resource=${ENDPOINTS_TEMPLATE_BASE_PATH}/endpoints-${SERVICE}-${STAGE}.yaml \
-                --resourceUri=helm/endpoints.yaml
-            done
-          done
-
-          for STAGE in "${stages[@]}"; do
-            export STAGE
-            envsubst < ${KEPTN_INGRESS_TEMPLATE_FILENAME} > ${ENDPOINTS_TEMPLATE_BASE_PATH}/ingress-${STAGE}.yaml
-            keptn add-resource \
-              --project=${{ env.META_KEPTN_KEPTN_PROJECT }} \
-              --service=keptn \
-              --stage=${STAGE} \
-              --resource=${ENDPOINTS_TEMPLATE_BASE_PATH}/ingress-${STAGE}.yaml \
-              --resourceUri=helm/keptn/templates/ingress.yaml
-          done
-
-  #######################################################################
-  # This job triggers service deliveries and wait for them to pass      #
-  #######################################################################
-  trigger_keptn_delivery:
-    name: Trigger Service Delivery
-    needs: deploy_keptn_with_keptn
-    if: github.event_name == 'schedule'
-    runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        include:
-          - SERVICE_NAME: keptn
-    env:
-      SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
-      KEPTN_ARCHIVE_PATH: ~/downloads/keptn-archive.tar.gz
-    steps:
-      - name: Create downloads folder
-        run: mkdir ~/downloads
-
-      - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.21.1
-        with:
-          # Download last successful artifact from a CI build
-          github_token: ${{secrets.GITHUB_TOKEN}}
-          workflow: CI.yml
-          run_id: ${{ needs.integration-test.outputs.ARTIFACT_RUN_ID }}
-          # directory where to extract artifacts to
-          path: ./dist
-
-      # load build-config
-      - name: Load Build-Config Environment from ./dist/build-config/build-config.env
-        id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
-        with:
-          env-file: ./dist/build-config/build-config.env
-
-      - name: Overwrite VERSION String for nightly builds
-        run: |
-          if [[ "$BRANCH" == "master" ]]; then
-            # use VERSION.DATETIME for the cli version (e.g., nightly build)
-            VERSION=${VERSION}.${DATETIME}
-            # overwrite VERSION
-            echo "VERSION=${VERSION}" >> $GITHUB_ENV
-          fi
-
-      - name: Print Build-Config
-        run: |
-          echo VERSION=${VERSION}
-          echo BRANCH=${BRANCH}
-
-      - name: Cache Keptn CLI
-        id: keptn-cli-cache
-        uses: actions/cache@v3.0.5
-        with:
-          path: ~/downloads
-          key: ${{ env.META_KEPTN_VERSION }}-cli
-
-      - name: Download Keptn CLI for META_KEPTN
-        id: download_keptn_cli
-        if: steps.keptn-cli-cache.outputs.cache-hit != 'true'
-        run: curl -sL https://github.com/keptn/keptn/releases/download/${META_KEPTN_VERSION}/keptn-${META_KEPTN_VERSION}-linux-amd64.tar.gz -o ${{ env.KEPTN_ARCHIVE_PATH }}
-
-      - name: Install Keptn CLI for META_KEPTN
-        id: install_keptn_cli
-        run: |
-          tar -xvf ${{ env.KEPTN_ARCHIVE_PATH }}
-          chmod +x ./keptn-${META_KEPTN_VERSION}-linux-amd64
-          sudo mv ./keptn-${META_KEPTN_VERSION}-linux-amd64 /usr/local/bin/keptn
-
-      - name: Authenticate Keptn CLI
-        id: authenticate_keptn_cli
-        run: |
-          keptn set config KubeContextCheck false
-          keptn auth --endpoint=${{ secrets.META_KEPTN_API_URL }} --api-token=${{ secrets.META_KEPTN_API_TOKEN }}
-
-      - name: Trigger Service Delivery
-        id: trigger-service-delivery
-        uses: keptn/gh-action-send-event@main
-        with:
-          keptnApiUrl: ${{ secrets.META_KEPTN_API_URL }}/v1/event
-          keptnApiToken: ${{ secrets.META_KEPTN_API_TOKEN }}
-          event: |
-            {
-              "data": {
-                "message": "",
-                "project": "${{ env.META_KEPTN_KEPTN_PROJECT }}",
-                "result": "",
-                "service": "${{ env.SERVICE_NAME }}",
-                "stage": "dev",
-                "status": "",
-                "labels": {
-                  "github-action-run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-                  "artifact-version": "${{ env.VERSION }}"
-                }
-              },
-              "source": "gh",
-              "specversion": "1.0",
-              "type": "sh.keptn.event.dev.delivery.triggered",
-              "shkeptnspecversion": "0.2.1"
-            }
-
-      - name: Check if keptn on keptn delivery passed
-        id: check-service-delivery
-        timeout-minutes: 5
-        env:
-          KEPTN_CONTEXT: ${{ steps.trigger-service-delivery.outputs.keptnContext }}
-        run: |
-          while [[ $(keptn get event sh.keptn.event.dev.delivery.finished --keptn-context "$KEPTN_CONTEXT" --project keptn | jq -r '.data.result' 2>/dev/null) != pass ]]; do
-            sleep 10;
-          done
-
   calculate-total-runtime:
     name: End-of-Pipeline Metrics
     if: always()
@@ -1023,8 +820,6 @@ jobs:
       - calculate-queue-time
       - integration-test
       - publish-final-test-report
-      - deploy_keptn_with_keptn
-      - trigger_keptn_delivery
     uses: ./.github/workflows/end-of-pipeline-metrics.yml
     with:
       workflow_name: "Integration Tests"

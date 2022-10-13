@@ -30,7 +30,7 @@ jq '[
 ]' > "$RESOURCE_JSON"
 
 # Generate markdown table from JSON
-npx tablemark-cli@v2.0.0 "$RESOURCE_JSON" -c "Name" -c "Container Name" -c "CPU Request" -c "CPU Limit" -c "RAM Request" -c "RAM Limit" -c "Image" > "$RESOURCE_MARKDOWN"
+npx tablemark-cli@v3.0.0 "$RESOURCE_JSON" -c "Name" -c "Container Name" -c "CPU Request" -c "CPU Limit" -c "RAM Request" -c "RAM Limit" -c "Image" > "$RESOURCE_MARKDOWN"
 
 # Attach resource stats to release notes
 {

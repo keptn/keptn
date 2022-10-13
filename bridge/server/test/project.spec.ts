@@ -9,7 +9,7 @@ import {
   ProjectResponseURLFallback,
 } from '../../shared/fixtures/project-response.mock';
 import { EventTypes } from '../../shared/interfaces/event-types';
-import { SequenceState } from '../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../shared/interfaces/sequence';
 import {
   OpenRemediationsResponse,
   RemediationTracesResponse,
@@ -76,7 +76,7 @@ describe('Test project resources', () => {
         params: {
           pageSize: '100',
           name: 'remediation',
-          state: SequenceState.STARTED,
+          state: SequenceStatus.STARTED,
         },
       })
       .reply(200, OpenRemediationsResponse);

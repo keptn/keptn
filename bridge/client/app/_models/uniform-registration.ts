@@ -1,34 +1,27 @@
-import { UniformRegistration as ur } from '../../../shared/models/uniform-registration';
-import { UniformSubscription } from './uniform-subscription';
 import semver from 'semver/preload';
-import { UniformRegistrationResult } from '../../../shared/interfaces/uniform-registration-result';
+import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
+import { hasProject } from './uniform-subscription';
+import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
+import { KeptnService } from '../../../shared/models/keptn-service';
 
 const preventSubscriptionUpdate = ['approval-service', 'remediation-service', 'lighthouse-service'];
 
-export class UniformRegistration extends ur {
-  public subscriptions: UniformSubscription[] = [];
-  public unreadEventsCount!: number;
+export function getSubscriptions(ur: IUniformRegistration, projectName: string): IUniformSubscription[] {
+  return ur.subscriptions.filter((subscription) => hasProject(subscription.filter, projectName, true));
+}
 
-  public static fromJSON(data: UniformRegistrationResult): UniformRegistration {
-    const uniformRegistration = Object.assign(new this(), data);
-    uniformRegistration.subscriptions =
-      uniformRegistration.subscriptions?.map((subscription) => UniformSubscription.fromJSON(subscription)) ?? [];
-    return uniformRegistration;
-  }
+export function hasSubscriptions(ur: IUniformRegistration, projectName: string): boolean {
+  return ur.subscriptions.some((subscription) => hasProject(subscription.filter, projectName, true));
+}
 
-  public getSubscriptions(projectName: string): UniformSubscription[] {
-    return this.subscriptions.filter((subscription) => subscription.hasProject(projectName, true));
-  }
+export function canEditSubscriptions(ur: IUniformRegistration): boolean {
+  return !!(semver.valid(ur.metadata.distributorversion) && semver.gte(ur.metadata.distributorversion, '0.9.0'));
+}
 
-  public hasSubscriptions(projectName: string): boolean {
-    return this.subscriptions.some((subscription) => subscription.hasProject(projectName, true));
-  }
+export function isChangeable(ur: IUniformRegistration): boolean {
+  return !preventSubscriptionUpdate.includes(ur.name);
+}
 
-  public canEditSubscriptions(): boolean {
-    return !!(semver.valid(this.metadata.distributorversion) && semver.gte(this.metadata.distributorversion, '0.9.0'));
-  }
-
-  public isChangeable(): boolean {
-    return !preventSubscriptionUpdate.includes(this.name);
-  }
+export function isWebhookService(ur: IUniformRegistration): boolean {
+  return ur.name === KeptnService.WEBHOOK_SERVICE;
 }

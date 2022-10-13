@@ -3,14 +3,16 @@ package controller
 import (
 	"errors"
 	"fmt"
+	"sync"
+	"time"
+
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	"github.com/keptn/go-utils/pkg/common/timeutils"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	"github.com/keptn/keptn/shipyard-controller/models"
-	"sync"
-	"time"
+
 	//"github.com/keptn/keptn/shipyard-controller/models"
 	log "github.com/sirupsen/logrus"
 )
@@ -60,10 +62,8 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event apimodels.Ke
 	}
 
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
-		if errors.Is(err, db.ErrStateAlreadyExists) {
-			log.Infof("sequence state for keptnContext %s already exists", state.Shkeptncontext)
-		} else {
-			log.Errorf("could not create task sequence state: %s", err.Error())
+		if !errors.Is(err, db.ErrStateAlreadyExists) {
+			log.Errorf("could not create task sequence state for keptn context %s: %v", eventScope.KeptnContext, err)
 		}
 	}
 }
@@ -90,11 +90,10 @@ func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event apimodels.Kept
 	smv.updateOverallSequenceState(*eventScope, apimodels.SequenceWaitingState)
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event apimodels.KeptnContextExtendedCE) {
+func (smv *SequenceStateMaterializedView) OnSequenceTaskEvent(event apimodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-
-	state, err := smv.updateLastEventOfSequence(event)
+	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 		return
@@ -107,40 +106,13 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event apimodel
 		}
 	}
 
-	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-	}
-}
-
-func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
-	smv.mutex.Lock()
-	defer smv.mutex.Unlock()
-	state, err := smv.updateLastEventOfSequence(event)
-	if err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-		return
-	}
-
-	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-	}
-}
-
-func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
-	smv.mutex.Lock()
-	defer smv.mutex.Unlock()
-	state, err := smv.updateLastEventOfSequence(event)
-	if err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-		return
-	}
-
 	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && *event.Source == SequenceEvaluationService {
 		if err := smv.updateEvaluationOfSequence(event, state); err != nil {
 			log.Errorf("could not update evaluation of sequence state: %s", err.Error())
 			return
 		}
 	}
+
 	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}
@@ -149,7 +121,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event apimodels
 func (smv *SequenceStateMaterializedView) OnSubSequenceFinished(event apimodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-	state, err := smv.updateLastEventOfSequence(event)
+	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 		return
@@ -311,7 +283,7 @@ func (smv *SequenceStateMaterializedView) updateImageOfSequence(event apimodels.
 	return nil
 }
 
-func (smv *SequenceStateMaterializedView) updateLastEventOfSequence(event apimodels.KeptnContextExtendedCE) (apimodels.SequenceState, error) {
+func (smv *SequenceStateMaterializedView) UpdateLastEventOfSequence(event apimodels.KeptnContextExtendedCE) (apimodels.SequenceState, error) {
 	eventScope, err := models.NewEventScope(event)
 	if err != nil {
 		return apimodels.SequenceState{}, fmt.Errorf("could not determine event scope: %s", err.Error())

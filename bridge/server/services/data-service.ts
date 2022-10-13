@@ -7,9 +7,8 @@ import { Project } from '../models/project';
 import { EventState } from '../../shared/models/event-state';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { ResultTypes } from '../../shared/models/result-types';
-import { UniformRegistration } from '../models/uniform-registration';
 import { parse as parseYaml } from 'yaml';
-import { IShipyardSequence, IShipyardTask, Shipyard } from '../interfaces/shipyard';
+import { IShipyardSequence, IShipyardTask, Shipyard } from '../../shared/interfaces/shipyard';
 import { UniformRegistrationLocations } from '../../shared/interfaces/uniform-registration-locations';
 import { IWebhookConfigFilter } from '../interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
@@ -21,7 +20,7 @@ import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
 import { IRemediationAction } from '../../shared/models/remediation-action';
 import { KeptnService } from '../../shared/models/keptn-service';
-import { SequenceState } from '../../shared/interfaces/sequence';
+import { SequenceStatus } from '../../shared/interfaces/sequence';
 import { ServiceDeploymentInformation, ServiceState } from '../../shared/models/service-state';
 import { Deployment, IStageDeployment, SubSequence } from '../../shared/interfaces/deployment';
 import semver from 'semver';
@@ -44,6 +43,7 @@ import { IWebhookConfigClient } from '../../shared/interfaces/webhook-config';
 import { EnvType } from '../interfaces/configuration';
 import { IClientSecret } from '../../shared/interfaces/secret';
 import { IServerSequenceStage } from '../interfaces/sequence-stage';
+import { IUniformRegistration } from '../../shared/interfaces/uniform-registration';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -65,7 +65,7 @@ interface IEventStateDict {
 export interface SequenceOptions {
   pageSize: string;
   name?: string;
-  state?: SequenceState;
+  state?: SequenceStatus;
   fromTime?: string;
   beforeTime?: string;
   keptnContext?: string;
@@ -347,7 +347,7 @@ export class DataService {
     accessToken: string | undefined,
     projectName: string,
     sequenceName: string,
-    sequenceState?: SequenceState
+    sequenceState?: SequenceStatus
   ): Promise<Sequence[]> {
     const response = await this.apiService.getSequences(accessToken, projectName, {
       pageSize: this.MAX_SEQUENCE_PAGE_SIZE.toString(),
@@ -368,7 +368,7 @@ export class DataService {
       accessToken,
       projectName,
       SequenceTypes.REMEDIATION,
-      SequenceState.STARTED
+      SequenceStatus.STARTED
     );
     const remediations: Remediation[] = [];
     for (const sequence of sequences) {
@@ -486,7 +486,7 @@ export class DataService {
   public async getUniformRegistrations(
     accessToken: string | undefined,
     uniformDates: { [key: string]: string }
-  ): Promise<UniformRegistration[]> {
+  ): Promise<IUniformRegistration[]> {
     const response = await this.apiService.getUniformRegistrations(accessToken);
     const registrations = this.getValidRegistrations(response.data);
     for (const registration of registrations) {
@@ -500,9 +500,9 @@ export class DataService {
     return registrations;
   }
 
-  private getValidRegistrations(registrations: UniformRegistration[]): UniformRegistration[] {
+  private getValidRegistrations(registrations: IUniformRegistration[]): IUniformRegistration[] {
     const currentDate = new Date().getTime();
-    const validRegistrations: UniformRegistration[] = [];
+    const validRegistrations: IUniformRegistration[] = [];
     for (const registration of registrations) {
       const diffMins = (currentDate - new Date(registration.metadata.lastseen).getTime()) / 60_000;
       if (diffMins < 2) {
@@ -517,11 +517,11 @@ export class DataService {
     integrationId: string
   ): Promise<UniformRegistrationInfo> {
     const response = await this.apiService.getUniformRegistrations(accessToken, integrationId);
-    const uniformRegistration = UniformRegistration.fromJSON(response.data.shift());
+    const uniformRegistration = response.data.shift();
 
     return {
-      isControlPlane: uniformRegistration.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
-      isWebhookService: uniformRegistration.isWebhookService,
+      isControlPlane: uniformRegistration?.metadata.location === UniformRegistrationLocations.CONTROL_PLANE,
+      isWebhookService: uniformRegistration ? uniformRegistration.name === KeptnService.WEBHOOK_SERVICE : false,
     };
   }
 
@@ -1183,7 +1183,7 @@ export class DataService {
           type: seq.type,
           result: seq.getStatus(),
           time: (seq.time ? new Date(seq.time) : new Date()).toISOString(),
-          state: seq.isFinished() ? SequenceState.FINISHED : SequenceState.STARTED,
+          state: seq.isFinished() ? SequenceStatus.FINISHED : SequenceStatus.STARTED,
           id: seq.id,
           message: seq.getMessage(),
           hasPendingApproval: !!seq.findTrace((t) => !!t.isApproval())?.isApprovalPending(),
@@ -1241,7 +1241,7 @@ export class DataService {
 
   public async getSequencesFilter(accessToken: string | undefined, projectName: string): Promise<ISequencesFilter> {
     const res = await this.apiService.getStages(accessToken, projectName);
-    const stages = res.data.stages;
+    const stages = res.data.stages.sort((a, b) => (!b.parentStages || a.parentStages?.includes(b.stageName) ? 1 : -1));
     const stageNames: string[] = [];
     const serviceSet: Set<string> = new Set();
 

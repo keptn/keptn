@@ -1,8 +1,7 @@
-import { UniformRegistrationResult } from '../../../../shared/interfaces/uniform-registration-result';
-import { UniformRegistration } from '../../_models/uniform-registration';
 import { UniformRegistrationLocations } from '../../../../shared/interfaces/uniform-registration-locations';
+import { IUniformRegistration } from '../../../../shared/interfaces/uniform-registration';
 
-const services: UniformRegistrationResult[] = [
+const services: IUniformRegistration[] = [
   {
     id: 'keptn-uniform-ansible-service-f01334c8312486183460649bab6cd4a7',
     metadata: {
@@ -334,7 +333,4 @@ const services: UniformRegistrationResult[] = [
   },
 ];
 
-const uniformRegistrationsMock: UniformRegistration[] = services.map((registration) =>
-  UniformRegistration.fromJSON(registration)
-);
-export { uniformRegistrationsMock as UniformRegistrationsMock };
+export { services as UniformRegistrationsMock };

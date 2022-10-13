@@ -1,6 +1,10 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.4 as builder-base
+FROM golang:1.18.7 as builder
+
+ARG version=develop
+# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
+ARG SKAFFOLD_GO_GCFLAGS
 
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
@@ -24,19 +28,6 @@ RUN go mod download
 
 # Copy local code to the container image.
 COPY . .
-
-FROM builder-base as builder-test
-ENV GOTESTSUM_FORMAT=testname
-
-RUN go install gotest.tools/gotestsum@v1.7.0
-
-CMD gotestsum --no-color=false -- -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
-
-FROM builder-base as builder
-ARG version=develop
-
-# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
-ARG SKAFFOLD_GO_GCFLAGS
 
 # generate swagger docs
 RUN GOOS=linux swag init --parseDependency
@@ -74,11 +65,18 @@ COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-u
 
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debug-ui /debug-ui
 
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui-debug
+
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debugdocs/swagger.yaml /swagger-ui-debug/swagger-original.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debugdocs/swagger.yaml /swagger-ui-debug/swagger.yaml
+
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml
+
 RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
+EXPOSE 9090
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all

@@ -1,6 +1,9 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.4 as builder-base
+FROM golang:1.18.7 as builder
+
+ARG version=develop
+ARG debugBuild
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
@@ -20,16 +23,6 @@ RUN go mod download
 
 # Copy local code to the container image.
 COPY . .
-
-FROM builder-base as builder-test
-ENV GOTESTSUM_FORMAT=testname
-
-RUN go install gotest.tools/gotestsum@v1.7.0
-CMD gotestsum --no-color=false -- -race -coverprofile=coverage.txt -covermode=atomic -v ./... && mv ./coverage.txt /shared/coverage.txt
-
-FROM builder-base as builder
-ARG version=develop
-ARG debugBuild
 
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi

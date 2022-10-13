@@ -126,11 +126,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 			Labels:  e.Labels,
 		},
 	}
-	if e.Result == "fail" {
-		evalResult.EventData.Result = keptnv2.ResultFailed
-		evalResult.Message = fmt.Sprintf("no evaluation performed by lighthouse because SLI failed with message %s", e.Message)
-		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
-	}
 
 	if e.Status == keptnv2.StatusAborted {
 		evalResult.EventData.Result = keptnv2.ResultFailed
@@ -192,6 +187,11 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
+	if e.Result == keptnv2.ResultFailed {
+		evaluationResult.EventData.Result = keptnv2.ResultFailed
+		evaluationResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
+	}
+
 	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
 }
 
@@ -228,6 +228,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			}
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
+			sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 			continue
 		}
 		sliEvaluationResult.Value = (*keptnv2.SLIResult)(result)

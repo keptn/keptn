@@ -8,8 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/models/api"
-
-	_ "github.com/keptn/keptn/shipyard-controller/models"
 )
 
 type IDebugHandler interface {
@@ -17,6 +15,9 @@ type IDebugHandler interface {
 	GetAllSequencesForProject(context *gin.Context)
 	GetAllEvents(context *gin.Context)
 	GetEventByID(context *gin.Context)
+	GetBlockingSequences(context *gin.Context)
+	GetDatabaseDump(c *gin.Context)
+	ListAllCollections(c *gin.Context)
 }
 
 type DebugHandler struct {
@@ -29,16 +30,6 @@ func NewDebugHandler(debugManager IDebugManager) *DebugHandler {
 	}
 }
 
-// GetAllSequencesForProject godoc
-// @Summary      Get all sequences for specific project
-// @Description  Get all the sequences which are present in a project
-// @Tags         Sequence
-// @Param        project              path      string                    			true "The name of the project"
-// @Success      200                  {object}  api.GetSequenceExecutionResponse    "ok"
-// @Failure      400                  {object}  models.Error              			"Bad Request"
-// @Failure      404                  {object}  models.Error             			"not found"
-// @Failure      500                  {object}  models.Error              			"Internal error"
-// @Router       /sequence/project/{project} [get]
 func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	projectName := c.Param("project")
 
@@ -69,17 +60,6 @@ func (dh *DebugHandler) GetAllSequencesForProject(c *gin.Context) {
 	c.JSON(http.StatusOK, payload)
 }
 
-// GetSequenceByID godoc
-// @Summary      Get a sequence with the shkeptncontext
-// @Description  Get a specific sequence of a project which is identified by the shkeptncontext
-// @Tags         Sequence
-// @Param        project              path      string                    true  "The name of the project"
-// @Param        shkeptncontext       path      string                    true  "The shkeptncontext"
-// @Success      200                  {object}  models.SequenceState      "ok"
-// @Failure      400                  {object}  models.Error              "Bad Request"
-// @Failure      404                  {object}  models.Error              "not found"
-// @Failure      500                  {object}  models.Error              "Internal error"
-// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext} [get]
 func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
@@ -103,17 +83,6 @@ func (dh *DebugHandler) GetSequenceByID(c *gin.Context) {
 	c.JSON(http.StatusOK, sequence)
 }
 
-// GetAllEvents godoc
-// @Summary      Get all the Events
-// @Description  Gets all the events of a project with the given shkeptncontext
-// @Tags         Sequence
-// @Param        project              path      string                             true  "The name of the project"
-// @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
-// @Success      200                  {object}  []models.KeptnContextExtendedCE    "ok"
-// @Failure      400                  {object}  models.Error                       "Bad Request"
-// @Failure      404                  {object}  models.Error                       "not found"
-// @Failure      500                  {object}  models.Error                       "Internal error"
-// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/event [get]
 func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	shkeptncontext := c.Param("shkeptncontext")
 	projectName := c.Param("project")
@@ -138,18 +107,6 @@ func (dh *DebugHandler) GetAllEvents(c *gin.Context) {
 	c.JSON(http.StatusOK, events)
 }
 
-// GetEventByID godoc
-// @Summary      Get a single Event
-// @Description  Gets a single event of a project with the given shkeptncontext and eventId
-// @Tags         Sequence
-// @Param        project              path      string                             true  "The name of the project"
-// @Param        shkeptncontext       path      string                             true  "The shkeptncontext"
-// @Param        eventId              path      string                             true  "The Id of the event"
-// @Success      200                  {object}  models.KeptnContextExtendedCE      "ok"
-// @Failure      400                  {object}  models.Error                       "Bad Request"
-// @Failure      404                  {object}  models.Error                       "not found"
-// @Failure      500                  {object}  models.Error                       "Internal error"
-// @Router       /sequence/project/{project}/shkeptncontext/{shkeptncontext}/event/{eventId} [get]
 func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 
 	shkeptncontext := c.Param("shkeptncontext")
@@ -179,4 +136,54 @@ func (dh *DebugHandler) GetEventByID(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, event)
+}
+
+func (dh *DebugHandler) GetBlockingSequences(c *gin.Context) {
+
+	shkeptncontext := c.Param("shkeptncontext")
+	projectName := c.Param("project")
+	stage := c.Param("stage")
+
+	sequences, err := dh.DebugManager.GetBlockingSequences(projectName, shkeptncontext, stage)
+
+	if err != nil {
+		if errors.Is(err, common.ErrProjectNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.ProjectNotFoundMsg, shkeptncontext))
+			return
+		}
+
+		if errors.Is(err, common.ErrSequenceNotFound) {
+			SetNotFoundErrorResponse(c, fmt.Sprintf(common.SequenceNotFoundMsg, shkeptncontext))
+			return
+		}
+
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
+		return
+	}
+	c.JSON(http.StatusOK, sequences)
+}
+
+func (dh *DebugHandler) GetDatabaseDump(c *gin.Context) {
+
+	collectionName := c.Param("collectionName")
+
+	dump, err := dh.DebugManager.GetDatabaseDump(collectionName)
+
+	if err != nil {
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, dump)
+}
+
+func (dh *DebugHandler) ListAllCollections(c *gin.Context) {
+	collections, err := dh.DebugManager.ListAllCollections()
+
+	if err != nil {
+		SetInternalServerErrorResponse(c, fmt.Sprintf(common.UnexpectedErrorFormatMsg, err.Error()))
+		return
+	}
+
+	c.JSON(http.StatusOK, collections)
 }

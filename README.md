@@ -56,6 +56,8 @@ Please follow the instructions printed by the CLI to connect to your Keptn insta
 Note: This will install a potentially unstable version of Keptn.
 
 If you want to install the latest master version of Keptn onto your cluster you can do that by using the development helm charts repository located at https://charts-dev.keptn.sh .
+By default, the global registry used is ´docker.io/keptn´, so you will need to override it.
+
 ```console
 helm repo add keptn-dev https://charts-dev.keptn.sh    # Add the keptn-dev helm repo
 helm repo update                                       # Update all repo contents
@@ -63,7 +65,7 @@ helm search repo keptn-dev --devel --versions          # List all versions prese
 
 # Select a chart version from the previous command that you want to install
 
-helm install -n keptn-dev keptn keptn-dev/keptn --create-namespace --version "<the-version-you-selected-previously>"
+helm install -n keptn-dev keptn keptn-dev/keptn --set=global.keptn.registry=docker.io/keptndev --create-namespace --version "<the-version-you-selected-previously>"
 ```
 
 You can find more information in our [docs](docs/).
@@ -76,16 +78,33 @@ Please find details on regular hosted community events as well as our Slack work
 ## Keptn Versions compatibilities
 
 We manage the Keptn *core components* in versions.
-The respective images in their versions are stored on the  following container registries:
-
-* [DockerHub](https://hub.docker.com/?namespace=keptn)
-* [GitHub Container Registry](https://github.com/orgs/keptn/packages?repo_name=keptn)
-* [Quay.io Container Registry](https://quay.io/organization/keptn)
-
 The versions of the Keptn *core components* and the services are compatible with each other. However, contributed services
 as well as services that are not considered *core components* might not follow the same versioning schema.
 
 We are tracking compatibility of those services [on our website](https://keptn.sh/docs/integrations/).
+
+## Container Images
+
+Keptn provides container images of all *core components*.
+The respective images in their versions are stored on the following container registries:
+
+* [DockerHub](https://hub.docker.com/u/keptn)
+* [GitHub Container Registry](https://github.com/orgs/keptn/packages?repo_name=keptn)
+* [Quay.io Container Registry](https://quay.io/organization/keptn)
+
+From version 0.19.0, all released container images are signed using [cosign](https://github.com/sigstore/cosign)
+with a keyless signing mechanism.
+That means that Keptn uses short-lived code signing certificates and keys together with OIDC and a transparency log
+to sign all its container images.
+More info on keyless signed container images can be found [here](https://github.com/sigstore/cosign/blob/main/KEYLESS.md).
+
+
+## Helm Chart
+
+Keptn provides Helm charts for easy installation of all control plane components.
+From version 0.19.0, the charts are signed and can be verified with the public key that can be found in [assets/pubring.gpg](assets/pubring.gpg)
+and attached to every release.
+More info on signed Helm charts can be found [here](https://helm.sh/docs/topics/provenance/).
 
 ## Contributions
 

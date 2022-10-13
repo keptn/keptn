@@ -58,10 +58,7 @@ const createProject = (id: number, stageNames: string[]): Project =>
 
 const info: KeptnInfo = {
   bridgeInfo: {
-    featureFlags: {
-      RESOURCE_SERVICE_ENABLED: true,
-      D3_ENABLED: true,
-    },
+    featureFlags: {},
     cliDownloadLink: '',
     enableVersionCheckFeature: true,
     showApiToken: true,

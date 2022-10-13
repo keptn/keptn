@@ -65,7 +65,7 @@ var imageAvailabilityTests = []struct {
 func TestCheckImageAvailability(t *testing.T) {
 	client := NewTestClient(func(req *http.Request) *http.Response {
 		// Test request parameters
-		if strings.Contains(req.URL.String(), "docker.io") {
+		if strings.Contains(req.URL.String(), "hub.docker.com") {
 			if strings.Contains(req.URL.String(), "/tags/0.6.1") {
 				return &http.Response{
 					StatusCode: 200,

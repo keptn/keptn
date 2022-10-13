@@ -77,6 +77,10 @@ spec:
               value: "{{ ((.Values.features).oauth).prefix | default "keptn:" }}"
             - name: HIDE_DEPRECATED
               value: "{{ ((.Values.features).swagger).hideDeprecated | default false }}"
+            - name: EVENT_VALIDATION_ENABLED
+              value: {{ (.Values.apiService.eventValidation).enabled | default false | quote }}
+            - name: MAX_EVENT_SIZE_KB
+              value: '{{ (.Values.apiService.eventValidation).maxEventSizeKB | default "64"}}'
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           volumeMounts:
             - mountPath: /data/import-scratch
@@ -95,6 +99,14 @@ spec:
       {{- end }}
       serviceAccountName: keptn-api-service
       {{- include "keptn.nodeSelector" (dict "value" .Values.apiService.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.apiService.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.apiService.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.apiService.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        {{- include "keptn.affinities.pods" (dict "value" .Values.apiService.podAffinity "default" .Values.podAffinity "component" "api-service" "context" . ) | indent 8 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.apiService.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "api-service" "context" . ) | indent 8 }}
+      {{- end }}
 ---
 apiVersion: v1
 kind: Service

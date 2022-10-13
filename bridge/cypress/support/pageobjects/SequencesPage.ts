@@ -104,8 +104,13 @@ export class SequencesPage {
     return this;
   }
 
-  public selectSequence(keptnContext: string): this {
-    cy.byTestId(`keptn-root-events-list-${keptnContext}`).click();
+  public selectSequence(keptnContext: string, stage?: string): this {
+    const rootEvent = cy.byTestId(`keptn-root-events-list-${keptnContext}`);
+    if (stage) {
+      rootEvent.find('dt-tag').contains(stage).parents('ktb-stage-badge').click();
+      return this;
+    }
+    rootEvent.click();
     return this;
   }
 
@@ -243,10 +248,10 @@ export class SequencesPage {
     return this;
   }
 
-  public assertIsSelectedSequenceWaiting(status: boolean): this {
+  public assertDtAlertExists(status: boolean): this {
     cy.byTestId('keptn-sequence-view-sequenceDetails')
       .find('dt-alert')
-      .should(status ? 'have.text' : 'not.have.text', this.sequenceWaitingMessage);
+      .should(status ? 'exist' : 'not.exist');
     return this;
   }
 
@@ -388,5 +393,10 @@ export class SequencesPage {
       .find('ktb-stage-badge')
       .contains(stage)
       .parentsUntil('ktb-stage-badge');
+  }
+
+  public clickBlockingSequenceNavigationButton(): this {
+    cy.byTestId('keptn-blocking-sequence-navigation').click();
+    return this;
   }
 }

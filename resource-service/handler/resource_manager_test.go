@@ -1286,7 +1286,7 @@ func (fakeFileInfo) Sys() interface{} {
 func getTestResourceManagerFields() testResourceManagerFields {
 	return testResourceManagerFields{
 		git: &common_mock.IGitMock{
-			ResetHardFunc:          func(gitContext common_models.GitContext) error { return nil },
+			ResetHardFunc:          func(gitContext common_models.GitContext, revision string) error { return nil },
 			CheckoutBranchFunc:     func(gitContext common_models.GitContext, branch string) error { return nil },
 			CloneRepoFunc:          func(gitContext common_models.GitContext) (bool, error) { return true, nil },
 			CreateBranchFunc:       func(gitContext common_models.GitContext, branch string, sourceBranch string) error { return nil },
