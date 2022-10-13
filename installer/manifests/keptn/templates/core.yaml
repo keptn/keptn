@@ -108,11 +108,6 @@ spec:
                 secretKeyRef:
                   name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
                   key: keptn-api-token
-            - name: "USERNAME"
-              valueFrom:
-                secretKeyRef:
-                  key:  keptnUsername
-                  name: bridge-credentials
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
             - name: ENABLE_VERSION_CHECK

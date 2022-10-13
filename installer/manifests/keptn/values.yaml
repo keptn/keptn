@@ -68,6 +68,7 @@ mongo:
       cpu: 1000m
       memory: 500Mi
 
+## @section Keptn Features
 features:
   debugUI:
     ## @param features.debugUI.enabled Enable debugUI interface for shipyard-controller
@@ -511,6 +512,8 @@ bridge:
     mongoConnectionString: ""
   ## @param bridge.authMsg Overrides Keptn auth command displayed inside the Bridge user menu
   authMsg: ""
+  ## @param bridge.keptnUsername Keptn username for Bridge user login
+  keptnUsername: ""
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
   podAffinity:
@@ -1225,9 +1228,6 @@ logLevel: "info"
 
 ## @param prefixPath URL prefix for all Keptn URLs
 prefixPath: ""
-
-## @param keptnUsername for Keptn Bridge login
-keptnUsername: ""
 
 ## @param keptnSpecVersion Version of the Keptn Spec definitions to be used
 keptnSpecVersion: latest
