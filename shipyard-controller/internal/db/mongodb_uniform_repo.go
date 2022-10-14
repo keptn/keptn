@@ -190,7 +190,7 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 
 	for _, s := range integration.Subscriptions {
 		if s.ID == subscriptionID {
-			logger.Warnf("Deleting subscription: [id=%s, event=%s, filter=%+v, integration=%s] ", subscriptionID, s.Event, s.Filter, integrationID)
+			logger.Warnf("Deleted subscription: [id=%s, event=%s, filter=%+v, integration=%s] ", subscriptionID, s.Event, s.Filter, integrationID)
 			break
 		}
 	}
