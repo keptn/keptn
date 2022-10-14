@@ -1,9 +1,7 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DtIconModule } from '@dynatrace/barista-components/icon';
-import { DtChartModule } from '@dynatrace/barista-components/chart';
 import { KtbEvaluationChartComponent } from './ktb-evaluation-chart.component';
-import { KtbEvaluationChartLegacyComponent } from './ktb-evaluation-chart-legacy/ktb-evaluation-chart-legacy.component';
 import { DateFormatPipe, MomentModule } from 'ngx-moment';
 import { KtbHeatmapModule } from '../../ktb-heatmap/ktb-heatmap.module';
 import { KtbChartModule } from '../../ktb-chart/ktb-chart.module';
@@ -14,12 +12,11 @@ import { DtKeyValueListModule } from '@dynatrace/barista-components/key-value-li
 import { KtbPipeModule } from '../../../_pipes/ktb-pipe.module';
 
 @NgModule({
-  declarations: [KtbEvaluationChartComponent, KtbEvaluationChartLegacyComponent],
+  declarations: [KtbEvaluationChartComponent],
   imports: [
     CommonModule,
     DtButtonGroupModule,
     DtButtonModule,
-    DtChartModule,
     DtIconModule.forRoot({
       svgIconLocation: `assets/icons/{{name}}.svg`,
     }),

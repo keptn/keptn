@@ -39,4 +39,8 @@ type EnvConfig struct {
 	LogLevel string `envconfig:"LOG_LEVEL" default:"info"`
 	// DisableLeaderElection allows to disable the leader election
 	DisableLeaderElection bool `envconfig:"DISABLE_LEADER_ELECTION" default:"false"`
+	// DebugUIEnabled enabled the debugUI
+	DebugUIEnabled bool `envconfig:"DEBUG_UI_ENABLED" default:"false"`
+	// HideAutomaticProvisionedURL hides the provisioned url
+	HideAutomaticProvisionedURL bool `envconfig:"HIDE_AUTOMATIC_PROVISIONED_URL" default:"false"`
 }

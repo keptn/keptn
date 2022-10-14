@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	common2 "github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/db/models/sequence_execution"
 	v1 "github.com/keptn/keptn/shipyard-controller/internal/db/models/sequence_execution/v1"
 	"time"
@@ -65,7 +66,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) Get(filter models.SequenceExecution
 	searchOptions := mdbrepo.getSearchOptions(filter)
 
 	cur, err := collection.Find(ctx, searchOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err
@@ -113,7 +114,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) GetPaginated(filter models.Sequence
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, nil, err
@@ -344,7 +345,7 @@ func (mdbrepo *MongoDBSequenceExecutionRepo) IsContextPaused(eventScope models.E
 		searchOptions[keptnContextScope] = eventScope.KeptnContext
 	}
 	cur, err := collection.Find(ctx, searchOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil {
 		log.Errorf("Could not retrieve sequence context: %v", err)

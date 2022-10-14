@@ -1,4 +1,4 @@
-import { EnabledComponents, LogDestination } from '../utils/logger';
+import { EnabledComponents, Level, LogDestination } from '../utils/logger';
 
 export interface OAuthSecrets {
   sessionSecret: string;
@@ -26,6 +26,7 @@ export enum EnvType {
 interface LogOptions {
   destination?: LogDestination;
   enabledComponents?: string;
+  defaultLogLevel?: Level;
 }
 
 /**
@@ -46,6 +47,7 @@ export interface BridgeConfiguration {
 export interface LogConfiguration {
   destination: LogDestination;
   enabledComponents: EnabledComponents;
+  defaultLogLevel: Level;
 }
 
 export interface AuthConfig {
@@ -116,6 +118,7 @@ export interface MongoConfig {
 
 export enum EnvVar {
   LOGGING_COMPONENTS = 'LOGGING_COMPONENTS',
+  LOG_LEVEL = 'LOG_LEVEL',
   SHOW_API_TOKEN = 'SHOW_API_TOKEN',
   API_URL = 'API_URL',
   API_TOKEN = 'API_TOKEN',

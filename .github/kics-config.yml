@@ -30,6 +30,50 @@ exclude-results:
   - 73e01db98cc6dd2ef91974bb50eefe192d84f2c0c4df61f857840a2a92d29bc8
   - 0d0be3bd1e192a82b005349145ac9ec4137dab3a02099e57a8c89748b619f13b
   - bc8cc2f5bb21b281b4ca50e2d0bab82dbcf5392da4564b2ae18c8ecf7cb0c6c8
+  - e5a483bb8bbcdd26f8b7db2f451f492c2978bd9db522cb384fb50bb5681b9681 # Passwords And Secrets - Generic Token
+  - c805fe07ba349214460c368898895ae616c50ec79e46d9d40e94272c5d6a8d6c # Passwords And Secrets - Generic Token
+  - 4ef48a3cfcfd890249cabb4dd660d51c29bfb85ef88fe620829f003047fac511 # Passwords And Secrets - Generic Secret
+  - 74ac15a6d15188e6b2d93a08cd1e4855d387df99d857b92a3afeb78c82823df2 # Passwords And Secrets - Generic Secret
+  - b89b020ac7a659ae45e379bb3ac206271a47ae44b18596f10812e158a99bc896 # Passwords And Secrets - Generic Secret
+  - 411f4f33f25eaaa867427de7e7da7cf93cf7d199af8f64e9f3db6c53dfbf81c5 # Passwords And Secrets - Generic Password
+  - 6f6f45c3cbf2c9dc81cd558689679b736661aa5179f28390212014b9219ef665 # Passwords And Secrets - Generic Password
+  - 3d427a787434849adbe1bfd15e8fca43873e9ef0ce95754c34b742e68930864e # Passwords And Secrets - Generic Password
+  - 19d3802bcbbe45f967d4b50e15859d1e9049207d9782bdce33b5060145e432a1 # Passwords And Secrets - Generic Password
+  - b0580d43427e2e999ebe97a4b7fcf40d847142f4f0ade9b2456669099dff6444 # Volume Mount With OS Directory Write Permissions
+  - 2ac80ac90542db8d379c3075bff8a26c1469a03a67a32fa0a30239083ca03f39 # Shared Service Account
+  - e538929a5650928240e78a9f0780ee65795cb40f15566daa3d84dfd3f24e1052 # Shared Service Account
+  - 738c6014293d2a8741695f38a6d88c65f9f3857b0b01956ccbbac9c6cc093354 # Shared Service Account
+  - 643784628e3b075e8f4e012443965f7cae91d065b487609720adc2c797c39069 # Shared Service Account
+  - 31dd0e4d6059bc0856c7f22ac61bc5ba07e2d03ffa92785bd727422a732824dd # Shared Service Account
+  - 7e35a57bb2edcefd2b743cb64beb3fb79bc56b229008457202e6386c1d828381 # Shared Service Account
+  - 7e8eccfb9a7aad6b5f967cabe31ef541685fda3d13058c866ec862b50d807cf6 # ServiceAccount Allows Access Secrets
+  - a579c57128cefdf80d1b8630689c846fb2731711657985b0a9c160d537eae0c4 # ServiceAccount Allows Access Secrets
+  - 14fae7f66adbd8d151c61d5aa5b92c988929b959e98d772886307d049cbadb0b # Service Account Token Automount Not Disabled (bridge)
+  - 3288d1bf0249b534d33bba7d17ff61f5f72c60de2460161592a18cddc8def2b2 # Service Account Token Automount Not Disabled (shipyard-controller)
+  - 3f74feebd13ac15f97e9e7a799e2b14ee5e85565629defe8656f313f2064be22 # Service Account Token Automount Not Disabled (mongodb-datastore)
+  - 6a8ce6bf0cf8d0c47d59bb2cf1baccce9ffb6564a043caa737f6da78d05bd506 # Service Account Token Automount Not Disabled (resource-service)
+  - 8c6d32b4dbf927bc87f697bd486b9207cb2dd9c205ca37a7b8233faa2bc63f5a # Service Account Token Automount Not Disabled (api-service)
+  - 96bf8ffb95fa392e759fea7959a672647889e98d24426f8b3fdfda4ca69cd35a # Service Account Token Automount Not Disabled (api-gateway-nginx)
+  - cfe4cf5d7d5a97e80665c4ef20d156bea8fcdb3ddde791a229d0689427b03366 # Service Account Token Automount Not Disabled (secret-service)
+  - f62112d0c4386205bf969c5cb84679796c46b4259f3c89f95300293fac6e750a # Service Account Token Automount Not Disabled (webhook-service)
+  - f4f36cfedfe7c66fe733b02450a8e599dd42d67948ef4f5e20c8916fb16a2600 # Service Account Token Automount Not Disabled (approval-service)
+  - 30348bcb81bd93edb735ac85abe6307d4bfacb16e54a63205b4e4b4e686fcf66 # Service Account Token Automount Not Disabled (lighthouse-service)
+  - 5c8ea6d2de6be22be274a7838670cc704726fe734c04eab88a26e2c6e4068296 # Service Account Token Automount Not Disabled (remidiation-service)
+  - a913b660a6ba366a838b2e7094066c300491d2fb8ef08b9502200669486c70f1 # Service Account Token Automount Not Disabled (statistics-service)
+  - 4eeb766f65fe98e10e192d15414dd2630b3e83afac2bca05c3b28bae892a4f4a # Seccomp Profile Is Not Configured (keptn-nats)
+  - 4b216a9b7f0568297fba8b4825e2b8943a0eb27385e8535c819a977cba515818 # Seccomp Profile Is Not Configured (keptn-mongo)
+  - bd8c6b7f619749ad82084201c39bb58bbfc5583460fe7343b8d1c85634ea9354 # Readiness Probe Is Not Configured (keptn-nats)
+  - 04d88617184e80069c91abbc4862e1d6c22c1daa3df65defe3ed8db22dcf77e3 # Readiness Probe Is Not Configured (bridge)
+  - 7b8393b2e188d755e968afe3083ecb5ad83432057e30ec1e70e20aed96165ee2 # RBAC Roles with Read Secrets Permissions (keptn-manage-secrets)
+  - 502698ad650836bf6ffa94a8fee7e2d6b5a07db842741f99628134d7b8b52ecc # RBAC Roles with Read Secrets Permissions (keptn-get-secrets)
+  - 3bad58ab140899b337343fb64ca49e6e40cbdbdf930155a2641957e622529c81 # Container Running With Low UID (api-gateway-nginx)
+  - 9ce219fa776ca728af1894aa78201671f615fba4939e654dbd1ea71364ee729e # Container Running With Low UID (mongo-db)
+  - 3a383aa24a0a1a73ee7d3e055d48ad275dedf34547ccd28ca06ebf3a553b1d51 # Service Does Not Target Pod (nats)
+  - 520f3b83e0bc997029d615149226cb4e1b16c4d91cf516f0f05f0ea8d02169d6 # Service Does Not Target Pod (nats)
+  - 629271a20ed757ba3c6e1d1fefe1e7b3484128d790d11a4ec8a36fc366086afc # Service Does Not Target Pod (nats)
+  - a4a30d2d7f72452f86e09d8bab84034ecec540931297a87182231cc2c24f6b0c # Root Container Not Mounted Read-only (api-gateway-nginx)
+  - 4444bd158bf76fa8c476b717781c0710eeade16543e6e11284eaf8cfd94a9666 # Root Container Not Mounted Read-only (keptn-mongo)
+  - 34dc3488b1ef80904157a6136166768f9c46ce2e9a7b0dc92c4397632fd88c46 # Liveness Probe Is Not Defined (bridge)
 no-color: false
 no-progress: true
 preview-lines: 5

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	common2 "github.com/keptn/keptn/shipyard-controller/internal/db/common"
 	"time"
 
 	"github.com/jeremywohl/flatten"
@@ -54,7 +55,7 @@ func (mdbrepo *MongoDBEventsRepo) GetEvents(project string, filter common.EventF
 	sortOptions := options.Find().SetSort(bson.D{{Key: "time", Value: -1}})
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil && errors.Is(err, mongo.ErrNoDocuments) {
 		return nil, ErrNoEventFound
@@ -148,7 +149,7 @@ func (mdbrepo *MongoDBEventsRepo) GetRootEvents(getRootParams models.GetRootEven
 	}
 
 	cur, err := collection.Find(ctx, searchOptions, sortOptions)
-	defer closeCursor(ctx, cur)
+	defer common2.CloseCursor(ctx, cur)
 
 	if err != nil && err != mongo.ErrNoDocuments {
 		return nil, err

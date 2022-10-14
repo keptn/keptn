@@ -16,12 +16,14 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_ExecutingWebhookTargetingClusterInternalAddressesFails", Test_ExecutingWebhookTargetingClusterInternalAddressesFails)
 
 	t.Run("Test_ProvisioningURL", Test_ProvisioningURL)
+	t.Run("Test_ProvisioningURL_hiddenURL", Test_ProvisioningURL_hiddenURL)
 
 	t.Run("Test_ResourceServiceGETCommitID", Test_ResourceServiceGETCommitID)
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	t.Run("Test_ProxyAuth", Test_ProxyAuth)
 	t.Run("Test_Webhook_Migrator", Test_Webhook_Migrator)
+	t.Run("Test_CreateProjectWithCustomBranchName", Test_CreateProjectWithCustomBranchName)
 
 	// Platform-specific Tests
 	t.Run("Test_QualityGates", Test_QualityGates)

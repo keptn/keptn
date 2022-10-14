@@ -150,7 +150,7 @@ spec:
             - name: TRUST_PROXY
               value: "{{ .Values.bridge.oauth.trustProxy }}"
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -169,8 +169,6 @@ spec:
               value: {{ ((.Values.features).automaticProvisioning).message | default "" | quote }}
             - name: AUTH_MSG
               value: {{ .Values.bridge.authMsg | default "" | quote }}
-            - name: D3_ENABLED
-              value: {{ or ((.Values.bridge).d3heatmap).enabled ((.Values.bridge).d3).enabled | default false | quote }}
             {{- range $key, $value := .Values.bridge.env }}
             - name: {{ $key }}
               value: {{ $value | quote }}
@@ -214,3 +212,11 @@ spec:
         {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.bridge.extraVolumes "context" $) | nindent 8 }}
         {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.bridge.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.bridge.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.bridge.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.bridge.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        {{- include "keptn.affinities.pods" (dict "value" .Values.bridge.podAffinity "default" .Values.podAffinity "component" "bridge" "context" . ) | indent 8 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.bridge.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "bridge" "context" . ) | indent 8 }}
+      {{- end }}

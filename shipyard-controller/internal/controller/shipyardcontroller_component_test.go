@@ -100,7 +100,7 @@ spec:
       - name: deployment
       - name: evaluation`
 
-const mongoDBVersion = "4.4.9"
+const mongoDBVersion = "5.0.10"
 
 func TestMain(m *testing.M) {
 	defer setupLocalMongoDB()()
@@ -296,6 +296,21 @@ func Test_shipyardController_Scenario1(t *testing.T) {
 	ShouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.TestTaskName), "dev")
 	ShouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), "dev")
 	ShouldNotContainEvent(t, finishedEvents, keptnv2.GetFinishedEventType(keptnv2.ReleaseTaskName), "dev")
+
+	sequenceExecutions, err := sc.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{Scope: models.EventScope{
+		EventData: keptnv2.EventData{
+			Project: "test-project",
+			Stage:   "dev",
+		},
+	}})
+
+	require.Nil(t, err)
+	require.Len(t, sequenceExecutions, 1)
+
+	require.Equal(t, "", sequenceExecutions[0].Status.CurrentTask.Name)
+	require.Equal(t, "", sequenceExecutions[0].Status.CurrentTask.TriggeredID)
+	require.Empty(t, sequenceExecutions[0].Status.CurrentTask.Events)
+	require.Len(t, sequenceExecutions[0].Status.PreviousTasks, 4)
 
 	// STEP 9.1
 	// send deployment.started event 1 with ID 1

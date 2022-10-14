@@ -90,10 +90,9 @@ func (smv *SequenceStateMaterializedView) OnSequenceWaiting(event apimodels.Kept
 	smv.updateOverallSequenceState(*eventScope, apimodels.SequenceWaitingState)
 }
 
-func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event apimodels.KeptnContextExtendedCE) {
+func (smv *SequenceStateMaterializedView) OnSequenceTaskEvent(event apimodels.KeptnContextExtendedCE) {
 	smv.mutex.Lock()
 	defer smv.mutex.Unlock()
-
 	state, err := smv.UpdateLastEventOfSequence(event)
 	if err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
@@ -107,40 +106,13 @@ func (smv *SequenceStateMaterializedView) OnSequenceTaskTriggered(event apimodel
 		}
 	}
 
-	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-	}
-}
-
-func (smv *SequenceStateMaterializedView) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
-	smv.mutex.Lock()
-	defer smv.mutex.Unlock()
-	state, err := smv.UpdateLastEventOfSequence(event)
-	if err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-		return
-	}
-
-	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-	}
-}
-
-func (smv *SequenceStateMaterializedView) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
-	smv.mutex.Lock()
-	defer smv.mutex.Unlock()
-	state, err := smv.UpdateLastEventOfSequence(event)
-	if err != nil {
-		log.Errorf("could not update sequence state: %s", err.Error())
-		return
-	}
-
 	if *event.Type == keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName) && *event.Source == SequenceEvaluationService {
 		if err := smv.updateEvaluationOfSequence(event, state); err != nil {
 			log.Errorf("could not update evaluation of sequence state: %s", err.Error())
 			return
 		}
 	}
+
 	if err := smv.SequenceStateRepo.UpdateSequenceState(state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
 	}

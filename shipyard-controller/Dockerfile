@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.5 as builder
+FROM golang:1.18.7 as builder
 
 ARG version=develop
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
@@ -65,11 +65,18 @@ COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-u
 
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debug-ui /debug-ui
 
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/swagger-ui /swagger-ui-debug
+
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debugdocs/swagger.yaml /swagger-ui-debug/swagger-original.yaml
+COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/debugdocs/swagger.yaml /swagger-ui-debug/swagger.yaml
+
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger-original.yaml
 COPY --from=builder /go/src/github.com/keptn/keptn/shipyard-controller/docs/swagger.yaml /swagger-ui/swagger.yaml
+
 RUN sed -i "s|basePath: /v1|basePath: /api/controlPlane/v1 |g" /swagger-ui/swagger.yaml
 
 EXPOSE 8080
+EXPOSE 9090
 
 # required for external tools to detect this as a go binary
 ENV GOTRACEBACK=all

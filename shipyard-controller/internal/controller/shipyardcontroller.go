@@ -42,25 +42,23 @@ type IShipyardController interface {
 }
 
 type ShipyardController struct {
-	eventRepo                  db.EventRepo
-	sequenceExecutionRepo      db.SequenceExecutionRepo
-	projectMvRepo              db.ProjectMVRepo
-	eventDispatcher            IEventDispatcher
-	sequenceDispatcher         ISequenceDispatcher
-	sequenceTimeoutChan        chan apimodels.SequenceTimeout
-	sequenceTriggeredHooks     []ISequenceTriggeredHook
-	sequenceStartedHooks       []ISequenceStartedHook
-	sequenceWaitingHooks       []ISequenceWaitingHook
-	sequenceTaskTriggeredHooks []ISequenceTaskTriggeredHook
-	sequenceTaskStartedHooks   []ISequenceTaskStartedHook
-	sequenceTaskFinishedHooks  []ISequenceTaskFinishedHook
-	subSequenceFinishedHooks   []ISubSequenceFinishedHook
-	sequenceFinishedHooks      []ISequenceFinishedHook
-	sequenceAbortedHooks       []ISequenceAbortedHook
-	sequenceTimoutHooks        []ISequenceTimeoutHook
-	sequencePausedHooks        []ISequencePausedHook
-	sequenceResumedHooks       []ISequenceResumedHook
-	shipyardRetriever          shipyardretriever.IShipyardRetriever
+	eventRepo                db.EventRepo
+	sequenceExecutionRepo    db.SequenceExecutionRepo
+	projectMvRepo            db.ProjectMVRepo
+	eventDispatcher          IEventDispatcher
+	sequenceDispatcher       ISequenceDispatcher
+	sequenceTimeoutChan      chan apimodels.SequenceTimeout
+	sequenceTriggeredHooks   []ISequenceTriggeredHook
+	sequenceStartedHooks     []ISequenceStartedHook
+	sequenceWaitingHooks     []ISequenceWaitingHook
+	sequenceTaskEventHooks   []ISequenceTaskEventHook
+	subSequenceFinishedHooks []ISubSequenceFinishedHook
+	sequenceFinishedHooks    []ISequenceFinishedHook
+	sequenceAbortedHooks     []ISequenceAbortedHook
+	sequenceTimoutHooks      []ISequenceTimeoutHook
+	sequencePausedHooks      []ISequencePausedHook
+	sequenceResumedHooks     []ISequenceResumedHook
+	shipyardRetriever        shipyardretriever.IShipyardRetriever
 }
 
 func GetShipyardControllerInstance(
@@ -328,9 +326,7 @@ func (sc *ShipyardController) handleTaskEvent(event apimodels.KeptnContextExtend
 		return common.ErrSequenceNotFound
 	}
 
-	if keptnv2.IsStartedEventType(*event.Type) {
-		sc.onSequenceTaskStarted(eventScope.WrappedEvent)
-	}
+	sc.onSequenceTaskEvent(eventScope.WrappedEvent)
 
 	return sc.onTaskProgress(event, *sequenceExecution, eventScope)
 }
@@ -388,7 +384,6 @@ func (sc *ShipyardController) onTaskProgress(event apimodels.KeptnContextExtende
 		return fmt.Errorf("unable to delete associated task '.triggered' event with ID %s: %w", eventScope.TriggeredID, err)
 	}
 
-	sc.onSequenceTaskFinished(eventScope.WrappedEvent)
 	return sc.proceedTaskSequence(*eventScope, *updatedSequenceExecution)
 }
 
@@ -768,7 +763,7 @@ func (sc *ShipyardController) triggerNextTaskSequences(eventScope models.EventSc
 
 func (sc *ShipyardController) completeTaskSequence(eventScope models.EventScope, sequenceExecution models.SequenceExecution, reason string) error {
 	sequenceExecution.Status.State = reason
-	_, err := sc.sequenceExecutionRepo.UpdateStatus(sequenceExecution)
+	err := sc.sequenceExecutionRepo.Upsert(sequenceExecution, nil)
 
 	if err != nil {
 		return err
@@ -809,7 +804,7 @@ func (sc *ShipyardController) triggerTask(eventScope models.EventScope, sequence
 		return err
 	}
 
-	sc.onSequenceTaskTriggered(*storeEvent)
+	sc.onSequenceTaskEvent(*storeEvent)
 
 	sequenceExecution.SetNextCurrentTask(task.Name, storeEvent.ID)
 

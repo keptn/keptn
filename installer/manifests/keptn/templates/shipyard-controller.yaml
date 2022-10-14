@@ -23,10 +23,6 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
         - name: shipyard-controller
-          volumeMounts:
-            - name: keptn-git-config-volume
-              mountPath: /keptn-git-config
-              readOnly: true
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.shipyardController.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
           lifecycle:
             preStop:
@@ -49,6 +45,8 @@ spec:
           env:
             - name: RESOURCE_SERVICE
               value: "http://resource-service:8080"
+            - name: DEBUG_UI_ENABLED
+              value: {{ ((.Values.features).debugUI).enabled | default false | quote }}
             - name: EVENTBROKER
               value: http://localhost:8081/event
             - name: POD_NAMESPACE
@@ -56,7 +54,7 @@ spec:
                 fieldRef:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.port }}'
+              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
             - name: MONGODB_USER
               valueFrom:
                 secretKeyRef:
@@ -87,6 +85,8 @@ spec:
               value: {{ .Values.logLevel | default "info" }}
             - name: AUTOMATIC_PROVISIONING_URL
               value: {{ ((.Values.features).automaticProvisioning).serviceURL | default "" | quote }}
+            - name: HIDE_AUTOMATIC_PROVISIONED_URL
+              value: {{ ((.Values.features).automaticProvisioning).hideURL | default false | quote }}
             - name: DISABLE_LEADER_ELECTION
               {{- if lt .Capabilities.KubeVersion.Minor "14" }}
               value: {{ true | quote }}
@@ -102,8 +102,11 @@ spec:
           resources:
             {{- toYaml .Values.shipyardController.resources | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
-          {{- if .Values.shipyardController.extraVolumeMounts }}
           volumeMounts:
+            - name: keptn-git-config-volume
+              mountPath: /keptn-git-config
+              readOnly: true          
+          {{- if .Values.shipyardController.extraVolumeMounts }}
           {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.shipyardController.sidecars }}
@@ -114,10 +117,17 @@ spec:
         - name: keptn-git-config-volume
           configMap:
             name: keptn-git-config
-      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
       {{- if .Values.shipyardController.extraVolumes }}
-      volumes:
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
+      {{- end }}
+      {{- include "keptn.nodeSelector" (dict "value" .Values.shipyardController.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
+      {{- include "keptn.tolerations" (dict "value" .Values.shipyardController.tolerations "default" .Values.tolerations "indent" 6 "context" . )}}
+      {{- if or .Values.shipyardController.affinity .Values.affinity }}
+      {{- include "keptn.affinity" (dict "value" .Values.shipyardController.affinity "default" .Values.affinity "indent" 6 "context" . )}}
+      {{- else }}
+      affinity:
+        {{- include "keptn.affinities.pods" (dict "value" .Values.shipyardController.podAffinity "default" .Values.podAffinity "component" "shipyard-controller" "context" . ) | indent 8 }}
+        {{- include "keptn.affinities.nodes" (dict "value" .Values.shipyardController.nodeAffinityPreset "default" .Values.nodeAffinityPreset "component" "shipyard-controller" "context" . ) | indent 8 }}
       {{- end }}
 ---
 apiVersion: v1

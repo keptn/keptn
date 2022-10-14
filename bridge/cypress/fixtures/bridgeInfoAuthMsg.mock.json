@@ -9,7 +9,5 @@
   "authType": "OAUTH",
   "user": "claus.keptn-dev@ruxitlabs.com",
   "authMsg": "Hello handsome",
-  "featureFlags": {
-    "D3_ENABLED": true
-  }
+  "featureFlags": {}
 }

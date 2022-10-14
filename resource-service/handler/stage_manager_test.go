@@ -33,14 +33,9 @@ func TestStageManager_CreateStage(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -94,14 +89,9 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -132,14 +122,9 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -170,14 +155,9 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -211,14 +191,9 @@ func TestStageManager_CreateStage_CannotPushBranch(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestStageManagerFields()

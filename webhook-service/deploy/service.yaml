@@ -26,6 +26,7 @@ spec:
         app.kubernetes.io/version: develop
         helm.sh/chart: keptn-0.1.0
     spec:
+      serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
           image: 'docker.io/keptndev/webhook-service'

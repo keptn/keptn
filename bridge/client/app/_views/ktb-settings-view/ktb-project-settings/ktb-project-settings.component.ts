@@ -64,9 +64,8 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
 
   public projectName$: Observable<string | null> = this.route.paramMap.pipe(map((params) => params.get('projectName')));
 
-  public gitInputDataExtended$: Observable<IGitDataExtended | undefined> = this.projectName$.pipe(
-    mergeMap((projectName) => (projectName ? this.dataService.loadPlainProject(projectName) : of(undefined))),
-    map((project) => project?.gitCredentials)
+  public project$: Observable<Project | undefined> = this.projectName$.pipe(
+    mergeMap((projectName) => (projectName ? this.dataService.loadPlainProject(projectName) : of(undefined)))
   );
 
   public projectNames$: Observable<string[] | undefined> = this.projectName$.pipe(
@@ -80,11 +79,20 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
     this.dataService.keptnInfo.pipe(filter((info): info is KeptnInfo => !!info)),
     this.dataService.keptnMetadata,
     this.projectName$.pipe(map((projectName) => projectName ?? undefined)),
-    this.gitInputDataExtended$,
+    this.project$,
     this.projectNames$,
     this.projectCreated$,
   ]).pipe(
-    map(([keptnInfo, metadata, projectName, gitInputDataExtended, projectNames, projectCreated]) => {
+    map(([keptnInfo, metadata, projectName, project, projectNames, projectCreated]) => {
+      let state: ProjectSettingsStatus = ProjectSettingsStatus.LOADED;
+
+      // if project is changed, and it is loading, show loading state
+      if (project && projectName && projectName !== project.projectName) {
+        state = ProjectSettingsStatus.INIT;
+      } else if (metadata === null) {
+        state = ProjectSettingsStatus.ERROR;
+      }
+
       if (projectName && projectCreated) {
         this.showCreateNotificationAndRedirect(projectName);
       }
@@ -100,9 +108,9 @@ export class KtbProjectSettingsComponent implements OnInit, OnDestroy, PendingCh
       return {
         projectName,
         gitUpstreamRequired: !metadata?.automaticprovisioning,
-        gitInputDataExtended,
+        gitInputDataExtended: project?.gitCredentials,
         automaticProvisioningMessage: keptnInfo.bridgeInfo.automaticProvisioningMsg,
-        state: metadata === null ? ProjectSettingsStatus.ERROR : ProjectSettingsStatus.LOADED,
+        state,
       };
     }),
     startWith({

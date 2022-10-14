@@ -41,6 +41,9 @@ type ExpandedProjectOld struct {
 	// insecure skip tls
 	InsecureSkipTLS bool `json:"insecureSkipTLS"`
 
+	// is upstream auto provisioned
+	IsUpstreamAutoProvisioned bool `json:"isUpstreamAutoProvisioned"`
+
 	// stages
 	Stages []*apimodels.ExpandedStage `json:"stages"`
 }

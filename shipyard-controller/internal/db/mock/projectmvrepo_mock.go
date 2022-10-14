@@ -50,11 +50,8 @@ import (
 // 			GetServiceFunc: func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error) {
 // 				panic("mock out the GetService method")
 // 			},
-// 			OnSequenceTaskFinishedFunc: func(event apimodels.KeptnContextExtendedCE)  {
-// 				panic("mock out the OnSequenceTaskFinished method")
-// 			},
-// 			OnSequenceTaskStartedFunc: func(event apimodels.KeptnContextExtendedCE)  {
-// 				panic("mock out the OnSequenceTaskStarted method")
+// 			OnSequenceTaskEventFunc: func(event apimodels.KeptnContextExtendedCE)  {
+// 				panic("mock out the OnSequenceTaskEvent method")
 // 			},
 // 			UpdateEventOfServiceFunc: func(e apimodels.KeptnContextExtendedCE) error {
 // 				panic("mock out the UpdateEventOfService method")
@@ -114,11 +111,8 @@ type ProjectMVRepoMock struct {
 	// GetServiceFunc mocks the GetService method.
 	GetServiceFunc func(projectName string, stageName string, serviceName string) (*apimodels.ExpandedService, error)
 
-	// OnSequenceTaskFinishedFunc mocks the OnSequenceTaskFinished method.
-	OnSequenceTaskFinishedFunc func(event apimodels.KeptnContextExtendedCE)
-
-	// OnSequenceTaskStartedFunc mocks the OnSequenceTaskStarted method.
-	OnSequenceTaskStartedFunc func(event apimodels.KeptnContextExtendedCE)
+	// OnSequenceTaskEventFunc mocks the OnSequenceTaskEvent method.
+	OnSequenceTaskEventFunc func(event apimodels.KeptnContextExtendedCE)
 
 	// UpdateEventOfServiceFunc mocks the UpdateEventOfService method.
 	UpdateEventOfServiceFunc func(e apimodels.KeptnContextExtendedCE) error
@@ -223,13 +217,8 @@ type ProjectMVRepoMock struct {
 			// ServiceName is the serviceName argument value.
 			ServiceName string
 		}
-		// OnSequenceTaskFinished holds details about calls to the OnSequenceTaskFinished method.
-		OnSequenceTaskFinished []struct {
-			// Event is the event argument value.
-			Event apimodels.KeptnContextExtendedCE
-		}
-		// OnSequenceTaskStarted holds details about calls to the OnSequenceTaskStarted method.
-		OnSequenceTaskStarted []struct {
+		// OnSequenceTaskEvent holds details about calls to the OnSequenceTaskEvent method.
+		OnSequenceTaskEvent []struct {
 			// Event is the event argument value.
 			Event apimodels.KeptnContextExtendedCE
 		}
@@ -267,25 +256,24 @@ type ProjectMVRepoMock struct {
 			Shipyard string
 		}
 	}
-	lockCloseOpenRemediations  sync.RWMutex
-	lockCreateProject          sync.RWMutex
-	lockCreateRemediation      sync.RWMutex
-	lockCreateService          sync.RWMutex
-	lockCreateStage            sync.RWMutex
-	lockDeleteProject          sync.RWMutex
-	lockDeleteService          sync.RWMutex
-	lockDeleteStage            sync.RWMutex
-	lockDeleteUpstreamInfo     sync.RWMutex
-	lockGetProject             sync.RWMutex
-	lockGetProjects            sync.RWMutex
-	lockGetService             sync.RWMutex
-	lockOnSequenceTaskFinished sync.RWMutex
-	lockOnSequenceTaskStarted  sync.RWMutex
-	lockUpdateEventOfService   sync.RWMutex
-	lockUpdateProject          sync.RWMutex
-	lockUpdateShipyard         sync.RWMutex
-	lockUpdateUpstreamInfo     sync.RWMutex
-	lockUpdatedShipyard        sync.RWMutex
+	lockCloseOpenRemediations sync.RWMutex
+	lockCreateProject         sync.RWMutex
+	lockCreateRemediation     sync.RWMutex
+	lockCreateService         sync.RWMutex
+	lockCreateStage           sync.RWMutex
+	lockDeleteProject         sync.RWMutex
+	lockDeleteService         sync.RWMutex
+	lockDeleteStage           sync.RWMutex
+	lockDeleteUpstreamInfo    sync.RWMutex
+	lockGetProject            sync.RWMutex
+	lockGetProjects           sync.RWMutex
+	lockGetService            sync.RWMutex
+	lockOnSequenceTaskEvent   sync.RWMutex
+	lockUpdateEventOfService  sync.RWMutex
+	lockUpdateProject         sync.RWMutex
+	lockUpdateShipyard        sync.RWMutex
+	lockUpdateUpstreamInfo    sync.RWMutex
+	lockUpdatedShipyard       sync.RWMutex
 }
 
 // CloseOpenRemediations calls CloseOpenRemediationsFunc.
@@ -711,65 +699,34 @@ func (mock *ProjectMVRepoMock) GetServiceCalls() []struct {
 	return calls
 }
 
-// OnSequenceTaskFinished calls OnSequenceTaskFinishedFunc.
-func (mock *ProjectMVRepoMock) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
-	if mock.OnSequenceTaskFinishedFunc == nil {
-		panic("ProjectMVRepoMock.OnSequenceTaskFinishedFunc: method is nil but ProjectMVRepo.OnSequenceTaskFinished was just called")
+// OnSequenceTaskEvent calls OnSequenceTaskEventFunc.
+func (mock *ProjectMVRepoMock) OnSequenceTaskEvent(event apimodels.KeptnContextExtendedCE) {
+	if mock.OnSequenceTaskEventFunc == nil {
+		panic("ProjectMVRepoMock.OnSequenceTaskEventFunc: method is nil but ProjectMVRepo.OnSequenceTaskEvent was just called")
 	}
 	callInfo := struct {
 		Event apimodels.KeptnContextExtendedCE
 	}{
 		Event: event,
 	}
-	mock.lockOnSequenceTaskFinished.Lock()
-	mock.calls.OnSequenceTaskFinished = append(mock.calls.OnSequenceTaskFinished, callInfo)
-	mock.lockOnSequenceTaskFinished.Unlock()
-	mock.OnSequenceTaskFinishedFunc(event)
+	mock.lockOnSequenceTaskEvent.Lock()
+	mock.calls.OnSequenceTaskEvent = append(mock.calls.OnSequenceTaskEvent, callInfo)
+	mock.lockOnSequenceTaskEvent.Unlock()
+	mock.OnSequenceTaskEventFunc(event)
 }
 
-// OnSequenceTaskFinishedCalls gets all the calls that were made to OnSequenceTaskFinished.
+// OnSequenceTaskEventCalls gets all the calls that were made to OnSequenceTaskEvent.
 // Check the length with:
-//     len(mockedProjectMVRepo.OnSequenceTaskFinishedCalls())
-func (mock *ProjectMVRepoMock) OnSequenceTaskFinishedCalls() []struct {
+//     len(mockedProjectMVRepo.OnSequenceTaskEventCalls())
+func (mock *ProjectMVRepoMock) OnSequenceTaskEventCalls() []struct {
 	Event apimodels.KeptnContextExtendedCE
 } {
 	var calls []struct {
 		Event apimodels.KeptnContextExtendedCE
 	}
-	mock.lockOnSequenceTaskFinished.RLock()
-	calls = mock.calls.OnSequenceTaskFinished
-	mock.lockOnSequenceTaskFinished.RUnlock()
-	return calls
-}
-
-// OnSequenceTaskStarted calls OnSequenceTaskStartedFunc.
-func (mock *ProjectMVRepoMock) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
-	if mock.OnSequenceTaskStartedFunc == nil {
-		panic("ProjectMVRepoMock.OnSequenceTaskStartedFunc: method is nil but ProjectMVRepo.OnSequenceTaskStarted was just called")
-	}
-	callInfo := struct {
-		Event apimodels.KeptnContextExtendedCE
-	}{
-		Event: event,
-	}
-	mock.lockOnSequenceTaskStarted.Lock()
-	mock.calls.OnSequenceTaskStarted = append(mock.calls.OnSequenceTaskStarted, callInfo)
-	mock.lockOnSequenceTaskStarted.Unlock()
-	mock.OnSequenceTaskStartedFunc(event)
-}
-
-// OnSequenceTaskStartedCalls gets all the calls that were made to OnSequenceTaskStarted.
-// Check the length with:
-//     len(mockedProjectMVRepo.OnSequenceTaskStartedCalls())
-func (mock *ProjectMVRepoMock) OnSequenceTaskStartedCalls() []struct {
-	Event apimodels.KeptnContextExtendedCE
-} {
-	var calls []struct {
-		Event apimodels.KeptnContextExtendedCE
-	}
-	mock.lockOnSequenceTaskStarted.RLock()
-	calls = mock.calls.OnSequenceTaskStarted
-	mock.lockOnSequenceTaskStarted.RUnlock()
+	mock.lockOnSequenceTaskEvent.RLock()
+	calls = mock.calls.OnSequenceTaskEvent
+	mock.lockOnSequenceTaskEvent.RUnlock()
 	return calls
 }
 

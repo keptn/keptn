@@ -1,18 +1,17 @@
 name: ZeroDowntime Tests
 on:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '0 4 * * 1-5' # run zero downtime tests at 4 AM (UTC), monday to friday (1-5)
+#  schedule:
+#    # * is a special character in YAML so you have to quote this string
+#    - cron:  '0 4 * * 1-5' # run zero downtime tests at 4 AM (UTC), monday to friday (1-5)
   workflow_dispatch: # run zero downtime tests selecting the installation branch and the upgrade chart
     inputs:
       branch:
-        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster'
-        required: true
-        default: 'master'
+        description: 'Take CI build artifacts from branch (e.g., master, release-x.y.z), this changes the chart version that will be installed in the cluster, defaults to last release'
+        required: false
       upgradeTo:
         description: 'The helm upgrade command will run with this version (e.g. 0.15.0-dev-PR-7504 or a full address like in the default value )'
         required: true
-        default: 'https://charts.keptn.sh/packages/keptn-0.18.1-dev.tgz'
+        default: 'https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz'
       testUI:
         type: boolean
         description: 'Cypress tests for Bridge will be run in parallel to the zero downtime tests'
@@ -22,6 +21,11 @@ on:
         type: boolean
         required: false
         description: "Check this if you don't want the test namespaces to stay alive after the test run"
+        default: false
+      testDowngrade:
+        type: boolean
+        required: false
+        description: "Check if downgrade is also with zero downtime"
         default: false
 defaults:
   run:
@@ -45,11 +49,10 @@ jobs:
       matrix:
         include:
           - CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.22"
-            CLUSTER_NAME: "keptn-integration-test-2"
+            PLATFORM_VERSION: "1.24"
+            CLUSTER_NAME: "keptn-integration-tests-2"
             KUBECONFIG: ""
             PLATFORM: "kubernetes"
-
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
       PLATFORM: ${{ matrix.PLATFORM }}
@@ -57,10 +60,7 @@ jobs:
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
       GO_VERSION: "~1.18"
-      TEST_REPORT_FOLDER: tmp
-      FINAL_TEST_REPORT_FOLDER: tmp
-      FINAL_TEST_REPORT_PATH: tmp/gotest.log
-      TEST_REPORT_FILENAME_SUFFIX: test-report-${{ github.run_id }}-${{ matrix.PLATFORM }}-${{ matrix.CLOUD_PROVIDER}}-${{ matrix.PLATFORM_VERSION }}.log
+      UPGRADE_TO: ${{ inputs.upgradeTo || 'https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz' }}
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
       ARTIFACT_RUN_ID: ${{ steps.last_run_id.outputs.RUN_ID }}
@@ -81,7 +81,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.8
+        uses: actions/cache@v3.0.10
         with:
           path: |
             ~/downloads
@@ -96,25 +96,12 @@ jobs:
             BRANCH=${{ github.event.inputs.branch }}
             echo "Using $BRANCH as target branch for zd tests"
           else
-            echo "Determining branch based on what triggered this workflow"
-
-            if [[ "${GITHUB_REF}" == "refs/heads"* ]]; then
-              echo "This is a push to a local branch -> using branch name"
-              BRANCH=${GITHUB_REF#refs/heads/}
-              echo "Branch Name: $BRANCH"
-            else
-              if [[ "${GITHUB_REF}" == "refs/pull/"* ]]; then
-                # usually the format for PRs is: refs/pull/1234/merge
-                echo "::error::This is a Pull Request, and PRs are not supported yet"
-                exit 1
-              else
-                echo "::error This is neither a push, nor a PR, probably something else... Exiting"
-                exit 1
-              fi
-            fi
+            echo "Determining branch based on last release"
+            STR=$(curl https://api.github.com/repos/keptn/keptn/releases -s | jq -r .[].tag_name | grep '^[0-9]\.[0-9]*\.[0-9]*$' | sort -nr | head -n 1)
+            BRANCH=$(echo "${STR%.*}.x")
           fi
 
-          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
+          echo "BRANCH=$(echo ${BRANCH})" >> $GITHUB_OUTPUT
 
       - name: Find latest successful run ID
         id: last_run_id
@@ -132,11 +119,13 @@ jobs:
               (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" )
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
-          echo "::set-output name=RUN_ID::$RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
+
+          
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.22.0
+        uses: dawidd6/action-download-artifact@v2.23.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -149,7 +138,7 @@ jobs:
       # load build-config
       - name: Load Build-Config Environment from ./dist/build-config/build-config.env
         id: load_build_env
-        uses: c-py/action-dotenv-to-setenv@v3
+        uses: c-py/action-dotenv-to-setenv@v4
         with:
           env-file: ./dist/build-config/build-config.env
 
@@ -179,7 +168,7 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
-          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "HELM_CHART_NAME=$(echo ${HELM_CHART_NAME})" >> $GITHUB_OUTPUT
 
       - name: Setup upgrade charts
         id: setup_upgrade_charts
@@ -192,20 +181,20 @@ jobs:
           cd test/zero-downtime
           echo "INSTALL_HELM_CHART=$(ls ./keptn-dev-installed.tgz)" >> $GITHUB_ENV
           
-          if [[ "${{ github.event_name }}" == 'schedule' || "${{ github.event.inputs.upgradeTo }}" == "http"* ]]; then
-            echo "UPGRADE_HELM_CHART=${{ github.event.inputs.upgradeTo }}" >> $GITHUB_ENV
+          if [[ "${{ github.event_name }}" == 'schedule' || ${{ env.UPGRADE_TO }} == "http"* ]]; then
+            echo "UPGRADE_HELM_CHART=${{ env.UPGRADE_TO}}" >> $GITHUB_ENV
           else
-            echo  'retrieving  ./keptn-${{ github.event.inputs.upgradeTo }}.tgz'
+            echo  'retrieving  ./keptn-${{ env.UPGRADE_TO  }}.tgz'
             helm repo add keptn "https://charts.keptn.sh"
             helm repo add keptndev "https://charts-dev.keptn.sh"
             helm repo update
           
-            if [[ "${{ github.event.inputs.upgradeTo }}" == *"-dev"* ]]; then
-               helm pull keptndev/keptn --version ${{ github.event.inputs.upgradeTo }}
+            if [[ "${{ env.UPGRADE_TO }}" == *"-dev"* ]]; then
+               helm pull keptndev/keptn --version ${{ env.UPGRADE_TO }}
             else
-               helm pull keptn/keptn --version ${{ github.event.inputs.upgradeTo }}
+               helm pull keptn/keptn --version ${{ env.UPGRADE_TO }}
             fi
-            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ github.event.inputs.upgradeTo }}.tgz')" >> $GITHUB_ENV
+            echo "UPGRADE_HELM_CHART=$(ls './keptn-${{ env.UPGRADE_TO }}.tgz')" >> $GITHUB_ENV
           fi
           
           echo "Downloaded files:"
@@ -213,7 +202,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v0.8.0
+        uses: google-github-actions/auth@v0.8.1
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
@@ -226,7 +215,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v0.8.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
-          location: "us-east1-b"
+          location: "europe-west2"
 
       - name: Install Keptn
         id: keptn_install
@@ -289,7 +278,7 @@ jobs:
 
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
-          echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
+          echo "KEPTN_ENDPOINT=$(echo ${KEPTN_ENDPOINT})" >> $GITHUB_OUTPUT
 
       - name: Set up gotestfmt
         uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
@@ -310,6 +299,11 @@ jobs:
          go install github.com/jstemmer/go-junit-report/v2@v2.0.0
          go get ./...
 
+      - name: Override Test Configs
+        if: always() && ( github.event_name == 'schedule' || github.event.inputs.testDowngrade == 'false')
+        # Only run one upgrade in case of scheduled run
+        run:  echo "NUMBER_OF_UPGRADES=1" >> $GITHUB_ENV
+
       #######################################################################
       # TESTS
       #######################################################################
@@ -322,7 +316,6 @@ jobs:
           GOMAXPROCS: 10
           KEPTN_ENDPOINT: ${{ steps.determine_keptn_endpoint.outputs.KEPTN_ENDPOINT }}
         run: |
-          
           go test -v -json -run Test_ZeroDowntime -timeout 25m > ../../temp_res/gotest.log & GOTEST=$!
           
           cd ../../bridge &&
@@ -373,7 +366,7 @@ jobs:
           
           FINAL=$(cat temp_res/test-summary.md) 
           echo "$FINAL" >>  $GITHUB_STEP_SUMMARY
-          echo "##[set-output name=FINAL;]$(echo ${FINAL})"
+          echo "FINAL=$(echo ${FINAL})" >> $GITHUB_OUTPUT
 
       - name: Generate Github Summary
         if: always()

@@ -1,15 +1,12 @@
 import ServicesPage from '../support/pageobjects/ServicesPage';
 import { HeatmapComponentPage } from '../support/pageobjects/HeatmapComponentPage';
-import { interceptD3 } from '../support/intercept';
 import { ResultTypes } from '../../shared/models/result-types';
 
 describe('sli-breakdown', () => {
   const servicesPage = new ServicesPage();
 
   beforeEach(() => {
-    servicesPage.interceptAll();
-    interceptD3();
-    servicesPage.visitServicePage('sockshop').selectService('carts', 'v0.1.2').waitForEvaluations();
+    servicesPage.interceptAll().visitServicePage('sockshop').selectService('carts', 'v0.1.2').waitForEvaluations();
   });
 
   it('should load the heatmap with sli breakdown in service screen', () => {
@@ -148,7 +145,6 @@ describe('sli-breakdown with fallback api call', () => {
 
   beforeEach(() => {
     servicesPage.interceptAll().interceptSliFallback('sockshop', ['91a77341-fe5e-43e1-a8a7-be9761b9cee5']);
-    interceptD3();
   });
 
   it('should fallback to api call', () => {

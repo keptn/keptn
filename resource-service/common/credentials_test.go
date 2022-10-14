@@ -129,3 +129,29 @@ func getK8sSecret() *corev1.Secret {
 		Type: corev1.SecretTypeOpaque,
 	}
 }
+
+func TestGetTemporaryUpstreamCredentialsSecretName(t *testing.T) {
+	type args struct {
+		projectName string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "get secret name",
+			args: args{
+				"my-project",
+			},
+			want: "tmp-git-credentials-my-project",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetTemporaryUpstreamCredentialsSecretName(tt.args.projectName); got != tt.want {
+				t.Errorf("GetTemporaryUpstreamCredentialsSecretName() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

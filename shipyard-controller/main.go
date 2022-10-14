@@ -120,7 +120,9 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		sequenceExecutionRepo,
 		createEventsRepo(),
 		createSequenceQueueRepo(),
-		createEventQueueRepo())
+		createEventQueueRepo(),
+		handler.WithHideAutoProvisionedURL(env.HideAutomaticProvisionedURL),
+	)
 
 	repositoryProvisioner := provisioner.New(env.AutomaticProvisioningURL, &http.Client{})
 
@@ -215,12 +217,8 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 	shipyardController.AddSequenceTriggeredHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceStartedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceWaitingHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceTaskTriggeredHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceTaskTriggeredHook(projectMVRepo)
-	shipyardController.AddSequenceTaskStartedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceTaskStartedHook(projectMVRepo)
-	shipyardController.AddSequenceTaskFinishedHook(sequenceStateMaterializedView)
-	shipyardController.AddSequenceTaskFinishedHook(projectMVRepo)
+	shipyardController.AddSequenceTaskEventHook(sequenceStateMaterializedView)
+	shipyardController.AddSequenceTaskEventHook(projectMVRepo)
 	shipyardController.AddSubSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceFinishedHook(sequenceStateMaterializedView)
 	shipyardController.AddSequenceTimeoutHook(sequenceStateMaterializedView)
@@ -296,13 +294,17 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 		Handler: engine,
 	}
 
-	// TODO! feature flag
-	/*
+	if env.DebugUIEnabled {
 		srvDebug := &http.Server{
 			Addr:    ":9090",
 			Handler: debugEngine,
 		}
-	*/
+		go func() {
+			if err := srvDebug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+				log.WithError(err).Error("could not start debug server")
+			}
+		}()
+	}
 
 	if err := connectionHandler.SubscribeToTopics([]string{"sh.keptn.>"}, nats.NewKeptnNatsMessageHandler(shipyardController.HandleIncomingEvent)); err != nil {
 		log.Fatalf("Could not subscribe to nats: %v", err)
@@ -315,15 +317,6 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 			log.WithError(err).Error("could not start API server")
 		}
 	}()
-
-	// TODO! feature flag
-	/*
-		go func() {
-			if err := srvDebug.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-				log.WithError(err).Error("could not start debug server")
-			}
-		}()
-	*/
 
 	if env.DisableLeaderElection {
 		// single shipyard

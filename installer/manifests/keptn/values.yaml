@@ -8,38 +8,42 @@ global:
 
 ## @section MongoDB
 mongo:
-  ## @param mongo.enabled
+  ## @param mongo.enabled Enable usage of MongoDB for Keptn
   enabled: true
-  ## @param mongo.host
+  ## @param mongo.host Host and port of MongoDB
   host: mongodb:27017
-  ## @param mongo.architecture
+  ## @param mongo.architecture Set the architecture for MongoDB (only standalone is supported in Keptn)
   architecture: standalone
+  updateStrategy:
+    ## @param mongo.updateStrategy.type Set the update strategy for MongoDB
+    type: Recreate
   service:
-    ## @param mongo.service.nameOverride
+    ## @param mongo.service.nameOverride Service name of MongoDB
     nameOverride: 'mongo'
-    ## @param mongo.service.port
-    port: 27017
+    ports:
+      ## @param mongo.service.ports.mongodb Port for MongoDB to listen at
+      mongodb: 27017
   auth:
-    ## @param mongo.auth.enabled
+    ## @param mongo.auth.enabled Enable authentication
     enabled: true
-    ## @param mongo.auth.databases
+    ## @param mongo.auth.databases List of custom databases to be created during the initialization
     databases:
       - 'keptn'
-    ## @param mongo.auth.existingSecret
+    ## @param mongo.auth.existingSecret Existing secret with MongoDB credentials (keys: mongodb-passwords, mongodb-root-password, mongodb-metrics-password, mongodb-replica-set-key)
     existingSecret: 'mongodb-credentials' # If the password and rootPassword values below are used, remove this field.
-    ## @param mongo.auth.usernames
+    ## @param mongo.auth.usernames List of custom users to be created during the initialization
     usernames:
       - 'keptn'
-    ## @param mongo.auth.password
+    ## @param mongo.auth.password Password for the custom users set at auth.usernames
     password: null
-    ## @param mongo.auth.rootUser
+    ## @param mongo.auth.rootUser MongoDB root user
     rootUser: 'admin'
-    ## @param mongo.auth.rootPassword
+    ## @param mongo.auth.rootPassword MongoDB root password
     rootPassword: null
-    ## @param mongo.auth.bridgeAuthDatabase
+    ## @param mongo.auth.bridgeAuthDatabase MongoDB database name for Keptn instance
     bridgeAuthDatabase: 'keptn'
   external:
-    ## @param mongo.external.connectionString
+    ## @param mongo.external.connectionString Connection string for MongoDB
     connectionString:
   ## @extra mongo.containerSecurityContext Container Security Context that should be used for all MongoDB pods
   ## @skip mongo.containerSecurityContext.allowPrivilegeEscalation
@@ -51,7 +55,7 @@ mongo:
       drop:
         - ALL
   serviceAccount:
-    ## @param mongo.serviceAccount.automountServiceAccountToken
+    ## @param mongo.serviceAccount.automountServiceAccountToken Allows auto mount of ServiceAccountToken on the serviceAccount created
     automountServiceAccountToken: false
   ## @extra mongo.resources Define resources for MongoDB
   ## @skip mongo.resources.requests
@@ -66,28 +70,33 @@ mongo:
 
 ## @section Keptn Features
 features:
+  debugUI:
+    ## @param features.debugUI.enabled Enable debugUI interface for shipyard-controller
+    enabled: false
   automaticProvisioning:
-    ## @param features.automaticProvisioning.serviceURL
+    ## @param features.automaticProvisioning.serviceURL Service for provisioning remote git URL
     serviceURL: ""
-    ## @param features.automaticProvisioning.message
+    ## @param features.automaticProvisioning.message Message for provisioning remote git URL
     message: ""
+    ## @param features.automaticProvisioning.hideURL Hide automatically provisioned URL
+    hideURL: false
   swagger:
-    ## @param features.swagger.hideDeprecated
+    ## @param features.swagger.hideDeprecated Hide deprecated swagger API documentation
     hideDeprecated: false
   oauth:
     ## @param features.oauth.enabled Enable OAuth for Keptn
     enabled: false
-    ## @param features.oauth.prefix
+    ## @param features.oauth.prefix OAuth prefix for Keptn
     prefix: "keptn:"
   git:
-    ## @param features.git.remoteURLDenyList
+    ## @param features.git.remoteURLDenyList List of forbidden URLs for creation of projects in Keptn
     remoteURLDenyList: ""
 
 ## @section NATS
 nats:
-  ## @param nats.nameOverride
+  ## @param nats.nameOverride Service name of NATS
   nameOverride: keptn-nats
-  ## @param nats.fullnameOverride
+  ## @param nats.fullnameOverride Full service name of NATS
   fullnameOverride: keptn-nats
   cluster:
     ## @param nats.cluster.enabled Enable NATS clustering
@@ -105,7 +114,7 @@ nats:
     runAsUser: 10001
     fsGroup: 10001
   nats:
-    ## @param nats.nats.automountServiceAccountToken
+    ## @param nats.nats.automountServiceAccountToken Allows auto mount of ServiceAccountToken on the serviceAccount created
     automountServiceAccountToken: false
     ## @extra nats.nats.resources Define resources for NATS
     ## @skip nats.nats.resources.requests
@@ -123,7 +132,7 @@ nats:
         ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/#define-startup-probes
         enabled: false
     jetstream:
-      ## @param nats.nats.jetstream.enabled
+      ## @param nats.nats.jetstream.enabled Enable NATS JetStream
       enabled: true
 
       ## @param nats.nats.jetstream.memStorage.enabled Enable memory storage for NATS Jetstream
@@ -132,10 +141,8 @@ nats:
         enabled: true
         size: 500Mi
 
-      ## @param nats.nats.jetstream.fileStorage.enabled
-      ## @param nats.nats.jetstream.fileStorage.size
-      ## @param nats.nats.jetstream.fileStorage.storageDirectory
-      ## @param nats.nats.jetstream.fileStorage.storageClassName
+      ## @extra nats.nats.jetstream.fileStorage Define fileStorage for NATS Jetstream
+      ## @skip nats.nats.jetstream.fileStorage
       fileStorage:
         enabled: true
         size: 5Gi
@@ -171,13 +178,13 @@ nats:
 
 ## @section API Gateway Nginx
 apiGatewayNginx:
-  ## @param apiGatewayNginx.type
+  ## @param apiGatewayNginx.type Kubernetes Service type
   type: ClusterIP
-  ## @param apiGatewayNginx.port
+  ## @param apiGatewayNginx.port Nginx service port
   port: 80
-  ## @param apiGatewayNginx.targetPort
+  ## @param apiGatewayNginx.targetPort Nginx target port
   targetPort: 8080
-  ## @param apiGatewayNginx.nodePort
+  ## @param apiGatewayNginx.nodePort Port to bind to for NodePort and LoadBalancer service types
   nodePort: 31090
   podSecurityContext:
     ## @param apiGatewayNginx.podSecurityContext.enabled Enable the pod security context for the API Gateway
@@ -211,14 +218,50 @@ apiGatewayNginx:
     ## @param apiGatewayNginx.image.repository API Gateway image repository
     repository: "nginx-unprivileged"
     ## @param apiGatewayNginx.image.tag API Gateway image tag
-    tag: "1.22.0-alpine"
+    tag: "1.23.1-alpine"
   ## @param apiGatewayNginx.nodeSelector API Gateway node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param apiGatewayNginx.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param apiGatewayNginx.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param apiGatewayNginx.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param apiGatewayNginx.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param apiGatewayNginx.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param apiGatewayNginx.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param apiGatewayNginx.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param apiGatewayNginx.gracePeriod API Gateway termination grace period
   gracePeriod: 60
   ## @param apiGatewayNginx.preStopHookTime API Gateway pre stop timeout
   preStopHookTime: 20
-  ## @param apiGatewayNginx.clientMaxBodySize
+  ## @param apiGatewayNginx.clientMaxBodySize Set max file upload size for Nginx
   clientMaxBodySize: "5m"
   ## @param apiGatewayNginx.sidecars Add additional sidecar containers to the API Gateway
   sidecars: []
@@ -250,6 +293,42 @@ remediationService:
     tag: ""
   ## @param remediationService.nodeSelector Remediation Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param remediationService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param remediationService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param remediationService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param remediationService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param remediationService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param remediationService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param remediationService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param remediationService.gracePeriod Remediation Service termination grace period
   gracePeriod: 60
   ## @param remediationService.preStopHookTime Remediation Service pre stop timeout
@@ -265,8 +344,8 @@ remediationService:
   ## @skip remediationService.resources.limits
   resources:
     requests:
-      memory: "64Mi"
-      cpu: "50m"
+      memory: "32Mi"
+      cpu: "25m"
     limits:
       memory: "1Gi"
       cpu: "200m"
@@ -279,7 +358,7 @@ apiService:
     ## @param apiService.image.registry API Service image registry
     registry: ""
     ## @param apiService.image.repository API Service image repository
-    repository: "api"    
+    repository: "api"
     ## @param apiService.image.tag API Service image tag
     tag: ""
   maxAuth:
@@ -291,11 +370,47 @@ apiService:
     requestBurst: "2"
   eventValidation:
     ## @param apiService.eventValidation.enabled Enable stricter validation of inbound events via public the event endpoint
-    enabled: true
+    enabled: false
     ## @param apiService.eventValidation.maxEventSizeKB specifies the max. size (in KB) of inbound event accepted by the public event endpoint. This check can be disabled by providing a value <= 0
     maxEventSizeKB: "64"
   ## @param apiService.nodeSelector API Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param apiService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param apiService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param apiService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param apiService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param apiService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param apiService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param apiService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param apiService.gracePeriod API Service termination grace period
   gracePeriod: 60
   ## @param apiService.preStopHookTime API Service pre stop timeout
@@ -332,14 +447,15 @@ bridge:
     ## @param bridge.secret.enabled Enable bridge credentials for HTTP Basic Auth
     enabled: true
   versionCheck:
-    ## @param bridge.versionCheck.enabled Enable check for updated versions of Keptn
+    ## @param bridge.versionCheck.enabled If enabled, the Bridge notifies the user when a new version is available
     enabled: true
   showApiToken:
-    ## @param bridge.showApiToken.enabled If disabled, the API token will not be shown in the Bridge info
+    ## @param bridge.showApiToken.enabled If disabled, the API token will not be shown in the Bridge user menu
     enabled: true
   ## @param bridge.installationType Can take the values: `QUALITY_GATES`, `CONTINUOUS_OPERATIONS`, `CONTINUOUS_DELIVERY` and determines the mode in which the Bridge will be started. If only `QUALITY_GATES` is set, only functionalities and data specific for the Quality Gates Only use case will be displayed
   installationType: null
   ## @param bridge.lookAndFeelUrl Define a different styling for the Bridge by providing a URL to a ZIP archive containing style files. This archive will be downloaded and used upon Bridge startup
+  ## ref: https://github.com/keptn/keptn/tree/master/bridge#custom-look-and-feel
   lookAndFeelUrl: null
   ## @extra bridge.podSecurityContext Define a pod security context for the Bridge
   ## @skip bridge.podSecurityContext.enabled
@@ -368,6 +484,7 @@ bridge:
       drop:
         - ALL
   ## @extra bridge.oauth Configure OAuth settings for the Bridge
+  ## ref: https://github.com/keptn/keptn/tree/master/bridge#setting-up-login-via-openid
   ## @skip bridge.oauth.discovery
   ## @skip bridge.oauth.secureCookie
   ## @skip bridge.oauth.trustProxy
@@ -393,13 +510,46 @@ bridge:
     scope: ""
     userIdentifier: ""
     mongoConnectionString: ""
-  ## @param bridge.authMsg
+  ## @param bridge.authMsg Overrides Keptn auth command displayed inside the Bridge user menu
   authMsg: ""
-  d3:
-    ## @param bridge.d3.enabled Enable D3 basic heatmaps in the Bridge
-    enabled: true
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param bridge.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param bridge.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param bridge.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param bridge.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param bridge.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param bridge.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param bridge.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param bridge.sidecars Add additional sidecar containers to the Bridge
   sidecars: []
   ## @param bridge.extraVolumeMounts Add additional volume mounts to the Bridge
@@ -420,9 +570,9 @@ bridge:
 ## @section Distributor
 distributor:
   metadata:
-    ## @param distributor.metadata.hostname
+    ## @param distributor.metadata.hostname Distributor k8s hostname
     hostname:
-    ## @param distributor.metadata.namespace
+    ## @param distributor.metadata.namespace distributor k8s namespace
     namespace:
   image:
     ## @param distributor.image.registry Distributor image registry
@@ -433,23 +583,23 @@ distributor:
     tag: ""
   config:
     proxy:
-      ## @param distributor.config.proxy.httpTimeout
+      ## @param distributor.config.proxy.httpTimeout Distributor HTTP timeout
       httpTimeout: "30"
-      ## @param distributor.config.proxy.maxPayloadBytesKB
+      ## @param distributor.config.proxy.maxPayloadBytesKB Distributor max HTTP request payload size
       maxPayloadBytesKB: "64"
     queueGroup:
       ## @param distributor.config.queueGroup.enabled Enable queue groups for distributor
       enabled: true
     oauth:
-      ## @param distributor.config.oauth.clientID
+      ## @param distributor.config.oauth.clientID OAuth client ID
       clientID: ""
-      ## @param distributor.config.oauth.clientSecret
+      ## @param distributor.config.oauth.clientSecret OAuth client secret
       clientSecret: ""
-      ## @param distributor.config.oauth.discovery
+      ## @param distributor.config.oauth.discovery OAuth discovery string
       discovery: ""
-      ## @param distributor.config.oauth.tokenURL
+      ## @param distributor.config.oauth.tokenURL OAuth tokenURL string
       tokenURL: ""
-      ## @param distributor.config.oauth.scopes
+      ## @param distributor.config.oauth.scopes OAuth scopes
       scopes: ""
   ## @extra distributor.resources Define resources for the Distributor
   ## @skip distributor.resources.requests
@@ -472,9 +622,9 @@ shipyardController:
     ## @param shipyardController.image.tag Shipyard Controller image tag
     tag: ""
   config:
-    ## @param shipyardController.config.taskStartedWaitDuration
+    ## @param shipyardController.config.taskStartedWaitDuration Waiting duration for every triggered event until the task is marked as timedOut
     taskStartedWaitDuration: "10m"
-    ## @param shipyardController.config.uniformIntegrationTTL
+    ## @param shipyardController.config.uniformIntegrationTTL TTL for uniform integration
     uniformIntegrationTTL: "48h"
     leaderElection:
       ## @param shipyardController.config.leaderElection.enabled Enable leader election when multiple replicas of Shipyard Controller are running
@@ -498,6 +648,42 @@ shipyardController:
       serviceNameMaxSize: 43
   ## @param shipyardController.nodeSelector Shipyard Controller node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param shipyardController.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param shipyardController.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param shipyardController.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param shipyardController.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param shipyardController.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param shipyardController.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param shipyardController.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param shipyardController.gracePeriod Shipyard Controller termination grace period
   gracePeriod: 60
   ## @param shipyardController.preStopHookTime Shipyard Controller pre stop timeout
@@ -517,7 +703,7 @@ shipyardController:
       cpu: "50m"
     limits:
       memory: "128Mi"
-      cpu: "100m"
+      cpu: "200m"
 
 ## @section Secret Service
 secretService:
@@ -525,11 +711,47 @@ secretService:
     ## @param secretService.image.registry Secret Service image registry
     registry: ""
     ## @param secretService.image.repository Secret Service image repository
-    repository: "secret-service"     
+    repository: "secret-service"
     ## @param secretService.image.tag Secret Service image tag
     tag: ""
   ## @param secretService.nodeSelector Secret Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param secretService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param secretService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param secretService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param secretService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param secretService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param secretService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param secretService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param secretService.gracePeriod Secret Service termination grace period
   gracePeriod: 60
   ## @param secretService.preStopHookTime Secret Service pre stop timeout
@@ -549,7 +771,7 @@ secretService:
       cpu: "25m"
     limits:
       memory: "64Mi"
-      cpu: "200m"
+      cpu: "100m"
 
 ## @section Resource Service
 resourceService:
@@ -559,7 +781,7 @@ resourceService:
     ## @param resourceService.image.registry Resource Service image registry
     registry: ""
     ## @param resourceService.image.repository Resource Service image repository
-    repository: "resource-service"   
+    repository: "resource-service"
     ## @param resourceService.image.tag Resource Service image tag
     tag: ""
   env:
@@ -569,12 +791,50 @@ resourceService:
     GIT_KEPTN_EMAIL: "keptn@keptn.sh"
     ## @param resourceService.env.DIRECTORY_STAGE_STRUCTURE Enable directory based structure in the Keptn configuration git repository
     DIRECTORY_STAGE_STRUCTURE: "false"
+    ## @param resourceService.env.DEFAULT_REMOTE_GIT_BRANCH Sets the name of the default branch in the git remote repository
+    DEFAULT_REMOTE_GIT_BRANCH: "master"
   ## @param resourceService.nodeSelector Resource Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param resourceService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param resourceService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param resourceService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param resourceService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param resourceService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param resourceService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param resourceService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param resourceService.gracePeriod Resource Service termination grace period
   gracePeriod: 60
   ## @param resourceService.fsGroup Configure file system group ID to be used in Resource Service
-  fsGroup: 1001
+  fsGroup: 65532
   ## @param resourceService.preStopHookTime Resource Service pre stop timeout
   preStopHookTime: 20
   ## @param resourceService.sidecars Add additional sidecar containers to the Resource Service
@@ -591,8 +851,8 @@ resourceService:
       memory: "32Mi"
       cpu: "25m"
     limits:
-      memory: "64Mi"
-      cpu: "100m"
+      memory: "256Mi"
+      cpu: "200m"
 
 ## @section MongoDB Datastore
 mongodbDatastore:
@@ -600,11 +860,47 @@ mongodbDatastore:
     ## @param mongodbDatastore.image.registry MongoDB Datastore image registry
     registry: ""
     ## @param mongodbDatastore.image.repository MongoDB Datastore image repository
-    repository: "mongodb-datastore"  
+    repository: "mongodb-datastore"
     ## @param mongodbDatastore.image.tag MongoDB Datastore image tag
     tag: ""
   ## @param mongodbDatastore.nodeSelector MongoDB Datastore node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param mongodbDatastore.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param mongodbDatastore.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param mongodbDatastore.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param mongodbDatastore.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param mongodbDatastore.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param mongodbDatastore.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param mongodbDatastore.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param mongodbDatastore.gracePeriod MongoDB Datastore termination grace period
   gracePeriod: 60
   ## @param mongodbDatastore.preStopHookTime MongoDB Datastore pre stop timeout
@@ -621,10 +917,10 @@ mongodbDatastore:
   resources:
     requests:
       memory: "32Mi"
-      cpu: "50m"
+      cpu: "25m"
     limits:
-      memory: "512Mi"
-      cpu: "300m"
+      memory: "64Mi"
+      cpu: "100m"
 
 ## @section Lighthouse Service
 lighthouseService:
@@ -634,11 +930,47 @@ lighthouseService:
     ## @param lighthouseService.image.registry Lighthouse Service image registry
     registry: ""
     ## @param lighthouseService.image.repository Lighthouse Service image repository
-    repository: "lighthouse-service" 
+    repository: "lighthouse-service"
     ## @param lighthouseService.image.tag Lighthouse Service image tag
     tag: ""
   ## @param lighthouseService.nodeSelector Lighthouse Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param lighthouseService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param lighthouseService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param lighthouseService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param lighthouseService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param lighthouseService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param lighthouseService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param lighthouseService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param lighthouseService.gracePeriod Lighthouse Service termination grace period
   gracePeriod: 60
   ## @param lighthouseService.preStopHookTime Lighthouse Service pre stop timeout
@@ -654,11 +986,11 @@ lighthouseService:
   ## @skip lighthouseService.resources.limits
   resources:
     requests:
-      memory: "128Mi"
+      memory: "32Mi"
       cpu: "50m"
     limits:
-      memory: "1Gi"
-      cpu: "200m"
+      memory: "128Mi"
+      cpu: "100m"
 
 ## @section Statistics Service
 statisticsService:
@@ -668,11 +1000,47 @@ statisticsService:
     ## @param statisticsService.image.registry Statistics Service image registry
     registry: ""
     ## @param statisticsService.image.repository Statistics Service image repository
-    repository: "statistics-service" 
+    repository: "statistics-service"
     ## @param statisticsService.image.tag Statistics Service image tag
     tag: ""
   ## @param statisticsService.nodeSelector Statistics Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param statisticsService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param statisticsService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param statisticsService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param statisticsService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param statisticsService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param statisticsService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param statisticsService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param statisticsService.gracePeriod Statistics Service termination grace period
   gracePeriod: 60
   ## @param statisticsService.preStopHookTime Statistics Service pre stop timeout
@@ -702,11 +1070,47 @@ approvalService:
     ## @param approvalService.image.registry Approval Service image registry
     registry: ""
     ## @param approvalService.image.repository Approval Service image repository
-    repository: "approval-service"   
+    repository: "approval-service"
     ## @param approvalService.image.tag Approval Service image tag
     tag: ""
   ## @param approvalService.nodeSelector Approval Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param approvalService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param approvalService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param approvalService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param approvalService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param approvalService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param approvalService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param approvalService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param approvalService.gracePeriod Approval Service termination grace period
   gracePeriod: 60
   ## @param approvalService.preStopHookTime Approval Service pre stop timeout
@@ -725,7 +1129,7 @@ approvalService:
       memory: "32Mi"
       cpu: "25m"
     limits:
-      memory: "128Mi"
+      memory: "64Mi"
       cpu: "100m"
 
 ## @section Webhook Service
@@ -736,11 +1140,47 @@ webhookService:
     ## @param webhookService.image.registry Webhook Service image registry
     registry: ""
     ## @param webhookService.image.repository Webhook Service image repository
-    repository: "webhook-service"    
+    repository: "webhook-service"
     ## @param webhookService.image.tag Webhook Service image tag
     tag: ""
   ## @param webhookService.nodeSelector Webhook Service node labels for pod assignment
   nodeSelector: {}
+  podAffinity:
+    ## @param webhookService.podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAffinityPreset: ""
+    ## @param webhookService.podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+    ##
+    podAntiAffinityPreset: ""
+  ## Node affinity preset
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+  ##
+  nodeAffinityPreset:
+    ## @param webhookService.nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`
+    ##
+    type: ""
+    ## @param webhookService.nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set.
+    ## E.g.
+    ## key: "kubernetes.io/e2e-az-name"
+    ##
+    key: ""
+    ## @param webhookService.nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set.
+    ## E.g.
+    ## values:
+    ##   - e2e-az1
+    ##   - e2e-az2
+    ##
+    values: []
+  ## @param webhookService.affinity Affinity for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+  ## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+  ##
+  affinity: {}
+  ## @param webhookService.tolerations Toleration labels for pod assignment
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  tolerations: []
   ## @param webhookService.gracePeriod Webhook Service termination grace period
   gracePeriod: 60
   ## @param webhookService.preStopHookTime Webhook Service pre stop timeout
@@ -828,3 +1268,40 @@ containerSecurityContext:
       - ALL
 ## @param nodeSelector Default node labels for pod assignment
 nodeSelector: {}
+podAffinity:
+  ## @param podAffinity.podAffinityPreset Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`. Can be overridden by service specific values.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+  ##
+  podAffinityPreset: ""
+  ## @param podAffinity.podAntiAffinityPreset Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`. Can be overridden by service specific values.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+  ##
+  podAntiAffinityPreset: ""
+## Node affinity preset
+## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+##
+nodeAffinityPreset:
+  ## @param nodeAffinityPreset.type Node affinity preset type. Ignored if `affinity` is set. Allowed values: `soft` or `hard`. Can be overridden by service specific values.
+  ##
+  type: ""
+  ## @param nodeAffinityPreset.key Node label key to match Ignored if `affinity` is set. Can be overridden by service specific values.
+  ## E.g.
+  ## key: "kubernetes.io/e2e-az-name"
+  ##
+  key: ""
+  ## @param nodeAffinityPreset.values Node label values to match. Ignored if `affinity` is set. Can be overridden by service specific values.
+  ## E.g.
+  ## values:
+  ##   - e2e-az1
+  ##   - e2e-az2
+  ##
+  values: []
+## @param affinity Affinity for pod assignment. Can be overridden by service specific values.
+## ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+## Note: podAffinityPreset, podAntiAffinityPreset, and nodeAffinityPreset will be ignored when it's set
+##
+affinity: {}
+## @param tolerations Toleration labels for pod assignment. Can be overridden by service specific values.
+## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+##
+tolerations: []

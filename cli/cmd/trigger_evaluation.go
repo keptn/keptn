@@ -59,7 +59,7 @@ flag is set to --timeframe=5m, the evaluation is conducted for the last 5 minute
 * To use a certain state of the git repository, please specify --git-commit-id with the appropiate commit ID
 `,
 	Example: `keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --timeframe=5m --start=2019-10-31T11:59:59 --git-commit-id=<git-commit-id>
-keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 --labels=test-id=1234,test-name=performance-test [--git-commit-id=<git-commit-id>]
+keptn trigger evaluation --project=sockshop --stage=hardening --service=carts --start=2019-10-31T11:59:59 --end=2019-10-31T12:04:59 [--labels=test-id=1234,test-name=performance-test] [--git-commit-id=<git-commit-id>]
 `,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {

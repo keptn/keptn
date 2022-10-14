@@ -49,7 +49,7 @@ Note: The value provided in the --image flag has to contain the full qualified i
 The only exception is "docker.io", as this is the default in Kubernetes.
 For pulling an image from a private registry, we would like to refer to the Kubernetes documentation (https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/).
 `,
-	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image[:tag]> [--sequence=<sequence>]`,
+	Example:      `keptn trigger delivery --project=<project> --service=<service> --image=<image[:tag]> [--sequence=<sequence>] [--labels=test-id=1234,test-name=performance-test]`,
 	SilenceUsage: true,
 	Args:         cobra.NoArgs,
 	PreRunE: func(cmd *cobra.Command, args []string) error {

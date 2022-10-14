@@ -1,4 +1,0 @@
-deploymentURIsLocal:
-  - "http://api-gateway-nginx.keptn-$STAGE"
-deploymentURIsPublic:
-  - "https://$STAGE.keptn-on.keptn.sh"

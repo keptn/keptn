@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/config"
 	"github.com/keptn/keptn/shipyard-controller/internal/provisioner"
@@ -132,12 +133,8 @@ func (p ProjectValidator) validateUpdateProjectParams(updateProjectParams *model
 		}
 	}
 
-	if p.AutomaticProvisioningURL != "" && updateProjectParams.GitCredentials == nil {
-		return nil
-	}
-
 	if updateProjectParams.GitCredentials == nil {
-		return fmt.Errorf("gitCredentials cannot be empty")
+		return nil
 	}
 
 	if err := common.ValidateGitRemoteURL(updateProjectParams.GitCredentials.RemoteURL); err != nil {
@@ -292,16 +289,19 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 	params := &models.CreateProjectParams{}
 	if err := c.ShouldBindJSON(params); err != nil {
+		log.Debugf("bad json %s", err.Error())
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
 
 	projectValidator := ProjectValidator{ProjectNameMaxSize: ph.Env.ProjectNameMaxSize, AutomaticProvisioningURL: ph.Env.AutomaticProvisioningURL}
 	if err := projectValidator.Validate(params); err != nil {
+		log.Debugf("invalid project %s", err.Error())
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidPayloadMsg, err.Error()))
 		return
 	}
 
+	isAutoProvisioned := false
 	if provideProvisionedRepository(ph.Env.AutomaticProvisioningURL, params) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
@@ -320,7 +320,9 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			},
 			User: provisioningData.GitUser,
 		}
+		isAutoProvisioned = true
 	} else if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+		log.Debugf("invalid URL %s", err.Error())
 		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
 		return
 	}
@@ -332,13 +334,14 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		log.Errorf("could not send project.create.started event: %s", err.Error())
 	}
 
-	err, rollback := ph.ProjectManager.Create(params)
+	err, rollback := ph.ProjectManager.Create(params, models.InternalCreateProjectOptions{IsUpstreamAutoProvisioned: isAutoProvisioned})
 	if err != nil {
 		if err := ph.sendProjectCreateFailFinishedEvent(keptnContext, params); err != nil {
 			log.Errorf("could not send project.create.finished event: %s", err.Error())
 		}
 
 		rollback()
+		log.Debugf("rolled back %s", err.Error())
 		if errors.Is(err, common.ErrProjectAlreadyExists) {
 			SetConflictErrorResponse(c, err.Error())
 			return
@@ -386,9 +389,11 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		return
 	}
 
-	if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
-		SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
-		return
+	if params.GitCredentials != nil && params.GitCredentials.RemoteURL != "" {
+		if err := ph.RemoteURLValidator.Validate(params.GitCredentials.RemoteURL); err != nil {
+			SetUnprocessableEntityResponse(c, fmt.Sprintf(common.InvalidRemoteURLMsg, params.GitCredentials.RemoteURL))
+			return
+		}
 	}
 
 	common.LockProject(*params.Name)

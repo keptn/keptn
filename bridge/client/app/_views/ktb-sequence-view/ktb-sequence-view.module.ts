@@ -25,6 +25,7 @@ import { KtbExpandableTileModule } from '../../_components/ktb-expandable-tile/k
 import { KtbConfirmationDialogModule } from '../../_components/_dialogs/ktb-confirmation-dialog/ktb-confirmation-dialog.module';
 import { KtbSequenceControlsComponent } from './ktb-sequence-controls/ktb-sequence-controls.component';
 import { KtbSequenceViewRoutingModule } from './ktb-sequence-view-routing.module';
+import { DtOverlayModule } from '@dynatrace/barista-components/overlay';
 
 @NgModule({
   declarations: [
@@ -59,6 +60,7 @@ import { KtbSequenceViewRoutingModule } from './ktb-sequence-view-routing.module
     KtbSequenceViewRoutingModule,
     MatDialogModule,
     MomentModule,
+    DtOverlayModule,
   ],
 })
 export class KtbSequenceViewModule {}

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -12,18 +13,20 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
+
 	"github.com/go-git/go-billy/v5/memfs"
 	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/http"
 	"github.com/go-git/go-git/v5/storage/memory"
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 	common_mock "github.com/keptn/keptn/resource-service/common/fake"
 	"github.com/keptn/keptn/resource-service/common_models"
+	envconfig "github.com/keptn/keptn/resource-service/config"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	"github.com/stretchr/testify/require"
 	. "gopkg.in/check.v1"
@@ -920,6 +923,72 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 	}
 }
 
+func (s *BaseSuite) TestGit_MoveToNewUpstream(c *C) {
+	g := NewGit(GogitReal{})
+
+	// make empty local remotes
+	oldURL := TESTPATH + "/oldrepo"
+	emptyOldUrl, err := filepath.Abs(oldURL)
+	c.Assert(err, IsNil)
+
+	_, err = git.PlainInit(emptyOldUrl, true)
+	c.Assert(err, IsNil)
+
+	newURL := TESTPATH + "/newrepo"
+	emptyNewUrl, err := filepath.Abs(newURL)
+	c.Assert(err, IsNil)
+
+	_, err = git.PlainInit(emptyNewUrl, true)
+	c.Assert(err, IsNil)
+
+	// make local repo pointing at our old remote
+	localRepo, err := git.PlainInit(TESTPATH+"/repo1", false)
+	c.Assert(err, IsNil)
+	err = configureGitUser(localRepo)
+	c.Assert(err, IsNil)
+
+	_, err = localRepo.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{emptyOldUrl},
+	})
+	c.Assert(err, IsNil)
+
+	// push some first change to remote
+	c.Assert(err, IsNil)
+	w2, err := localRepo.Worktree()
+	c.Assert(err, IsNil)
+	err = write("f.txt", "init repo", c, w2)
+	c.Assert(err, IsNil)
+	commit("f.txt", c, w2)
+	push(localRepo, c)
+
+	httpCredentials := apimodels.HttpsGitAuth{
+		Token: "mytoken",
+	}
+
+	oldRepoContext := common_models.GitContext{Project: "repo1",
+		Credentials: &common_models.GitCredentials{
+			User:      "u2",
+			HttpsAuth: &httpCredentials,
+			RemoteURL: emptyOldUrl,
+		}}
+
+	newRepoContext := common_models.GitContext{Project: "repo1",
+		Credentials: &common_models.GitCredentials{
+			User:      "u2",
+			HttpsAuth: &httpCredentials,
+			RemoteURL: emptyNewUrl,
+		}}
+
+	err = g.MoveToNewUpstream(oldRepoContext, newRepoContext)
+	c.Assert(err, IsNil)
+
+	remotes, err := localRepo.Remotes()
+	c.Assert(err, IsNil)
+	c.Assert(remotes, HasLen, 1)
+	c.Assert(strings.HasSuffix(remotes[0].Config().URLs[0], "/newrepo"), Equals, true)
+}
+
 func (s *BaseSuite) TestGit_MigrateProject(c *C) {
 	g := NewGit(GogitReal{})
 
@@ -1080,122 +1149,6 @@ func (s *BaseSuite) Test_getGitKeptnEmail(c *C) {
 
 }
 
-func Test_getAuthMethod(t *testing.T) {
-	tests := []struct {
-		name           string
-		gitContext     common_models.GitContext
-		wantErr        bool
-		expectedOutput transport.AuthMethod
-	}{
-		{
-			name: "valid credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "https://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						Token:           "some-token",
-						InsecureSkipTLS: false,
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr: false,
-			expectedOutput: &http.BasicAuth{
-				Username: "user",
-				Password: "some-token",
-			},
-		},
-		{
-			name: "valid credentials no user",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "https://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						Token:           "some-token",
-						InsecureSkipTLS: false,
-					},
-					User: "",
-				},
-				Project: "my-proj",
-			},
-			wantErr: false,
-			expectedOutput: &http.BasicAuth{
-				Username: "keptnuser",
-				Password: "some-token",
-			},
-		},
-		{
-			name: "invalid credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "https://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						InsecureSkipTLS: false,
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr:        false,
-			expectedOutput: nil,
-		},
-		{
-			name: "invalid ssh credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "ssh://some.url",
-					SshAuth: &apimodels.SshGitAuth{
-						PrivateKey:     "private-key",
-						PrivateKeyPass: "password",
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr:        true,
-			expectedOutput: nil,
-		},
-		{
-			name: "dumb credentials",
-			gitContext: common_models.GitContext{
-				Credentials: &common_models.GitCredentials{
-					RemoteURL: "ssh://some.url",
-					HttpsAuth: &apimodels.HttpsGitAuth{
-						Token:           "some",
-						InsecureSkipTLS: false,
-						Proxy: &apimodels.ProxyGitAuth{
-							URL:      "",
-							Scheme:   "",
-							User:     "hate",
-							Password: "",
-						},
-					},
-					SshAuth: &apimodels.SshGitAuth{
-						PrivateKey:     "",
-						PrivateKeyPass: "password",
-					},
-					User: "user",
-				},
-				Project: "my-proj",
-			},
-			wantErr:        true,
-			expectedOutput: nil,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			auth, err := getAuthMethod(tt.gitContext)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
-			}
-			if err != nil && auth != tt.expectedOutput {
-				t.Errorf("getAuthMethod() auth = %v, expectedOutput %v", err, tt.wantErr)
-			}
-		})
-	}
-}
-
 func (s *BaseSuite) NewGitContext() common_models.GitContext {
 	return common_models.GitContext{
 		Project: "sockshop",
@@ -1333,6 +1286,122 @@ func TestRetrieveInsecureFlag(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := retrieveInsecureSkipTLS(tt.credentials)
 			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
+func Test_mapError(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "non fast forward",
+			args: args{
+				err: git.ErrNonFastForwardUpdate,
+			},
+			wantErr: kerrors.ErrNonFastForwardUpdate,
+		},
+		{
+			name: "authentication required",
+			args: args{
+				err: transport.ErrAuthenticationRequired,
+			},
+			wantErr: kerrors.ErrAuthenticationRequired,
+		},
+		{
+			name: "authorization failed",
+			args: args{
+				err: transport.ErrAuthorizationFailed,
+			},
+			wantErr: kerrors.ErrAuthorizationFailed,
+		},
+		{
+			name: "force needed",
+			args: args{
+				err: git.ErrForceNeeded,
+			},
+			wantErr: kerrors.ErrForceNeeded,
+		},
+		{
+			name: "nil",
+			args: args{
+				err: nil,
+			},
+			wantErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := mapError(tt.args.err)
+
+			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
+
+func Test_rewriteDefaultBranch(t *testing.T) {
+	content := "ref: refs/heads/master"
+	tests := []struct {
+		name string
+		env  envconfig.EnvConfig
+		want string
+	}{
+		{
+			name: "default branch main",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "main",
+			},
+			want: "ref: refs/heads/main",
+		},
+		{
+			name: "default branch master without env set",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "",
+			},
+			want: "ref: refs/heads/master",
+		},
+		{
+			name: "default branch master",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "master",
+			},
+			want: "ref: refs/heads/master",
+		},
+		{
+			name: "default branch silly22",
+			env: envconfig.EnvConfig{
+				DefaultRemoteGitRepositoryBranch: "silly22",
+			},
+			want: "ref: refs/heads/silly22",
+		},
+	}
+
+	tempDir, err := ioutil.TempDir("", "test-")
+	require.NoError(t, err)
+	defer os.RemoveAll(tempDir)
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			g := NewGit(GogitReal{})
+			// create tmp file
+			file, err := ioutil.TempFile(tempDir, "file")
+			require.Nil(t, err)
+			// add content to the tmp file
+			err = file.Truncate(0)
+			_, err = file.Seek(0, 0)
+			_, err = fmt.Fprintf(file, "%s", content)
+			// rewrite content
+			err = g.rewriteDefaultBranch(file.Name(), tt.env)
+			require.Nil(t, err)
+			//check if content was rewritten
+			fileBytes, err := ioutil.ReadFile(file.Name())
+			require.Nil(t, err)
+			require.Equal(t, tt.want, string(fileBytes))
 		})
 	}
 }

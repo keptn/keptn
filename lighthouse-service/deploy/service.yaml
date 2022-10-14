@@ -27,7 +27,7 @@ spec:
       serviceAccountName: keptn-lighthouse-service
       containers:
         - name: lighthouse-service
-          image: keptndev/lighthouse-service:latest
+          image: keptndev/lighthouse-service
           livenessProbe:
             httpGet:
               path: /health

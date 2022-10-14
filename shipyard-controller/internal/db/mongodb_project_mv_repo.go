@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
+	projectsmv "github.com/keptn/keptn/shipyard-controller/internal/db/models/projects_mv"
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"strconv"
 	"strings"
@@ -43,8 +44,7 @@ type ProjectMVRepo interface {
 	UpdateEventOfService(e apimodels.KeptnContextExtendedCE) error
 	CreateRemediation(project, stage, service string, remediation *apimodels.Remediation) error
 	CloseOpenRemediations(project, stage, service, keptnContext string) error
-	OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE)
-	OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE)
+	OnSequenceTaskEvent(event apimodels.KeptnContextExtendedCE)
 }
 
 type MongoDBProjectMVRepo struct {
@@ -67,6 +67,9 @@ func NewProjectMVRepo(projectRepo ProjectRepo, eventRepo EventRepo, sequenceExec
 // CreateProject creates a project
 func (mv *MongoDBProjectMVRepo) CreateProject(prj *apimodels.ExpandedProject) error {
 	existingProject, err := mv.GetProject(prj.ProjectName)
+	if err != nil {
+		log.Debugf("Issue with retrieving project, %s", err.Error())
+	}
 	if existingProject != nil {
 		return nil
 	}
@@ -78,10 +81,11 @@ func (mv *MongoDBProjectMVRepo) CreateProject(prj *apimodels.ExpandedProject) er
 	return mv.createProject(&updatedProject)
 }
 
-// UpdatedShipyard updates the shipyard of a project
+// UpdateShipyard updates the shipyard of a project
 func (mv *MongoDBProjectMVRepo) UpdateShipyard(projectName string, shipyardContent string) error {
 	existingProject, err := mv.GetProject(projectName)
 	if err != nil {
+		log.Debugf("Issue with retrieving project, %s", err.Error())
 		return err
 	}
 
@@ -459,37 +463,34 @@ func (mv *MongoDBProjectMVRepo) UpdateEventOfService(e apimodels.KeptnContextExt
 		Time:         strconv.FormatInt(time.Now().UnixNano(), 10),
 	}
 
-	err = updateServiceInStage(existingProject, eventData.Stage, eventData.Service, func(service *apimodels.ExpandedService) error {
-		if service.LastEventTypes == nil {
-			service.LastEventTypes = map[string]apimodels.EventContextInfo{}
-		}
-		service.LastEventTypes[*e.Type] = *contextInfo
-		// for events of type "deployment.finished", find the correlating
-		// "deployment.triggered" event to update the deployed image name
-		if *e.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
-			executions, err := mv.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
-				Scope: models.EventScope{EventData: keptnv2.EventData{Project: eventData.Project, Stage: eventData.Stage}},
-			})
-			if err != nil {
-				return fmt.Errorf("unable to fetch sequence executions for keptn context %s: %w", e.Shkeptncontext, err)
-			}
-			if len(executions) == 0 {
-				return fmt.Errorf("no sequence executions could be found for keptn context %s", e.Shkeptncontext)
-			}
-			triggeredData := &keptnv2.DeploymentTriggeredEventData{}
-			err = keptnv2.Decode(executions[0].InputProperties, triggeredData)
-			if err != nil {
-				return errors.New("unable to decode deployment.triggered event data: " + err.Error())
-			}
-			service.DeployedImage = common.ExtractImageOfDeploymentEvent(*triggeredData)
-		}
-		return nil
+	serviceUpdate := projectsmv.ServiceUpdate{}
+
+	serviceUpdate.SetEventTypeUpdate(&projectsmv.EventUpdate{
+		EventType: *e.Type,
+		EventInfo: *contextInfo,
 	})
-	if err != nil {
-		log.Errorf("Could not update image of service %s: %s", eventData.Service, err.Error())
-		return err
+
+	if *e.Type == keptnv2.GetFinishedEventType(keptnv2.DeploymentTaskName) {
+		executions, err := mv.sequenceExecutionRepo.Get(models.SequenceExecutionFilter{
+			Scope: models.EventScope{EventData: keptnv2.EventData{Project: eventData.Project, Stage: eventData.Stage}},
+		})
+		if err != nil {
+			return fmt.Errorf("unable to fetch sequence executions for keptn context %s: %w", e.Shkeptncontext, err)
+		}
+		if len(executions) == 0 {
+			return fmt.Errorf("no sequence executions could be found for keptn context %s", e.Shkeptncontext)
+		}
+		triggeredData := &keptnv2.DeploymentTriggeredEventData{}
+		err = keptnv2.Decode(executions[0].InputProperties, triggeredData)
+		if err != nil {
+			return errors.New("unable to decode deployment.triggered event data: " + err.Error())
+		}
+		serviceUpdate.SetDeployedImage(common.ExtractImageOfDeploymentEvent(*triggeredData))
 	}
-	err = mv.projectRepo.UpdateProject(existingProject)
+
+	log.Debugf("[ProjectsMV]: Updating service for event %v with serviceUpdate %v", e, serviceUpdate)
+	err = mv.projectRepo.UpdateProjectService(existingProject.ProjectName, eventData.Stage, eventData.Service, serviceUpdate)
+
 	if err != nil {
 		log.Errorf("Could not update project %s: %s", eventData.Project, err.Error())
 		return err
@@ -552,24 +553,11 @@ func (mv *MongoDBProjectMVRepo) CloseOpenRemediations(project, stage, service, k
 	return mv.projectRepo.UpdateProject(existingProject)
 }
 
-func (mv *MongoDBProjectMVRepo) OnSequenceTaskTriggered(event apimodels.KeptnContextExtendedCE) {
-	err := mv.UpdateEventOfService(event)
-	if err != nil {
-		log.WithError(err).Errorf("Could not update lastEvent property for task.started event")
-	}
-}
-
-func (mv *MongoDBProjectMVRepo) OnSequenceTaskStarted(event apimodels.KeptnContextExtendedCE) {
+func (mv *MongoDBProjectMVRepo) OnSequenceTaskEvent(event apimodels.KeptnContextExtendedCE) {
+	log.Debugf("[ProjectsMV] OnSequenceTaskEvent: %v", event)
 	err := mv.UpdateEventOfService(event)
 	if err != nil {
 		log.WithError(err).Errorf("could not update lastEvent property for task.started event")
-	}
-}
-
-func (mv *MongoDBProjectMVRepo) OnSequenceTaskFinished(event apimodels.KeptnContextExtendedCE) {
-	err := mv.UpdateEventOfService(event)
-	if err != nil {
-		log.WithError(err).Errorf("could not update lastEvent property for task.finished event")
 	}
 }
 

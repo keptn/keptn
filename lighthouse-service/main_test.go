@@ -34,6 +34,118 @@ import (
 	fakek8s "k8s.io/client-go/kubernetes/fake"
 )
 
+const mongoDBGetByTypeContent = `{
+  "contenttype": "application/json",
+  "data": {
+    "evaluation": {
+      "comparedEvents": [
+        "b7ab5914-b24a-4f8d-8af3-eb98240de3cf"
+      ],
+      "indicatorResults": [
+        {
+          "displayName": "",
+          "keySli": false,
+          "passTargets": [
+            {
+              "criteria": "<=+75%",
+              "targetValue": 350,
+              "violated": false
+            },
+            {
+              "criteria": "<800",
+              "targetValue": 800,
+              "violated": false
+            }
+          ],
+          "score": 1,
+          "status": "pass",
+          "value": {
+            "comparedValue": 200,
+            "metric": "response_time_p95",
+            "success": true,
+            "value": 200
+          },
+          "warningTargets": [
+            {
+              "criteria": "<=1000",
+              "targetValue": 1000,
+              "violated": false
+            },
+            {
+              "criteria": "<=+100%",
+              "targetValue": 400,
+              "violated": false
+            }
+          ]
+        },
+        {
+          "displayName": "",
+          "keySli": false,
+          "passTargets": [
+            {
+              "criteria": "<=+100%",
+              "targetValue": 400,
+              "violated": false
+            },
+            {
+              "criteria": ">=-80%",
+              "targetValue": 40,
+              "violated": false
+            }
+          ],
+          "score": 1,
+          "status": "pass",
+          "value": {
+            "comparedValue": 200,
+            "metric": "throughput",
+            "success": true,
+            "value": 200
+          },
+          "warningTargets": null
+        },
+        {
+          "displayName": "",
+          "keySli": false,
+          "passTargets": null,
+          "score": 0,
+          "status": "info",
+          "value": {
+            "comparedValue": 0,
+            "metric": "error_rate",
+            "success": true,
+            "value": 0
+          },
+          "warningTargets": null
+        }
+      ],
+      "result": "pass",
+      "score": 100,
+      "sloFileContent": "LS0tCnNwZWNfdmVyc2lvbjogIjAuMS4xIgpjb21wYXJpc29uOgogIGFnZ3JlZ2F0ZV9mdW5jdGlvbjogImF2ZyIKICBjb21wYXJlX3dpdGg6ICJzaW5nbGVfcmVzdWx0IgogIGluY2x1ZGVfcmVzdWx0X3dpdGhfc2NvcmU6ICJwYXNzIgogIG51bWJlcl9vZl9jb21wYXJpc29uX3Jlc3VsdHM6IDEKZmlsdGVyOgpvYmplY3RpdmVzOgogIC0gc2xpOiAicmVzcG9uc2VfdGltZV9wOTUiCiAgICBrZXlfc2xpOiBmYWxzZQogICAgcGFzczogICAgICAgICAgICAgIyBwYXNzIGlmIChyZWxhdGl2ZSBjaGFuZ2UgPD0gNzUlIEFORCBhYnNvbHV0ZSB2YWx1ZSBpcyA8IDc1bXMpCiAgICAgIC0gY3JpdGVyaWE6CiAgICAgICAgICAtICI8PSs3NSUiICAjIHJlbGF0aXZlIHZhbHVlcyByZXF1aXJlIGEgcHJlZml4ZWQgc2lnbiAocGx1cyBvciBtaW51cykKICAgICAgICAgIC0gIjw4MDAiICAgICAjIGFic29sdXRlIHZhbHVlcyBvbmx5IHJlcXVpcmUgYSBsb2dpY2FsIG9wZXJhdG9yCiAgICB3YXJuaW5nOiAgICAgICAgICAjIGlmIHRoZSByZXNwb25zZSB0aW1lIGlzIGJlbG93IDIwMG1zLCB0aGUgcmVzdWx0IHNob3VsZCBiZSBhIHdhcm5pbmcKICAgICAgLSBjcml0ZXJpYToKICAgICAgICAgIC0gIjw9MTAwMCIKICAgICAgICAgIC0gIjw9KzEwMCUiCiAgICB3ZWlnaHQ6IDEKICAtIHNsaTogInRocm91Z2hwdXQiCiAgICBwYXNzOgogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD0rMTAwJSIKICAgICAgICAgIC0gIj49LTgwJSIKICAtIHNsaTogImVycm9yX3JhdGUiCnRvdGFsX3Njb3JlOgogIHBhc3M6ICIxMDAlIgogIHdhcm5pbmc6ICI2NSUi",
+      "timeEnd": "2022-01-26T10:10:53.931Z",
+      "timeStart": "2022-01-26T10:05:53.931Z"
+    },
+    "project": "keptn-quality-gates",
+    "result": "pass",
+    "service": "my-service",
+    "stage": "hardening",
+    "status": "succeeded",
+    "temporaryData": {
+      "distributor": {
+        "subscriptionID": ""
+      }
+    }
+  },
+  "id": "c09c80ae-a70d-4f1f-b2ff-f09f4ca38bdd",
+  "shkeptncontext": "b95e0772-053a-4722-9feb-fc7dfa435872",
+  "shkeptnspecversion": "0.2.4",
+  "source": "lighthouse-service",
+  "specversion": "1.0",
+  "time": "2022-08-31T16:14:10.531773605Z",
+  "triggeredid": "92ced52e-9273-472c-b48b-b4c92ef37211",
+  "gitcommitid": "ddeda67224e97244e28bd74c322f9919ef650c53",
+  "type": "sh.keptn.event.evaluation.finished"
+}`
+
 const qualityGatesShortSLOFileContent = `---
 spec_version: "0.1.1"
 comparison:
@@ -71,12 +183,14 @@ var projectName = "quality-gates-invalid-finish"
 var serviceName = "my-service"
 var stageName = "dev"
 var configurationService *httptest.Server
+var mongodbService *httptest.Server
 
 func TestMain(m *testing.M) {
 	test := testing.T{}
 
 	natsServer := setupNatsServer(natsTestPort, test.TempDir())
 	defer startFakeConfigurationService()()
+	defer startFakeMongoDBService()()
 	defer natsServer.Shutdown()
 
 	log := logrus.New()
@@ -100,6 +214,8 @@ func TestMain(m *testing.M) {
 	controlPlane := controlplane.New(subscriptionSource, eventSource, logForwarder, controlplane.WithLogger(log))
 
 	test.Setenv("RESOURCE_SERVICE", configurationService.URL)
+	mongo := strings.TrimPrefix(mongodbService.URL, "http://")
+	test.Setenv("MONGODB_DATASTORE", mongo)
 
 	fakeK8sClient := fakek8s.NewSimpleClientset(
 		&corev1.ConfigMap{
@@ -170,6 +286,16 @@ func startFakeConfigurationService() func() {
 	}))
 
 	return configurationService.Close
+}
+
+func startFakeMongoDBService() func() {
+	mongodbService = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(mongoDBGetByTypeContent))
+	}))
+
+	return mongodbService.Close
 }
 
 func Test_ErroredFinishedPayloadSend(t *testing.T) {
@@ -357,7 +483,7 @@ func Test_SLIFailResultSend(t *testing.T) {
 	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
 	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
-	require.Equal(t, "no evaluation performed by lighthouse because SLI failed with message some-silly-msg", evaluationFinishedPayload.EventData.Message)
+	require.Equal(t, "lighthouse failed because SLI failed with message some-silly-msg", evaluationFinishedPayload.EventData.Message)
 
 	go func() {
 		natsClient.Close()

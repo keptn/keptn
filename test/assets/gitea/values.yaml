@@ -20,6 +20,10 @@ gitea:
       NAME: gitea
       USER: gitea
       PASSWD: gitea
+      LOG_SQL: false
+    log:
+      LEVEL: "Debug"
+      ROOT_PATH: "/var/log/"
 
 memcached:
   enabled: false

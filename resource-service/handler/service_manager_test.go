@@ -36,14 +36,9 @@ func TestServiceManager_CreateService(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -103,14 +98,9 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -143,14 +133,9 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -185,14 +170,9 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -226,14 +206,9 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -267,14 +242,9 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -309,14 +279,9 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -346,14 +311,9 @@ func TestServiceManager_DeleteService(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -386,14 +346,9 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -429,14 +384,9 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -466,14 +416,9 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -509,14 +454,9 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 	}
 
 	expectedGitContext := common_models.GitContext{
-		Project: "my-project",
-		Credentials: &common_models.GitCredentials{
-			User: "my-user",
-			HttpsAuth: &apimodels.HttpsGitAuth{
-				Token: "my-token",
-			},
-			RemoteURL: "my-remote-uri",
-		},
+		Project:     "my-project",
+		Credentials: &credentials,
+		AuthMethod:  auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -547,7 +487,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 func getTestServiceManagerFields() serviceManagerTestFields {
 	return serviceManagerTestFields{
 		git: &common_mock.IGitMock{
-			ResetHardFunc:         func(gitContext common_models.GitContext) error { return nil },
+			ResetHardFunc:         func(gitContext common_models.GitContext, revision string) error { return nil },
 			PullFunc:              func(gitContext common_models.GitContext) error { return nil },
 			ProjectExistsFunc:     func(gitContext common_models.GitContext) bool { return true },
 			ProjectRepoExistsFunc: func(projectName string) bool { return true },
