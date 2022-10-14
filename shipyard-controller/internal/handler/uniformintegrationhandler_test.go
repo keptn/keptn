@@ -4,11 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
 	db_mock "github.com/keptn/keptn/shipyard-controller/internal/db/mock"
 	"github.com/keptn/keptn/shipyard-controller/internal/handler"
-	"go.mongodb.org/mongo-driver/mongo"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -702,108 +700,6 @@ func TestUniformIntegrationHandler_Unregister(t *testing.T) {
 				require.NotEmpty(t, tt.fields.integrationManager.DeleteUniformIntegrationCalls())
 				require.Equal(t, tt.wantID, tt.fields.integrationManager.DeleteUniformIntegrationCalls()[0].ID)
 			}
-		})
-	}
-}
-
-func TestUniformIntegrationHandler_DeleteSubscription(t *testing.T) {
-	type fields struct {
-		integrationManager *db_mock.UniformRepoMock
-	}
-	tests := []struct {
-		name       string
-		fields     fields
-		request    *http.Request
-		wantStatus int
-	}{
-		{
-			name: "delete subscription",
-			fields: fields{
-				integrationManager: &db_mock.UniformRepoMock{
-					DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
-						return nil
-					},
-					GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error) {
-						return &apimodels.EventSubscription{
-							ID:    "205c93be-5841-43b7-b74d-7ed965f3886b",
-							Event: "sh.keptn.event.sometask.triggered",
-							Filter: apimodels.EventSubscriptionFilter{
-								Projects: []string{"pr"},
-								Stages:   []string{"st"},
-								Services: []string{"sv"},
-							},
-						}, nil
-					},
-				},
-			},
-			request:    httptest.NewRequest("DELETE", "/uniform/registration/205c93be-5841-43b7-b74d-7ed965f3886b/subscription/c412771f-4925-4233-b7c1-17bc3d5e8d41", nil),
-			wantStatus: http.StatusOK,
-		},
-		{
-			name: "delete subscription - err while getting subscription",
-			fields: fields{
-				integrationManager: &db_mock.UniformRepoMock{
-					DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
-						return nil
-					},
-					GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error) {
-						return nil, fmt.Errorf("error while getting subscripion")
-					},
-				},
-			},
-			request:    httptest.NewRequest("DELETE", "/uniform/registration/205c93be-5841-43b7-b74d-7ed965f3886b/subscription/c412771f-4925-4233-b7c1-17bc3d5e8d41", nil),
-			wantStatus: http.StatusInternalServerError,
-		},
-		{
-			name: "delete subscription - subscription not found",
-			fields: fields{
-				integrationManager: &db_mock.UniformRepoMock{
-					DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
-						return nil
-					},
-					GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error) {
-						return nil, mongo.ErrNoDocuments
-					},
-				},
-			},
-			request:    httptest.NewRequest("DELETE", "/uniform/registration/205c93be-5841-43b7-b74d-7ed965f3886b/subscription/c412771f-4925-4233-b7c1-17bc3d5e8d41", nil),
-			wantStatus: http.StatusNotFound,
-		},
-		{
-			name: "delete subscription - deletion fails",
-			fields: fields{
-				integrationManager: &db_mock.UniformRepoMock{
-					DeleteSubscriptionFunc: func(integrationID string, subscriptionID string) error {
-						return fmt.Errorf("failure during deletion")
-					},
-					GetSubscriptionFunc: func(integrationID string, subscriptionID string) (*apimodels.EventSubscription, error) {
-						return &apimodels.EventSubscription{
-							ID:    "205c93be-5841-43b7-b74d-7ed965f3886b",
-							Event: "sh.keptn.event.sometask.triggered",
-							Filter: apimodels.EventSubscriptionFilter{
-								Projects: []string{"pr"},
-								Stages:   []string{"st"},
-								Services: []string{"sv"},
-							},
-						}, nil
-					},
-				},
-			},
-			request:    httptest.NewRequest("DELETE", "/uniform/registration/205c93be-5841-43b7-b74d-7ed965f3886b/subscription/c412771f-4925-4233-b7c1-17bc3d5e8d41", nil),
-			wantStatus: http.StatusInternalServerError,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			rh := handler.NewUniformIntegrationHandler(tt.fields.integrationManager)
-
-			router := gin.Default()
-			router.DELETE("/uniform/registration/:integrationID/subscription/:subscriptionID", func(c *gin.Context) {
-				rh.DeleteSubscription(c)
-			})
-			w := performRequest(router, tt.request)
-
-			require.Equal(t, tt.wantStatus, w.Code)
 		})
 	}
 }

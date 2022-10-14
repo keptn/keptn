@@ -57,10 +57,23 @@ func (mdbrepo *MongoDBUniformRepo) DeleteUniformIntegration(id string) error {
 	}
 	defer cancel()
 
-	_, err = collection.DeleteOne(ctx, bson.M{"_id": id})
+	result := collection.FindOneAndDelete(ctx, bson.M{"_id": id})
+	if result.Err() != nil {
+		return err
+	}
+
+	integration := &apimodels.Integration{}
+	err = result.Decode(integration)
 	if err != nil {
 		return err
 	}
+
+	logger.Warnf("Deleted ingegration: [id=%s, distributor.version=%s, hostname=%+v, integration.version=%s, location=%s]",
+		id,
+		integration.MetaData.DistributorVersion,
+		integration.MetaData.Hostname,
+		integration.MetaData.IntegrationVersion,
+		integration.MetaData.Location)
 	return nil
 }
 
@@ -165,11 +178,23 @@ func (mdbrepo *MongoDBUniformRepo) DeleteSubscription(integrationID, subscriptio
 	filter := bson.D{{"_id", integrationID}}
 	update := bson.M{"$pull": bson.M{"subscriptions": bson.M{"id": subscriptionID}}}
 
-	opts := options.Update().SetUpsert(true)
+	opts := options.FindOneAndUpdate().SetUpsert(true)
 
-	_, err = collection.UpdateOne(ctx, filter, update, opts)
+	result := collection.FindOneAndUpdate(ctx, filter, update, opts)
 
-	return err
+	integration := &apimodels.Integration{}
+	err = result.Decode(integration)
+	if err != nil {
+		return err
+	}
+
+	for _, s := range integration.Subscriptions {
+		if s.ID == subscriptionID {
+			logger.Warnf("Deleting subscription: [id=%s, event=%s, filter=%+v, integration=%s] ", subscriptionID, s.Event, s.Filter, integrationID)
+			break
+		}
+	}
+	return result.Err()
 }
 
 func (mdbrepo *MongoDBUniformRepo) GetSubscription(integrationID, subscriptionID string) (*apimodels.EventSubscription, error) {

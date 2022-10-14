@@ -431,18 +431,7 @@ func (rh *UniformIntegrationHandler) DeleteSubscription(c *gin.Context) {
 	integrationID := c.Param("integrationID")
 	subscriptionID := c.Param("subscriptionID")
 
-	subsc, err := rh.uniformRepo.GetSubscription(integrationID, subscriptionID)
-	if err != nil {
-		if errors.Is(err, mongo.ErrNoDocuments) {
-			SetNotFoundErrorResponse(c, err.Error())
-			return
-		}
-		SetInternalServerErrorResponse(c, err.Error())
-		return
-	}
-
-	logger.Warnf("Deleting subscription: [id=%s, event=%s, filter=%+v, integration=%s] ", subscriptionID, subsc.Event, subsc.Filter, integrationID)
-	err = rh.uniformRepo.DeleteSubscription(integrationID, subscriptionID)
+	err := rh.uniformRepo.DeleteSubscription(integrationID, subscriptionID)
 	if err != nil {
 		SetInternalServerErrorResponse(c, err.Error())
 		return
