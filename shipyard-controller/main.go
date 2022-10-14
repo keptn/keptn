@@ -168,6 +168,9 @@ func _main(env config.EnvConfig, kubeAPI kubernetes.Interface) {
 
 	engine := gin.Default()
 
+	// recover from panics
+	engine.Use(gin.Recovery())
+
 	/// setting up middleware to handle graceful shutdown
 	wg := &sync.WaitGroup{}
 	engine.Use(handler.GracefulShutdownMiddleware(wg))
