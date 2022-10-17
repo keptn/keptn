@@ -513,7 +513,7 @@ bridge:
   ## @param bridge.authMsg Overrides Keptn auth command displayed inside the Bridge user menu
   authMsg: ""
   ## @param bridge.basicAuthUsername Keptn auth username for Bridge user login
-  basicAuthUsername: ""
+  basicAuthUsername: "keptn"
   ## @param bridge.nodeSelector Bridge node labels for pod assignment
   nodeSelector: {}
   podAffinity:
