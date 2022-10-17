@@ -2,6 +2,41 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.20.0](https://github.com/keptn/keptn/compare/0.19.0...0.20.0) (2022-10-17)
+
+
+### Features
+
+* **bridge:** Show full date on hover on sequence view ([#8997](https://github.com/keptn/keptn/issues/8997)) ([c7e425a](https://github.com/keptn/keptn/commit/c7e425a7a647fe13d78d5f8b335551f10d527d43))
+* **cli:** Introduce `--data` option for `trigger sequence` command ([#8830](https://github.com/keptn/keptn/issues/8830)) ([50b602e](https://github.com/keptn/keptn/commit/50b602e2791f96764760728b122e685c1d600e76))
+* Introduce tolerations and affinities for helm charts ([#8858](https://github.com/keptn/keptn/issues/8858)) ([d7eb20a](https://github.com/keptn/keptn/commit/d7eb20a9fa9a216b876feaf3b58cbcd96d046c88))
+* **resource-service:** Compute git auth method once per API request ([#8824](https://github.com/keptn/keptn/issues/8824)) ([2ebdc86](https://github.com/keptn/keptn/commit/2ebdc8613e3f0a1436ae597ce3f0e91dfb35e429))
+* **resource-service:** Move history of previous upstream to new upstream ([#8906](https://github.com/keptn/keptn/issues/8906)) ([d24ace1](https://github.com/keptn/keptn/commit/d24ace1fa5d5e2e6c45dd04297ec75ff1e1351f2))
+
+
+### Bug Fixes
+
+* Add `CD` optional to bridge installation type via helm ([#9022](https://github.com/keptn/keptn/issues/9022)) ([f140ed0](https://github.com/keptn/keptn/commit/f140ed07276f60697b14b5e185c0c1e6950850a1))
+* **bridge:** Fix missing update in project settings on project change ([#8983](https://github.com/keptn/keptn/issues/8983)) ([90d30a5](https://github.com/keptn/keptn/commit/90d30a543124b64d07dd6c5ed530936137632af0))
+* **installer:** Fix default helm value for Bridge use cases ([#9028](https://github.com/keptn/keptn/issues/9028)) ([e8b0320](https://github.com/keptn/keptn/commit/e8b03203d84986f40a77cc19191f79f2b06fadda))
+* **installer:** Remove duplicate volumes and volumeMounts configuration ([#8949](https://github.com/keptn/keptn/issues/8949)) ([5f034c7](https://github.com/keptn/keptn/commit/5f034c700fa281260588f5ba41b6956e6f8fbebc))
+* **resource-service:** Determine default branch from helm value when repository is not initialized ([#8843](https://github.com/keptn/keptn/issues/8843)) ([8e91639](https://github.com/keptn/keptn/commit/8e916394247c957c9f029e651f6d345315b37979))
+* **resource-service:** Map go-git specific error types to Keptn error types understood by the resource service error handler ([#8849](https://github.com/keptn/keptn/issues/8849)) ([75a1314](https://github.com/keptn/keptn/commit/75a1314c1fbfab6040346b98bfb8e13331a7c460))
+* **resource-service:** Return specific error in when creating a project with an initialized repository ([#8855](https://github.com/keptn/keptn/issues/8855)) ([2f7e1f2](https://github.com/keptn/keptn/commit/2f7e1f273ab0df258fac3a493d4fde9947b86f18))
+* **shipyard-controller:** Adapt MongoDB query to be compatible with DocumentDB ([#8978](https://github.com/keptn/keptn/issues/8978)) ([baad639](https://github.com/keptn/keptn/commit/baad6396484e26b7cc2adf803772a83cb1fdfdd2))
+* **shipyard-controller:** Adopt previous value of IsUpstreamAutoProvisioned when migrating project with old git credentials structure ([#8882](https://github.com/keptn/keptn/issues/8882)) ([f64441d](https://github.com/keptn/keptn/commit/f64441d9148fd1398fa187969c8e9d37649fb347))
+* **shipyard-controller:** Do not validate gitCredentials when not set during project update ([#8935](https://github.com/keptn/keptn/issues/8935)) ([5d10345](https://github.com/keptn/keptn/commit/5d10345eccb1ba5ddf3f5e0c1c546c23b254cdc9))
+* **shipyard-controller:** prevent storing empty ssh private key after update ([#8959](https://github.com/keptn/keptn/issues/8959)) ([3211707](https://github.com/keptn/keptn/commit/32117074f3b9f106036a07896887613150fd5c2a))
+* **webhook-service:** RAdd warning for malformed configuration ([#8841](https://github.com/keptn/keptn/issues/8841)) ([6a432b2](https://github.com/keptn/keptn/commit/6a432b2d331659544755b3a10c33fc73f604507a))
+
+
+### Other
+
+* **bridge:** Remove Highcharts ([#8922](https://github.com/keptn/keptn/issues/8922)) ([0538276](https://github.com/keptn/keptn/commit/05382762340fe7b056df3e31ac4f83ae3d7087ab))
+* Fix dependencies with go mod tidy ([e71a566](https://github.com/keptn/keptn/commit/e71a566de2060c25249bc6242619bdf46012f55b))
+* **installer:** Adapt resource limits ([#8840](https://github.com/keptn/keptn/issues/8840)) ([e741bbe](https://github.com/keptn/keptn/commit/e741bbe93150ab3df936e2324f6f716947085c59))
+* **installer:** Improve resource limits/requests ([#8862](https://github.com/keptn/keptn/issues/8862)) ([a37aa40](https://github.com/keptn/keptn/commit/a37aa40f45ed5c5c7d10e2d7863fcbecda3d08bd))
+
 ## [0.19.0](https://github.com/keptn/keptn/compare/0.18.0...0.19.0) (2022-09-09)
 
 
