@@ -5,10 +5,7 @@ on:
       - master
       - '[0-9]+.[1-9][0-9]*.x'
   workflow_dispatch:
-    inputs:
-      semver-type:
-        description: 'Can be one of [major,minor,patch]. CAUTION: This will enforce a new release with the specified semantic version type bumped.'
-        required: false
+
 env:
   NODE_VERSION: 16
   GO_VERSION: "~1.18"
