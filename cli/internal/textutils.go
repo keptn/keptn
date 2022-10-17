@@ -101,13 +101,13 @@ func UnfoldMap(inMap map[string]string) (map[string]interface{}, error) {
 		return map[string]interface{}{}, nil
 	}
 
-	keys := make([]string, 0)
+	keys := make([]string, 0, len(inMap))
 	for k := range inMap {
 		keys = append(keys, k)
 	}
 	sort.Strings(keys)
 
-	var transformed []string
+	transformed := make([]string, 0, len(keys))
 	for _, path := range keys {
 		transformed = append(transformed, path+"="+inMap[path])
 	}
