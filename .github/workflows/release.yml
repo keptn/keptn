@@ -1,10 +1,11 @@
 name: Release
 on:
+  push:
+    branches:
+      - master
+      - '[0-9]+.[1-9][0-9]*.x'
   workflow_dispatch:
-    inputs:
-      semver-type:
-        description: 'Can be one of [major,minor,patch]. CAUTION: This will enforce a new release with the specified semantic version type bumped.'
-        required: false
+
 env:
   NODE_VERSION: 16
   GO_VERSION: "~1.18"
@@ -79,11 +80,29 @@ defaults:
   run:
     shell: bash
 jobs:
+  release-please:
+    runs-on: ubuntu-22.04
+    outputs:
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      releases_created: ${{ steps.release.outputs.releases_created }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run release please
+        uses: google-github-actions/release-please-action@v3
+        id: release
+        with:
+          command: manifest
+          token: ${{ secrets.GITHUB_TOKEN }}
+          default-branch: ${{ github.ref_name }}
+
   prepare:
     name: Prepare release run
     runs-on: ubuntu-20.04
+    needs: release-please
+    if: needs.release-please.outputs.releases_created == 'true'
     outputs:
-      next-version: ${{ steps.version_number.outputs.next-version }}
       branch: ${{ steps.current_branch.outputs.branch }}
       keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
       datetime: ${{ steps.get_datetime.outputs.DATETIME }}
@@ -95,23 +114,6 @@ jobs:
       BUILD_MATRIX_EMPTY: ${{ steps.check_modified_files.outputs.BUILD_MATRIX_EMPTY }}
       GO_VERSION: ${{ steps.get_go_version.outputs.GO_VERSION }}
     steps:
-      - name: Check SemVer input
-        env:
-          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
-        run: |
-          if [[ ! -z "$SEMVER_TYPE" ]]; then
-            echo "SemVer Type is defined. Checking for valid SemVer type..."
-            if [[ "$SEMVER_TYPE" == "major" ]] || [[ "$SEMVER_TYPE" == "minor" ]] || [[ "$SEMVER_TYPE" == "patch" ]]; then
-              echo "::notice::SemVer Type is correctly set to $SEMVER_TYPE! Continuing with this version bump..."
-            else
-              echo "::error::ERROR: Enforced SemVer does not match any of [major,minor,patch]!"
-              echo "Exiting..."
-              exit 1
-            fi
-          else
-            echo "::notice::No SemVer type defined, continuing with auto generated version number..."
-          fi
-
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
@@ -129,28 +131,6 @@ jobs:
           echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
           echo "TIME=$(date +'%H%M')" >> $GITHUB_OUTPUT
           echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_OUTPUT
-
-      - name: Find next version number
-        id: version_number
-        env:
-          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
-        run: |
-          if [[ ! -z "$SEMVER_TYPE" ]]; then
-            npx standard-version@^9.3.1 \
-              --skip.commit \
-              --skip.tag \
-              --skip.changelog \
-              --release-as "$SEMVER_TYPE"
-          else
-            npx standard-version@^9.3.1 \
-              --skip.commit \
-              --skip.tag \
-              --skip.changelog
-          fi
-
-          NEXT_VERSION=$(cat VERSION.txt)
-          echo "next-version=${NEXT_VERSION}" >> $GITHUB_OUTPUT
-          git checkout HEAD -- VERSION.txt
 
       - name: Find current branch
         id: current_branch
@@ -186,7 +166,7 @@ jobs:
   ############################################################################
   docker_build:
     name: Unit Tests and Build Image
-    needs: prepare
+    needs: [release-please, prepare]
     strategy:
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
     uses: ./.github/workflows/test-and-build-docker-images.yml
@@ -194,32 +174,31 @@ jobs:
     with:
       artifact: ${{ matrix.config.artifact }}
       tags: |
-        keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
-        quay.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
-        ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare.outputs.next-version }}
+        keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
+        quay.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
+        ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
       should-run: ${{ matrix.config.should-run }}
       should-push-image: ${{ matrix.config.should-push-image }}
       docker-test-target: ${{ matrix.config.docker-test-target }}
       working-dir: ${{ matrix.config.working-dir }}
-      version: ${{ needs.prepare.outputs.next-version }}
+      version: ${{ needs.release-please.outputs.tag_name }}
       datetime: ${{ needs.prepare.outputs.DATE }}${{ needs.prepare.outputs.TIME }}
       gitSha: ${{ needs.prepare.outputs.git_sha }}
       build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
       go-version: ${{ needs.prepare.outputs.GO_VERSION }}
       build-everything: "true"
-      execute-tests: "false"
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
   ############################################################################
   build-helm-charts:
-    needs: prepare
+    needs: [release-please, prepare]
     name: Build Helm Charts
     uses: ./.github/workflows/build-helm-charts.yml
     secrets: inherit
     with:
       branch: ${{ needs.prepare.outputs.branch }}
-      version: ${{ needs.prepare.outputs.next-version }}
+      version: ${{ needs.release-please.outputs.tag_name }}
       keptn-spec-version: ${{ needs.prepare.outputs.keptn-spec-version }}
       release: true
 
@@ -227,11 +206,11 @@ jobs:
   # Build CLI
   ############################################################################
   build-cli:
-    needs: prepare
+    needs: [release-please, prepare]
     uses: ./.github/workflows/build-cli.yml
     with:
       branch: ${{ needs.prepare.outputs.branch }}
-      version: ${{ needs.prepare.outputs.next-version }}
+      version: ${{ needs.release-please.outputs.tag_name }}
       release: true
 
   ############################################################################
@@ -240,7 +219,7 @@ jobs:
   release:
     name: "Release"
     runs-on: ubuntu-20.04
-    needs: [prepare, docker_build, build-helm-charts, build-cli]
+    needs: [release-please, prepare, docker_build, build-helm-charts, build-cli]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -275,69 +254,6 @@ jobs:
         with:
           path: ./dist
 
-      - name: Prepare GitHub Release Notes
-        working-directory: keptn
-        env:
-          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
-        run: |
-          # Delete pre-release tags to be able to generate a changelog from last 'real' release
-          # This is a workaround for a known limitation of standard-version
-          # Reference: https://github.com/conventional-changelog/standard-version/issues/203#issuecomment-872415140
-          git tag -l | grep -vE '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' | xargs git tag -d
-
-          if [[ ! -z "$SEMVER_TYPE" ]]; then
-            npx standard-version@^9.3.1 \
-              -i "${{ env.RELEASE_NOTES_FILE }}" \
-              --skip.commit \
-              --skip.tag \
-              --header "" \
-              --release-as "$SEMVER_TYPE"
-          else
-            npx standard-version@^9.3.1 \
-              -i "${{ env.RELEASE_NOTES_FILE }}" \
-              --skip.commit \
-              --skip.tag \
-              --header ""
-          fi
-
-      - name: Temporarily disable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@b6a1ef57a47860aa483bf6048c1e888018a15f9c
-        with:
-          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ needs.prepare.outputs.branch }}
-          enforce_admins: false
-
-      - name: Create release package
-        id: create-release-package
-        working-directory: keptn
-        env:
-          SEMVER_TYPE: ${{ github.event.inputs.semver-type }}
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-        run: |
-          echo "🚀 Creating release package now..."
-
-          if [[ ! -z "$SEMVER_TYPE" ]]; then
-            npx standard-version@^9.3.1 \
-              --release-as "$SEMVER_TYPE"
-          else
-            npx standard-version@^9.3.1
-          fi
-
-          echo "tag-name=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
-
-          echo "Fetching previously deleted old tags..."
-          git fetch origin --tags -f
-          echo "⚡️ Pushing changes to remote repository..."
-          git push --follow-tags
-
-      - name: Enable "include administrators" branch protection
-        uses: benjefferies/branch-protection-bot@b6a1ef57a47860aa483bf6048c1e888018a15f9c
-        if: always() # Force to always run this step to ensure "include administrators" is always turned back on
-        with:
-          access_token: ${{ secrets.KEPTN_BOT_TOKEN }}
-          branch: ${{ needs.prepare.outputs.branch }}
-          enforce_admins: true
-
       - name: Get k8s resource stats
         working-directory: keptn
         env:
@@ -347,20 +263,11 @@ jobs:
           RELEASE_NOTES_FILE: ${{ env.RELEASE_NOTES_FILE }}
         run: ./gh-actions-scripts/generate-k8s-resource-stats.sh
 
-      - name: Create GitHub Release
-        working-directory: keptn
-        env:
-          GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
-        run: |
-          gh release create "$RELEASE_TAG" --draft --notes-file "${{ env.RELEASE_NOTES_FILE }}" --title "$RELEASE_TAG"
-          sleep 10
-
       - name: Upload Release Assets
         working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz
           gh release upload "$RELEASE_TAG" ../dist/keptn-installer/*.tgz.prov
@@ -369,7 +276,7 @@ jobs:
       - name: Upload helm charts
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           mv ./dist/keptn-installer/*.tgz ./helm-charts/packages
           mv ./dist/keptn-installer/*.tgz.prov ./helm-charts/packages
@@ -385,7 +292,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           DIGEST_FILE: "digests.csv"
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           cat ../dist/image-digests/digest-*.txt >> $DIGEST_FILE
 
@@ -395,5 +302,5 @@ jobs:
         working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
-          RELEASE_TAG: ${{ steps.create-release-package.outputs.tag-name }}
+          RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
