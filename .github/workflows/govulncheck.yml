@@ -121,7 +121,7 @@ jobs:
   create_issue:
     name: Create GitHub Issue
     runs-on: ubuntu-22.04
-    needs: security-scans
+    needs: vulnerability-check
     if: failure()
     steps:
     - name: Formulate bug issue
@@ -142,7 +142,7 @@ jobs:
         echo "" >> vulnerability-found.md
         echo "Note: This issue was auto-generated from [govulncheck.yml](.github/workflows/govulncheck.yml)" >> vulnerability-found.md
 
-    - name: Create issue if versions differ
+    - name: Create issue
       uses: JasonEtco/create-an-issue@v2.6
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
