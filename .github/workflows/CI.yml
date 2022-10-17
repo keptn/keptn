@@ -176,7 +176,7 @@ jobs:
           --repo-url=keptn/keptn \
           --dry-run=true > release-please-output
 
-          GIT_NEXT_TAG=$(cat release-please-output | grep '): release' | cut -d ' ' -f4)
+          GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
           
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
