@@ -4,9 +4,11 @@
 {{- $apiToken = index $apisecret.data "keptn-api-token" }}
 {{- end -}}
 
+{{- $bridgeUsername := default "keptn" .Values.bridge.basicAuthUsername | b64enc | quote }}
 {{- $bridgePassword := (randAlphaNum 20) | b64enc | quote }}
 {{- $bridgesecret := (lookup "v1" "Secret" .Release.Namespace "bridge-credentials") }}
 {{- if $bridgesecret }}
+  {{- $bridgeUsername = index $bridgesecret.data "BASIC_AUTH_USERNAME" }}
   {{- $bridgePassword = index $bridgesecret.data "BASIC_AUTH_PASSWORD" }}
 {{- end -}}
 
@@ -52,7 +54,7 @@ metadata:
     app.kubernetes.io/name: bridge
 type: Opaque
 data:
-  BASIC_AUTH_USERNAME: {{ "keptn" | b64enc | quote }}
+  BASIC_AUTH_USERNAME: {{ $bridgeUsername }}
   BASIC_AUTH_PASSWORD: {{ $bridgePassword }}
 ---
 {{- end }}
