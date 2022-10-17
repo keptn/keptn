@@ -133,6 +133,7 @@ jobs:
        - "shipyard-controller"
        - "statistics-service"
        - "webhook-service"
+       - "cli"
     steps:
     - name: Set up Go 1.x
       uses: actions/setup-go@v3
