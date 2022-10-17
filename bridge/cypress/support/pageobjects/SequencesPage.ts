@@ -399,4 +399,18 @@ export class SequencesPage {
     cy.byTestId('keptn-blocking-sequence-navigation').click();
     return this;
   }
+
+  public hoverOverStageStartTime(stage: string): this {
+    cy.byTestId(`${stage}StartTime`).trigger('mouseenter');
+    return this;
+  }
+
+  public assertTimeOverlay(status = true): this {
+    const overlay = cy.get('.cdk-overlay-container');
+    overlay.should(status ? 'exist' : 'not.exist');
+    if (status) {
+      overlay.children().should('have.length.greaterThan', 0);
+    }
+    return this;
+  }
 }

@@ -81,7 +81,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.0.10
+        uses: actions/cache@v3.0.11
         with:
           path: |
             ~/downloads
@@ -101,7 +101,7 @@ jobs:
             BRANCH=$(echo "${STR%.*}.x")
           fi
 
-          echo "##[set-output name=BRANCH;]$(echo ${BRANCH})"
+          echo "BRANCH=$(echo ${BRANCH})" >> $GITHUB_OUTPUT
 
       - name: Find latest successful run ID
         id: last_run_id
@@ -119,13 +119,13 @@ jobs:
               (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" )
             )][0] | .id')
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
-          echo "::set-output name=RUN_ID::$RUN_ID"
+          echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
 
           
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.23.0
+        uses: dawidd6/action-download-artifact@v2.24.0
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -168,7 +168,7 @@ jobs:
         run: |
           ls dist/keptn-installer/*.tgz # debug output
           HELM_CHART_NAME=$(ls dist/keptn-installer/keptn*.tgz)
-          echo "##[set-output name=HELM_CHART_NAME;]$(echo ${HELM_CHART_NAME})"
+          echo "HELM_CHART_NAME=$(echo ${HELM_CHART_NAME})" >> $GITHUB_OUTPUT
 
       - name: Setup upgrade charts
         id: setup_upgrade_charts
@@ -202,17 +202,17 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v0.8.1
+        uses: google-github-actions/auth@v0.8.3
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
       - name: Set up Google Cloud SDK
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/setup-gcloud@v0.6.0
+        uses: google-github-actions/setup-gcloud@v0.6.2
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/get-gke-credentials@v0.8.0
+        uses: google-github-actions/get-gke-credentials@v0.8.2
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
@@ -278,7 +278,7 @@ jobs:
 
           KEPTN_API_TOKEN=$(kubectl get secret keptn-api-token -n ${KEPTN_NAMESPACE} -ojsonpath={.data.keptn-api-token} | base64 --decode)
           echo "KEPTN_ENDPOINT=${KEPTN_ENDPOINT}"
-          echo "##[set-output name=KEPTN_ENDPOINT;]$(echo ${KEPTN_ENDPOINT})"
+          echo "KEPTN_ENDPOINT=$(echo ${KEPTN_ENDPOINT})" >> $GITHUB_OUTPUT
 
       - name: Set up gotestfmt
         uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
@@ -366,7 +366,7 @@ jobs:
           
           FINAL=$(cat temp_res/test-summary.md) 
           echo "$FINAL" >>  $GITHUB_STEP_SUMMARY
-          echo "##[set-output name=FINAL;]$(echo ${FINAL})"
+          echo "FINAL=$(echo ${FINAL})" >> $GITHUB_OUTPUT
 
       - name: Generate Github Summary
         if: always()

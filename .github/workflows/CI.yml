@@ -147,7 +147,7 @@ jobs:
         id: build_everything
         run: |
           BUILD_EVERYTHING=true
-          echo "##[set-output name=BUILD_EVERYTHING;]$(echo ${BUILD_EVERYTHING})"
+          echo "BUILD_EVERYTHING=$(echo ${BUILD_EVERYTHING})" >> $GITHUB_OUTPUT
 
       - name: Prepare artifacts with changes
         id: check_modified_files
@@ -167,16 +167,16 @@ jobs:
         env:
           BRANCH: ${{ steps.extract_branch.outputs.BRANCH }}
           BRANCH_SLUG: ${{ steps.extract_branch.outputs.BRANCH_SLUG }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           # determine version
-          npx standard-version@^9.3.1 \
-            --skip.commit \
-            --skip.tag \
-            --skip.changelog
+          npx release-please@^14.11.0 release-pr \
+          --token="$GH_TOKEN" \
+          --repo-url=keptn/keptn \
+          --dry-run=true > release-please-output
 
-          GIT_NEXT_TAG=$(cat VERSION.txt)
-          git checkout HEAD -- VERSION.txt
+          GIT_NEXT_TAG=$(cat release-please-output | grep '): release' | cut -d ' ' -f4)
           
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
@@ -196,21 +196,21 @@ jobs:
           echo "VERSION=${VERSION}"
           echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}"
 
-          echo "::set-output name=VERSION::${VERSION}"
-          echo "::set-output name=KEPTN_SPEC_VERSION::${KEPTN_SPEC_VERSION}"
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "KEPTN_SPEC_VERSION=${KEPTN_SPEC_VERSION}" >> $GITHUB_OUTPUT
       - name: Get current date and time
         id: get_datetime
         env:
           GO_VERSION: ${{ env.GO_VERSION }}
         run: |
-          echo "::set-output name=DATE::$(date +'%Y%m%d')"
-          echo "::set-output name=TIME::$(date +'%H%M')"
-          echo "::set-output name=DATETIME::$(date +'%Y%m%d')$(date +'%H%M')"
+          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
+          echo "TIME=$(date +'%H%M')" >> $GITHUB_OUTPUT
+          echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_OUTPUT
 
       - name: Get GO-Version
         id: get_go_version
         run: |
-          echo "::set-output name=GO_VERSION::$GO_VERSION"
+          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_OUTPUT
 
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
@@ -284,7 +284,7 @@ jobs:
           fetch-depth: 0
 
       # cache go modules
-      - uses: actions/cache@v3.0.10
+      - uses: actions/cache@v3.0.11
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
@@ -321,7 +321,7 @@ jobs:
   ############################################################################
   helm_charts_build:
     name: Build Helm Charts
-    needs: prepare_ci_run
+    needs: [prepare_ci_run, unit-tests-and-build]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')
     uses: ./.github/workflows/build-helm-charts.yml
     secrets: inherit

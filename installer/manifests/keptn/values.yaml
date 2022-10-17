@@ -452,8 +452,8 @@ bridge:
   showApiToken:
     ## @param bridge.showApiToken.enabled If disabled, the API token will not be shown in the Bridge user menu
     enabled: true
-  ## @param bridge.installationType Can take the values: `QUALITY_GATES`, `CONTINUOUS_OPERATIONS`, `CONTINUOUS_DELIVERY` and determines the mode in which the Bridge will be started. If only `QUALITY_GATES` is set, only functionalities and data specific for the Quality Gates Only use case will be displayed
-  installationType: null
+  ## @param bridge.installationType Can take the values: `QUALITY_GATES`, `CONTINUOUS_OPERATIONS`, `CONTINUOUS_DELIVERY` in a comma-delimited list and determines the mode in which the Bridge will be started. If only `QUALITY_GATES` is set, only functionalities and data specific for the Quality Gates Only use case will be displayed
+  installationType: "QUALITY_GATES,CONTINUOUS_OPERATIONS,CONTINUOUS_DELIVERY"
   ## @param bridge.lookAndFeelUrl Define a different styling for the Bridge by providing a URL to a ZIP archive containing style files. This archive will be downloaded and used upon Bridge startup
   ## ref: https://github.com/keptn/keptn/tree/master/bridge#custom-look-and-feel
   lookAndFeelUrl: null

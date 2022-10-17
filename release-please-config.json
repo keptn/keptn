@@ -2,8 +2,9 @@
     "bootstrap-sha": "fab0926cdd6c59274d0da8f036e023a554208e85",
     "packages": {
       ".": {
+        "pull-request-title-pattern": "build(release): ${version}",
         "changelog-path": "CHANGELOG.md",
-	"release-type": "go",
+        "release-type": "go",
         "prerelease": false,
         "bump-minor-pre-major": true,
         "bump-patch-for-minor-pre-major": false,
@@ -67,3 +68,4 @@
     },
     "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
   }
+  
