@@ -3,6 +3,7 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -93,16 +94,24 @@ func JSONPathToJSONObj(input []string) (string, error) {
 	return root.String(), nil
 }
 
-// UnfoldToMap takes a map of with keys of the form "a.b.c" and a value "v" each
+// UnfoldMap takes a map of keys of the form "a.b.c" and values "v"
 // and returns an "unfold" map containing map[a[b[c]]] = v
 func UnfoldMap(inMap map[string]string) (map[string]interface{}, error) {
 	if inMap == nil {
 		return map[string]interface{}{}, nil
 	}
-	var transformed []string
-	for path, value := range inMap {
-		transformed = append(transformed, path+"="+value)
+
+	keys := make([]string, 0)
+	for k := range inMap {
+		keys = append(keys, k)
 	}
+	sort.Strings(keys)
+
+	var transformed []string
+	for _, path := range keys {
+		transformed = append(transformed, path+"="+inMap[path])
+	}
+
 	s, err := JSONPathToJSONObj(transformed)
 	if err != nil {
 		return map[string]interface{}{}, err
