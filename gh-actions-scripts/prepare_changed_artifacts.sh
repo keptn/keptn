@@ -227,9 +227,10 @@ echo "$matrix_config"
 echo "::endgroup::"
 
 # print job outputs (make sure they are also set in needs.prepare_ci_run.outputs !!!)
-echo "BUILD_INSTALLER=$BUILD_INSTALLER" >> $GITHUB_OUTPUT
-echo "BUILD_CLI=$BUILD_CLI" >> $GITHUB_OUTPUT
-echo "BUILD_MATRIX=$matrix_config" >> $GITHUB_OUTPUT
+# shellcheck disable=SC2129
+echo "BUILD_INSTALLER=$BUILD_INSTALLER" >> "$GITHUB_OUTPUT"
+echo "BUILD_CLI=$BUILD_CLI" >> "$GITHUB_OUTPUT"
+echo "BUILD_MATRIX=$matrix_config" >> "$GITHUB_OUTPUT"
 echo ""
 echo "The following artifacts have changes and will be built fresh:"
 echo "BUILD_INSTALLER: $BUILD_INSTALLER"
@@ -252,8 +253,8 @@ echo "BUILD_WEBHOOK_SVC: $BUILD_WEBHOOK_SVC"
 
 if [[ "$matrix_config" == '{"config":[]}' ]]; then
   echo "Build matrix is emtpy, setting output..."
-  echo "BUILD_MATRIX_EMPTY=true" >> $GITHUB_OUTPUT
+  echo "BUILD_MATRIX_EMPTY=true" >> "$GITHUB_OUTPUT"
 else
   echo "Build matrix is NOT emtpy, setting output..."
-  echo "BUILD_MATRIX_EMPTY=false" >> $GITHUB_OUTPUT
+  echo "BUILD_MATRIX_EMPTY=false" >> "$GITHUB_OUTPUT"
 fi
