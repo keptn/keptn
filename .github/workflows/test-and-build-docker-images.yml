@@ -162,7 +162,6 @@ jobs:
     needs: unit_test
     permissions:
       id-token: write # Needed for cosign OIDC authentication against Github
-    if: (inputs.build-everything == 'true') || (inputs.build-installer == 'true')
     steps:
     - name: Check out code
       uses: actions/checkout@v3
@@ -175,9 +174,11 @@ jobs:
 
     - name: Set up Cosign
       uses: sigstore/cosign-installer@v2.8.0
+      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
+      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
       with:
         registry: "ghcr.io"
         username: "keptn-bot"
@@ -185,19 +186,11 @@ jobs:
 
     - name: Login to Quay.io
       uses: docker/login-action@v2
+      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
       with:
         registry: "quay.io"
         username: ${{ secrets.QUAY_USER }}
         password: ${{ secrets.QUAY_TOKEN }}
-    
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        # Key is named differently to avoid collision
-        key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-multi-buildx
 
     - name: Login to Docker Hub
       uses: docker/login-action@v2
@@ -209,9 +202,18 @@ jobs:
         username: ${{ secrets.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
+    - name: Cache Docker layers
+      uses: actions/cache@v3
+      with:
+        path: /tmp/.buildx-cache
+        # Key is named differently to avoid collision
+        key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-multi-buildx
+
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
-      if: inputs.should-push-image == 'true' && ( inputs.should-run == 'true' || inputs.build-everything == 'true' )
+      if: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
       uses: docker/build-push-action@v3
       with:
         context: ${{ inputs.working-dir }}
@@ -244,7 +246,7 @@ jobs:
         path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
     - name: Sign container images
-      if: inputs.should-push-image == 'true'
+      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
       env:
         COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
@@ -255,7 +257,7 @@ jobs:
         done
 
     - name: Verify container images
-      if: inputs.should-push-image == 'true'
+      if: ( github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' ) && (inputs.should-push-image == 'true' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository))
       env:
         COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
