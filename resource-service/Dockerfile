@@ -20,12 +20,6 @@ RUN go mod download
 
 COPY . .
 
-FROM builder-base as builder
-ARG version=develop
-
-# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
-ARG SKAFFOLD_GO_GCFLAGS
-
 # Target OS and architecture to build against (set automatically)
 ARG TARGETOS
 ARG TARGETARCH

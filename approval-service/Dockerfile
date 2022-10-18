@@ -20,10 +20,6 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
-FROM builder-base as builder
-ARG version=develop
-ARG debugBuild
-
 # Target OS and architecture to build against (set automatically)
 ARG TARGETOS
 ARG TARGETARCH
