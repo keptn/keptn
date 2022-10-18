@@ -179,7 +179,7 @@ jobs:
       gitSha: ${{ needs.prepare.outputs.git_sha }}
       build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
       build-everything: "true"
-      release-build: ${{ env.RELEASE_BUILD }}
+      release-build: "true"
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
