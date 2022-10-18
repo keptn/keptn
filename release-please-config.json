@@ -5,7 +5,6 @@
         "pull-request-title-pattern": "build(release): ${version}",
         "changelog-path": "CHANGELOG.md",
         "release-type": "go",
-        "prerelease": false,
         "include-v-in-tag": false,
         "draft": false,
         "extra-files": [
