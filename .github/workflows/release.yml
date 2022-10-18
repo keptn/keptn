@@ -184,7 +184,6 @@ jobs:
       datetime: ${{ needs.prepare.outputs.datetime }}
       gitSha: ${{ needs.prepare.outputs.git_sha }}
       build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
-      go-version: ${{ needs.prepare.outputs.GO_VERSION }}
       build-everything: "true"
 
   ############################################################################
