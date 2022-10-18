@@ -192,15 +192,6 @@ jobs:
         username: ${{ secrets.REGISTRY_USER }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
 
-    - name: Cache Docker layers
-      uses: actions/cache@v3
-      with:
-        path: /tmp/.buildx-cache
-        # Key is named differently to avoid collision
-        key: ${{ runner.os }}-multi-buildx-${{ github.sha }}
-        restore-keys: |
-          ${{ runner.os }}-multi-buildx
-
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
       if: inputs.should-push-image == 'true'
