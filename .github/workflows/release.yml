@@ -13,7 +13,6 @@ env:
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
   BUILD_EVERYTHING: 'true'
-  RELEASE_BUILD: 'true'
 
   BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
   API_ARTIFACT_PREFIX: "API"
@@ -108,7 +107,6 @@ jobs:
       keptn-spec-version: ${{ steps.keptn_spec_version.outputs.keptn-spec-version }}
       datetime: ${{ steps.get_datetime.outputs.DATETIME }}
       git_sha: ${{ steps.extract_branch.outputs.GIT_SHA }}
-      BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
       BUILD_INSTALLER: ${{ steps.check_modified_files.outputs.BUILD_INSTALLER }}
       BUILD_CLI: ${{ steps.check_modified_files.outputs.BUILD_CLI }}
       BUILD_MATRIX: ${{ steps.check_modified_files.outputs.BUILD_MATRIX }}
@@ -150,7 +148,7 @@ jobs:
         id: check_modified_files
         env:
           BUILD_EVERYTHING: ${{ env.BUILD_EVERYTHING }}
-          RELEASE_BUILD: ${{ env.RELEASE_BUILD }}
+          RELEASE_BUILD: 'true'
         run: |
           ./gh-actions-scripts/prepare_changed_artifacts.sh ""
 
