@@ -40,9 +40,9 @@ on:
         required: false
         default: 'false'
       release-build:
-        type: boolean
+        type: string
         required: false
-        default: false
+        default: 'false'
 defaults:
   run:
     shell: bash
