@@ -166,6 +166,11 @@ jobs:
     steps:
     - name: Check out code
       uses: actions/checkout@v3
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: arm64
       
     - name: Set up Docker Buildx
       id: buildx
@@ -215,6 +220,7 @@ jobs:
       uses: docker/build-push-action@v3
       with:
         context: ${{ inputs.working-dir }}
+        platforms: linux/amd64,linux/arm64
         tags: ${{ inputs.tags }}
         build-args: |
           version=${{ inputs.version }}
