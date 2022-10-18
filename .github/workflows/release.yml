@@ -145,13 +145,6 @@ jobs:
           KEPTN_SPEC_VERSION=$(git describe --tags)
           echo "keptn-spec-version=${KEPTN_SPEC_VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Get GO-Version
-        id: get_go_version
-        env:
-          GO_VERSION: ${{ env.GO_VERSION }}
-        run: |
-          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_OUTPUT
-
       - name: Prepare artifact build matrix
         id: check_modified_files
         env:
