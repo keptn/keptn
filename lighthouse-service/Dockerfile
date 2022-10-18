@@ -3,7 +3,6 @@
 # https://hub.docker.com/_/golang
 FROM golang:1.18.7-alpine3.16 as builder
 
-
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
