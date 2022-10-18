@@ -13,6 +13,7 @@ env:
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
   BUILD_EVERYTHING: 'true'
+  RELEASE_BUILD: 'true'
 
   BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
   API_ARTIFACT_PREFIX: "API"
@@ -128,9 +129,8 @@ jobs:
       - name: Get current date and time
         id: get_datetime
         run: |
-          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-          echo "TIME=$(date +'%H%M')" >> $GITHUB_OUTPUT
-          echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_OUTPUT
+          DATETIME=$(date +'%Y%m%d%H%M')
+          echo "DATETIME=$DATETIME" >> "$GITHUB_OUTPUT"
 
       - name: Find current branch
         id: current_branch
@@ -146,18 +146,11 @@ jobs:
           KEPTN_SPEC_VERSION=$(git describe --tags)
           echo "keptn-spec-version=${KEPTN_SPEC_VERSION}" >> $GITHUB_OUTPUT
 
-      - name: Get GO-Version
-        id: get_go_version
-        env:
-          GO_VERSION: ${{ env.GO_VERSION }}
-        run: |
-          echo "GO_VERSION=$GO_VERSION" >> $GITHUB_OUTPUT
-
       - name: Prepare artifact build matrix
         id: check_modified_files
         env:
-          BUILD_EVERYTHING: true
-          RELEASE_BUILD: true
+          BUILD_EVERYTHING: ${{ env.BUILD_EVERYTHING }}
+          RELEASE_BUILD: ${{ env.RELEASE_BUILD }}
         run: |
           ./gh-actions-scripts/prepare_changed_artifacts.sh ""
 
@@ -182,11 +175,11 @@ jobs:
       docker-test-target: ${{ matrix.config.docker-test-target }}
       working-dir: ${{ matrix.config.working-dir }}
       version: ${{ needs.release-please.outputs.tag_name }}
-      datetime: ${{ needs.prepare.outputs.DATE }}${{ needs.prepare.outputs.TIME }}
+      datetime: ${{ needs.prepare.outputs.datetime }}
       gitSha: ${{ needs.prepare.outputs.git_sha }}
       build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
-      go-version: ${{ needs.prepare.outputs.GO_VERSION }}
       build-everything: "true"
+      release-build: ${{ env.RELEASE_BUILD }}
 
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
