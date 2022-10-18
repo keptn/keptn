@@ -128,9 +128,8 @@ jobs:
       - name: Get current date and time
         id: get_datetime
         run: |
-          echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_OUTPUT
-          echo "TIME=$(date +'%H%M')" >> $GITHUB_OUTPUT
-          echo "DATETIME=$(date +'%Y%m%d')$(date +'%H%M')" >> $GITHUB_OUTPUT
+          DATETIME=$(date +'%Y%m%d%H%M')
+          echo "DATETIME=$DATETIME" >> "$GITHUB_OUTPUT"
 
       - name: Find current branch
         id: current_branch
@@ -182,7 +181,7 @@ jobs:
       docker-test-target: ${{ matrix.config.docker-test-target }}
       working-dir: ${{ matrix.config.working-dir }}
       version: ${{ needs.release-please.outputs.tag_name }}
-      datetime: ${{ needs.prepare.outputs.DATE }}${{ needs.prepare.outputs.TIME }}
+      datetime: ${{ needs.prepare.outputs.datetime }}
       gitSha: ${{ needs.prepare.outputs.git_sha }}
       build-installer: ${{ needs.prepare.outputs.BUILD_INSTALLER }}
       go-version: ${{ needs.prepare.outputs.GO_VERSION }}
