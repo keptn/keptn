@@ -39,10 +39,6 @@ on:
         type: string
         required: false
         default: 'false'
-      execute-tests:
-        type: string
-        required: false
-        default: 'true'
       release-build:
         type: boolean
         required: false
@@ -53,10 +49,11 @@ defaults:
 env:
   GO_VERSION: "~1.18"
 jobs:
-  unit_test:
-    name: Execute Unit Tests
-    runs-on: ubuntu-20.04
-    if: inputs.execute-tests == 'true'
+  test_and_build:
+    name: Test and Build
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write # Needed for cosign OIDC authentication against Github
     steps:
     - name: Check out code
       uses: actions/checkout@v3
@@ -159,16 +156,6 @@ jobs:
 #######################################################################
 # BUILD PRODUCTION IMAGES
 #######################################################################
-  build_image:
-    name: Build and push Docker Image
-    runs-on: ubuntu-20.04
-    needs: unit_test
-    permissions:
-      id-token: write # Needed for cosign OIDC authentication against Github
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v3
-      
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@v2
