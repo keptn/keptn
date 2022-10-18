@@ -216,7 +216,7 @@ jobs:
 
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
-      if: matrix.config.should-push-image == 'true'
+      if: inputs.should-push-image == 'true'
       uses: docker/build-push-action@v3
       with:
         context: ${{ inputs.working-dir }}
