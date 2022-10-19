@@ -53,8 +53,8 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName, namespace string
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusConflict {
-		return nil, fmt.Errorf(common.UnableProvisionInstance, http.StatusText(http.StatusConflict))
+	if resp.StatusCode < 200 || resp.StatusCode > 299 {
+		return nil, fmt.Errorf(common.UnableProvisionInstance, http.StatusText(resp.StatusCode))
 	}
 
 	jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
