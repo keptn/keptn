@@ -254,7 +254,7 @@ export class Trace {
   }
 
   public getFinishedEvent<T extends Trace>(this: T): T | undefined {
-    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent())) as T;
+    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent(this.getShortType()))) as T;
   }
 
   private isDeclined(): boolean {
@@ -328,8 +328,8 @@ export class Trace {
     return this.type.endsWith('.changed');
   }
 
-  public isFinishedEvent(): boolean {
-    return this.type.endsWith('.finished');
+  public isFinishedEvent(shortType?: string): boolean {
+    return this.type.endsWith(`${shortType ?? ''}.finished`);
   }
 
   public isStartedEvent(): boolean {
