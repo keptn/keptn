@@ -16,4 +16,14 @@ describe('Project delete test', () => {
       .submitDelete();
     dashboardPage.assertIsValidPath();
   });
+
+  it('should be possible to delete project by pressing enter after typing project name', () => {
+    dashboardPage.intercept();
+    projectSettingsPage
+      .interceptSettings()
+      .visitSettings('sockshop')
+      .clickDeleteProjectButton()
+      .deleteByEnter('sockshop');
+    dashboardPage.assertIsValidPath();
+  });
 });

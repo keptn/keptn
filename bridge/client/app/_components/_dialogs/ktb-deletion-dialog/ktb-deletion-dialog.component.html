@@ -15,11 +15,12 @@
   <div class="mb-2" *ngIf="data.name">
     <dt-form-field>
       <input
-        autofocus
         [formControl]="deletionConfirmationControl"
         class="wide-input"
         type="text"
         dtInput
+        #formInput
+        (keyup.enter)="deleteConfirm()"
         [placeholder]="data.name"
       />
     </dt-form-field>
