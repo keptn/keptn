@@ -21,7 +21,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.34.0
-	golang.org/x/exp v0.0.0-20221010202428-3a778c567f61
+	golang.org/x/exp v0.0.0-20221019170559-20944726eadf
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
 	gopkg.in/yaml.v2 v2.4.0
