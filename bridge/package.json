@@ -84,7 +84,7 @@
     "@angular/cli": "12.2.18",
     "@angular/compiler-cli": "12.2.16",
     "@angular/language-service": "12.2.16",
-    "@babel/core": "7.19.3",
+    "@babel/core": "7.19.6",
     "@compodoc/compodoc": "1.1.19",
     "@cypress/schematic": "2.1.1",
     "@storybook/addon-actions": "6.5.12",
