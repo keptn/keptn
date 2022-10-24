@@ -342,7 +342,7 @@ jobs:
 
       - name: Generate Test Summary
         if: always()
-        uses: test-summary/action@v1
+        uses: test-summary/action@v2
         with:
           paths: "temp_res/*.xml"
           output: temp_res/test-summary.md
