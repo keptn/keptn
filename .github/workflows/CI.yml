@@ -136,7 +136,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: jitterbit/get-changed-files@v1
+        uses: tj-actions/changed-files@v33
         continue-on-error: true
 
       - name: Prepare for build-everything run
