@@ -16,9 +16,7 @@ fi
 
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
   "bitnami/mongodb:5.0.10-debian-11-r3"
-  "nats:2.7.2-alpine"
-  "natsio/nats-server-config-reloader:0.6.3"
-  "natsio/prometheus-nats-exporter:0.9.1"
+  "nats:2.9.3-alpine"
   "nginxinc/nginx-unprivileged:1.23.1-alpine"
 )
 IMAGES_CONTROL_PLANE=(

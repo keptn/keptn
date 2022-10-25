@@ -21,9 +21,7 @@ helm template keptn "${KEPTN_HELM_CHART}" -n "${KEPTN_NAMESPACE}" \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
-nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
-nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
-nats.exporter.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/prometheus-nats-exporter:0.9.1,\
+nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.9.3-alpine,\
 apiGatewayNginx.image.registry="",\
 apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
 
@@ -31,9 +29,7 @@ helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --cre
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
-nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.7.2-alpine,\
-nats.reloader.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/nats-server-config-reloader:0.6.2,\
-nats.exporter.image=${TARGET_INTERNAL_DOCKER_REGISTRY}natsio/prometheus-nats-exporter:0.9.1,\
+nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.9.3-alpine,\
 apiGatewayNginx.image.registry="",\
 apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
 
