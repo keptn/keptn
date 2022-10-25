@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/internal/db"
-	"time"
 
 	apimodels "github.com/keptn/go-utils/pkg/api/models"
 
@@ -224,7 +225,7 @@ func (sd *SequenceDispatcher) isSequenceBlocked(queueItem models.QueueItem) (boo
 	if len(triggeredSequenceExecutions) == 1 {
 		if triggeredSequenceExecutions[0].Scope.KeptnContext != queueItem.Scope.KeptnContext {
 			log.Debugf("Sequence with KeptnContext %s is blocked due to triggered sequence with KeptnContext %s in stage %s", queueItem.Scope.KeptnContext, triggeredSequenceExecutions[0].Scope.KeptnContext, queueItem.Scope.Stage)
-			return true, startedSequenceExecutions[0].Scope.KeptnContext, nil
+			return true, triggeredSequenceExecutions[0].Scope.KeptnContext, nil
 		}
 	}
 
