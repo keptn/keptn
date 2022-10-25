@@ -147,10 +147,10 @@ jobs:
       - name: Compare and debug
         run: |
           echo "Changed files from old action:"
-          echo "${{ steps.changed_files1.all }}"
+          echo "${{ steps.changed_files1.outputs.all }}"
           echo ""
           echo "Changed files from new action:"
-          echo "${{ steps.changed_files2.all_changed_files }}"
+          echo "${{ steps.changed_files2.outputs.all_changed_files }}"
 
       - name: Prepare for build-everything run
         if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
