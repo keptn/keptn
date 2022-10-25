@@ -135,22 +135,9 @@ jobs:
           submodules: 'true'
 
       - name: Get changed files
-        id: changed_files1
-        uses: jitterbit/get-changed-files@v1
-        continue-on-error: true
-
-      - name: Get changed files
-        id: changed_files2
+        id: changed_files
         uses: tj-actions/changed-files@v33
         continue-on-error: true
-
-      - name: Compare and debug
-        run: |
-          echo "Changed files from old action:"
-          echo "${{ steps.changed_files1.outputs.all }}"
-          echo ""
-          echo "Changed files from new action:"
-          echo "${{ steps.changed_files2.outputs.all_changed_files }}"
 
       - name: Prepare for build-everything run
         if: (github.event_name == 'push') || (github.event_name == 'workflow_dispatch') || (contains(github.event.pull_request.labels.*.name, 'CI:trigger-build-everything'))
@@ -165,7 +152,7 @@ jobs:
           BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
           GITHUB_REF_PROTECTED: ${{ env.GITHUB_REF_PROTECTED }}
         run: |
-          ./gh-actions-scripts/prepare_changed_artifacts.sh "${{ steps.changed_files1.outputs.all }}"
+          ./gh-actions-scripts/prepare_changed_artifacts.sh "${{ steps.changed_files.outputs.all_changed_files }}"
 
       - name: Extract branch name
         id: extract_branch
