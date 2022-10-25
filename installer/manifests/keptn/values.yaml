@@ -5,6 +5,12 @@ global:
     registry: docker.io/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
+  initContainers:
+    ## @param global.initContainers.image Init container image to enable staggered rollout of Keptn
+    image: "curlimages/curl"
+    ## @param global.initContainers.tag Init container image tag to enable staggered rollout of Keptn
+    tag: "7.85.0"
+
 
 ## @section MongoDB
 mongo:

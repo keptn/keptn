@@ -463,3 +463,66 @@ Usage:
   {{- end }}
 {{- end -}}
 
+{{- define "keptn.initContainers.wait-for-nats" -}}
+- name: "wait-for-nats"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://{{ .Values.nats.nameOverride }}:8222"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
+- name: "wait-for-keptn-mongo"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://keptn-mongo:27017"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
+- name: "wait-for-mongodb-datastore"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://mongodb-datastore:8080/health"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
+- name: "wait-for-shipyard-controller"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://shipyard-controller:8080/health"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-secret-service" -}}
+- name: "wait-for-secret-service"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://secret-service:8080/v1/secret"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-api-service" -}}
+- name: "wait-for-secret-service"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://api-service:8080/health"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+
+{{- define "keptn.initContainers.wait-for-resource-service" -}}
+- name: "wait-for-resource-service"
+  image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
+  env:
+  - name: "ENDPOINT"
+    value: "http://resource-service:8080/heatlh"
+  command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+{{- end -}}
+

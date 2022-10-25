@@ -20,6 +20,10 @@ spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.approvalService.gracePeriod | default 60 }}
       serviceAccountName: keptn-default
+      initContainers:
+        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
       containers:
         - name: approval-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.approvalService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}

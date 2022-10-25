@@ -20,6 +20,7 @@ IMAGES_CONTROL_PLANE_THIRD_PARTY=(
   "natsio/nats-server-config-reloader:0.6.3"
   "natsio/prometheus-nats-exporter:0.9.1"
   "nginxinc/nginx-unprivileged:1.23.1-alpine"
+  "curlimages/curl:7.85.0"
 )
 IMAGES_CONTROL_PLANE=(
   "${DOCKER_ORG}/api:${KEPTN_TAG}"

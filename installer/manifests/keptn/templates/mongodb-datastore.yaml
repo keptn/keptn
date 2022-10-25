@@ -18,6 +18,11 @@ spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
+      initContainers:
+        {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- if not .Values.mongo.external.connectionString }}
+          {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
+        {{- end }}
       containers:
         - name: mongodb-datastore
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.mongodbDatastore.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
