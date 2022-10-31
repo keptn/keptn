@@ -476,7 +476,7 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
@@ -492,7 +492,7 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
@@ -508,7 +508,7 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
@@ -524,7 +524,7 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-secret-service" -}}
@@ -540,7 +540,7 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-api-service" -}}
@@ -556,7 +556,7 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-resource-service" -}}
@@ -572,6 +572,6 @@ Usage:
     runAsNonRoot: true
     runAsUser: 65534
     capabilities:
-      drop: ["NET_RAW"]
+      drop: ["ALL"]
 {{- end -}}
 
