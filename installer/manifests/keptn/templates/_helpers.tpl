@@ -472,10 +472,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
@@ -495,10 +495,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
@@ -518,10 +518,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
@@ -541,10 +541,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
@@ -564,10 +564,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
@@ -587,10 +587,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
@@ -610,10 +610,10 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
     requests:
-      cpu: "10m"
+      cpu: "25m"
       memory: "8Mi"
   securityContext:
     allowPrivilegeEscalation: false
