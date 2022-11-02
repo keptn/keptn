@@ -1,0 +1,100 @@
+{
+  "events": [
+    {
+      "data": {
+        "evaluation": {
+          "comparedEvents": [
+            "f5c5026d-f2cf-45a9-be75-da4056ccda49"
+          ],
+          "indicatorResults": [
+            {
+              "displayName": "Response time P95",
+              "keySli": false,
+              "passTargets": [
+                {
+                  "criteria": "<=+15%",
+                  "targetValue": 34.94786254083712,
+                  "violated": false
+                },
+                {
+                  "criteria": "<200",
+                  "targetValue": 200,
+                  "violated": false
+                }
+              ],
+              "score": 1,
+              "status": "pass",
+              "value": {
+                "comparedValue": 30.38944568768445,
+                "metric": "response_time_p95",
+                "success": true,
+                "value": 33.90626490067223
+              },
+              "warningTargets": [
+                {
+                  "criteria": "<=400",
+                  "targetValue": 400,
+                  "violated": false
+                }
+              ]
+            },
+            {
+              "displayName": "Error Rate",
+              "keySli": false,
+              "passTargets": null,
+              "score": 0,
+              "status": "info",
+              "value": {
+                "comparedValue": 0,
+                "metric": "error_rate",
+                "success": true,
+                "value": 0
+              },
+              "warningTargets": null
+            },
+            {
+              "displayName": "Throughput",
+              "keySli": false,
+              "passTargets": null,
+              "score": 0,
+              "status": "info",
+              "value": {
+                "comparedValue": 0,
+                "metric": "throughput",
+                "success": true,
+                "value": 1814
+              },
+              "warningTargets": null
+            }
+          ],
+          "result": "pass",
+          "score": 100,
+          "sloFileContent": "Ci0tLQpzcGVjX3ZlcnNpb246ICIxLjAiCmNvbXBhcmlzb246CiAgYWdncmVnYXRlX2Z1bmN0aW9uOiAiYXZnIgogIGNvbXBhcmVfd2l0aDogInNpbmdsZV9yZXN1bHQiCiAgaW5jbHVkZV9yZXN1bHRfd2l0aF9zY29yZTogInBhc3MiCiAgbnVtYmVyX29mX2NvbXBhcmlzb25fcmVzdWx0czogMQpmaWx0ZXI6Cm9iamVjdGl2ZXM6CiAgLSBzbGk6ICJyZXNwb25zZV90aW1lX3A5NSIKICAgIGRpc3BsYXlOYW1lOiAiUmVzcG9uc2UgdGltZSBQOTUiCiAgICBrZXlfc2xpOiBmYWxzZQogICAgcGFzczogICAgICAgICAgICAgIyBwYXNzIGlmIChyZWxhdGl2ZSBjaGFuZ2UgPD0gMTAlIEFORCBhYnNvbHV0ZSB2YWx1ZSBpcyA8IDYwMG1zKQogICAgICAtIGNyaXRlcmlhOgogICAgICAgICAgLSAiPD0rMTUlIiAgIyByZWxhdGl2ZSB2YWx1ZXMgcmVxdWlyZSBhIHByZWZpeGVkIHNpZ24gKHBsdXMgb3IgbWludXMpCiAgICAgICAgICAtICI8MjAwIiAgICAjIGFic29sdXRlIHZhbHVlcyBvbmx5IHJlcXVpcmUgYSBsb2dpY2FsIG9wZXJhdG9yCiAgICB3YXJuaW5nOiAgICAgICAgICAjIGlmIHRoZSByZXNwb25zZSB0aW1lIGlzIGJlbG93IDgwMG1zLCB0aGUgcmVzdWx0IHNob3VsZCBiZSBhIHdhcm5pbmcKICAgICAgLSBjcml0ZXJpYToKICAgICAgICAgIC0gIjw9NDAwIgogICAgd2VpZ2h0OiAxCiAgLSBzbGk6ICJlcnJvcl9yYXRlIgogICAgZGlzcGxheU5hbWU6ICJFcnJvciBSYXRlIgogIC0gc2xpOiAidGhyb3VnaHB1dCIKICAgIGRpc3BsYXlOYW1lOiAiVGhyb3VnaHB1dCIKdG90YWxfc2NvcmU6CiAgcGFzczogIjkwJSIKICB3YXJuaW5nOiAiNzUlIgo=",
+          "timeEnd": "2022-10-27T07:00:00.000Z",
+          "timeStart": "2022-10-27T06:00:00.000Z"
+        },
+        "labels": {
+          "DtCreds": "dynatrace-zrp63"
+        },
+        "project": "tempberry",
+        "result": "pass",
+        "service": "tempberry-backend",
+        "stage": "production",
+        "status": "succeeded",
+        "temporaryData": {
+          "distributor": {
+            "subscriptionID": ""
+          }
+        }
+      },
+      "id": "1500b971-bfc3-4e20-8dc1-a624e0faf963",
+      "source": "lighthouse-service",
+      "specversion": "1.0",
+      "time": "2022-02-09T09:30:07.865Z",
+      "type": "sh.keptn.event.evaluation.finished",
+      "shkeptncontext": "da740469-9920-4e0c-b304-0fd4b18d17c2",
+      "shkeptnspecversion": "0.2.3",
+      "triggeredid": "09f53f15-c89d-4a4a-82cc-138985696172"
+    }
+  ]
+}

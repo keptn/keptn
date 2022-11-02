@@ -114,12 +114,10 @@ describe('sli-breakdown', () => {
       .verifySliBreakdownSorting(1, 'descending', 'request_throughput', 'http_response_time_seconds_main_page_sum');
 
     // sort score asc
-    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'ascending', ' 0/33.33 ', ' 0/33.33 ');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'ascending', '0/33.33', '0/33.33');
 
     // sort score desc
-    servicesPage
-      .clickSliBreakdownHeader('Score')
-      .verifySliBreakdownSorting(7, 'descending', ' 33.99/33.33 ', ' 0/33.33 ');
+    servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'descending', '33.99/33.33', '0/33.33');
   });
 
   describe('score overlay', () => {
@@ -168,5 +166,21 @@ describe('sli-breakdown with fallback api call', () => {
       .selectService('carts', 'v0.1.2');
     heatmapPage.selectEvaluation('c1b2761f-5b6d-4bdc-9bb7-4661a05ea3b2');
     servicesPage.assertSliBreakdownLoading(true);
+  });
+});
+
+describe('sli-breakdown with info sli', () => {
+  const servicesPage = new ServicesPage();
+  const heatmapPage = new HeatmapComponentPage();
+
+  beforeEach(() => {
+    servicesPage.interceptAll().interceptWithInfoSli();
+  });
+
+  it("Info SLIs shouldn't contribute to weight", () => {
+    servicesPage.visitServicePage('sockshop').selectService('carts', 'v0.1.2');
+    servicesPage.assertSliScoreColumn('Response time P95', 100, 100);
+    servicesPage.assertSliScoreColumn('Error Rate', undefined, undefined, true);
+    servicesPage.assertSliScoreColumn('Throughput', undefined, undefined, true);
   });
 });
