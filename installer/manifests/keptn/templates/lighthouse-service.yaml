@@ -20,9 +20,9 @@ spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
       initContainers:
         {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-resource-service" . | nindent 8 }}
         {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
         {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
-        {{- include "keptn.initContainers.wait-for-resource-service" . | nindent 8 }}
       containers:
         - name: lighthouse-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.lighthouseService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}

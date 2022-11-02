@@ -470,6 +470,20 @@ Usage:
   - name: "ENDPOINT"
     value: "http://{{ .Values.nats.nameOverride }}:8222"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
@@ -479,6 +493,20 @@ Usage:
   - name: "ENDPOINT"
     value: "http://keptn-mongo:27017"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-mongodb-datastore" -}}
@@ -488,6 +516,20 @@ Usage:
   - name: "ENDPOINT"
     value: "http://mongodb-datastore:8080/health"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-shipyard-controller" -}}
@@ -497,6 +539,20 @@ Usage:
   - name: "ENDPOINT"
     value: "http://shipyard-controller:8080/health"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-secret-service" -}}
@@ -506,6 +562,20 @@ Usage:
   - name: "ENDPOINT"
     value: "http://secret-service:8080/v1/secret"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-api-service" -}}
@@ -515,6 +585,20 @@ Usage:
   - name: "ENDPOINT"
     value: "http://api-service:8080/health"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
 {{- define "keptn.initContainers.wait-for-resource-service" -}}
@@ -524,5 +608,19 @@ Usage:
   - name: "ENDPOINT"
     value: "http://resource-service:8080/heatlh"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
+  resources:
+    limits:
+      cpu: "25m"
+      memory: "8Mi"
+    requests:
+      cpu: "25m"
+      memory: "8Mi"
+  securityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    runAsUser: 65534
+    capabilities:
+      drop: ["ALL"]
 {{- end -}}
 
