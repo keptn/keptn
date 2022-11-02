@@ -227,10 +227,8 @@ export class Trace {
 
   public isFaulty(stageName?: string): boolean {
     let result = false;
-    if (this.data) {
-      if (this.isFailed()) {
-        result = stageName ? this.data.stage === stageName : true;
-      }
+    if (this.data && this.isFailed()) {
+      result = stageName ? this.data.stage === stageName : true;
     }
     return result;
   }
