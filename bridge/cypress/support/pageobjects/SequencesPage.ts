@@ -413,4 +413,13 @@ export class SequencesPage {
     }
     return this;
   }
+
+  public assertExpandableTileColor(tileName: string, state: string): this {
+    cy.get('ktb-task-item')
+      .contains(tileName)
+      .parentsUntil('ktb-task-item')
+      .last()
+      .should('have.class', `ktb-tile-${state}`);
+    return this;
+  }
 }

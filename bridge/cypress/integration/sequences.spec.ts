@@ -445,5 +445,16 @@ describe('Sequences', () => {
         .selectSequence(keptnContext)
         .assertSequenceDeepLink(project, keptnContext, 'production');
     });
+
+    it('should still show green border around task item if sequence passed even if a subtasked failed', () => {
+      const project = 'sockshop';
+      const keptnContext = '62cca6f3-dc54-4df6-a04c-6ffc894a4b5e';
+
+      sequencePage.visit(project).selectSequence(keptnContext, 'staging');
+      cy.wait('@sequenceTraces');
+
+      sequencePage.assertExpandableTileColor('get-sli', 'error');
+      sequencePage.assertExpandableTileColor('delivery', 'success');
+    });
   });
 });

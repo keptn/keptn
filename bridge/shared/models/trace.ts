@@ -227,10 +227,8 @@ export class Trace {
 
   public isFaulty(stageName?: string): boolean {
     let result = false;
-    if (this.data) {
-      if (this.isFailed() || this.traces.some((t) => t.isFaulty())) {
-        result = stageName ? this.data.stage === stageName : true;
-      }
+    if (this.data && this.isFailed()) {
+      result = stageName ? this.data.stage === stageName : true;
     }
     return result;
   }
@@ -254,7 +252,7 @@ export class Trace {
   }
 
   public getFinishedEvent<T extends Trace>(this: T): T | undefined {
-    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent())) as T;
+    return (this.isFinishedEvent() ? this : this.traces.find((t) => t.isFinishedEvent(this.getShortType()))) as T;
   }
 
   private isDeclined(): boolean {
@@ -328,8 +326,8 @@ export class Trace {
     return this.type.endsWith('.changed');
   }
 
-  public isFinishedEvent(): boolean {
-    return this.type.endsWith('.finished');
+  public isFinishedEvent(shortType?: string): boolean {
+    return this.type.endsWith(`${shortType ?? ''}.finished`);
   }
 
   public isStartedEvent(): boolean {

@@ -62,19 +62,19 @@
     background-color: $gray-100;
   }
 
-  &.ktb-tile-error .ktb-expandable-tile-container {
+  &.ktb-tile-error > .ktb-expandable-tile-container {
     border-color: $error-color;
   }
 
-  &.ktb-tile-warning .ktb-expandable-tile-container {
+  &.ktb-tile-warning > .ktb-expandable-tile-container {
     border-color: $warning-color;
   }
 
-  &.ktb-tile-success .ktb-expandable-tile-container {
+  &.ktb-tile-success > .ktb-expandable-tile-container {
     border-color: $cta-color;
   }
 
-  &.ktb-tile-highlight .ktb-expandable-tile-container {
+  &.ktb-tile-highlight > .ktb-expandable-tile-container {
     border-color: $approval-color;
   }
 }

@@ -369,6 +369,37 @@
       "type": "sh.keptn.event.get-sli.finished"
     },
     {
+      "type": "sh.keptn.event.webhook.finished",
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "staging",
+        "result": "pass"
+      },
+      "id": "bf4ea320-7694-48b4-952d-31acad20f172",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "webhook-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:18.510Z",
+      "triggeredid": "bb573001-20f0-4e40-805e-aaed5e890fb2"
+    },
+    {
+      "type": "sh.keptn.event.webhook.started",
+      "data": {
+        "project": "sockshop",
+        "service": "carts",
+        "stage": "staging"
+      },
+      "id": "bf4ea320-7694-48b4-952d-31acad20f172",
+      "shkeptncontext": "62cca6f3-dc54-4df6-a04c-6ffc894a4b5e",
+      "shkeptnspecversion": "0.2.3",
+      "source": "webhook-service",
+      "specversion": "1.0",
+      "time": "2022-01-17T11:43:18.000Z",
+      "triggeredid": "bb573001-20f0-4e40-805e-aaed5e890fb2"
+    },
+    {
       "data": {
         "deployment": "canary",
         "get-sli": {
