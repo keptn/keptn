@@ -138,6 +138,7 @@ describe('KtbDeletionDialogComponent', () => {
     // given
     eventService = TestBed.inject(EventService);
     const spy = jest.spyOn(eventService.deletionTriggeredEvent, 'next');
+    component.deletionConfirmationForm.setValue({ deletionConfirmation: 'sockshop' });
 
     // when
     component.deleteConfirm();

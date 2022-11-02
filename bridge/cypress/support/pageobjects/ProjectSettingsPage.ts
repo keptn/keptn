@@ -451,6 +451,12 @@ class ProjectSettingsPage {
     cy.get('span.dt-button-label').contains('I understand the consequences, delete this project').click();
     return this;
   }
+
+  public deleteByEnter(projectName: string): this {
+    const projectInputLoc = 'input[placeholder=proj_pattern]';
+    cy.get(projectInputLoc.replace('proj_pattern', projectName)).type(`${projectName}{enter}`);
+    return this;
+  }
 }
 
 export default ProjectSettingsPage;

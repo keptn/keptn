@@ -1,4 +1,13 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Inject,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+} from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DeleteData, DeleteResult } from '../../../_interfaces/delete';
@@ -11,7 +20,7 @@ import { Subject } from 'rxjs';
   templateUrl: './ktb-deletion-dialog.component.html',
   styleUrls: [],
 })
-export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
+export class KtbDeletionDialogComponent implements OnInit, OnDestroy, AfterViewInit {
   private unsubscribe$ = new Subject<void>();
   public isDeleteInProgress$ = this.eventService.deletionProgressEvent
     .asObservable()
@@ -21,11 +30,13 @@ export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
   public deletionConfirmationForm = new FormGroup({
     deletionConfirmation: this.deletionConfirmationControl,
   });
+  @ViewChild('formInput') formInput: ElementRef | undefined;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DeleteData,
     public dialogRef: MatDialogRef<KtbDeletionDialogComponent>,
-    private eventService: EventService
+    private eventService: EventService,
+    private _changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -40,12 +51,17 @@ export class KtbDeletionDialogComponent implements OnInit, OnDestroy {
     });
   }
 
+  ngAfterViewInit(): void {
+    this.formInput?.nativeElement.focus();
+    this._changeDetectorRef.detectChanges();
+  }
+
   ngOnDestroy(): void {
     this.unsubscribe$.next();
     this.unsubscribe$.complete();
   }
 
   public deleteConfirm(): void {
-    this.eventService.deletionTriggeredEvent.next(this.data);
+    if (this.deletionConfirmationForm.valid) this.eventService.deletionTriggeredEvent.next(this.data);
   }
 }
