@@ -21,6 +21,7 @@ export class KtbEvaluationDetailsComponent {
     [ResultTypes.PASSED]: 'recovered',
     [ResultTypes.WARNING]: 'warning',
     [ResultTypes.FAILED]: 'error',
+    [ResultTypes.INFO]: 'info',
   };
   public selectedEvaluation?: Trace;
   private _evaluationData: IEvaluationSelectionData = { shouldSelect: true };
