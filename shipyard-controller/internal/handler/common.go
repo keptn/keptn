@@ -2,7 +2,11 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
+	"io"
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
@@ -60,4 +64,19 @@ func SetUnprocessableEntityResponse(c *gin.Context, msg string) {
 		Code:    http.StatusUnprocessableEntity,
 		Message: &msg,
 	})
+}
+
+func DecodeInputData(body io.ReadCloser, params any) error {
+	jsonData, err := ioutil.ReadAll(body)
+	if err != nil {
+		return err
+	}
+
+	d := json.NewDecoder(strings.NewReader(string(jsonData)))
+	d.DisallowUnknownFields()
+
+	if err := d.Decode(&params); err != nil {
+		return err
+	}
+	return nil
 }
