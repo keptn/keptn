@@ -3,9 +3,7 @@
     {
       "data": {
         "evaluation": {
-          "comparedEvents": [
-            "f5c5026d-f2cf-45a9-be75-da4056ccda49"
-          ],
+          "comparedEvents": ["f5c5026d-f2cf-45a9-be75-da4056ccda49"],
           "indicatorResults": [
             {
               "displayName": "Response time P95",
