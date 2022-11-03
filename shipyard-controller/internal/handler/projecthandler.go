@@ -288,7 +288,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 	keptnContext := uuid.New().String()
 
 	params := &models.CreateProjectParams{}
-	if err := c.ShouldBindJSON(params); err != nil {
+	if err := DecodeInputData(c.Request.Body, params); err != nil {
 		log.Debugf("bad json %s", err.Error())
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
@@ -379,7 +379,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	// validate the input
 	params := &models.UpdateProjectParams{}
-	if err := c.ShouldBindJSON(params); err != nil {
+	if err := DecodeInputData(c.Request.Body, params); err != nil {
 		SetBadRequestErrorResponse(c, fmt.Sprintf(common.InvalidRequestFormatMsg, err.Error()))
 		return
 	}
