@@ -603,6 +603,11 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 
 	tmpOrigin := "tmp-origin"
 
+	// first, make sure the temporary remote is gone before creating it
+	if err := currentRepo.DeleteRemote(tmpOrigin); err != nil && err != git.ErrRemoteNotFound {
+		return mapError(err)
+	}
+
 	if _, err := currentRepo.CreateRemote(&config.RemoteConfig{
 		Name: tmpOrigin,
 		URLs: []string{newContext.Credentials.RemoteURL},
