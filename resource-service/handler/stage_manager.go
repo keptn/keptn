@@ -48,7 +48,7 @@ func (s BranchingStageManager) CreateStage(params models.CreateStageParams) erro
 	gitContext := common_models.GitContext{
 		Project:     params.ProjectName,
 		Credentials: credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	if !s.git.ProjectExists(gitContext) {
@@ -158,7 +158,7 @@ func (dm DirectoryStageManager) establishStageContext(project models.Project, st
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	if !dm.git.ProjectExists(gitContext) {

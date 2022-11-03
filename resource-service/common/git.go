@@ -81,7 +81,7 @@ func getGitKeptnEmail() string {
 }
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
-	if (gitContext == common_models.GitContext{}) || (*gitContext.Credentials == common_models.GitCredentials{}) {
+	if (*gitContext.Credentials == common_models.GitCredentials{}) {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", "project", kerrors.ErrInvalidGitContext)
 	}
 
@@ -94,10 +94,10 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
-	clone, err := g.git.PlainClone(projectPath, false,
+	clone, err := g.git.PlainClone(gitContext, projectPath, false,
 		&git.CloneOptions{
 			URL:             gitContext.Credentials.RemoteURL,
-			Auth:            gitContext.AuthMethod,
+			Auth:            gitContext.AuthMethod.GoGitAuth,
 			InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 		},
 	)
@@ -168,7 +168,7 @@ func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 }
 
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
-	init, err := g.git.PlainInit(projectPath, false)
+	init, err := g.git.PlainInit(gitContext, projectPath, false)
 	if err != nil {
 		return nil, err
 	}
@@ -288,9 +288,9 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, mapError(err))
 	}
-	err = repo.Push(&git.PushOptions{
+	err = g.git.Push(gitContext, repo, &git.PushOptions{
 		RemoteName:      "origin",
-		Auth:            gitContext.AuthMethod,
+		Auth:            gitContext.AuthMethod.GoGitAuth,
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
@@ -313,16 +313,16 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
 	}
-	err = w.Pull(&git.PullOptions{
+	err = g.git.Pull(gitContext, w, &git.PullOptions{
 		RemoteName:      "origin",
 		Force:           true,
 		ReferenceName:   head.Name(),
-		Auth:            gitContext.AuthMethod,
+		Auth:            gitContext.AuthMethod.GoGitAuth,
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	})
 	if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 		// reference not there yet
-		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
+		err = g.git.Pull(gitContext, w, &git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod.GoGitAuth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
 	}
 	if err != nil {
 		// do not return an error if we are alread< up to date or if the repository is empty
@@ -485,14 +485,14 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 }
 
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
-	if err := r.Fetch(&git.FetchOptions{
+	if err := g.git.Fetch(gitContext, r, &git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
 		//// take all branch from remote and put them in the local repo as origin branches and as branches
 		//RefSpecs: []config.RefSpec{"+refs/heads/*:refs/remotes/origin/*", "+refs/heads/*:refs/heads/*"},
 		Force:           true,
-		Auth:            gitContext.AuthMethod,
+		Auth:            gitContext.AuthMethod.GoGitAuth,
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	}); err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
 		return err
@@ -623,9 +623,9 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 			return err
 		}
 
-		err = currentRepo.Push(&git.PushOptions{
+		err = g.git.Push(currentContext, currentRepo, &git.PushOptions{
 			RemoteName:      tmpOrigin,
-			Auth:            newContext.AuthMethod,
+			Auth:            newContext.AuthMethod.GoGitAuth,
 			Force:           false,
 			InsecureSkipTLS: retrieveInsecureSkipTLS(newContext.Credentials),
 		})

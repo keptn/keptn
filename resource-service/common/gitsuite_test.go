@@ -79,7 +79,7 @@ func cleanupSuite(c *C) {
 }
 func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
-	g := NewGit(GogitReal{})
+	g := NewGit(Git2Go{})
 
 	// make empty local remote
 	url := TESTPATH + "/shared"
@@ -200,7 +200,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 	}{
 		{
 			name:       "return master commit",
-			git:        GogitReal{},
+			git:        Git2Go{},
 			gitContext: s.NewGitContext(),
 			branch:     "master",
 			want:       "6ecf0ef2c2dffb796033e5a02219af86ec6584e5",
@@ -208,7 +208,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 		},
 		{
 			name:       "return branch commit",
-			git:        GogitReal{},
+			git:        Git2Go{},
 			gitContext: s.NewGitContext(),
 			branch:     "dev",
 			want:       "",
@@ -216,7 +216,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 		},
 		{
 			name: "return error",
-			git:  GogitReal{},
+			git:  Git2Go{},
 			gitContext: common_models.GitContext{
 				Project: "nope",
 				Credentials: &common_models.GitCredentials{
@@ -335,7 +335,7 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 	}
 	for _, tt := range tests {
 		c.Log("Test " + tt.name)
-		g := NewGit(GogitReal{})
+		g := NewGit(Git2Go{})
 		r := s.Repository
 
 		//get current commit
@@ -391,7 +391,7 @@ func (s *BaseSuite) TestGit_StageAndCommitAll_OverrideUserAndEmail(c *C) {
 		os.Setenv(gitKeptnUserEnvVar, tt.commitUser)
 		os.Setenv(gitKeptnEmailEnvVar, tt.commitEmail)
 		c.Log("Test " + tt.name)
-		g := NewGit(GogitReal{})
+		g := NewGit(Git2Go{})
 		r := s.Repository
 
 		//get current commit
@@ -493,7 +493,7 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			c.Assert(err, IsNil)
 			h = commit("fo/file.txt", c, w)
 		}
-		g := NewGit(GogitReal{})
+		g := NewGit(Git2Go{})
 		err := g.Push(tt.gitContext)
 		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
 			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
@@ -521,7 +521,7 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := NewGit(GogitReal{})
+		g := NewGit(Git2Go{})
 		conf, err := s.Repository.Config()
 		c.Assert(err, IsNil)
 		conf.Init.DefaultBranch = tt.want
@@ -597,10 +597,10 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 
 	for _, tt := range tests {
 		c.Logf("Test %s", tt.name)
-		g := NewGit(GogitReal{})
+		g := NewGit(Git2Go{})
 		err := g.Pull(tt.gitContext)
-		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
-			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
+		if tt.err != nil {
+			c.Assert(err, NotNil)
 		}
 		if err == nil {
 			b, err := os.ReadFile(GetProjectConfigPath(tt.gitContext.Project + "/.git/config"))
@@ -645,14 +645,17 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		{
 			name: "clone empty remote",
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, kerrors.ErrEmptyRemoteRepository
 				},
-				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
+				PlainInitFunc: func(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
 					return git.PlainInit(path, isBare)
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
 					return nil, nil
+				},
+				FetchFunc: func(gitContext common_models.GitContext, repository *git.Repository, options *git.FetchOptions) error {
+					return nil
 				},
 			},
 			gitContext: common_models.GitContext{
@@ -682,7 +685,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		{
 			name:       "empty context",
 			gitContext: common_models.GitContext{},
-			git:        GogitReal{},
+			git:        Git2Go{},
 			wantErr:    true,
 			want:       false,
 		},
@@ -698,14 +701,17 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 					RemoteURL: "http//wrongurl"},
 			},
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, errors.New("auth error")
 				},
-				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
+				PlainInitFunc: func(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
 					return nil, errors.New("not exists")
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
 					return nil, errors.New("not exists")
+				},
+				FetchFunc: func(gitContext common_models.GitContext, repository *git.Repository, options *git.FetchOptions) error {
+					return nil
 				},
 			},
 			wantErr: true,
@@ -723,14 +729,17 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 					RemoteURL: "https://github.com/git-fixtures/basic.git"},
 			},
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, errors.New("auth error")
 				},
-				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
+				PlainInitFunc: func(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
 					return nil, errors.New("not exists")
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
 					return nil, errors.New("not exists")
+				},
+				FetchFunc: func(gitContext common_models.GitContext, repository *git.Repository, options *git.FetchOptions) error {
+					return nil
 				},
 			},
 			wantErr: true,
@@ -924,7 +933,7 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 }
 
 func (s *BaseSuite) TestGit_MoveToNewUpstream(c *C) {
-	g := NewGit(GogitReal{})
+	g := NewGit(Git2Go{})
 
 	// make empty local remotes
 	oldURL := TESTPATH + "/oldrepo"
@@ -990,7 +999,7 @@ func (s *BaseSuite) TestGit_MoveToNewUpstream(c *C) {
 }
 
 func (s *BaseSuite) TestGit_MigrateProject(c *C) {
-	g := NewGit(GogitReal{})
+	g := NewGit(Git2Go{})
 
 	gitContext := s.NewGitContext()
 	err := g.CreateBranch(gitContext, "new-branch", "master")
@@ -1037,7 +1046,7 @@ func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := NewGit(GogitReal{})
+		g := NewGit(Git2Go{})
 		if got := g.ProjectRepoExists(tt.project); got != tt.want {
 			c.Errorf("ProjectRepoExists() = %v, exists %v", got, tt.want)
 		}
@@ -1057,7 +1066,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 			name:       "project exists",
 			gitContext: s.NewGitContext(),
 			exists:     true,
-			git:        GogitReal{},
+			git:        Git2Go{},
 		},
 		{
 			name: "project does not exists",
@@ -1071,7 +1080,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 					RemoteURL: "an url that doesnot exists"},
 			},
 			exists: false,
-			git:    GogitReal{},
+			git:    Git2Go{},
 		},
 		{
 			name: "project exists, but remote is empty",
@@ -1085,7 +1094,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 					RemoteURL: buildEmptyRemote()},
 			},
 			exists: true,
-			git:    GogitReal{},
+			git:    Git2Go{},
 		},
 	}
 	for _, tt := range tests {
@@ -1165,7 +1174,7 @@ func (s *BaseSuite) NewGitContext() common_models.GitContext {
 func (s *BaseSuite) NewTestGit() *common_mock.GogitMock {
 
 	return &common_mock.GogitMock{
-		PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+		PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 			return s.Repository, nil
 		},
 		PlainInitFunc: nil,
@@ -1387,7 +1396,7 @@ func Test_rewriteDefaultBranch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := NewGit(GogitReal{})
+			g := NewGit(Git2Go{})
 			// create tmp file
 			file, err := ioutil.TempFile(tempDir, "file")
 			require.Nil(t, err)

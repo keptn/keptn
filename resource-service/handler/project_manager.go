@@ -56,7 +56,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	// first, check if the local directory of the project already exists
@@ -142,7 +142,7 @@ func (p ProjectManager) UpdateProject(project models.UpdateProjectParams) error 
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: currentCredentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	tmpCredentials, err := p.credentialReader.GetCredentials(common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
@@ -173,7 +173,7 @@ func (p ProjectManager) updateUpstreamCredentials(gitContext common_models.GitCo
 	tmpGitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: tmpCredentials,
-		AuthMethod:  tmpAuth,
+		AuthMethod:  *tmpAuth,
 	}
 	if tmpCredentials.RemoteURL != currentCredentials.RemoteURL {
 		if !p.git.ProjectExists(gitContext) || !p.isProjectInitialized(project.ProjectName) {

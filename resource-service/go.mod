@@ -21,6 +21,8 @@ require (
 	k8s.io/client-go v0.24.7
 )
 
+require github.com/libgit2/git2go/v34 v34.0.0
+
 require (
 	github.com/Microsoft/go-winio v0.5.0 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect

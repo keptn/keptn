@@ -39,7 +39,7 @@ func TestProjectManager_CreateProject(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -81,7 +81,7 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -148,7 +148,7 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -187,7 +187,7 @@ func TestProjectManager_CreateProject_WritingFileFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -226,7 +226,7 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -265,7 +265,7 @@ func TestProjectManager_UpdateProjectMoveToNewRepo(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	newCredentials := &common_models.GitCredentials{
@@ -281,7 +281,7 @@ func TestProjectManager_UpdateProjectMoveToNewRepo(t *testing.T) {
 	expectedNewGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: newCredentials,
-		AuthMethod:  newAuth,
+		AuthMethod:  *newAuth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -347,7 +347,7 @@ func TestProjectManager_UpdateProjectUpstreamURLChangedButRepoDoesNotExist(t *te
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -454,7 +454,7 @@ func TestProjectManager_UpdateProjectCredentialsDidNotChange(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	newCredentials := &common_models.GitCredentials{
@@ -470,7 +470,7 @@ func TestProjectManager_UpdateProjectCredentialsDidNotChange(t *testing.T) {
 	expectedNewGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: newCredentials,
-		AuthMethod:  newAuth,
+		AuthMethod:  *newAuth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -537,7 +537,7 @@ func TestProjectManager_UpdateProject_WithMigration(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -597,7 +597,7 @@ func TestProjectManager_UpdateProject_WithMigrationProjectNotFound(t *testing.T)
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -655,7 +655,7 @@ func TestProjectManager_UpdateProject_WithMigration_MigrationFailsOnFirstTry(t *
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -724,7 +724,7 @@ func TestProjectManager_UpdateProject_WithMigration_AlreadyMigrated(t *testing.T
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -785,7 +785,7 @@ func TestProjectManager_UpdateProject_WithMigration_InvalidMetadata(t *testing.T
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -847,7 +847,7 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -937,7 +937,7 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -971,7 +971,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -1008,7 +1008,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -1045,7 +1045,7 @@ func TestProjectManager_UpdateProject_CheckUpstreamConnectionFails(t *testing.T)
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -1083,7 +1083,7 @@ func TestProjectManager_UpdateProject_UpstreamURLChangedButCheckUpstreamConnecti
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
