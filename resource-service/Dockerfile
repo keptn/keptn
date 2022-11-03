@@ -59,7 +59,8 @@ ENV env=production
 RUN apk add --no-cache ca-certificates libc6-compat
 
 # Install git
-RUN apk --update add --no-cache git
+RUN apk add --no-cache build-base git pkgconf
+RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community libgit2-dev=1.1.0-r1
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service

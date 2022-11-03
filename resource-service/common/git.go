@@ -123,9 +123,14 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 	}
 
+	if err = g.fetch(gitContext, clone); err != nil {
+		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "fetch", gitContext.Project, mapError(err))
+	}
+
 	if err := g.storeDefaultBranchConfig(gitContext, err, clone, head); err != nil {
 		return false, err
 	}
+
 	return true, nil
 }
 
@@ -469,13 +474,11 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
 	if g.ProjectExists(gitContext) {
-		r, w, err := g.getWorkTree(gitContext)
+		_, w, err := g.getWorkTree(gitContext)
 		if err != nil {
 			return err
 		}
-		if err = g.fetch(gitContext, r); err != nil {
-			return err
-		}
+
 		return w.Checkout(options)
 	}
 	return kerrors.ErrProjectNotFound
