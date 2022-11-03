@@ -136,7 +136,7 @@ jobs:
 
       - name: Get changed files
         id: changed_files
-        uses: tj-actions/changed-files@v33
+        uses: tj-actions/changed-files@v34
         continue-on-error: true
 
       - name: Prepare for build-everything run
