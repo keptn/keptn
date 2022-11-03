@@ -408,6 +408,7 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 	err := g.checkoutBranch(gitContext, &git.CheckoutOptions{
 		Branch: b,
+		Force:  true,
 	})
 	if err != nil {
 		if errors.Is(err, plumbing.ErrReferenceNotFound) {
