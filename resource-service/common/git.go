@@ -81,7 +81,7 @@ func getGitKeptnEmail() string {
 }
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
-	if (*gitContext.Credentials == common_models.GitCredentials{}) {
+	if (gitContext.Credentials == nil) || (*gitContext.Credentials == common_models.GitCredentials{}) {
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", "project", kerrors.ErrInvalidGitContext)
 	}
 
@@ -169,6 +169,12 @@ func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
 	init, err := g.git.PlainInit(gitContext, projectPath, false)
+	if err != nil && !errors.Is(err, git.ErrRepositoryAlreadyExists) {
+		return nil, err
+	}
+	if errors.Is(err, git.ErrRepositoryAlreadyExists) {
+		init, err = g.git.PlainOpen(projectPath)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -177,13 +183,16 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 		return nil, err
 	}
 
-	_, err = init.CreateRemote(&config.RemoteConfig{
-		Name: "origin",
-		URLs: []string{gitContext.Credentials.RemoteURL},
-	})
-	if err != nil {
-		return nil, err
+	if _, err := init.Remote("origin"); errors.Is(err, git.ErrRemoteNotFound) {
+		_, err = init.CreateRemote(&config.RemoteConfig{
+			Name: "origin",
+			URLs: []string{gitContext.Credentials.RemoteURL},
+		})
+		if err != nil {
+			return nil, err
+		}
 	}
+
 	f, err := os.Create(projectPath + "/metadata.yaml")
 	if err != nil {
 		return nil, err
@@ -213,6 +222,11 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 				When:  time.Now(),
 			},
 		})
+	if err != nil {
+		return nil, err
+	}
+
+	err = g.Push(gitContext)
 	if err != nil {
 		return nil, err
 	}

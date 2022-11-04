@@ -137,7 +137,7 @@ func Test_getAuthMethod(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if err != nil && auth != tt.expectedOutput {
+			if err != nil && auth.GoGitAuth != tt.expectedOutput {
 				t.Errorf("getAuthMethod() auth = %v, expectedOutput %v", err, tt.wantErr)
 			}
 		})

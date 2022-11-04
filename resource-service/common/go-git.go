@@ -1,10 +1,15 @@
 package common
 
 import (
+	"errors"
 	"fmt"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/keptn/keptn/resource-service/common_models"
-	git2go "github.com/libgit2/git2go/v34"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
+	git2go "github.com/libgit2/git2go/v33"
+	"strings"
 )
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogit_mock.go . Gogit
@@ -24,7 +29,15 @@ func (t GogitReal) PlainOpen(path string) (*git.Repository, error) {
 }
 
 func (t GogitReal) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
-	return git.PlainClone(path, isBare, o)
+	repo, err := git.PlainClone(path, isBare, o)
+	if err != nil {
+		if strings.Contains(err.Error(), "unexpected") {
+			git2 := Git2Go{}
+			return git2.PlainClone(gitContext, path, isBare, o)
+		}
+		return nil, err
+	}
+	return repo, nil
 }
 
 func (t GogitReal) PlainInit(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
@@ -51,6 +64,7 @@ func (g Git2Go) PlainOpen(path string) (*git.Repository, error) {
 
 func (g Git2Go) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 	_, err := git2go.Clone(o.URL, path, &git2go.CloneOptions{
+		Bare: isBare,
 		FetchOptions: git2go.FetchOptions{
 			DownloadTags: git2go.DownloadTagsNone,
 			RemoteCallbacks: git2go.RemoteCallbacks{
@@ -65,7 +79,18 @@ func (g Git2Go) PlainClone(gitContext common_models.GitContext, path string, isB
 		return nil, err
 	}
 
-	return git.PlainOpen(path)
+	repo, err := git.PlainOpen(path)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = repo.Head()
+	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			return nil, kerrors.ErrEmptyRemoteRepository
+		}
+	}
+	return repo, nil
 }
 
 func (g Git2Go) PlainInit(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
@@ -95,11 +120,16 @@ func (g Git2Go) Push(gitContext common_models.GitContext, repository *git.Reposi
 			CredentialsCallback:      gitContext.AuthMethod.Git2GoAuth.CredCallback,
 			CertificateCheckCallback: gitContext.AuthMethod.Git2GoAuth.CertCallback,
 		},
-		ProxyOptions: gitContext.AuthMethod.Git2GoAuth.ProxyOptions,
+		//ProxyOptions: gitContext.AuthMethod.Git2GoAuth.ProxyOptions,
 	})
 
-	// TODO error mapping
-	return err
+	if err != nil {
+		if strings.Contains(err.Error(), "authentication required") {
+			return transport.ErrAuthenticationRequired
+		}
+		return err
+	}
+	return nil
 }
 
 func (g Git2Go) Pull(gitContext common_models.GitContext, worktree *git.Worktree, options *git.PullOptions) error {

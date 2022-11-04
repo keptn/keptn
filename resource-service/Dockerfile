@@ -1,14 +1,16 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.18.7-alpine3.16 as builder
+FROM golang:1.18.7-alpine3.15 as builder
 
 ARG version=develop
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
 # install additional dependencies
-RUN apk add --no-cache gcc libc-dev git
-
+RUN apk update
+RUN apk upgrade
+RUN apk add --no-cache gcc libc-dev git pkgconfig openssh alpine-sdk
+RUN apk add --no-cache libgit2-dev=1.3.0-r0
 # Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
@@ -43,7 +45,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
-FROM alpine:3.16 as production
+FROM alpine:3.15 as production
 ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
@@ -56,11 +58,13 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 ENV env=production
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
-RUN apk add --no-cache ca-certificates libc6-compat
+RUN apk add --no-cache ca-certificates libc6-compat libc-dev
 
 # Install git
-RUN apk add --no-cache build-base git pkgconf
-RUN apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community libgit2-dev=1.5.0-r1
+RUN apk update
+RUN apk upgrade
+RUN apk add --no-cache build-base git pkgconf libc-dev gcc openssh alpine-sdk
+RUN apk add --no-cache libgit2-dev=1.3.0-r0
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service

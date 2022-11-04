@@ -1,7 +1,7 @@
 package common_models
 
 import (
-	git2go "github.com/libgit2/git2go/v34"
+	git2go "github.com/libgit2/git2go/v33"
 	"net/url"
 	"strings"
 

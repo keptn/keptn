@@ -3,7 +3,7 @@ package handler
 import (
 	"crypto/tls"
 	"errors"
-	git2go "github.com/libgit2/git2go/v34"
+	git2go "github.com/libgit2/git2go/v33"
 	"time"
 
 	"net/http"

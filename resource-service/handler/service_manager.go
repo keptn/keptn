@@ -125,7 +125,7 @@ func (s ServiceManager) establishServiceContext(project models.Project, stage mo
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	if !s.git.ProjectExists(gitContext) {
