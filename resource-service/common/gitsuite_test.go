@@ -375,13 +375,14 @@ func (s *BaseSuite) TestGit_StageAndCommitAll_AddFails(c *C) {
 	err = write("fo/file.txt", "a content", c, w)
 	c.Assert(err, IsNil)
 
+	//check that changes do exist
 	status, err := w.Status()
 	c.Assert(err, IsNil)
 	if status.IsClean() {
 		c.Error("file was not created")
 	}
 
-	// try to stage and commit
+	// try to reset unstaged changes
 	err = g.ResetHard(s.NewGitContext(), "HEAD~0")
 	c.Assert(err, IsNil)
 
@@ -405,13 +406,14 @@ func (s *BaseSuite) TestGit_StageAndCommitAll_CommitFails(c *C) {
 	err = w.AddWithOptions(&git.AddOptions{All: true})
 	c.Assert(err, IsNil)
 
+	//check that changes do exist
 	status, err := w.Status()
 	c.Assert(err, IsNil)
 	if status.IsClean() {
 		c.Error("file was not created")
 	}
 
-	// try to stage and commit
+	// try to reset staged but uncommited changes
 	err = g.ResetHard(s.NewGitContext(), "HEAD~0")
 	c.Assert(err, IsNil)
 
