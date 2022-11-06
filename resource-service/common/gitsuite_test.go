@@ -365,17 +365,6 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 	}
 }
 
-func exists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}
-
 func (s *BaseSuite) TestGit_StageAndCommitAll_AddFails(c *C) {
 	g := NewGit(s.NewTestGit())
 	r := s.Repository
