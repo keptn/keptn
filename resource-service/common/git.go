@@ -240,11 +240,9 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
-
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
-		err := g.ResetHard(gitContext, "HEAD~0")
-		if err != nil {
+		if err = g.ResetHard(gitContext, "HEAD~0"); err != nil {
 			logger.WithError(err).Warn("could not reset after commitAll")
 		} else {
 			logger.Warn("untracked changes were removed")
