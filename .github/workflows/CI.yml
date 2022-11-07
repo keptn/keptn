@@ -128,15 +128,6 @@ jobs:
       KEPTN_SPEC_VERSION: ${{ steps.get_version.outputs.KEPTN_SPEC_VERSION }}
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
     steps:
-      - name: Install libgit2
-        id: install-libgit2
-        run: |
-          git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
-          cd libgit2
-          mkdir build && cd build
-          cmake ..
-          sudo cmake --build . --target install
-
       - name: Check out code
         uses: actions/checkout@v3
         with:
