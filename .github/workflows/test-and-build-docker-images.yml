@@ -89,6 +89,7 @@ jobs:
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
       working-directory: ./${{ inputs.artifact }}
       run: |
+        go test ./...
         gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
     #######################################################################
