@@ -204,7 +204,7 @@ func (mock *GogitMock) PlainCloneCalls() []struct {
 }
 
 // PlainInit calls PlainInitFunc.
-func (mock *GogitMock) PlainInit(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
+func (mock *GogitMock) PlainInit(path string, isBare bool) (*git.Repository, error) {
 	if mock.PlainInitFunc == nil {
 		panic("GogitMock.PlainInitFunc: method is nil but Gogit.PlainInit was just called")
 	}

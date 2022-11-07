@@ -168,7 +168,7 @@ func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 }
 
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
-	init, err := g.git.PlainInit(gitContext, projectPath, false)
+	init, err := g.git.PlainInit(projectPath, false)
 	if err != nil && !errors.Is(err, git.ErrRepositoryAlreadyExists) {
 		return nil, err
 	}
@@ -302,7 +302,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, mapError(err))
 	}
-	err = g.git.Push(gitContext, repo, &git.PushOptions{
+	err = repo.Push(&git.PushOptions{
 		RemoteName:      "origin",
 		Auth:            gitContext.AuthMethod.GoGitAuth,
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
@@ -327,7 +327,7 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 	if err != nil {
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
 	}
-	err = g.git.Pull(gitContext, w, &git.PullOptions{
+	err = w.Pull(&git.PullOptions{
 		RemoteName:      "origin",
 		Force:           true,
 		ReferenceName:   head.Name(),
@@ -336,7 +336,7 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 	})
 	if err != nil && errors.Is(err, plumbing.ErrReferenceNotFound) {
 		// reference not there yet
-		err = g.git.Pull(gitContext, w, &git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod.GoGitAuth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
+		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod.GoGitAuth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
 	}
 	if err != nil {
 		// do not return an error if we are alread< up to date or if the repository is empty
@@ -499,7 +499,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 }
 
 func (g *Git) fetch(gitContext common_models.GitContext, r *git.Repository) error {
-	if err := g.git.Fetch(gitContext, r, &git.FetchOptions{
+	if err := r.Fetch(&git.FetchOptions{
 		RemoteName: "origin",
 		RefSpecs:   []config.RefSpec{"+refs/*:refs/*"},
 		// <src>:<dst>, + update the reference even if it isn’t a fast-forward.
@@ -637,7 +637,7 @@ func (g *Git) MoveToNewUpstream(currentContext common_models.GitContext, newCont
 			return err
 		}
 
-		err = g.git.Push(currentContext, currentRepo, &git.PushOptions{
+		err = currentRepo.Push(&git.PushOptions{
 			RemoteName:      tmpOrigin,
 			Auth:            newContext.AuthMethod.GoGitAuth,
 			Force:           false,

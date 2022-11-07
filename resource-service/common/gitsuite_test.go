@@ -79,7 +79,7 @@ func cleanupSuite(c *C) {
 }
 func (s *BaseSuite) TestGit_ComponentTest(c *C) {
 
-	g := NewGit(Git2Go{})
+	g := NewGit(GogitReal{})
 
 	// make empty local remote
 	url := TESTPATH + "/shared"
@@ -200,7 +200,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 	}{
 		{
 			name:       "return master commit",
-			git:        Git2Go{},
+			git:        GogitReal{},
 			gitContext: s.NewGitContext(),
 			branch:     "master",
 			want:       "6ecf0ef2c2dffb796033e5a02219af86ec6584e5",
@@ -208,7 +208,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 		},
 		{
 			name:       "return branch commit",
-			git:        Git2Go{},
+			git:        GogitReal{},
 			gitContext: s.NewGitContext(),
 			branch:     "dev",
 			want:       "",
@@ -216,7 +216,7 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 		},
 		{
 			name: "return error",
-			git:  Git2Go{},
+			git:  GogitReal{},
 			gitContext: common_models.GitContext{
 				Project: "nope",
 				Credentials: &common_models.GitCredentials{
@@ -335,7 +335,7 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 	}
 	for _, tt := range tests {
 		c.Log("Test " + tt.name)
-		g := NewGit(Git2Go{})
+		g := NewGit(GogitReal{})
 		r := s.Repository
 
 		//get current commit
@@ -391,7 +391,7 @@ func (s *BaseSuite) TestGit_StageAndCommitAll_OverrideUserAndEmail(c *C) {
 		os.Setenv(gitKeptnUserEnvVar, tt.commitUser)
 		os.Setenv(gitKeptnEmailEnvVar, tt.commitEmail)
 		c.Log("Test " + tt.name)
-		g := NewGit(Git2Go{})
+		g := NewGit(GogitReal{})
 		r := s.Repository
 
 		//get current commit
@@ -493,7 +493,7 @@ func (s *BaseSuite) TestGit_Push(c *C) {
 			c.Assert(err, IsNil)
 			h = commit("fo/file.txt", c, w)
 		}
-		g := NewGit(Git2Go{})
+		g := NewGit(GogitReal{})
 		err := g.Push(tt.gitContext)
 		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
 			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
@@ -521,7 +521,7 @@ func (s *BaseSuite) TestGit_GetDefaultBranch(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := NewGit(Git2Go{})
+		g := NewGit(GogitReal{})
 		conf, err := s.Repository.Config()
 		c.Assert(err, IsNil)
 		conf.Init.DefaultBranch = tt.want
@@ -597,7 +597,7 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 
 	for _, tt := range tests {
 		c.Logf("Test %s", tt.name)
-		g := NewGit(Git2Go{})
+		g := NewGit(GogitReal{})
 		err := g.Pull(tt.gitContext)
 		if tt.err != nil {
 			c.Assert(err, NotNil)
@@ -685,7 +685,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		{
 			name:       "empty context",
 			gitContext: common_models.GitContext{},
-			git:        Git2Go{},
+			git:        GogitReal{},
 			wantErr:    true,
 			want:       false,
 		},
@@ -933,7 +933,7 @@ func (s *BaseSuite) TestGit_GetFileRevision(c *C) {
 }
 
 func (s *BaseSuite) TestGit_MoveToNewUpstream(c *C) {
-	g := NewGit(Git2Go{})
+	g := NewGit(GogitReal{})
 
 	// make empty local remotes
 	oldURL := TESTPATH + "/oldrepo"
@@ -999,7 +999,7 @@ func (s *BaseSuite) TestGit_MoveToNewUpstream(c *C) {
 }
 
 func (s *BaseSuite) TestGit_MigrateProject(c *C) {
-	g := NewGit(Git2Go{})
+	g := NewGit(GogitReal{})
 
 	gitContext := s.NewGitContext()
 	err := g.CreateBranch(gitContext, "new-branch", "master")
@@ -1046,7 +1046,7 @@ func (s *BaseSuite) TestGit_ProjectRepoExists(c *C) {
 		},
 	}
 	for _, tt := range tests {
-		g := NewGit(Git2Go{})
+		g := NewGit(GogitReal{})
 		if got := g.ProjectRepoExists(tt.project); got != tt.want {
 			c.Errorf("ProjectRepoExists() = %v, exists %v", got, tt.want)
 		}
@@ -1066,7 +1066,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 		//	name:       "project exists",
 		//	gitContext: s.NewGitContext(),
 		//	exists:     true,
-		//	git:        Git2Go{},
+		//	git:        GogitReal{},
 		//},
 		//{
 		//	name: "project does not exists",
@@ -1080,7 +1080,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 		//			RemoteURL: "an url that doesnot exists"},
 		//	},
 		//	exists: false,
-		//	git:    Git2Go{},
+		//	git:    GogitReal{},
 		//},
 		{
 			name: "project exists, but remote is empty",
@@ -1396,7 +1396,7 @@ func Test_rewriteDefaultBranch(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			g := NewGit(Git2Go{})
+			g := NewGit(GogitReal{})
 			// create tmp file
 			file, err := ioutil.TempFile(tempDir, "file")
 			require.Nil(t, err)
