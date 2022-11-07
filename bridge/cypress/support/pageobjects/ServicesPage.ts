@@ -2,6 +2,7 @@
 
 import { SliResult } from '../../../client/app/_interfaces/sli-result';
 import {
+  interceptHeatmapComponent,
   interceptProjectBoard,
   interceptServicesPage,
   interceptServicesPageWithLoadingSequences,
@@ -59,6 +60,15 @@ class ServicesPage {
         delay: addDelay ? 10_000 : 0,
       }
     ).as('sliFallback');
+    return this;
+  }
+
+  public interceptWithInfoSli(): this {
+    interceptHeatmapComponent();
+    cy.intercept('GET', 'api/mongodb-datastore/event/type/sh.keptn.event.evaluation.finished?*', {
+      statusCode: 200,
+      fixture: 'get.sockshop.service.carts.info-evaluations.mock.json',
+    }).as('heatmapEvaluations');
     return this;
   }
 
@@ -232,8 +242,8 @@ class ServicesPage {
     return this;
   }
 
-  public assertSliScoreColumn(sliName: string, score: number, availableScore: number): this {
-    return this.assertSliColumnText(sliName, 'score', ` ${score}/${availableScore} `);
+  public assertSliScoreColumn(sliName: string, score?: number, availableScore?: number, isInfo?: boolean): this {
+    return this.assertSliColumnText(sliName, 'score', isInfo ? '-' : `${score}/${availableScore}`);
   }
 
   private showSliScoreOverlay(sliName: string): this {

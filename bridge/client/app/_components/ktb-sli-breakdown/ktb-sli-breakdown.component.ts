@@ -125,7 +125,9 @@ export class KtbSliBreakdownComponent {
       return;
     }
     // max reachable weight is actually the max reachable score. max weight = 100% score
-    this.maximumAvailableWeight = sliResults.reduce((acc, result) => acc + result.weight, 0);
+    this.maximumAvailableWeight = sliResults
+      .filter((sli) => sli.result !== ResultTypes.INFO)
+      .reduce((acc, result) => acc + result.weight, 0);
     this.tableEntries.data = sliResults;
     this.updateSort();
   }
@@ -231,5 +233,9 @@ export class KtbSliBreakdownComponent {
     if (result.comparedValue !== undefined) {
       result.expanded = !result.expanded;
     }
+  }
+
+  public getRelativeSliWeight(result: SliResult): number {
+    return this.maximumAvailableWeight !== 0 ? (result.weight / this.maximumAvailableWeight) * 100 : 0;
   }
 }

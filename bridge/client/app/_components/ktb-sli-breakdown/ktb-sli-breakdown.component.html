@@ -153,9 +153,10 @@
           [class.warning]="result.result === ResultTypes.WARNING"
           class="underline-info"
         >
-          {{ result.score | truncateNumber: 2 }}/{{
-            (maximumAvailableWeight !== 0 ? result.weight / maximumAvailableWeight : 0) * 100 | truncateNumber: 2
-          }}
+          <span *ngIf="result.result !== ResultTypes.INFO; else infoScoreBlock"
+            >{{ result.score | truncateNumber: 2 }}/{{ getRelativeSliWeight(result) | truncateNumber: 2 }}</span
+          >
+          <ng-template #infoScoreBlock>-</ng-template>
         </span>
       </div>
     </dt-cell>
@@ -175,6 +176,13 @@
           uitestid="ktb-sli-breakdown-score-overlay-warning"
         >
           The score was halved because the result is <span class="bold">warning</span>
+        </p>
+        <p
+          *ngIf="result.result === ResultTypes.INFO"
+          class="success m-0"
+          uitestid="ktb-sli-breakdown-score-overlay-warning"
+        >
+          No score since the SLI is of type info.
         </p>
       </ng-container>
     </ng-template>
