@@ -131,8 +131,11 @@ jobs:
       - name: Install libgit2
         id: install-libgit2
         run: |
-          sudo apt update
+          git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
           sudo apt install libgit2-1.3
+          mkdir build && cd build
+          cmake ..
+          cmake --build . --target install
 
       - name: Check out code
         uses: actions/checkout@v3
