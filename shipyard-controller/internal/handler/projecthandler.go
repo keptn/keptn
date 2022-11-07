@@ -346,6 +346,10 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
+		if err.Error() == common.AlreadyInitializedRepositoryMsg {
+			SetConflictErrorResponse(c, common.ErrAlreadyInitializedRepository.Error())
+			return
+		}
 		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
 			SetBadRequestErrorResponse(c, err.Error())
 			return
@@ -416,6 +420,10 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 		}
 		if errors.Is(err, common.ErrInvalidStageChange) {
 			SetBadRequestErrorResponse(c, err.Error())
+			return
+		}
+		if err.Error() == common.AlreadyInitializedRepositoryMsg {
+			SetConflictErrorResponse(c, common.ErrAlreadyInitializedRepository.Error())
 			return
 		}
 		SetInternalServerErrorResponse(c, common.ErrInternalError.Error())
