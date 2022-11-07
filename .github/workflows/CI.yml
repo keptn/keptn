@@ -132,7 +132,7 @@ jobs:
         id: install-libgit2
         run: |
           sudo apt update
-          sudo apt-get install libgit2-1.3
+          sudo apt install libgit2-1.3
 
       - name: Check out code
         uses: actions/checkout@v3
