@@ -74,6 +74,10 @@ jobs:
       if: inputs.artifact == 'resource-service'
       id: install-libgit2
       run: |
+        #go get -d github.com/libgit2/git2go@v33.0.0
+        #cd $GOPATH/src/github.com/libgit2/git2go
+        #git submodule update --init
+        #make install-static
         git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
         cd libgit2
         mkdir build && cd build
@@ -89,7 +93,7 @@ jobs:
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
       working-directory: ./${{ inputs.artifact }}
       run: |
-        gotestsum --no-color=false --format=testname -- -tags=static -coverprofile=coverage.txt -covermode=atomic -v ./... 
+        gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
     #######################################################################
           # TESTS FOR BRIDGE
