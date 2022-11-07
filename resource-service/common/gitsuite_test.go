@@ -653,7 +653,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 					return git.PlainInit(path, isBare)
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
-					return nil, nil
+					return git.PlainOpen(path)
 				},
 			},
 			gitContext: common_models.GitContext{

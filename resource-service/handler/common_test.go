@@ -84,7 +84,7 @@ func Test_getAuthMethod(t *testing.T) {
 			},
 		},
 		{
-			name: "invalid credentials",
+			name: "credentials without token",
 			gitCredentials: &common_models.GitCredentials{
 				RemoteURL: "https://some.url",
 				HttpsAuth: &apimodels.HttpsGitAuth{
@@ -93,7 +93,7 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "user",
 			},
 			wantErr:           false,
-			expectedGoGitAuth: nil,
+			expectedGoGitAuth: &githttp.BasicAuth{Username: "user", Password: ""},
 		},
 		{
 			name: "invalid ssh credentials",
@@ -137,6 +137,10 @@ func Test_getAuthMethod(t *testing.T) {
 			auth, err := getAuthMethod(tt.gitCredentials)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if tt.expectedGoGitAuth == nil {
+				require.Nil(t, auth.GoGitAuth)
+				return
 			}
 			if err != nil && auth.GoGitAuth != tt.expectedGoGitAuth {
 				t.Errorf("getAuthMethod() auth = %v, expectedGoGitAuth %v", err, tt.wantErr)

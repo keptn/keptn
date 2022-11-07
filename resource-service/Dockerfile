@@ -9,8 +9,8 @@ ARG SKAFFOLD_GO_GCFLAGS
 # install additional dependencies
 RUN apk update
 RUN apk upgrade
-RUN apk add --no-cache gcc libc-dev git pkgconfig openssh alpine-sdk
-RUN apk add --no-cache libgit2-dev=1.3.0-r0
+RUN apk add --no-cache gcc libc-dev git libgit2-dev=1.3.0-r0
+
 # Force the go compiler to use modules
 ENV GO111MODULE=on
 ENV BUILDFLAGS=""
@@ -58,13 +58,12 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 ENV env=production
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
-RUN apk add --no-cache ca-certificates libc6-compat libc-dev
+RUN apk add --no-cache ca-certificates libc6-compat
 
 # Install git
-RUN apk update
-RUN apk upgrade
-RUN apk add --no-cache build-base git pkgconf libc-dev gcc openssh alpine-sdk
-RUN apk add --no-cache libgit2-dev=1.3.0-r0
+#RUN apk update
+#RUN apk upgrade
+RUN apk add --no-cache build-base git pkgconf libgit2-dev=1.3.0-r0
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service

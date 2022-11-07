@@ -79,7 +79,6 @@ jobs:
         mkdir build && cd build
         cmake ..
         sudo cmake --build . --target install
-        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/
 
     - name: Download Go dependencies
       if: inputs.artifact != 'bridge2'
