@@ -361,6 +361,66 @@ func (s *BaseSuite) TestGit_StageAndCommitAll(c *C) {
 	}
 }
 
+func (s *BaseSuite) TestGit_StageAndCommitAll_AddFails(c *C) {
+	g := NewGit(s.NewTestGit())
+	r := s.Repository
+	w, err := r.Worktree()
+	c.Assert(err, IsNil)
+
+	//create unstaged changes
+	err = write("fo/file.txt", "a content", c, w)
+	c.Assert(err, IsNil)
+
+	//check that changes do exist
+	status, err := w.Status()
+	c.Assert(err, IsNil)
+	if status.IsClean() {
+		c.Error("file was not created")
+	}
+
+	// try to reset unstaged changes
+	err = g.ResetHard(s.NewGitContext(), "HEAD~0")
+	c.Assert(err, IsNil)
+
+	//check that changes do not exist anymore
+	status, err = w.Status()
+	c.Assert(err, IsNil)
+	if !status.IsClean() {
+		c.Error("file is still unstaged")
+	}
+}
+
+func (s *BaseSuite) TestGit_StageAndCommitAll_CommitFails(c *C) {
+	g := NewGit(s.NewTestGit())
+	r := s.Repository
+	w, err := r.Worktree()
+	c.Assert(err, IsNil)
+
+	//create unstaged changes
+	err = write("fo/file.txt", "a content", c, w)
+	c.Assert(err, IsNil)
+	err = w.AddWithOptions(&git.AddOptions{All: true})
+	c.Assert(err, IsNil)
+
+	//check that changes do exist
+	status, err := w.Status()
+	c.Assert(err, IsNil)
+	if status.IsClean() {
+		c.Error("file was not created")
+	}
+
+	// try to reset staged but uncommited changes
+	err = g.ResetHard(s.NewGitContext(), "HEAD~0")
+	c.Assert(err, IsNil)
+
+	//check that changes do not exist anymore
+	status, err = w.Status()
+	c.Assert(err, IsNil)
+	if !status.IsClean() {
+		c.Error("file is still unstaged")
+	}
+}
+
 func (s *BaseSuite) TestGit_StageAndCommitAll_OverrideUserAndEmail(c *C) {
 
 	tests := []struct {
