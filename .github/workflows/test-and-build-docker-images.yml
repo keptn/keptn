@@ -74,19 +74,13 @@ jobs:
       if: inputs.artifact == 'resource-service'
       id: install-libgit2
       run: |
-        #go get -d github.com/libgit2/git2go@v33.0.0
-        #cd ${GOPATH}/src/github.com/libgit2/git2go
-        #git submodule update --init
-        #make install-static
-        cd $(go env GOPATH)
-        mkdir src && cd src
-        mkdir github.com && cd github.com
-        mkdir libgit2 && cd libgit2
         git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
         cd libgit2
         mkdir build && cd build
         cmake ..
         sudo cmake --build . --target install
+        export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/
+        echo ${LD_LIBRARY_PATH}
 
     - name: Download Go dependencies
       if: inputs.artifact != 'bridge2'
