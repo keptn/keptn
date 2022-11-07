@@ -78,7 +78,7 @@ jobs:
         #cd ${GOPATH}/src/github.com/libgit2/git2go
         #git submodule update --init
         #make install-static
-        cd ${GOPATH}/src/github.com
+        cd $(go env GOPATH)/src/github.com
         mkdir libgit2 && cd libgit2
         git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
         cd libgit2
