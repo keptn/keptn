@@ -35,7 +35,7 @@ func TestStageManager_CreateStage(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -91,7 +91,7 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -124,7 +124,7 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -157,7 +157,7 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestStageManagerFields()
@@ -193,7 +193,7 @@ func TestStageManager_CreateStage_CannotPushBranch(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestStageManagerFields()
