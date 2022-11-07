@@ -135,7 +135,7 @@ jobs:
           cd libgit2
           mkdir build && cd build
           cmake ..
-          cmake --build . --target install
+          sudo cmake --build . --target install
 
       - name: Check out code
         uses: actions/checkout@v3
