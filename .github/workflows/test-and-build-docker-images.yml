@@ -80,7 +80,6 @@ jobs:
         cmake ..
         sudo cmake --build . --target install
         export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/
-        echo ${LD_LIBRARY_PATH}
 
     - name: Download Go dependencies
       if: inputs.artifact != 'bridge2'
@@ -91,7 +90,7 @@ jobs:
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
       working-directory: ./${{ inputs.artifact }}
       run: |
-        gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./... 
+        LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
     #######################################################################
           # TESTS FOR BRIDGE
