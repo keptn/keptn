@@ -77,87 +77,94 @@ func resourceNotFound(err error) (bool, string) {
 
 func getAuthMethod(credentials *common_models.GitCredentials) (*common_models.AuthMethod, error) {
 	if credentials.SshAuth != nil {
-		publicKey, err := ssh.NewPublicKeys("git", []byte(credentials.SshAuth.PrivateKey), credentials.SshAuth.PrivateKeyPass)
+		return getSshGitAuth(credentials)
+	} else if credentials.HttpsAuth != nil {
+		return getHttpGitAuth(credentials)
+	}
+	return nil, nil
+}
+
+func getSshGitAuth(credentials *common_models.GitCredentials) (*common_models.AuthMethod, error) {
+	publicKey, err := ssh.NewPublicKeys("git", []byte(credentials.SshAuth.PrivateKey), credentials.SshAuth.PrivateKeyPass)
+	if err != nil {
+		return nil, err
+	}
+	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+
+	credCallback := func(url string, usernameFromUrl string, allowedTypes git2go.CredentialType) (*git2go.Credential, error) {
+		cred, err := git2go.NewCredentialSSHKeyFromMemory(credentials.User, string(publicKey.Signer.PublicKey().Marshal()), credentials.SshAuth.PrivateKey, credentials.SshAuth.PrivateKeyPass)
 		if err != nil {
 			return nil, err
 		}
-		publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
-
-		credCallback := func(url string, usernameFromUrl string, allowedTypes git2go.CredentialType) (*git2go.Credential, error) {
-			cred, err := git2go.NewCredentialSSHKeyFromMemory(credentials.User, string(publicKey.Signer.PublicKey().Marshal()), credentials.SshAuth.PrivateKey, credentials.SshAuth.PrivateKeyPass)
-			if err != nil {
-				return nil, err
-			}
-			return cred, nil
-		}
-		certCallback := func(cert *git2go.Certificate, valid bool, hostname string) error {
-			return nil
-		}
-
-		return &common_models.AuthMethod{
-			GoGitAuth: publicKey,
-			Git2GoAuth: common_models.Git2GoAuth{
-				CredCallback: credCallback,
-				CertCallback: certCallback,
-			},
-		}, nil
-
-	} else if credentials.HttpsAuth != nil {
-		git2GoAuth := common_models.Git2GoAuth{}
-		if credentials.HttpsAuth.Proxy != nil {
-			customClient := &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: credentials.HttpsAuth.InsecureSkipTLS},
-					Proxy: http.ProxyURL(&url.URL{
-						Scheme: credentials.HttpsAuth.Proxy.Scheme,
-						User:   url.UserPassword(credentials.HttpsAuth.Proxy.User, credentials.HttpsAuth.Proxy.Password),
-						Host:   credentials.HttpsAuth.Proxy.URL,
-					}),
-				},
-
-				// 15 second timeout
-				Timeout: 15 * time.Second,
-
-				// don't follow redirect
-				CheckRedirect: func(req *http.Request, via []*http.Request) error {
-					return http.ErrUseLastResponse
-				},
-			}
-
-			// Installing https protocol as a default one means that all the proxy traffic will be routed via secure connection
-			// To use unsecure conenction, InsecureSkipTLS parameter should be set to true and https protocol will be used without TLS verification
-			client.InstallProtocol("https", nethttp.NewClient(customClient))
-
-			git2GoAuth.ProxyOptions = git2go.ProxyOptions{
-				Type: git2go.ProxyTypeAuto,
-				Url:  credentials.HttpsAuth.Proxy.URL,
-			}
-		}
-
-		if credentials.User == "" {
-			//we try the authentication anyway since in most git servers
-			//any user apart from an empty string is fine when we use a token
-			//this auth will fail in case user is using bitbucket
-			credentials.User = "keptnuser"
-		}
-
-		git2GoAuth.CredCallback = func(url string, usernameFromUrl string, allowedTypes git2go.CredentialType) (*git2go.Credential, error) {
-			cred, err := git2go.NewCredentialUserpassPlaintext(credentials.User, credentials.HttpsAuth.Token)
-			if err != nil {
-				return nil, err
-			}
-			return cred, nil
-		}
-
-		return &common_models.AuthMethod{
-			GoGitAuth: &nethttp.BasicAuth{
-				Username: credentials.User,
-				Password: credentials.HttpsAuth.Token,
-			},
-			Git2GoAuth: git2GoAuth,
-		}, nil
+		return cred, nil
 	}
-	return nil, nil
+	certCallback := func(cert *git2go.Certificate, valid bool, hostname string) error {
+		return nil
+	}
+
+	return &common_models.AuthMethod{
+		GoGitAuth: publicKey,
+		Git2GoAuth: common_models.Git2GoAuth{
+			CredCallback: credCallback,
+			CertCallback: certCallback,
+		},
+	}, nil
+}
+
+func getHttpGitAuth(credentials *common_models.GitCredentials) (*common_models.AuthMethod, error) {
+	git2GoAuth := common_models.Git2GoAuth{}
+	if credentials.HttpsAuth.Proxy != nil {
+		customClient := &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: credentials.HttpsAuth.InsecureSkipTLS},
+				Proxy: http.ProxyURL(&url.URL{
+					Scheme: credentials.HttpsAuth.Proxy.Scheme,
+					User:   url.UserPassword(credentials.HttpsAuth.Proxy.User, credentials.HttpsAuth.Proxy.Password),
+					Host:   credentials.HttpsAuth.Proxy.URL,
+				}),
+			},
+
+			// 15 second timeout
+			Timeout: 15 * time.Second,
+
+			// don't follow redirect
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
+		}
+
+		// Installing https protocol as a default one means that all the proxy traffic will be routed via secure connection
+		// To use unsecure connection, InsecureSkipTLS parameter should be set to true and https protocol will be used without TLS verification
+		client.InstallProtocol("https", nethttp.NewClient(customClient))
+
+		git2GoAuth.ProxyOptions = git2go.ProxyOptions{
+			Type: git2go.ProxyTypeAuto,
+			Url:  credentials.HttpsAuth.Proxy.URL,
+		}
+	}
+
+	if credentials.User == "" {
+		//we try the authentication anyway since in most git servers
+		//any user apart from an empty string is fine when we use a token
+		//this auth will fail in case user is using bitbucket
+		credentials.User = "keptnuser"
+	}
+
+	git2GoAuth.CredCallback = func(url string, usernameFromUrl string, allowedTypes git2go.CredentialType) (*git2go.Credential, error) {
+		cred, err := git2go.NewCredentialUserpassPlaintext(credentials.User, credentials.HttpsAuth.Token)
+		if err != nil {
+			return nil, err
+		}
+		return cred, nil
+	}
+
+	return &common_models.AuthMethod{
+		GoGitAuth: &nethttp.BasicAuth{
+			Username: credentials.User,
+			Password: credentials.HttpsAuth.Token,
+		},
+		Git2GoAuth: git2GoAuth,
+	}, nil
 }
 
 func SetFailedDependencyErrorResponse(c *gin.Context, msg string) {

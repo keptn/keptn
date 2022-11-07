@@ -38,7 +38,7 @@ func TestServiceManager_CreateService(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -100,7 +100,7 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -135,7 +135,7 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -172,7 +172,7 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -208,7 +208,7 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -244,7 +244,7 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -281,7 +281,7 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -313,7 +313,7 @@ func TestServiceManager_DeleteService(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -348,7 +348,7 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -386,7 +386,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -418,7 +418,7 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()
@@ -456,7 +456,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestServiceManagerFields()

@@ -224,7 +224,8 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 					HttpsAuth: &apimodels.HttpsGitAuth{
 						Token: "bjh",
 					},
-					RemoteURL: "an url that doesnot exists"},
+					RemoteURL: "an url that does not exist",
+				},
 			},
 			branch:   "master",
 			want:     "",
@@ -648,14 +649,11 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, kerrors.ErrEmptyRemoteRepository
 				},
-				PlainInitFunc: func(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
+				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
 					return git.PlainInit(path, isBare)
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
 					return nil, nil
-				},
-				FetchFunc: func(gitContext common_models.GitContext, repository *git.Repository, options *git.FetchOptions) error {
-					return nil
 				},
 			},
 			gitContext: common_models.GitContext{
@@ -704,14 +702,11 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, errors.New("auth error")
 				},
-				PlainInitFunc: func(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
+				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
 					return nil, errors.New("not exists")
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
 					return nil, errors.New("not exists")
-				},
-				FetchFunc: func(gitContext common_models.GitContext, repository *git.Repository, options *git.FetchOptions) error {
-					return nil
 				},
 			},
 			wantErr: true,
@@ -732,14 +727,11 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, errors.New("auth error")
 				},
-				PlainInitFunc: func(gitContext common_models.GitContext, path string, isBare bool) (*git.Repository, error) {
+				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
 					return nil, errors.New("not exists")
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
 					return nil, errors.New("not exists")
-				},
-				FetchFunc: func(gitContext common_models.GitContext, repository *git.Repository, options *git.FetchOptions) error {
-					return nil
 				},
 			},
 			wantErr: true,
