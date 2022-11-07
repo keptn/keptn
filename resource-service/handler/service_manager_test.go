@@ -49,7 +49,7 @@ func TestServiceManager_CreateService(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.fileWriter.WriteFileCalls(), 1)
 	require.Equal(t, fields.fileWriter.WriteFileCalls()[0].Path, testServiceConfigDir+"/metadata.yaml")
@@ -115,7 +115,7 @@ func TestServiceManager_CreateService_ProjectNotFound(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 	require.Empty(t, fields.fileWriter.WriteFileCalls())
@@ -150,7 +150,7 @@ func TestServiceManager_CreateService_StageNotFound(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrStageNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
@@ -186,7 +186,7 @@ func TestServiceManager_CreateService_ServiceAlreadyExists(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrServiceAlreadyExists)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
@@ -222,7 +222,7 @@ func TestServiceManager_CreateService_CannotCreateDirectory(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
@@ -258,7 +258,7 @@ func TestServiceManager_CreateService_CannotCreateMetadata(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
@@ -295,12 +295,12 @@ func TestServiceManager_CreateService_CannotCommit(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext.Project, expectedGitContext.Project)
 }
 
 func TestServiceManager_DeleteService(t *testing.T) {
@@ -330,12 +330,12 @@ func TestServiceManager_DeleteService(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext.Project, expectedGitContext.Project)
 }
 
 func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
@@ -370,7 +370,7 @@ func TestServiceManager_DeleteService_ProjectDoesNotExist(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.CheckoutBranchCalls())
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
@@ -401,7 +401,7 @@ func TestServiceManager_DeleteService_ServiceDoesNotExist(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrServiceNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
@@ -439,7 +439,7 @@ func TestServiceManager_DeleteService_DeleteDirectoryFails(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 
@@ -477,7 +477,7 @@ func TestServiceManager_DeleteService_CannotCommit(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.configurationContext.EstablishCalls(), 1)
 

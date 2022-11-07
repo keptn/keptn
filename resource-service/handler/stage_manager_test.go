@@ -45,10 +45,10 @@ func TestStageManager_CreateStage(t *testing.T) {
 	require.Nil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.CreateBranchCalls(), 1)
-	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext.Project, expectedGitContext.Project)
 	require.Equal(t, fields.git.CreateBranchCalls()[0].SourceBranch, "main")
 	require.Equal(t, fields.git.CreateBranchCalls()[0].Branch, "my-stage")
 
@@ -106,7 +106,7 @@ func TestStageManager_CreateStage_ProjectDoesNotExist(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrProjectNotFound)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.CreateBranchCalls())
 }
@@ -139,7 +139,7 @@ func TestStageManager_CreateStage_CannotGetDefaultBranch(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.CreateBranchCalls())
 }
@@ -172,10 +172,10 @@ func TestStageManager_CreateStage_CannotCreateBranch(t *testing.T) {
 	require.ErrorIs(t, err, errors2.ErrStageAlreadyExists)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.CreateBranchCalls(), 1)
-	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext.Project, expectedGitContext.Project)
 	require.Equal(t, fields.git.CreateBranchCalls()[0].SourceBranch, "main")
 	require.Equal(t, fields.git.CreateBranchCalls()[0].Branch, "my-stage")
 }
@@ -208,10 +208,10 @@ func TestStageManager_CreateStage_CannotPushBranch(t *testing.T) {
 	require.NotNil(t, err)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.CreateBranchCalls(), 1)
-	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.CreateBranchCalls()[0].GitContext.Project, expectedGitContext.Project)
 	require.Equal(t, fields.git.CreateBranchCalls()[0].SourceBranch, "main")
 	require.Equal(t, fields.git.CreateBranchCalls()[0].Branch, "my-stage")
 }
