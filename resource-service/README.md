@@ -62,3 +62,22 @@ you can also deploy the *resource-service* and configure the Git repositories la
 5. Install Keptn with the *resource-service* enabled
 6. Navigate to your Bridge installation and configure an upstream to the Keptn projects.
 
+## Executing unit tests locally
+
+To execute unit tests of this service locally, `libgit2 1.3.0` needs to be installed. This library needs to be built and installed using `cmake`:
+
+```shell
+git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
+cd libgit2
+mkdir build && cd build
+cmake ..
+sudo cmake --build . --target install
+```
+
+If you encounter an error saying the the `libgit2.so` shared library cannot be located, you might need to add the location of the
+`libgit2.so` library to the `LD_LIBRARY_PATH` env var. In the following example, the library is located in `/usr/local/lib`:
+
+```shell
+LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ go test ./...
+```
+
