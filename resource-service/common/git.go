@@ -3,12 +3,13 @@ package common
 import (
 	"errors"
 	"fmt"
-	"github.com/go-git/go-git/v5/plumbing/transport"
 	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5/plumbing/transport"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -212,15 +213,21 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
-
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
+		if err = g.ResetHard(gitContext, "HEAD~0"); err != nil {
+			logger.WithError(err).Warn("could not reset after commitAll")
+		} else {
+			logger.Warn("untracked changes were removed")
+		}
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, err)
 	}
 	rollbackFunc := func() {
 		err := g.ResetHard(gitContext, "HEAD~1")
 		if err != nil {
 			logger.WithError(err).Warn("could not reset")
+		} else {
+			logger.Warn("commited changes were removed")
 		}
 	}
 	err = g.Pull(gitContext)
@@ -408,6 +415,7 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 	err := g.checkoutBranch(gitContext, &git.CheckoutOptions{
 		Branch: b,
+		Force:  true,
 	})
 	if err != nil {
 		if errors.Is(err, plumbing.ErrReferenceNotFound) {
