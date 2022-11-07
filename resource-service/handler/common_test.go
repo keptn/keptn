@@ -139,7 +139,7 @@ func Test_getAuthMethod(t *testing.T) {
 				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
 			}
 			if tt.expectedGoGitAuth == nil {
-				require.Nil(t, auth.GoGitAuth)
+				require.Nil(t, auth)
 				return
 			}
 			if err != nil && auth.GoGitAuth != tt.expectedGoGitAuth {
