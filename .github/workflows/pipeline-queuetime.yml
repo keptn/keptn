@@ -6,11 +6,7 @@ on:
         type: string
         required: true
         description: "Name of the calling workflow for easy differentiation between metric data points"
-    secrets:
-      monitoring_api_token:
-        required: true
-      monitoring_tenant_url:
-        required: true
+
 defaults:
   run:
     shell: bash
@@ -46,17 +42,3 @@ jobs:
             const queueTime = (jobStartedTime - runStartedTime) / 1000;
             return queueTime;
 
-
-      - name: Ingest Pipeline Metrics
-        if: ( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )
-        uses: dynatrace-oss/dynatrace-github-action@v8
-        with:
-          url: ${{ secrets.monitoring_tenant_url }}
-          token: ${{ secrets.monitoring_api_token }}
-          metrics: |
-            - metric: "github.workflow_queue_time"
-              value: "${{ steps.calculate_queue_time.outputs.result }}"
-              dimensions:
-                workflow_name: "${{ inputs.workflow_name }}"
-                owner_name: "keptn"
-                repo_name: "keptn"
