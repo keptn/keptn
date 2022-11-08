@@ -346,7 +346,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, common.ErrAlreadyInitializedRepository) {
+		if err.Error() == common.AlreadyInitializedRepositoryMsg {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
@@ -422,7 +422,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 			SetBadRequestErrorResponse(c, err.Error())
 			return
 		}
-		if errors.Is(err, common.ErrAlreadyInitializedRepository) {
+		if err.Error() == common.AlreadyInitializedRepositoryMsg {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
