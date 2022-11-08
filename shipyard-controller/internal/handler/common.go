@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"github.com/keptn/keptn/shipyard-controller/models"
 )
 
@@ -79,4 +81,33 @@ func DecodeInputData(body io.ReadCloser, params any) error {
 		return err
 	}
 	return nil
+}
+
+func mapError(c *gin.Context, err error) {
+	if errors.Is(err, common.ErrProjectAlreadyExists) {
+		SetConflictErrorResponse(c, err.Error())
+		return
+	}
+	if err.Error() == common.AlreadyInitializedRepositoryMsg {
+		SetConflictErrorResponse(c, err.Error())
+		return
+	}
+	if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
+		SetNotFoundErrorResponse(c, err.Error())
+		return
+	}
+	if errors.Is(err, common.ErrConfigStoreInvalidToken) {
+		SetFailedDependencyErrorResponse(c, err.Error())
+		return
+	}
+	if errors.Is(err, common.ErrProjectNotFound) {
+		SetNotFoundErrorResponse(c, err.Error())
+		return
+	}
+	if errors.Is(err, common.ErrInvalidStageChange) {
+		SetBadRequestErrorResponse(c, err.Error())
+		return
+	}
+	SetInternalServerErrorResponse(c, err.Error())
+	return
 }

@@ -342,19 +342,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 
 		rollback()
 		log.Debugf("rolled back %s", err.Error())
-		if errors.Is(err, common.ErrProjectAlreadyExists) {
-			SetConflictErrorResponse(c, err.Error())
-			return
-		}
-		if err.Error() == common.AlreadyInitializedRepositoryMsg {
-			SetConflictErrorResponse(c, err.Error())
-			return
-		}
-		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
-			SetBadRequestErrorResponse(c, err.Error())
-			return
-		}
-		SetInternalServerErrorResponse(c, err.Error())
+		mapError(c, err)
 		return
 	}
 	if err := ph.sendProjectCreateSuccessFinishedEvent(keptnContext, params); err != nil {
@@ -406,27 +394,7 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 	err, rollback := ph.ProjectManager.Update(params)
 	if err != nil {
 		rollback()
-		if errors.Is(err, common.ErrConfigStoreInvalidToken) {
-			SetFailedDependencyErrorResponse(c, err.Error())
-			return
-		}
-		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
-			SetNotFoundErrorResponse(c, err.Error())
-			return
-		}
-		if errors.Is(err, common.ErrProjectNotFound) {
-			SetNotFoundErrorResponse(c, err.Error())
-			return
-		}
-		if errors.Is(err, common.ErrInvalidStageChange) {
-			SetBadRequestErrorResponse(c, err.Error())
-			return
-		}
-		if err.Error() == common.AlreadyInitializedRepositoryMsg {
-			SetConflictErrorResponse(c, err.Error())
-			return
-		}
-		SetInternalServerErrorResponse(c, common.ErrInternalError.Error())
+		mapError(c, err)
 		return
 	}
 	c.Status(http.StatusCreated)

@@ -379,7 +379,7 @@ func TestCreateProject(t *testing.T) {
 				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
-			expectHttpStatus: http.StatusBadRequest,
+			expectHttpStatus: http.StatusNotFound,
 			projectNameParam: "my-project",
 		},
 		{
