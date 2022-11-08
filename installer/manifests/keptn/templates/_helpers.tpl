@@ -606,7 +606,7 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "http://resource-service:8080/heatlh"
+    value: "http://resource-service:8080/health"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
