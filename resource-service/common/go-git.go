@@ -7,8 +7,11 @@ import (
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
 	git2go "github.com/libgit2/git2go/v33"
+	log "github.com/sirupsen/logrus"
 	"strings"
 )
+
+const unexpectedClientErrorMessage = "unexpected client"
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogit_mock.go . Gogit
 type Gogit interface {
@@ -26,8 +29,10 @@ func (t GogitReal) PlainOpen(path string) (*git.Repository, error) {
 func (t GogitReal) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 	repo, err := git.PlainClone(path, isBare, o)
 	if err != nil {
-		if strings.Contains(err.Error(), "unexpected") {
+		log.Warnf("Could not clone using go-git library: %v", err)
+		if strings.Contains(err.Error(), unexpectedClientErrorMessage) {
 			git2 := Git2Go{}
+			log.Debug("Try to clone using libgit2go")
 			return git2.PlainClone(gitContext, path, isBare, o)
 		}
 		return nil, err
@@ -68,6 +73,8 @@ func (g Git2Go) PlainClone(gitContext common_models.GitContext, path string, isB
 		if errors.Is(err, plumbing.ErrReferenceNotFound) {
 			return nil, kerrors.ErrEmptyRemoteRepository
 		}
+		return nil, err
 	}
+	log.Debug("Clone using libgit2go succeeded")
 	return repo, nil
 }
