@@ -84,6 +84,9 @@ func DecodeInputData(body io.ReadCloser, params any) error {
 }
 
 func mapError(c *gin.Context, err error) {
+	if err == nil {
+		return
+	}
 	if errors.Is(err, common.ErrProjectAlreadyExists) {
 		SetConflictErrorResponse(c, err.Error())
 		return
