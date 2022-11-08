@@ -184,7 +184,7 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 	err = retry.Retry(func() error {
 		internalKeptnAPI, err = NewAPICallerWithBaseURL("http://127.0.0.1:" + localPort)
 		return err
-	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(20*time.Second))
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Minute))
 
 	if err != nil {
 		return nil, err
