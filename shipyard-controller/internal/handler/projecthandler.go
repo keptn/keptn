@@ -346,8 +346,8 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 			SetConflictErrorResponse(c, err.Error())
 			return
 		}
-		if err.Error() == common.AlreadyInitializedRepositoryMsg {
-			SetConflictErrorResponse(c, common.ErrAlreadyInitializedRepository.Error())
+		if errors.Is(err, common.ErrAlreadyInitializedRepository) {
+			SetConflictErrorResponse(c, err.Error())
 			return
 		}
 		if errors.Is(err, common.ErrConfigStoreUpstreamNotFound) {
@@ -422,8 +422,8 @@ func (ph *ProjectHandler) UpdateProject(c *gin.Context) {
 			SetBadRequestErrorResponse(c, err.Error())
 			return
 		}
-		if err.Error() == common.AlreadyInitializedRepositoryMsg {
-			SetConflictErrorResponse(c, common.ErrAlreadyInitializedRepository.Error())
+		if errors.Is(err, common.ErrAlreadyInitializedRepository) {
+			SetConflictErrorResponse(c, err.Error())
 			return
 		}
 		SetInternalServerErrorResponse(c, common.ErrInternalError.Error())

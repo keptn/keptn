@@ -23,7 +23,7 @@ var ErrProjectNotFound = errors.New("project not found")
 
 var ErrInvalidStageChange = errors.New("stage name cannot be changed or removed")
 
-var ErrAlreadyInitializedRepository = errors.New("upstream repository already initialized")
+var ErrAlreadyInitializedRepository = errors.New("project already exists with an already initialized GIT repository")
 
 var ErrStageNotFound = errors.New("stage not found")
 
@@ -90,5 +90,3 @@ var UnableProvisionDeleteReq = "Error creating delete provision request: %s"
 var UnableProvisionPostReq = "Error creating post provision request: %s"
 
 var OtherActiveSequencesRunning = "Other sequences are currently running in the same stage for the same service with context id: "
-
-var AlreadyInitializedRepositoryMsg = "Project already exists with an already initialized GIT repository"

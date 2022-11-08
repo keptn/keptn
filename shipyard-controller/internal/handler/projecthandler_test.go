@@ -387,7 +387,7 @@ func TestCreateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
-						return fmt.Errorf(common.AlreadyInitializedRepositoryMsg), func() error { return nil }
+						return common.ErrAlreadyInitializedRepository, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
@@ -759,7 +759,7 @@ func TestUpdateProject(t *testing.T) {
 			fields: fields{
 				ProjectManager: &fake.IProjectManagerMock{
 					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
-						return fmt.Errorf(common.AlreadyInitializedRepositoryMsg), func() error { return nil }
+						return common.ErrAlreadyInitializedRepository, func() error { return nil }
 					},
 				},
 				EventSender: &fake.IEventSenderMock{
