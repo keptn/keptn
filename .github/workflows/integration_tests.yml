@@ -812,18 +812,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           filename: integration-tests-failed.md
-
-  calculate-total-runtime:
-    name: End-of-Pipeline Metrics
-    if: always()
-    needs:
-      - calculate-queue-time
-      - integration-test
-      - publish-final-test-report
-    uses: ./.github/workflows/end-of-pipeline-metrics.yml
-    with:
-      workflow_name: "Integration Tests"
-      branch: ${{ github.ref }}
-    secrets:
-      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
