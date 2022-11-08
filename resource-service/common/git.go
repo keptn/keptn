@@ -169,12 +169,14 @@ func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
 	init, err := g.git.PlainInit(projectPath, false)
-	if err != nil && !errors.Is(err, git.ErrRepositoryAlreadyExists) {
-		return nil, err
+	if err != nil {
+		if errors.Is(err, git.ErrRepositoryAlreadyExists) {
+			init, err = g.git.PlainOpen(projectPath)
+		} else {
+			return nil, err
+		}
 	}
-	if errors.Is(err, git.ErrRepositoryAlreadyExists) {
-		init, err = g.git.PlainOpen(projectPath)
-	}
+
 	if err != nil {
 		return nil, err
 	}
