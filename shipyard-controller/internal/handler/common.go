@@ -88,7 +88,7 @@ func mapError(c *gin.Context, err error) {
 		SetConflictErrorResponse(c, err.Error())
 		return
 	}
-	if err.Error() == common.AlreadyInitializedRepositoryMsg {
+	if strings.Contains(err.Error(), common.AlreadyInitializedRepositoryMsg) {
 		SetConflictErrorResponse(c, err.Error())
 		return
 	}
