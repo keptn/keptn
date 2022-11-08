@@ -98,14 +98,6 @@ defaults:
   run:
     shell: bash
 jobs:
-  calculate-queue-time:
-    name: "Calculate Queue Time"
-    uses: ./.github/workflows/pipeline-queuetime.yml
-    with:
-      workflow_name: "CI"
-    secrets:
-      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
 
   prepare_ci_run:
     name: Prepare CI Run
