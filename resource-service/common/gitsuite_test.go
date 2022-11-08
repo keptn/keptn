@@ -1054,26 +1054,26 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 		exists     bool
 		git        Gogit
 	}{
-		//{
-		//	name:       "project exists",
-		//	gitContext: s.NewGitContext(),
-		//	exists:     true,
-		//	git:        GogitReal{},
-		//},
-		//{
-		//	name: "project does not exists",
-		//	gitContext: common_models.GitContext{
-		//		Project: "nonexisting",
-		//		Credentials: &common_models.GitCredentials{
-		//			User: "ssss",
-		//			HttpsAuth: &apimodels.HttpsGitAuth{
-		//				Token: "bjh",
-		//			},
-		//			RemoteURL: "an url that doesnot exists"},
-		//	},
-		//	exists: false,
-		//	git:    GogitReal{},
-		//},
+		{
+			name:       "project exists",
+			gitContext: s.NewGitContext(),
+			exists:     true,
+			git:        GogitReal{},
+		},
+		{
+			name: "project does not exists",
+			gitContext: common_models.GitContext{
+				Project: "nonexisting",
+				Credentials: &common_models.GitCredentials{
+					User: "ssss",
+					HttpsAuth: &apimodels.HttpsGitAuth{
+						Token: "bjh",
+					},
+					RemoteURL: "an url that doesnot exists"},
+			},
+			exists: false,
+			git:    GogitReal{},
+		},
 		{
 			name: "project exists, but remote is empty",
 			gitContext: common_models.GitContext{
