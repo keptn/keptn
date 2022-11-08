@@ -379,7 +379,28 @@ func TestCreateProject(t *testing.T) {
 				RemoteURLValidator:    remoteURLValidator,
 			},
 			jsonPayload:      examplePayload,
-			expectHttpStatus: http.StatusBadRequest,
+			expectHttpStatus: http.StatusNotFound,
+			projectNameParam: "my-project",
+		},
+		{
+			name: "Create project with already initialized repository",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					CreateFunc: func(params *models.CreateProjectParams, options models.InternalCreateProjectOptions) (error, common.RollbackFunc) {
+						return fmt.Errorf(common.AlreadyInitializedRepositoryMsg), func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 20},
+				RepositoryProvisioner: &fake2.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
+			},
+			jsonPayload:      examplePayload,
+			expectHttpStatus: http.StatusConflict,
 			projectNameParam: "my-project",
 		},
 		{
@@ -732,6 +753,26 @@ func TestUpdateProject(t *testing.T) {
 			},
 			jsonPayload:        examplePayload,
 			expectedHTTPStatus: http.StatusNotFound,
+		},
+		{
+			name: "Update project with already initialized repository",
+			fields: fields{
+				ProjectManager: &fake.IProjectManagerMock{
+					UpdateFunc: func(params *models.UpdateProjectParams) (error, common.RollbackFunc) {
+						return fmt.Errorf(common.AlreadyInitializedRepositoryMsg), func() error { return nil }
+					},
+				},
+				EventSender: &fake.IEventSenderMock{
+					SendEventFunc: func(eventMoqParam event.Event) error {
+						return nil
+					},
+				},
+				EnvConfig:             config.EnvConfig{ProjectNameMaxSize: 200},
+				RepositoryProvisioner: &fake2.IRepositoryProvisionerMock{},
+				RemoteURLValidator:    remoteURLValidator,
+			},
+			jsonPayload:        examplePayload,
+			expectedHTTPStatus: http.StatusConflict,
 		},
 		{
 			name: "Update project",
