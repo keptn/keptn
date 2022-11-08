@@ -47,6 +47,7 @@ func (t GogitReal) PlainInit(path string, isBare bool) (*git.Repository, error) 
 type Git2Go struct{}
 
 func (g Git2Go) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+	// ignore the actual repository object provided by git2go because we will use the go-git implementation after a successful clone
 	_, err := git2go.Clone(o.URL, path, &git2go.CloneOptions{
 		Bare: isBare,
 		FetchOptions: git2go.FetchOptions{
@@ -68,6 +69,7 @@ func (g Git2Go) PlainClone(gitContext common_models.GitContext, path string, isB
 		return nil, err
 	}
 
+	// check if there is a head commit in the history to provide the same result as we would with the go-git library implementation of this function
 	_, err = repo.Head()
 	if err != nil {
 		if errors.Is(err, plumbing.ErrReferenceNotFound) {
