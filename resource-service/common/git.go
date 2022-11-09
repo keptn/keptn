@@ -128,6 +128,8 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	}
 
 	if gitContext.Credentials.RemoteURL != "" {
+		//TODO: delete log
+		logger.Info("PERFORM FETCH OPERATION on " + gitContext.Credentials.RemoteURL)
 		if err := g.fetch(gitContext, clone); err != nil {
 			if errors.Is(err, transport.ErrEmptyRemoteRepository) {
 				return true, nil
@@ -492,6 +494,8 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 		//if err = g.fetch(gitContext, r); err != nil {
 		//	return err
 		//}
+		//TODO: remove log
+		logger.Info("CHECKING OUT BRANCH " + options.Branch.String() + " on " + gitContext.Credentials.RemoteURL)
 		return w.Checkout(options)
 	}
 	return kerrors.ErrProjectNotFound
