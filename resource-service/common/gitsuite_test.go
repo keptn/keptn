@@ -1120,7 +1120,7 @@ func (s *BaseSuite) TestGit_ProjectExists(c *C) {
 			git:        GogitReal{},
 		},
 		{
-			name: "project does not exists",
+			name: "project does not exist",
 			gitContext: common_models.GitContext{
 				Project: "nonexisting",
 				Credentials: &common_models.GitCredentials{

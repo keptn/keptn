@@ -126,6 +126,15 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if err := g.storeDefaultBranchConfig(gitContext, err, clone, head); err != nil {
 		return false, err
 	}
+
+	if gitContext.Credentials.RemoteURL != "" {
+		if err := g.fetch(gitContext, clone); err != nil {
+			if errors.Is(err, transport.ErrEmptyRemoteRepository) {
+				return true, nil
+			}
+			return false, err
+		}
+	}
 	return true, nil
 }
 
@@ -476,13 +485,13 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
 	if g.ProjectExists(gitContext) {
-		r, w, err := g.getWorkTree(gitContext)
+		_, w, err := g.getWorkTree(gitContext)
 		if err != nil {
 			return err
 		}
-		if err = g.fetch(gitContext, r); err != nil {
-			return err
-		}
+		//if err = g.fetch(gitContext, r); err != nil {
+		//	return err
+		//}
 		return w.Checkout(options)
 	}
 	return kerrors.ErrProjectNotFound
@@ -578,11 +587,11 @@ func (g *Git) ProjectExists(gitContext common_models.GitContext) bool {
 	if g.ProjectRepoExists(gitContext.Project) {
 		return true
 	}
-	clone, err := g.CloneRepo(gitContext)
+	success, err := g.CloneRepo(gitContext)
 	if err != nil {
 		logger.Errorf("Could not check for project availability: %v", err)
 	}
-	return clone
+	return success
 }
 
 func (g *Git) ProjectRepoExists(project string) bool {
