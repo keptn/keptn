@@ -179,11 +179,17 @@ func GetInternalKeptnAPI(ctx context.Context, internalService, localPort string,
 	if err != nil {
 		return nil, err
 	}
-	keptnInternalAPI, err := NewAPICallerWithBaseURL("http://127.0.0.1:" + localPort)
+	var internalKeptnAPI *APICaller
+
+	err = retry.Retry(func() error {
+		internalKeptnAPI, err = NewAPICallerWithBaseURL("http://127.0.0.1:" + localPort)
+		return err
+	}, retry.NumberOfRetries(5), retry.DelayBetweenRetries(1*time.Minute))
+
 	if err != nil {
 		return nil, err
 	}
-	return keptnInternalAPI, nil
+	return internalKeptnAPI, nil
 }
 
 func RecreateProjectUpstream(newProjectName string) error {
@@ -596,6 +602,7 @@ func storeWithCommit(t *testing.T, projectName, stage, serviceName, content, uri
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8889", "8080")
+
 	require.Nil(t, err)
 	t.Log("Storing new slo file")
 	resp, err := internalKeptnAPI.Post(basePath+"/"+projectName+"/stage/"+stage+"/service/"+serviceName+"/resource", models.Resources{
