@@ -244,12 +244,13 @@ class ServicesPage {
   }
 
   public assertSliRelativeChange(sliName: string, relativeChange: number | 'n/a'): this {
-    this._getSliCell(sliName, 'value')
-      .byTestId('ktb-sli-breakdown-value-relative')
-      .should(
-        'have.text',
-        typeof relativeChange === 'string' ? relativeChange : `${relativeChange > 0 ? '+' : ''}${relativeChange}% `
-      );
+    let changeValue: string;
+    if (typeof relativeChange === 'string') {
+      changeValue = relativeChange;
+    } else {
+      changeValue = `${relativeChange > 0 ? '+' : ''}${relativeChange}% `;
+    }
+    this._getSliCell(sliName, 'value').byTestId('ktb-sli-breakdown-value-relative').should('have.text', changeValue);
     return this;
   }
 
