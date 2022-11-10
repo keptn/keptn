@@ -8,9 +8,12 @@ import {
   getHiddenYElements,
   getLimitedYElements,
   getXAxisReducedElements,
+  setUniqueXAxis,
+  setUniqueYAxis,
 } from './ktb-heatmap-utils';
-import { GroupedDataPoints } from '../../_interfaces/heatmap';
+import { GroupedDataPoints, IDataPoint, IHeatmapTooltipType } from '../../_interfaces/heatmap';
 import { TestUtils } from '../../_utils/test.utils';
+import { ResultTypes } from '../../../../shared/models/result-types';
 import Mock = jest.Mock;
 
 describe('KtbHeatmapUtils', () => {
@@ -34,6 +37,52 @@ describe('KtbHeatmapUtils', () => {
     });
     // verify order of keys
     expect(Object.keys(groupedDataPoints)).toEqual(['response_time_p0', 'score']);
+  });
+
+  it('should rename the xAxis if there are duplicates', () => {
+    const dataPoints = getDataPointsWithXAxisDuplicates();
+    setUniqueXAxis(dataPoints);
+
+    expect(dataPoints.map((dt) => dt.xElement)).toEqual([
+      '2022-11-10T08:17:47.152Z (1)',
+      '2022-11-10T08:17:47.152Z (1)',
+      '2022-11-10T08:17:47.152Z (2)',
+    ]);
+  });
+
+  it('should not rename xAxis elements', () => {
+    const dataPoints = mockDataPoints(2, 2);
+    setUniqueXAxis(dataPoints);
+
+    expect(dataPoints.map((dt) => dt.xElement)).toEqual([
+      'myDate0',
+      'myDate0',
+      'myDate0',
+      'myDate1',
+      'myDate1',
+      'myDate1',
+    ]);
+  });
+
+  it('should rename yAxis elements', () => {
+    const dataPoints = getDataPointsWithYAxisDuplicates();
+    setUniqueYAxis(dataPoints);
+
+    expect(dataPoints.map((dt) => dt.yElement)).toEqual(['SLI (1)', 'SLI (2)', 'SLI (1)']);
+  });
+
+  it('should not rename yAxis elements', () => {
+    const dataPoints = mockDataPoints(2, 2);
+    setUniqueXAxis(dataPoints);
+
+    expect(dataPoints.map((dt) => dt.yElement)).toEqual([
+      'response_time_p0',
+      'response_time_p1',
+      'score',
+      'response_time_p0',
+      'response_time_p1',
+      'score',
+    ]);
   });
 
   it('should correctly return axis elements without duplicates', () => {
@@ -200,5 +249,105 @@ describe('KtbHeatmapUtils', () => {
     mockIdentifiers = false
   ): GroupedDataPoints {
     return createGroupedDataPoints(mockDataPoints(counter, slis, identifierSuffix, dateSuffix, mockIdentifiers));
+  }
+
+  function getDataPointsWithXAxisDuplicates(): IDataPoint[] {
+    return [
+      {
+        identifier: '1',
+        yElement: 'SLI',
+        xElement: '2022-11-10T08:17:47.152Z',
+        comparedIdentifier: [],
+        color: ResultTypes.PASSED,
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          keySli: false,
+          value: 0,
+          warningTargets: [],
+          passTargets: [],
+          score: 0,
+        },
+      },
+      {
+        identifier: '1',
+        yElement: 'SLI2',
+        xElement: '2022-11-10T08:17:47.152Z',
+        comparedIdentifier: [],
+        color: ResultTypes.PASSED,
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          keySli: false,
+          value: 0,
+          warningTargets: [],
+          passTargets: [],
+          score: 0,
+        },
+      },
+      {
+        identifier: '2',
+        yElement: 'SLI1',
+        xElement: '2022-11-10T08:17:47.152Z',
+        comparedIdentifier: [],
+        color: ResultTypes.PASSED,
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          keySli: false,
+          value: 0,
+          warningTargets: [],
+          passTargets: [],
+          score: 0,
+        },
+      },
+    ];
+  }
+
+  function getDataPointsWithYAxisDuplicates(): IDataPoint[] {
+    return [
+      {
+        identifier: '1',
+        yElement: 'SLI',
+        xElement: '2022-11-10T08:17:47.152Z',
+        comparedIdentifier: [],
+        color: ResultTypes.PASSED,
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          keySli: false,
+          value: 0,
+          warningTargets: [],
+          passTargets: [],
+          score: 0,
+        },
+      },
+      {
+        identifier: '1',
+        yElement: 'SLI',
+        xElement: '2022-11-10T08:17:47.152Z',
+        comparedIdentifier: [],
+        color: ResultTypes.PASSED,
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          keySli: false,
+          value: 0,
+          warningTargets: [],
+          passTargets: [],
+          score: 0,
+        },
+      },
+      {
+        identifier: '2',
+        yElement: 'SLI',
+        xElement: '2022-11-10T08:17:47.152Z',
+        comparedIdentifier: [],
+        color: ResultTypes.PASSED,
+        tooltip: {
+          type: IHeatmapTooltipType.SLI,
+          keySli: false,
+          value: 0,
+          warningTargets: [],
+          passTargets: [],
+          score: 0,
+        },
+      },
+    ];
   }
 });
