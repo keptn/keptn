@@ -32,4 +32,4 @@ spec:
       url: https://raw.githubusercontent.com/keptn/lifecycle-toolkit/main/functions-runtime/samples/ts/http.ts
     parameters:
       map:
-        url: http://keptn-mongoo.keptn:27017
+        url: http://keptn-mongo.keptn:27017
