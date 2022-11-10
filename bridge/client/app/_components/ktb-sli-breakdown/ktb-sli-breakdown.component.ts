@@ -166,7 +166,7 @@ export class KtbSliBreakdownComponent {
       return undefined;
     }
 
-    return indicatorResults.map((indicatorResult) => ({
+    const sliResults = indicatorResults.map<SliResult>((indicatorResult) => ({
       name: indicatorResult.displayName || indicatorResult.value.metric,
       value: indicatorResult.value.message || AppUtils.formatNumber(indicatorResult.value.value),
       result: indicatorResult.status,
@@ -180,6 +180,26 @@ export class KtbSliBreakdownComponent {
       weight: this.objectives?.find((obj) => obj.sli === indicatorResult.value.metric)?.weight ?? 1,
       ...this.getComparedValues(indicatorResult),
     }));
+
+    return this.getUniqueSliResult(sliResults);
+  }
+
+  public getUniqueSliResult(sliResults: SliResult[]): SliResult[] {
+    return sliResults.map((sliResult, index) => ({
+      ...sliResult,
+      name: this.getUniqueSliName(sliResult.name, index, sliResults),
+    }));
+  }
+
+  private getUniqueSliName(sliName: string, sliResultIndex: number, sliResults: SliResult[]): string {
+    const duplicates = sliResults.filter((result) => result.name === sliName);
+    if (duplicates.length > 1) {
+      const previousDuplicates = sliResults.filter(
+        (result, index) => index < sliResultIndex && result.name === sliName
+      ).length;
+      return `${sliName} (${previousDuplicates + 1})`;
+    }
+    return sliName;
   }
 
   private setColumnNames(indicatorResults: IndicatorResult[]): void {
