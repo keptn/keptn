@@ -12,6 +12,8 @@ spec:
   {{- include "keptn.common.update-strategy" . | nindent 2 }}
   template:
     metadata:
+      annotations:
+        keptn.sh/pre-deployment-tasks: check-shipyard-controller-readiness
       labels: {{- include "keptn.common.labels.standard" . | nindent 8 }}
         app.kubernetes.io/name: mongodb-datastore
     spec:
