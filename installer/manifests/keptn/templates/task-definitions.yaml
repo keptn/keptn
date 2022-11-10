@@ -1,0 +1,35 @@
+apiVersion: lifecycle.keptn.sh/v1alpha1
+kind: KeptnTaskDefinition
+metadata:
+  name: check-shipyard-controller-readiness
+spec:
+  function:
+    httpRef:
+      url: https://raw.githubusercontent.com/keptn/lifecycle-toolkit/main/functions-runtime/samples/ts/http.ts
+    parameters:
+      map:
+        url: http://shipyard-controller.keptn:8080/v1/project
+---
+apiVersion: lifecycle.keptn.sh/v1alpha1
+kind: KeptnTaskDefinition
+metadata:
+  name: check-nats-readiness
+spec:
+  function:
+    httpRef:
+      url: https://raw.githubusercontent.com/keptn/lifecycle-toolkit/main/functions-runtime/samples/ts/http.ts
+    parameters:
+      map:
+        url: http://keptn-nats:8222
+---
+apiVersion: lifecycle.keptn.sh/v1alpha1
+kind: KeptnTaskDefinition
+metadata:
+  name: check-mongo-readiness
+spec:
+  function:
+    httpRef:
+      url: https://raw.githubusercontent.com/keptn/lifecycle-toolkit/main/functions-runtime/samples/ts/http.ts
+    parameters:
+      map:
+        url: http://keptn-mongoo.keptn:27017
