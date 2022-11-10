@@ -19,19 +19,10 @@ defaults:
   run:
     shell: bash
 jobs:
-  calculate-queue-time:
-    name: "Calculate Queue Time"
-    uses: ./.github/workflows/pipeline-queuetime.yml
-    with:
-      workflow_name: "Integration Tests"
-    secrets:
-      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
 
   integration-test:
     name: "Tests"
     runs-on: ubuntu-20.04
-    needs: calculate-queue-time
     strategy:
       fail-fast: false
       matrix:
@@ -807,23 +798,8 @@ jobs:
 
       - name: Create issue if tests failed
         if: always() && github.event_name == 'schedule' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
-        uses: JasonEtco/create-an-issue@v2.6
+        uses: JasonEtco/create-an-issue@v2.8.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           filename: integration-tests-failed.md
-
-  calculate-total-runtime:
-    name: End-of-Pipeline Metrics
-    if: always()
-    needs:
-      - calculate-queue-time
-      - integration-test
-      - publish-final-test-report
-    uses: ./.github/workflows/end-of-pipeline-metrics.yml
-    with:
-      workflow_name: "Integration Tests"
-      branch: ${{ github.ref }}
-    secrets:
-      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}

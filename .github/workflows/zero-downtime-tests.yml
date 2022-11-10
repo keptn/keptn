@@ -31,19 +31,10 @@ defaults:
   run:
     shell: bash
 jobs:
-  calculate-queue-time:
-    name: "Calculate Queue Time"
-    uses: ./.github/workflows/pipeline-queuetime.yml
-    with:
-      workflow_name: "Zero Downtime Tests"
-    secrets:
-      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
 
   zd-test:
     name: "Tests"
     runs-on: ubuntu-20.04
-    needs: calculate-queue-time
     strategy:
       fail-fast: false
       matrix:
@@ -528,21 +519,8 @@ jobs:
 
       - name: Create issue if tests failed
         if: always() && github.event_name == 'schedule' && steps.test_zero_downtime.outcome != 'success'
-        uses: JasonEtco/create-an-issue@v2.6
+        uses: JasonEtco/create-an-issue@v2.8.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           filename: zd-test-failed.md
-  calculate-total-runtime:
-    name: End-of-Pipeline Metrics
-    if: always()
-    needs:
-      - calculate-queue-time
-      - zd-test
-    uses: ./.github/workflows/end-of-pipeline-metrics.yml
-    with:
-      workflow_name: "Zero Downtime Tests"
-      branch: ${{ github.ref }}
-    secrets:
-      monitoring_api_token: ${{ secrets.MONITORING_API_TOKEN }}
-      monitoring_tenant_url: ${{ secrets.MONITORING_TENANT_URL }}
