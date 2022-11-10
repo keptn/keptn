@@ -14,6 +14,11 @@ global:
 
 ## @section MongoDB
 mongo:
+  ## @skip mongo.podLabels.app.kubernetes.io/part-of
+  ## @skip mongo.podLabels.app.kubernetes.io/version
+  podLabels:
+    app.kubernetes.io/part-of: "keptn"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
   ## @param mongo.enabled Enable usage of MongoDB for Keptn
   enabled: true
   ## @param mongo.host Host and port of MongoDB
@@ -100,6 +105,11 @@ features:
 
 ## @section NATS
 nats:
+  ## @skip nats.statefulSetPodLabels.app.kubernetes.io/part-of
+  ## @skip nats.statefulSetPodLabels.app.kubernetes.io/version
+  statefulSetPodLabels:
+    app.kubernetes.io/part-of: "keptn"
+    app.kubernetes.io/version: "{{ .Chart.AppVersion }}"
   ## @param nats.nameOverride Service name of NATS
   nameOverride: keptn-nats
   ## @param nats.fullnameOverride Full service name of NATS
