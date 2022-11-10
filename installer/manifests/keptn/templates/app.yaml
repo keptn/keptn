@@ -1,0 +1,29 @@
+templates/app.yamlapiVersion: lifecycle.keptn.sh/v1alpha1
+kind: KeptnApp
+metadata:
+  name: keptn
+spec:
+  version: {{ .Chart.AppVersion }}
+  workloads:
+    - name: api-service
+      version: {{ .Chart.AppVersion }}
+    - name: api-gateway-nginx
+      version: {{ .Chart.AppVersion }}
+    - name: approval-service
+      version: {{ .Chart.AppVersion }}
+    - name: bridge
+      version: {{ .Chart.AppVersion }}
+    - name: lighthouse-service
+      version: {{ .Chart.AppVersion }}
+    - name: remediation-service
+      version: {{ .Chart.AppVersion }}
+    - name: resource-service
+      version: {{ .Chart.AppVersion }}
+    - name: secret-service
+      version: {{ .Chart.AppVersion }}
+    - name: shipyard-controller
+      version: {{ .Chart.AppVersion }}
+    - name: statistics-service
+      version: {{ .Chart.AppVersion }}
+    - name: webhook-service
+      version: {{ .Chart.AppVersion }}
