@@ -1,4 +1,4 @@
-templates/app.yamlapiVersion: lifecycle.keptn.sh/v1alpha1
+apiVersion: lifecycle.keptn.sh/v1alpha1
 kind: KeptnApp
 metadata:
   name: keptn
@@ -27,3 +27,5 @@ spec:
       version: {{ .Chart.AppVersion }}
     - name: webhook-service
       version: {{ .Chart.AppVersion }}
+    - name: keptn-mongo
+      version: 5.0.10
