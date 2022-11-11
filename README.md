@@ -1,6 +1,7 @@
 ![keptn](./assets/keptn.png)
 
 # Keptn
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
 ![GitHub Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
 ![CI](https://github.com/keptn/keptn/workflows/CI/badge.svg?branch=master)
@@ -8,12 +9,33 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn/keptn)](https://goreportcard.com/report/github.com/keptn/keptn)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3588/badge)](https://bestpractices.coreinfrastructure.org/projects/3588)
 
+
+
 Keptn is an event-based control plane for continuous delivery and automated operations for cloud-native applications. 
-Please find the documentation on our [website](https://keptn.sh), and read the motivation about Keptn on our 
+Please find the documentation on our [website](https://keptn.sh/), and read the motivation about Keptn on our 
 [Why Keptn?](https://keptn.sh/why-keptn/) page.
 
 In addition, you can find the roadmap of the Keptn project [here](https://github.com/orgs/keptn/projects/1). It provides 
 an overview of user stories that are currently in the focus of development for the next release.
+
+## Keptn Today! Keptn Lifecycle Toolkit Tomorrow!
+
+### Keptn: Moving towards our 1.0 milestone!
+
+3 years of hard work will soon reach a long awaited milestone: [Keptn 1.0 with LTS (Long Time Support)](https://docs.google.com/document/d/1RdFegnZrxjWxJAem9auaeVQ5_mKl5wFlwd6MgF1ot0s/edit#heading=h.qoctq8iujkhs) brings you automated release validation based on SLOs that you can easily integrate into your existing DevOps Tools (deployment, test and observability).
+
+If you want to explore Keptn then keep scrolling down to get all information!
+
+### Keptn Lifecycle Toolkit: The kuber-native road ahead!
+
+At KubeCon 2022 in Detroit we announced the direction we are heading: Keptn Lifecycle Toolkit!
+Keptn Lifecycle Toolkit brings application-aware deployment lifecycle management to your k8s cluster: 
+* kubernetes-native: no external dependencies, everything in your CRDs and 
+* pipeline-less: works with any delivery tool (ArgoCD, Flux, Jenkins, GitHub, GitLab, Harness ...) without having to integrate it with Keptn
+
+To decide whether you want to stick with Keptn 1.0 or focus on Keptn Lifecycle Toolkit do this:
+1. Watch our [Keptn Lifecycle Toolkit in a Nutshell](https://www.youtube.com/watch?v=K-cvnZ8EtGc) video including live demo
+2. Try Keptn Lifecycle Toolkit yourself: [GitHub Repo](https://github.com/keptn/lifecycle-toolkit/)
 
 ## Quickstart
 
