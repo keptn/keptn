@@ -224,7 +224,8 @@ func (s *BaseSuite) TestGit_GetCurrentRevision(c *C) {
 					HttpsAuth: &apimodels.HttpsGitAuth{
 						Token: "bjh",
 					},
-					RemoteURL: "an url that doesnot exists"},
+					RemoteURL: "an url that does not exist",
+				},
 			},
 			branch:   "master",
 			want:     "",
@@ -659,8 +660,8 @@ func (s *BaseSuite) TestGit_Pull(c *C) {
 		c.Logf("Test %s", tt.name)
 		g := NewGit(GogitReal{})
 		err := g.Pull(tt.gitContext)
-		if err != nil && !errors.Is(tt.err, errors.Unwrap(err)) {
-			c.Fatalf("Wanted %v but gotten %v", tt.err, errors.Unwrap(err))
+		if tt.err != nil {
+			c.Assert(err, NotNil)
 		}
 		if err == nil {
 			b, err := os.ReadFile(GetProjectConfigPath(tt.gitContext.Project + "/.git/config"))
@@ -705,14 +706,14 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 		{
 			name: "clone empty remote",
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, kerrors.ErrEmptyRemoteRepository
 				},
 				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
 					return git.PlainInit(path, isBare)
 				},
 				PlainOpenFunc: func(path string) (*git.Repository, error) {
-					return nil, nil
+					return git.PlainOpen(path)
 				},
 			},
 			gitContext: common_models.GitContext{
@@ -758,7 +759,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 					RemoteURL: "http//wrongurl"},
 			},
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, errors.New("auth error")
 				},
 				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
@@ -783,7 +784,7 @@ func (s *BaseSuite) TestGit_CloneRepo(c *C) {
 					RemoteURL: "https://github.com/git-fixtures/basic.git"},
 			},
 			git: &common_mock.GogitMock{
-				PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+				PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 					return nil, errors.New("auth error")
 				},
 				PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
@@ -1225,7 +1226,7 @@ func (s *BaseSuite) NewGitContext() common_models.GitContext {
 func (s *BaseSuite) NewTestGit() *common_mock.GogitMock {
 
 	return &common_mock.GogitMock{
-		PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+		PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 			return s.Repository, nil
 		},
 		PlainInitFunc: nil,

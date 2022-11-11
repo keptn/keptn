@@ -7,7 +7,10 @@ ARG version=develop
 ARG SKAFFOLD_GO_GCFLAGS
 
 # install additional dependencies
-RUN apk add --no-cache gcc libc-dev git
+RUN apk update
+RUN apk upgrade
+RUN apk add --no-cache gcc libc-dev git cmake make openssl
+RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/community libgit2-dev=1.3.0-r0
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
@@ -40,7 +43,7 @@ RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 # Build the command inside the container. 
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+RUN GOOS=linux LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.16 as production
@@ -56,10 +59,13 @@ LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
 ENV env=production
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
-RUN apk add --no-cache ca-certificates libc6-compat
+RUN apk add --no-cache ca-certificates libc6-compat cmake make openssl
 
 # Install git
-RUN apk --update add --no-cache git
+#RUN apk update
+#RUN apk upgrade
+RUN apk add --no-cache build-base git pkgconf
+RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/community libgit2-dev=1.3.0-r0
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service

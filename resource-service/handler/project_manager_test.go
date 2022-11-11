@@ -39,7 +39,7 @@ func TestProjectManager_CreateProject(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -52,13 +52,13 @@ func TestProjectManager_CreateProject(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.ProjectRepoExistsCalls(), 1)
 	require.Equal(t, fields.git.ProjectRepoExistsCalls()[0].ProjectName, expectedGitContext.Project)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
-	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].GitContext.Project, expectedGitContext.Project)
 	require.Equal(t, fields.git.StageAndCommitAllCalls()[0].Message, "initialized project")
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 2)
@@ -81,7 +81,7 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -101,7 +101,7 @@ func TestProjectManager_CreateProject_ProjectAlreadyExists(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.ProjectRepoExistsCalls())
 
@@ -148,7 +148,7 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -169,10 +169,10 @@ func TestProjectManager_CreateProject_ProjectRepoDoesNotExist(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
@@ -187,7 +187,7 @@ func TestProjectManager_CreateProject_WritingFileFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -205,10 +205,10 @@ func TestProjectManager_CreateProject_WritingFileFails(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.StageAndCommitAllCalls())
 
@@ -226,7 +226,7 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -244,10 +244,10 @@ func TestProjectManager_CreateProject_CommitFails(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.StageAndCommitAllCalls(), 1)
 
@@ -265,7 +265,7 @@ func TestProjectManager_UpdateProjectMoveToNewRepo(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	newCredentials := &common_models.GitCredentials{
@@ -281,7 +281,7 @@ func TestProjectManager_UpdateProjectMoveToNewRepo(t *testing.T) {
 	expectedNewGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: newCredentials,
-		AuthMethod:  newAuth,
+		AuthMethod:  *newAuth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -329,11 +329,11 @@ func TestProjectManager_UpdateProjectMoveToNewRepo(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[1].Project, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.MoveToNewUpstreamCalls(), 1)
-	require.Equal(t, expectedGitContext, fields.git.MoveToNewUpstreamCalls()[0].CurrentContext)
-	require.Equal(t, expectedNewGitContext, fields.git.MoveToNewUpstreamCalls()[0].NewContext)
+	require.Equal(t, expectedGitContext.Project, fields.git.MoveToNewUpstreamCalls()[0].CurrentContext.Project)
+	require.Equal(t, expectedNewGitContext.Project, fields.git.MoveToNewUpstreamCalls()[0].NewContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -347,7 +347,7 @@ func TestProjectManager_UpdateProjectUpstreamURLChangedButRepoDoesNotExist(t *te
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -395,7 +395,7 @@ func TestProjectManager_UpdateProjectUpstreamURLChangedButRepoDoesNotExist(t *te
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[1].Project, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.MoveToNewUpstreamCalls(), 0)
 }
@@ -454,7 +454,7 @@ func TestProjectManager_UpdateProjectCredentialsDidNotChange(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	newCredentials := &common_models.GitCredentials{
@@ -470,7 +470,7 @@ func TestProjectManager_UpdateProjectCredentialsDidNotChange(t *testing.T) {
 	expectedNewGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: newCredentials,
-		AuthMethod:  newAuth,
+		AuthMethod:  *newAuth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -518,11 +518,11 @@ func TestProjectManager_UpdateProjectCredentialsDidNotChange(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[1].Project, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName))
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.MoveToNewUpstreamCalls(), 1)
-	require.Equal(t, expectedGitContext, fields.git.MoveToNewUpstreamCalls()[0].CurrentContext)
-	require.Equal(t, expectedNewGitContext, fields.git.MoveToNewUpstreamCalls()[0].NewContext)
+	require.Equal(t, expectedGitContext.Project, fields.git.MoveToNewUpstreamCalls()[0].CurrentContext.Project)
+	require.Equal(t, expectedNewGitContext.Project, fields.git.MoveToNewUpstreamCalls()[0].NewContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -537,7 +537,7 @@ func TestProjectManager_UpdateProject_WithMigration(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -580,7 +580,7 @@ func TestProjectManager_UpdateProject_WithMigration(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -597,7 +597,7 @@ func TestProjectManager_UpdateProject_WithMigrationProjectNotFound(t *testing.T)
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -641,7 +641,7 @@ func TestProjectManager_UpdateProject_WithMigrationProjectNotFound(t *testing.T)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.git.MigrateProjectCalls(), 0)
 }
@@ -655,7 +655,7 @@ func TestProjectManager_UpdateProject_WithMigration_MigrationFailsOnFirstTry(t *
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -707,7 +707,7 @@ func TestProjectManager_UpdateProject_WithMigration_MigrationFailsOnFirstTry(t *
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -724,7 +724,7 @@ func TestProjectManager_UpdateProject_WithMigration_AlreadyMigrated(t *testing.T
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -768,7 +768,7 @@ isUsingDirectoryStructure: true`), nil
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -785,7 +785,7 @@ func TestProjectManager_UpdateProject_WithMigration_InvalidMetadata(t *testing.T
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -830,7 +830,7 @@ func TestProjectManager_UpdateProject_WithMigration_InvalidMetadata(t *testing.T
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -847,7 +847,7 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -896,7 +896,7 @@ func TestProjectManager_UpdateProject_WithMigration_NoMetadata(t *testing.T) {
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Len(t, fields.fileWriter.FileExistsCalls(), 1)
 	require.Equal(t, fields.fileWriter.FileExistsCalls()[0].Path, common.GetProjectConfigPath(project.ProjectName)+"/metadata.yaml")
@@ -937,7 +937,7 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -956,7 +956,7 @@ func TestProjectManager_UpdateProject_ProjectDoesNotExist(t *testing.T) {
 	require.Equal(t, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName), fields.credentialReader.GetCredentialsCalls()[1].Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.GetDefaultBranchCalls())
 	require.Empty(t, fields.git.CheckoutBranchCalls())
@@ -971,7 +971,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -993,7 +993,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitialized(t *testing.T) {
 	require.Equal(t, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName), fields.credentialReader.GetCredentialsCalls()[1].Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.GetDefaultBranchCalls())
 	require.Empty(t, fields.git.CheckoutBranchCalls())
@@ -1008,7 +1008,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -1030,7 +1030,7 @@ func TestProjectManager_UpdateProject_ProjectNotInitializedEmptyMetadataFile(t *
 	require.Equal(t, common.GetTemporaryUpstreamCredentialsSecretName(project.ProjectName), fields.credentialReader.GetCredentialsCalls()[1].Project)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 
 	require.Empty(t, fields.git.GetDefaultBranchCalls())
 	require.Empty(t, fields.git.CheckoutBranchCalls())
@@ -1045,7 +1045,7 @@ func TestProjectManager_UpdateProject_CheckUpstreamConnectionFails(t *testing.T)
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -1072,7 +1072,7 @@ func TestProjectManager_UpdateProject_CheckUpstreamConnectionFails(t *testing.T)
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 }
 
 func TestProjectManager_UpdateProject_UpstreamURLChangedButCheckUpstreamConnectionFails(t *testing.T) {
@@ -1083,7 +1083,7 @@ func TestProjectManager_UpdateProject_UpstreamURLChangedButCheckUpstreamConnecti
 	expectedGitContext := common_models.GitContext{
 		Project:     "my-project",
 		Credentials: &credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	fields := getTestProjectManagerFields()
@@ -1128,7 +1128,7 @@ func TestProjectManager_UpdateProject_UpstreamURLChangedButCheckUpstreamConnecti
 	require.Equal(t, fields.credentialReader.GetCredentialsCalls()[0].Project, project.ProjectName)
 
 	require.Len(t, fields.git.ProjectExistsCalls(), 1)
-	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext, expectedGitContext)
+	require.Equal(t, fields.git.ProjectExistsCalls()[0].GitContext.Project, expectedGitContext.Project)
 }
 
 func TestProjectManager_DeleteProject(t *testing.T) {

@@ -181,7 +181,7 @@ func (p ResourceManager) establishContext(project models.Project, stage *models.
 	gitContext := common_models.GitContext{
 		Project:     project.ProjectName,
 		Credentials: credentials,
-		AuthMethod:  auth,
+		AuthMethod:  *auth,
 	}
 
 	if !p.git.ProjectExists(gitContext) {

@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/keptn/keptn/resource-service/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -17,16 +18,16 @@ import (
 
 func Test_getAuthMethod(t *testing.T) {
 	tests := []struct {
-		name           string
-		gitCredentials *common_models.GitCredentials
-		wantErr        bool
-		expectedOutput gittransport.AuthMethod
+		name              string
+		gitCredentials    *common_models.GitCredentials
+		wantErr           bool
+		expectedGoGitAuth gittransport.AuthMethod
 	}{
 		{
-			name:           "no credentials",
-			gitCredentials: &common_models.GitCredentials{},
-			wantErr:        false,
-			expectedOutput: nil,
+			name:              "no credentials",
+			gitCredentials:    &common_models.GitCredentials{},
+			wantErr:           false,
+			expectedGoGitAuth: nil,
 		},
 		{
 			name: "valid credentials",
@@ -39,7 +40,7 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "user",
 			},
 			wantErr: false,
-			expectedOutput: &githttp.BasicAuth{
+			expectedGoGitAuth: &githttp.BasicAuth{
 				Username: "user",
 				Password: "some-token",
 			},
@@ -61,7 +62,7 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "user",
 			},
 			wantErr: false,
-			expectedOutput: &githttp.BasicAuth{
+			expectedGoGitAuth: &githttp.BasicAuth{
 				Username: "user",
 				Password: "some-token",
 			},
@@ -77,13 +78,13 @@ func Test_getAuthMethod(t *testing.T) {
 				User: "",
 			},
 			wantErr: false,
-			expectedOutput: &githttp.BasicAuth{
+			expectedGoGitAuth: &githttp.BasicAuth{
 				Username: "keptnuser",
 				Password: "some-token",
 			},
 		},
 		{
-			name: "invalid credentials",
+			name: "credentials without token",
 			gitCredentials: &common_models.GitCredentials{
 				RemoteURL: "https://some.url",
 				HttpsAuth: &apimodels.HttpsGitAuth{
@@ -91,8 +92,8 @@ func Test_getAuthMethod(t *testing.T) {
 				},
 				User: "user",
 			},
-			wantErr:        false,
-			expectedOutput: nil,
+			wantErr:           false,
+			expectedGoGitAuth: &githttp.BasicAuth{Username: "user", Password: ""},
 		},
 		{
 			name: "invalid ssh credentials",
@@ -104,8 +105,8 @@ func Test_getAuthMethod(t *testing.T) {
 				},
 				User: "user",
 			},
-			wantErr:        true,
-			expectedOutput: nil,
+			wantErr:           true,
+			expectedGoGitAuth: nil,
 		},
 		{
 			name: "dumb credentials",
@@ -127,8 +128,8 @@ func Test_getAuthMethod(t *testing.T) {
 				},
 				User: "user",
 			},
-			wantErr:        true,
-			expectedOutput: nil,
+			wantErr:           true,
+			expectedGoGitAuth: nil,
 		},
 	}
 	for _, tt := range tests {
@@ -137,8 +138,21 @@ func Test_getAuthMethod(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getAuthMethod() error = %v, wantErr %v", err, tt.wantErr)
 			}
-			if err != nil && auth != tt.expectedOutput {
-				t.Errorf("getAuthMethod() auth = %v, expectedOutput %v", err, tt.wantErr)
+			if tt.expectedGoGitAuth == nil {
+				require.Nil(t, auth)
+				return
+			}
+			if err != nil && auth.GoGitAuth != tt.expectedGoGitAuth {
+				t.Errorf("getAuthMethod() auth = %v, expectedGoGitAuth %v", err, tt.wantErr)
+			}
+			if auth != nil {
+				require.NotNil(t, auth.Git2GoAuth.CredCallback)
+				if tt.gitCredentials.SshAuth != nil {
+					require.NotNil(t, auth.Git2GoAuth.CertCallback)
+				}
+				if tt.gitCredentials.HttpsAuth.Proxy != nil {
+					require.NotNil(t, auth.Git2GoAuth.ProxyOptions)
+				}
 			}
 		})
 	}

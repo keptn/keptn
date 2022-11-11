@@ -1,6 +1,7 @@
 package common_models
 
 import (
+	git2go "github.com/libgit2/git2go/v33"
 	"net/url"
 	"strings"
 
@@ -15,10 +16,21 @@ const GitInitDefaultBranchName = "master"
 // GitCredentials contains git credentials info
 type GitCredentials apimodels.GitAuthCredentials
 
+type Git2GoAuth struct {
+	CredCallback git2go.CredentialsCallback
+	CertCallback git2go.CertificateCheckCallback
+	ProxyOptions git2go.ProxyOptions
+}
+
+type AuthMethod struct {
+	GoGitAuth  transport.AuthMethod
+	Git2GoAuth Git2GoAuth
+}
+
 type GitContext struct {
 	Project     string
 	Credentials *GitCredentials
-	AuthMethod  transport.AuthMethod
+	AuthMethod  AuthMethod
 }
 
 func (g GitCredentials) Validate() error {

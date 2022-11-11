@@ -70,6 +70,16 @@ jobs:
       if: inputs.artifact != 'bridge2'
       run: go install gotest.tools/gotestsum@v1.8.1
 
+    - name: Install libgit2
+      if: inputs.artifact == 'resource-service'
+      id: install-libgit2
+      run: |
+        git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
+        cd libgit2
+        mkdir build && cd build
+        cmake ..
+        sudo cmake --build . --target install
+
     - name: Download Go dependencies
       if: inputs.artifact != 'bridge2'
       working-directory: ./${{ inputs.artifact }}
@@ -79,7 +89,7 @@ jobs:
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
       working-directory: ./${{ inputs.artifact }}
       run: |
-        gotestsum --no-color=false --format=testname -- -coverprofile=coverage.txt -covermode=atomic -v ./... 
+        LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./... 
 
     #######################################################################
           # TESTS FOR BRIDGE

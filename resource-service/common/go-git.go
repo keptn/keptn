@@ -1,13 +1,22 @@
 package common
 
 import (
+	"errors"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/keptn/keptn/resource-service/common_models"
+	kerrors "github.com/keptn/keptn/resource-service/errors"
+	git2go "github.com/libgit2/git2go/v33"
+	log "github.com/sirupsen/logrus"
+	"strings"
 )
+
+const unexpectedClientErrorMessage = "unexpected client"
 
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogit_mock.go . Gogit
 type Gogit interface {
 	PlainOpen(path string) (*git.Repository, error)
-	PlainClone(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error)
+	PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error)
 	PlainInit(path string, isBare bool) (*git.Repository, error)
 }
 
@@ -17,40 +26,57 @@ func (t GogitReal) PlainOpen(path string) (*git.Repository, error) {
 	return git.PlainOpen(path)
 }
 
-func (t GogitReal) PlainClone(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
-	return git.PlainClone(path, isBare, o)
+func (t GogitReal) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+	repo, err := git.PlainClone(path, isBare, o)
+	if err != nil {
+		log.Warnf("Could not clone using go-git library: %v", err)
+		if strings.Contains(err.Error(), unexpectedClientErrorMessage) {
+			git2 := Git2Go{}
+			log.Debug("Try to clone using libgit2go")
+			return git2.PlainClone(gitContext, path, isBare, o)
+		}
+		return nil, err
+	}
+	return repo, nil
 }
 
 func (t GogitReal) PlainInit(path string, isBare bool) (*git.Repository, error) {
 	return git.PlainInit(path, isBare)
 }
 
-/*//go:generate moq -pkg common_mock -skip-ensure -out ./fake/gogitrepo_mock.go . Repository
-type Repository interface {
-	Remote(name string) (*git.Remote, error)
-	Remotes() ([]*git.Remote, error)
-	CreateRemote(c *config.RemoteConfig) (*git.Remote, error)
-	CreateRemoteAnonymous(c *config.RemoteConfig) (*git.Remote, error)
-	DeleteRemote(name string) error
-	Branch(name string) (*config.Branch, error)
-	CreateBranch(c *config.Branch) error
-	DeleteBranch(name string) error
-	resolveToCommitHash(h plumbing.Hash) (plumbing.Hash, error)
-	clone(ctx context.Context, o *git.CloneOptions) error
-	calculateRemoteHeadReference(spec []config.RefSpec, resolvedHead *plumbing.Reference) []*plumbing.Reference
-	Push(o *git.PushOptions) error
-	Branches() (storer.ReferenceIter, error)
-	TreeObject(h plumbing.Hash) (*object.Tree, error)
-	TreeObjects() (*object.TreeIter, error)
-	CommitObject(h plumbing.Hash) (*object.Commit, error)
-	CommitObjects() (object.CommitIter, error)
-	BlobObject(h plumbing.Hash) (*object.Blob, error)
-	BlobObjects() (*object.BlobIter, error)
-	Object(t plumbing.ObjectType, h plumbing.Hash) (object.Object, error)
-	Objects() (*object.ObjectIter, error)
-	Head() (*plumbing.Reference, error)
-	Reference(name plumbing.ReferenceName, resolved bool) (*plumbing.Reference, error)
-	References() (storer.ReferenceIter, error)
-	Worktree() (*git.Worktree, error)
-	ResolveRevision(rev plumbing.Revision) (*plumbing.Hash, error)
-}*/
+type Git2Go struct{}
+
+func (g Git2Go) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+	// ignore the actual repository object provided by git2go because we will use the go-git implementation after a successful clone
+	_, err := git2go.Clone(o.URL, path, &git2go.CloneOptions{
+		Bare: isBare,
+		FetchOptions: git2go.FetchOptions{
+			DownloadTags: git2go.DownloadTagsNone,
+			RemoteCallbacks: git2go.RemoteCallbacks{
+				CredentialsCallback:      gitContext.AuthMethod.Git2GoAuth.CredCallback,
+				CertificateCheckCallback: gitContext.AuthMethod.Git2GoAuth.CertCallback,
+			},
+			ProxyOptions: gitContext.AuthMethod.Git2GoAuth.ProxyOptions,
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	repo, err := git.PlainOpen(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// check if there is a head commit in the history to provide the same result as we would with the go-git library implementation of this function
+	_, err = repo.Head()
+	if err != nil {
+		if errors.Is(err, plumbing.ErrReferenceNotFound) {
+			return nil, kerrors.ErrEmptyRemoteRepository
+		}
+		return nil, err
+	}
+	log.Debug("Clone using libgit2go succeeded")
+	return repo, nil
+}

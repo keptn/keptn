@@ -5,6 +5,7 @@ package common_mock
 
 import (
 	"github.com/go-git/go-git/v5"
+	"github.com/keptn/keptn/resource-service/common_models"
 	"sync"
 )
 
@@ -14,7 +15,7 @@ import (
 //
 // 		// make and configure a mocked common.Gogit
 // 		mockedGogit := &GogitMock{
-// 			PlainCloneFunc: func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+// 			PlainCloneFunc: func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 // 				panic("mock out the PlainClone method")
 // 			},
 // 			PlainInitFunc: func(path string, isBare bool) (*git.Repository, error) {
@@ -31,7 +32,7 @@ import (
 // 	}
 type GogitMock struct {
 	// PlainCloneFunc mocks the PlainClone method.
-	PlainCloneFunc func(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error)
+	PlainCloneFunc func(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error)
 
 	// PlainInitFunc mocks the PlainInit method.
 	PlainInitFunc func(path string, isBare bool) (*git.Repository, error)
@@ -43,6 +44,8 @@ type GogitMock struct {
 	calls struct {
 		// PlainClone holds details about calls to the PlainClone method.
 		PlainClone []struct {
+			// GitContext is the gitContext argument value.
+			GitContext common_models.GitContext
 			// Path is the path argument value.
 			Path string
 			// IsBare is the isBare argument value.
@@ -69,37 +72,41 @@ type GogitMock struct {
 }
 
 // PlainClone calls PlainCloneFunc.
-func (mock *GogitMock) PlainClone(path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
+func (mock *GogitMock) PlainClone(gitContext common_models.GitContext, path string, isBare bool, o *git.CloneOptions) (*git.Repository, error) {
 	if mock.PlainCloneFunc == nil {
 		panic("GogitMock.PlainCloneFunc: method is nil but Gogit.PlainClone was just called")
 	}
 	callInfo := struct {
-		Path   string
-		IsBare bool
-		O      *git.CloneOptions
+		GitContext common_models.GitContext
+		Path       string
+		IsBare     bool
+		O          *git.CloneOptions
 	}{
-		Path:   path,
-		IsBare: isBare,
-		O:      o,
+		GitContext: gitContext,
+		Path:       path,
+		IsBare:     isBare,
+		O:          o,
 	}
 	mock.lockPlainClone.Lock()
 	mock.calls.PlainClone = append(mock.calls.PlainClone, callInfo)
 	mock.lockPlainClone.Unlock()
-	return mock.PlainCloneFunc(path, isBare, o)
+	return mock.PlainCloneFunc(gitContext, path, isBare, o)
 }
 
 // PlainCloneCalls gets all the calls that were made to PlainClone.
 // Check the length with:
 //     len(mockedGogit.PlainCloneCalls())
 func (mock *GogitMock) PlainCloneCalls() []struct {
-	Path   string
-	IsBare bool
-	O      *git.CloneOptions
+	GitContext common_models.GitContext
+	Path       string
+	IsBare     bool
+	O          *git.CloneOptions
 } {
 	var calls []struct {
-		Path   string
-		IsBare bool
-		O      *git.CloneOptions
+		GitContext common_models.GitContext
+		Path       string
+		IsBare     bool
+		O          *git.CloneOptions
 	}
 	mock.lockPlainClone.RLock()
 	calls = mock.calls.PlainClone
