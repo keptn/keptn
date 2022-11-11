@@ -29,13 +29,10 @@ export function setUniqueYAxis(dataPoints: IDataPoint[]): void {
     let displayValue = dataPoint.yElement;
     const identifier = dataPoint.identifier;
     let foundIndex;
-    if (
-      (foundIndex = dataPoints.findIndex(
-        // eslint-disable-next-line @typescript-eslint/no-loop-func
-        (dt) => dt.yElement === displayValue && dt.identifier === identifier
-      )) < index &&
-      foundIndex !== -1
-    ) {
+    const hasYElementDuplicatesWithinIdentifierBeforeChild =
+      (foundIndex = dataPoints.findIndex((dt) => dt.yElement === displayValue && dt.identifier === identifier)) <
+        index && foundIndex !== -1;
+    if (hasYElementDuplicatesWithinIdentifierBeforeChild) {
       duplicatesDict[identifier] ??= {};
       duplicatesDict[identifier][displayValue] ??= 1;
       ++duplicatesDict[identifier][displayValue];
@@ -58,26 +55,34 @@ export function setUniqueYAxis(dataPoints: IDataPoint[]): void {
 }
 
 export function setUniqueXAxis(dataPoints: IDataPoint[]): void {
-  const dataPointToIdentifierXElement = (dataPointDict: Record<string, string>, dataPoint: IDataPoint) => {
+  const dataPointToIdentifierXElement = (
+    dataPointDict: Record<string, string>,
+    dataPoint: IDataPoint
+  ): Record<string, string> => {
     dataPointDict[dataPoint.identifier] ??= dataPoint.xElement;
     return dataPointDict;
   };
-  const identifierToDuplicateDict =(identifiers: string[], identifierToXElement: Record<string, string>) => (duplicateCount: Record<string, number>, identifier:string, index: number): Record<string, number> => {
-    const previousDuplicates = identifiers.filter(
-      (nextIdentifier, nextIndex) =>
-        nextIndex < index && identifierToXElement[nextIdentifier] === identifierToXElement[identifier]
-    ).length;
-    const nextDuplicates = identifiers.filter(
-      (nextIdentifier, nextIndex) =>
-        nextIndex > index && identifierToXElement[nextIdentifier] === identifierToXElement[identifier]
-    ).length;
-    duplicateCount[identifier] = previousDuplicates + nextDuplicates === 0 ? 0 : previousDuplicates + 1;
-    return duplicateCount;
-  }
+  const identifierToDuplicateDict =
+    (identifiers: string[], identifierToXElement: Record<string, string>) =>
+    (duplicateCount: Record<string, number>, identifier: string, index: number): Record<string, number> => {
+      const previousDuplicates = identifiers.filter(
+        (nextIdentifier, nextIndex) =>
+          nextIndex < index && identifierToXElement[nextIdentifier] === identifierToXElement[identifier]
+      ).length;
+      const nextDuplicates = identifiers.filter(
+        (nextIdentifier, nextIndex) =>
+          nextIndex > index && identifierToXElement[nextIdentifier] === identifierToXElement[identifier]
+      ).length;
+      duplicateCount[identifier] = previousDuplicates + nextDuplicates === 0 ? 0 : previousDuplicates + 1;
+      return duplicateCount;
+    };
 
   const identifierToXElement = dataPoints.reduce<Record<string, string>>(dataPointToIdentifierXElement, {});
   const identifiers = Object.keys(identifierToXElement);
-  const duplicates = identifiers.reduce<Record<string, number>>(identifierToDuplicateDict(identifiers, identifierToXElement), {});
+  const duplicates = identifiers.reduce<Record<string, number>>(
+    identifierToDuplicateDict(identifiers, identifierToXElement),
+    {}
+  );
 
   dataPoints.forEach((dataPoint) => {
     if (duplicates[dataPoint.identifier]) {
