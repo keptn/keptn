@@ -172,13 +172,12 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 	if err != nil {
 		if errors.Is(err, git.ErrRepositoryAlreadyExists) {
 			init, err = g.git.PlainOpen(projectPath)
+			if err != nil {
+				return nil, err
+			}
 		} else {
 			return nil, err
 		}
-	}
-
-	if err != nil {
-		return nil, err
 	}
 
 	if err := g.rewriteDefaultBranch(projectPath+gitHeadFilePath, envconfig.Global); err != nil {
