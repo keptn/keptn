@@ -3,7 +3,7 @@ kind: KeptnApp
 metadata:
   name: keptn
 spec:
-  version: {{ .Chart.AppVersion }}
+  version: {{ .Chart.AppVersion }}-1
   workloads:
     - name: api-service
       version: {{ .Chart.AppVersion }}
@@ -25,7 +25,11 @@ spec:
       version: {{ .Chart.AppVersion }}
     - name: statistics-service
       version: {{ .Chart.AppVersion }}
+    - name: mongodb-datastore
+      version: {{ .Chart.AppVersion }}
     - name: webhook-service
       version: {{ .Chart.AppVersion }}
-    - name: keptn-mongo
+    - name: mongo
       version: 5.0.10
+  preDeploymentEvaluations:
+    - app-pre-deploy-eval-1

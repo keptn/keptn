@@ -1,0 +1,19 @@
+apiVersion: lifecycle.keptn.sh/v1alpha1
+kind: KeptnEvaluationDefinition
+metadata:
+  name: app-pre-deploy-eval-1
+spec:
+  source: prometheus
+
+  objectives:
+    - name: available-cpus ## this query should fail
+      query: "sum(kube_pod_container_resource_limits{resource='cpu'}) - sum(kube_node_status_capacity{resource='cpu'})"
+      evaluationTarget: "<1"
+
+---
+apiVersion: lifecycle.keptn.sh/v1alpha1
+kind: KeptnEvaluationProvider
+metadata:
+  name: prometheus
+spec:
+  targetServer: "http://prometheus-k8s.monitoring.svc.cluster.local:9090"
