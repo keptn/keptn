@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { KtbSequenceViewComponent } from './ktb-sequence-view.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
-import { BehaviorSubject, firstValueFrom, of, Subject } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable, of, Subject } from 'rxjs';
 import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
@@ -14,6 +14,15 @@ import { KtbSequenceViewModule } from './ktb-sequence-view.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { DataService } from '../../_services/data.service';
+
+// debounceTime seems untestable. No matter if fakeAsync and tick is used, it never happens to go inside the subscribe function
+jest.mock('rxjs/operators', () => ({
+  ...jest.requireActual('rxjs/operators'),
+  debounceTime:
+    () =>
+    <T>(source: Observable<T>): Observable<T> =>
+      source,
+}));
 
 describe('KtbSequenceViewComponent', () => {
   let component: KtbSequenceViewComponent;

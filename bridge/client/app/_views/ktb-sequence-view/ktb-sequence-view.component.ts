@@ -8,7 +8,17 @@ import {
 } from '@dynatrace/barista-components/quick-filter';
 import { isObject } from '@dynatrace/barista-components/core';
 import { combineLatest, Observable, of, Subject, Subscription } from 'rxjs';
-import { distinctUntilChanged, filter, finalize, map, switchMap, take, takeUntil, tap } from 'rxjs/operators';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  finalize,
+  map,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from 'rxjs/operators';
 import moment from 'moment';
 import { DataService } from '../../_services/data.service';
 import { DateUtil } from '../../_utils/date.utils';
@@ -77,10 +87,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
   public selectedStage?: string;
   public _filterDataSource = new DtQuickFilterDefaultDataSource(this.filterFieldData, this._config);
   public _seqFilters: FilterType[] = [];
-  public metadata: ISequencesFilter = {
-    stages: [],
-    services: [],
-  };
+  public metadata?: ISequencesFilter;
   public filteredSequences?: SequenceState[];
   public loading = false;
   public navigationToRunningSequenceLoading = false;
@@ -135,6 +142,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
     projectName$.subscribe((projectName) => {
       this.currentSequence = undefined;
       this.selectedStage = undefined;
+      this.unfinishedSequences = [];
       this.loadSequenceMetadata(projectName);
     });
 
@@ -158,7 +166,10 @@ export class KtbSequenceViewComponent implements OnDestroy {
 
     // set filter through query params
     combineLatest([this.route.queryParams, projectName$])
-      .pipe(takeUntil(this.unsubscribe$))
+      .pipe(
+        debounceTime(100), // needed to sync params and queryParams, else queryParams may trigger before projectName
+        takeUntil(this.unsubscribe$)
+      )
       .subscribe(([queryParams, projectName]) => {
         if (Object.keys(queryParams).length === 0) {
           this.loadSequenceFilters(projectName);
@@ -169,6 +180,9 @@ export class KtbSequenceViewComponent implements OnDestroy {
           return params;
         }, {});
         this.setSequenceFilters(sequenceFilters, projectName);
+        if (this.metadata) {
+          this.updateFilterDataSource(this.metadata, this.sequences);
+        }
       });
 
     // fetch new sequences
@@ -411,7 +425,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
 
   public navigateToBlockingSequence(currentSequence: SequenceState, state?: ISequenceViewState): void {
     this.navigationToRunningSequenceLoading = true;
-    const stages = this.metadata.stages;
+    const stages = this.metadata?.stages ?? [];
     const lastStage = currentSequence.getLastStage() || '';
     const nextStageIndex = stages.indexOf(lastStage);
     const nextStage = stages[nextStageIndex + 1];

@@ -150,6 +150,21 @@ export function interceptServicesPageWithRemediation(): void {
   }).as('ServiceDeployment');
 }
 
+export function interceptSequencesPageEmpty(project: string): void {
+  cy.intercept(`/api/controlPlane/v1/sequence/${project}?pageSize=25`, { body: { states: [] } }).as(
+    `Sequences_${project}`
+  );
+  cy.intercept(`/api/controlPlane/v1/sequence/${project}?pageSize=25&fromTime=*`, {
+    body: {
+      states: [],
+    },
+  }).as(`SequencesUpdate_${project}`);
+
+  cy.intercept(`/api/project/${project}/sequences/filter`, { fixture: 'sequence.filter.mock' }).as(
+    `SequencesMetadata_${project}`
+  );
+}
+
 export function interceptSequencesPage(): void {
   interceptProjectBoard();
   cy.intercept('/api/controlPlane/v1/sequence/sockshop?pageSize=25', { fixture: 'sequences.sockshop' }).as('Sequences');

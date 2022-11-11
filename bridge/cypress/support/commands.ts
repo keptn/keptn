@@ -110,7 +110,7 @@ Cypress.Commands.add(
 );
 
 Cypress.Commands.add('clearDtFilter', { prevSubject: 'element' }, (subject: JQuery) => {
-  subject.find('.dt-filter-field-clear-all-button').trigger('click');
+  cy.wrap(subject).find('.dt-filter-field-clear-all-button').click();
   cy.wrap(subject).find('.dt-filter-field-input').trigger('click').type('{esc}');
 });
 
