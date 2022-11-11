@@ -1,5 +1,7 @@
 ![keptn](./assets/keptn.png)
 
+# Keptn
+
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
 ![GitHub Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
 ![CI](https://github.com/keptn/keptn/workflows/CI/badge.svg?branch=master)
@@ -7,7 +9,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/keptn/keptn)](https://goreportcard.com/report/github.com/keptn/keptn)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3588/badge)](https://bestpractices.coreinfrastructure.org/projects/3588)
 
-# Keptn
+
 
 Keptn is an event-based control plane for continuous delivery and automated operations for cloud-native applications. 
 Please find the documentation on our [website](https://keptn.sh/), and read the motivation about Keptn on our 
