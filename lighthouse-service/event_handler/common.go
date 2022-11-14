@@ -112,6 +112,8 @@ func checkNotFound(notFound, checkOut error) error {
 		return ErrServiceNotFound
 	} else if strings.Contains(strings.ToLower(notFound.Error()), "resource not found") {
 		return ErrSLOFileNotFound
+	} else if strings.Contains(strings.ToLower(checkOut.Error()), "resource not found") {
+		return ErrSLOFileNotFound
 	} else if strings.Contains(strings.ToLower(checkOut.Error()), "could not check out ") {
 		return ErrConfigService
 	} else {
