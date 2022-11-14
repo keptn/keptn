@@ -2,8 +2,11 @@ package event_handler
 
 import (
 	"errors"
+	apimodels "github.com/keptn/go-utils/pkg/api/models"
+	"github.com/keptn/go-utils/pkg/api/utils"
 	keptncommon "github.com/keptn/go-utils/pkg/lib/keptn"
 	"github.com/keptn/go-utils/pkg/lib/v0_2_0/fake"
+	event_handler_mock "github.com/keptn/keptn/lighthouse-service/event_handler/fake"
 	"github.com/stretchr/testify/require"
 
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -470,4 +473,47 @@ func Test_sendErroredFinishedEventWithMessage(t *testing.T) {
 	require.Equal(t, "end", evalFinishedData.Evaluation.TimeEnd)
 	require.Equal(t, "my-message", evalFinishedData.Message)
 
+}
+
+func TestSLOFileRetriever_GetSLOs_SLOFileNotFound(t *testing.T) {
+	sloRetriever := &SLOFileRetriever{
+		ResourceHandler: &event_handler_mock.ResourceHandlerMock{
+			GetResourceFunc: func(scope api.ResourceScope, options ...api.URIOption) (*apimodels.Resource, error) {
+				return nil, errors.New("resource not found")
+			},
+		},
+		ServiceHandler: &event_handler_mock.ServiceHandlerMock{
+			GetServiceFunc: func(project string, stage string, service string) (*apimodels.Service, error) {
+				return nil, nil
+			},
+		},
+	}
+
+	slo, bytes, err := sloRetriever.GetSLOs("my-project", "my-stage", "my-service", "")
+
+	require.Nil(t, slo)
+	require.Empty(t, bytes)
+	require.ErrorIs(t, err, ErrSLOFileNotFound)
+}
+
+func TestSLOFileRetriever_GetSLOs_UnexpectedError(t *testing.T) {
+	sloRetriever := &SLOFileRetriever{
+		ResourceHandler: &event_handler_mock.ResourceHandlerMock{
+			GetResourceFunc: func(scope api.ResourceScope, options ...api.URIOption) (*apimodels.Resource, error) {
+				return nil, errors.New("could not reach resource-service")
+			},
+		},
+		ServiceHandler: &event_handler_mock.ServiceHandlerMock{
+			GetServiceFunc: func(project string, stage string, service string) (*apimodels.Service, error) {
+				return nil, nil
+			},
+		},
+	}
+
+	slo, bytes, err := sloRetriever.GetSLOs("my-project", "my-stage", "my-service", "")
+
+	require.Nil(t, slo)
+	require.Empty(t, bytes)
+	require.NotNil(t, err)
+	require.NotErrorIs(t, err, ErrSLOFileNotFound)
 }
