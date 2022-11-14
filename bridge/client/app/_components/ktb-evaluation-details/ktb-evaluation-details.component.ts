@@ -70,9 +70,12 @@ export class KtbEvaluationDetailsComponent {
     this.clipboard.copy(plainEvent, 'slo payload');
   }
 
-  public invalidateEvaluationTrigger(invalidateEvaluationDialog: TemplateRef<Trace | undefined>): void {
+  public invalidateEvaluationTrigger(
+    invalidateEvaluationDialog: TemplateRef<Trace | undefined>,
+    selectedEvaluation: Trace
+  ): void {
     this.invalidateEvaluationDialogRef = this.dialog.open(invalidateEvaluationDialog, {
-      data: this.evaluationData?.evaluation,
+      data: selectedEvaluation,
     });
   }
 

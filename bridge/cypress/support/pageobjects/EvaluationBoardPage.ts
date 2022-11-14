@@ -81,4 +81,23 @@ export class EvaluationBoardPage {
     }
     return this;
   }
+
+  public invalidateAndAssert(keptnContext: string, reason: string): this {
+    cy.intercept('POST', 'api/v1/event', (req) => {
+      expect(req.body.type).to.eq('sh.keptn.event.evaluation.invalidated');
+      expect(req.body.shkeptncontext).to.eq(keptnContext);
+      expect(req.body.data.evaluation.reason).to.eq(reason);
+      req.reply({
+        body: [],
+        statusCode: 200,
+      });
+    }).as('invalidateEvent');
+    cy.byTestId('keptn-evaluation-details-selected-contextButtons').click();
+
+    cy.byTestId('ktb-invalidate-reason-input').type(reason);
+    cy.byTestId('ktb-invalidate-confirm-button').click();
+    cy.wait('@invalidateEvent');
+
+    return this;
+  }
 }
