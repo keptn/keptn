@@ -1,13 +1,17 @@
 import { GroupedDataPoints, IDataPoint } from '../../_interfaces/heatmap';
 
 export function createGroupedDataPoints(data: IDataPoint[]): GroupedDataPoints {
-  setUniqueHeaders(data, 'xElement', 'yElement');
-  setUniqueHeaders(data, 'yElement', 'xElement');
+  setUniqueHeaders(data);
   return data.reduce((groupedData: GroupedDataPoints, dataPoint) => {
     groupedData[dataPoint.yElement] ||= [];
     groupedData[dataPoint.yElement].push(dataPoint);
     return groupedData;
   }, {});
+}
+
+function setUniqueHeaders(data: IDataPoint[]): void {
+  setUniqueYAxis(data);
+  setUniqueXAxis(data);
 }
 
 export const getLimitedYElements = (yElements: string[], limit: number): string[] => {
@@ -17,46 +21,72 @@ export const getLimitedYElements = (yElements: string[], limit: number): string[
   return yElements.slice(yElements.length - limit, yElements.length);
 };
 
-export function setUniqueHeaders(dataPoints: IDataPoint[], key: 'xElement', compare: 'yElement'): void;
-export function setUniqueHeaders(dataPoints: IDataPoint[], key: 'yElement', compare: 'xElement'): void;
-export function setUniqueHeaders(
-  dataPoints: IDataPoint[],
-  key: 'yElement' | 'xElement',
-  compare: 'xElement' | 'yElement'
-): void {
-  const duplicatesDict: { [key: string]: { [compare: string]: number } } = {};
+export function setUniqueYAxis(dataPoints: IDataPoint[]): void {
+  // if it is the y-axis compare if there is the same SLI name with the same identifier
+  const duplicatesDict: { [identifier: string]: { [compare: string]: number } } = {};
+  const hasDuplicates: { [yElement: string]: boolean | undefined } = {};
   dataPoints.forEach((dataPoint, index) => {
-    let uniqueHeader = dataPoint[key];
-    const compareWith = dataPoint[compare];
+    let displayValue = dataPoint.yElement;
+    const identifier = dataPoint.identifier;
     let foundIndex;
-    while (
-      (foundIndex = dataPoints.findIndex(
-        // eslint-disable-next-line @typescript-eslint/no-loop-func
-        (dt) => dt[key] === uniqueHeader && dt[compare] === compareWith
-      )) < index &&
-      foundIndex !== -1
-    ) {
-      if (duplicatesDict[uniqueHeader] === undefined) {
-        duplicatesDict[uniqueHeader] = {};
-      }
-      if (duplicatesDict[uniqueHeader][compareWith] === undefined) {
-        duplicatesDict[uniqueHeader][compareWith] = 1;
-      }
-      ++duplicatesDict[uniqueHeader][compareWith];
+    const hasYElementDuplicatesWithinIdentifierBeforeChild =
+      (foundIndex = dataPoints.findIndex((dt) => dt.yElement === displayValue && dt.identifier === identifier)) <
+        index && foundIndex !== -1;
+    if (hasYElementDuplicatesWithinIdentifierBeforeChild) {
+      duplicatesDict[identifier] ??= {};
+      duplicatesDict[identifier][displayValue] ??= 1;
+      ++duplicatesDict[identifier][displayValue];
+      hasDuplicates[displayValue] = true;
       // occurrence is 1 but since it is the next element after the first found duplicate it's +1
-      uniqueHeader = `${dataPoint[key]} (${duplicatesDict[uniqueHeader][compareWith]})`;
+      displayValue = `${dataPoint.yElement} (${duplicatesDict[identifier][displayValue]})`;
     }
-    dataPoint[key] = uniqueHeader;
+    dataPoint.yElement = displayValue;
   });
 
   // if there are duplicates set the first occurrence to (1)
   dataPoints.forEach((dataPoint) => {
-    const uniqueHeader = dataPoint[key];
-    const compareWith = dataPoint[compare];
+    const uniqueHeader = dataPoint.yElement;
 
     // if there are duplicates the counter is at least set to 2
-    if (duplicatesDict[uniqueHeader]?.[compareWith]) {
-      dataPoint[key] = `${dataPoint[key]} (1)`;
+    if (hasDuplicates[uniqueHeader]) {
+      dataPoint.yElement = `${dataPoint.yElement} (1)`;
+    }
+  });
+}
+
+export function setUniqueXAxis(dataPoints: IDataPoint[]): void {
+  const dataPointToIdentifierXElement = (
+    dataPointDict: Record<string, string>,
+    dataPoint: IDataPoint
+  ): Record<string, string> => {
+    dataPointDict[dataPoint.identifier] ??= dataPoint.xElement;
+    return dataPointDict;
+  };
+  const identifierToDuplicateDict =
+    (identifiers: string[], identifierToXElement: Record<string, string>) =>
+    (duplicateCount: Record<string, number>, identifier: string, index: number): Record<string, number> => {
+      const previousDuplicates = identifiers.filter(
+        (nextIdentifier, nextIndex) =>
+          nextIndex < index && identifierToXElement[nextIdentifier] === identifierToXElement[identifier]
+      ).length;
+      const nextDuplicates = identifiers.filter(
+        (nextIdentifier, nextIndex) =>
+          nextIndex > index && identifierToXElement[nextIdentifier] === identifierToXElement[identifier]
+      ).length;
+      duplicateCount[identifier] = previousDuplicates + nextDuplicates === 0 ? 0 : previousDuplicates + 1;
+      return duplicateCount;
+    };
+
+  const identifierToXElement = dataPoints.reduce<Record<string, string>>(dataPointToIdentifierXElement, {});
+  const identifiers = Object.keys(identifierToXElement);
+  const duplicates = identifiers.reduce<Record<string, number>>(
+    identifierToDuplicateDict(identifiers, identifierToXElement),
+    {}
+  );
+
+  dataPoints.forEach((dataPoint) => {
+    if (duplicates[dataPoint.identifier]) {
+      dataPoint.xElement = `${dataPoint.xElement} (${duplicates[dataPoint.identifier]})`;
     }
   });
 }

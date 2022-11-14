@@ -10,6 +10,7 @@ import { KtbSliBreakdownModule } from './ktb-sli-breakdown.module';
 import { DataService } from '../../_services/data.service';
 import { of } from 'rxjs';
 import { ResultTypes } from '../../../../shared/models/result-types';
+import { SliResult } from '../../_interfaces/sli-result';
 
 describe(KtbSliBreakdownComponent.name, () => {
   let component: KtbSliBreakdownComponent;
@@ -146,6 +147,49 @@ describe(KtbSliBreakdownComponent.name, () => {
     expect(component.fallBackData.comparedIndicatorResults).toEqual([[newIndicatorResult]]);
     expect(component.tableEntries.data.length).toBe(1);
   });
+
+  it('should rename sliName if it is not unique', () => {
+    // given, when
+    const results = component.getUniqueSliResult([
+      generateSliResult('Name'),
+      generateSliResult('Name'),
+      generateSliResult('Name'),
+      generateSliResult('Name1'),
+    ]);
+
+    // then
+    expect(results.map((res) => res.name)).toEqual(['Name (1)', 'Name (2)', 'Name (3)', 'Name1']);
+  });
+
+  it('should not rename sliName if it is unique', () => {
+    // given, when
+    const results = component.getUniqueSliResult([
+      generateSliResult('Name1'),
+      generateSliResult('Name2'),
+      generateSliResult('Name3'),
+      generateSliResult('Name4'),
+    ]);
+
+    // then
+    expect(results.map((res) => res.name)).toEqual(['Name1', 'Name2', 'Name3', 'Name4']);
+  });
+
+  function generateSliResult(name: string): SliResult {
+    return {
+      keySli: false,
+      score: 2,
+      value: 0,
+      name,
+      result: ResultTypes.PASSED,
+      weight: 0,
+      expanded: true,
+      calculatedChanges: {
+        absolute: 0,
+        relative: 0,
+      },
+      success: true,
+    };
+  }
 
   function initEvaluation(selectedEvaluationIndex: number): void {
     const selectedEvaluation = EvaluationsMock.data.evaluationHistory?.[selectedEvaluationIndex] as Trace;
