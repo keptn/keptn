@@ -19,6 +19,13 @@ describe('evaluations', () => {
     heatmap.visitPageWithHeatmapComponent();
     evaluationBoard.assertScoreInfo(33.99, '<', 75);
   });
+
+  it('should invalidate and remove selected evaluation', () => {
+    heatmap.visitPageWithHeatmapComponent();
+    heatmap.selectEvaluation('8a549059-8dcd-43ea-adff-b7c2ea9a0d99');
+    evaluationBoard.invalidateAndAssert('124fa9d0-cbfd-493b-b9eb-1a8d806a133f', 'myReason');
+    heatmap.assertEvaluationExists('8a549059-8dcd-43ea-adff-b7c2ea9a0d99', false);
+  });
 });
 
 describe('evaluations with key sli', () => {
