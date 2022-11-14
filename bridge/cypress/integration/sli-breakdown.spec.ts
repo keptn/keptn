@@ -64,7 +64,7 @@ describe('sli-breakdown', () => {
           comparedValue: 0,
           calculatedChanges: {
             absolute: 18.42,
-            relative: 1742,
+            relative: undefined,
           },
           availableScore: 33.33,
         },
@@ -118,6 +118,12 @@ describe('sli-breakdown', () => {
 
     // sort score desc
     servicesPage.clickSliBreakdownHeader('Score').verifySliBreakdownSorting(7, 'descending', '33.99/33.33', '0/33.33');
+  });
+
+  it('should show "n/a" if the compared value is 0', () => {
+    servicesPage
+      .expandSliBreakdown('http_response_time_seconds_main_page_sum')
+      .assertSliRelativeChange('http_response_time_seconds_main_page_sum', 'n/a');
   });
 
   describe('score overlay', () => {

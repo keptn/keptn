@@ -15,7 +15,7 @@ type UISliResult = SliResult & {
   availableScore: number;
   calculatedChanges: {
     absolute: number;
-    relative: number;
+    relative: number | undefined;
   };
 };
 
@@ -199,11 +199,15 @@ class ServicesPage {
         result.comparedValue ?? 0
       );
     } else {
-      this.assertSliColumnText(result.name, 'name', result.name).assertSliColumnText(
-        result.name,
-        'value',
-        `${result.value} (${result.calculatedChanges.relative > 0 ? '+' : '-'}${result.calculatedChanges.relative}%) `
-      );
+      let assertVal: string;
+      if (result.calculatedChanges.relative) {
+        assertVal = `${result.value} (${result.calculatedChanges.relative > 0 ? '+' : '-'}${
+          result.calculatedChanges.relative
+        }%) `;
+      } else {
+        assertVal = `${result.value}`;
+      }
+      this.assertSliColumnText(result.name, 'name', result.name).assertSliColumnText(result.name, 'value', assertVal);
     }
 
     this.assertSliColumnText(result.name, 'weight', result.weight.toString()).assertSliScoreColumn(
@@ -211,12 +215,11 @@ class ServicesPage {
       result.score,
       result.availableScore
     );
-
     cy.byTestId(`keptn-sli-breakdown-row-${result.name}`)
       .find('dt-cell')
       .eq(2)
       .find('.error')
-      .should('have.length', result.result == 'pass' ? 0 : 1);
+      .should('have.length', !result.calculatedChanges.relative || result.result == 'pass' ? 0 : 1);
 
     return this;
   }
@@ -225,7 +228,7 @@ class ServicesPage {
     sliName: string,
     value: number,
     absoluteChange: number,
-    relativeChange: number,
+    relativeChange: number | undefined,
     comparedValue: number
   ): this {
     const columnName = 'value';
@@ -233,12 +236,21 @@ class ServicesPage {
     this._getSliCell(sliName, columnName)
       .byTestId('ktb-sli-breakdown-value-absolute')
       .should('have.text', `${absoluteChange > 0 ? '+' : ''}${absoluteChange}`);
-    this._getSliCell(sliName, columnName)
-      .byTestId('ktb-sli-breakdown-value-relative')
-      .should('have.text', `${relativeChange > 0 ? '+' : ''}${relativeChange}% `);
+    this.assertSliRelativeChange(sliName, relativeChange ?? 'n/a');
     this._getSliCell(sliName, columnName)
       .byTestId('ktb-sli-breakdown-value-compared')
       .should('have.text', comparedValue);
+    return this;
+  }
+
+  public assertSliRelativeChange(sliName: string, relativeChange: number | 'n/a'): this {
+    let changeValue: string;
+    if (typeof relativeChange === 'string') {
+      changeValue = relativeChange;
+    } else {
+      changeValue = `${relativeChange > 0 ? '+' : ''}${relativeChange}% `;
+    }
+    this._getSliCell(sliName, 'value').byTestId('ktb-sli-breakdown-value-relative').should('have.text', changeValue);
     return this;
   }
 

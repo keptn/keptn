@@ -217,17 +217,21 @@ export class KtbSliBreakdownComponent {
     const compared: Partial<SliResult> = {};
     if (!isNaN(comparedValue)) {
       compared.comparedValue = AppUtils.formatNumber(comparedValue);
+      const relativeChange = this.getRelativeChange(indicatorResult, comparedValue);
       compared.calculatedChanges = {
         absolute: AppUtils.formatNumber(indicatorResult.value.value - comparedValue),
-        relative: AppUtils.formatNumber(this.getRelativeChange(indicatorResult, comparedValue)),
+        relative: relativeChange !== undefined ? AppUtils.formatNumber(relativeChange) : undefined,
       };
     }
     return compared;
   }
 
-  private getRelativeChange(indicatorResult: IndicatorResult, comparedValue: number): number {
+  private getRelativeChange(indicatorResult: IndicatorResult, comparedValue: number): number | undefined {
     if (indicatorResult.value.value === 0 && comparedValue === 0) {
       return 0;
+    }
+    if (comparedValue === 0) {
+      return undefined;
     }
     return (indicatorResult.value.value / (comparedValue || 1)) * 100 - 100;
   }

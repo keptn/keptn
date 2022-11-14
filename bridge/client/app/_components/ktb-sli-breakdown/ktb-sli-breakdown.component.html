@@ -40,14 +40,18 @@
       <div fxFlexFill fxLayout="column" *ngIf="toSliResult(row) as result">
         <p class="m-0" *ngIf="result.success">
           <span [textContent]="result.value" uitestid="ktb-sli-breakdown-value-value"></span>
-          <span
-            *ngIf="!result.expanded && result.calculatedChanges as changes"
-            class="small m-0"
-            [class.error]="result.result === ResultTypes.FAILED"
-            [class.warning]="result.result === ResultTypes.WARNING"
-          >
-            (<span *ngIf="changes.relative > 0">+</span> <span [textContent]="changes.relative"></span>%)
-          </span>
+          <ng-container *ngIf="result.calculatedChanges as changes">
+            <ng-container *ngIf="changes.relative !== undefined">
+              <span
+                *ngIf="!result.expanded"
+                class="small m-0"
+                [class.error]="result.result === ResultTypes.FAILED"
+                [class.warning]="result.result === ResultTypes.WARNING"
+              >
+                (<span *ngIf="changes.relative > 0">+</span> <span [textContent]="changes.relative"></span>%)
+              </span>
+            </ng-container>
+          </ng-container>
         </p>
         <ng-container *ngIf="!result.success">
           <dt-icon class="error" [dtOverlay]="errorOverlay" [name]="'criticalevent'"></dt-icon>
@@ -66,15 +70,20 @@
             <span *ngIf="changes.absolute > 0">+</span>
             <span [textContent]="changes.absolute"></span>
           </p>
-          <p
-            class="change-indicator small m-0"
-            uitestid="ktb-sli-breakdown-value-relative"
-            [class.error]="result.result === ResultTypes.FAILED"
-            [class.warning]="result.result === ResultTypes.WARNING"
-          >
-            <span *ngIf="changes.relative > 0">+</span>
-            <span [textContent]="changes.relative"></span>%
-          </p>
+          <ng-container *ngIf="changes.relative !== undefined; else noRelativeChange">
+            <p
+              class="change-indicator small m-0"
+              uitestid="ktb-sli-breakdown-value-relative"
+              [class.error]="result.result === ResultTypes.FAILED"
+              [class.warning]="result.result === ResultTypes.WARNING"
+            >
+              <span *ngIf="changes.relative > 0">+</span>
+              <span [textContent]="changes.relative"></span>%
+            </p>
+          </ng-container>
+          <ng-template #noRelativeChange>
+            <p class="change-indicator small m-0" uitestid="ktb-sli-breakdown-value-relative">n/a</p>
+          </ng-template>
           <p class="small mt-1" uitestid="ktb-sli-breakdown-value-compared" [textContent]="result.comparedValue"></p>
         </ng-container>
       </div>

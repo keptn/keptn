@@ -15,7 +15,7 @@ export interface SliResult {
   expanded: boolean;
   calculatedChanges?: {
     absolute: number;
-    relative: number;
+    relative: number | undefined;
   };
   weight: number;
 }
