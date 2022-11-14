@@ -25,7 +25,7 @@ CODEOWNERS @AloisReitbauer @johannes-b @jetzlstorfer @warber
 ADOPTERS.md @AloisReitbauer @grabnerandi @jetzlstorfer
 
 # UI / Keptn Bridge
-bridge/ @ermin-muratovic @laneli @Kirdock
+bridge/ @ermin-muratovic @laneli @Kirdock @heinzburgstaller
 
 # Release Notes
 releasenotes/ @johannes-b @warber
