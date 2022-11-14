@@ -94,7 +94,7 @@ describe(KtbEvaluationDetailsComponent.name, () => {
       };
 
       // when
-      const template = showInvalidateDialog();
+      const template = showInvalidateDialog(EvaluationsMock);
 
       // then
       expect(openDialogSpy).toHaveBeenCalledWith(template, {
@@ -105,7 +105,7 @@ describe(KtbEvaluationDetailsComponent.name, () => {
 
     it('should close invalidate dialog', () => {
       // given
-      showInvalidateDialog();
+      showInvalidateDialog(EvaluationsMock);
       const closeSpy = jest.spyOn(Reflect.get(component, 'invalidateEvaluationDialogRef'), 'close');
 
       // when
@@ -122,7 +122,7 @@ describe(KtbEvaluationDetailsComponent.name, () => {
         evaluation: trace,
         shouldSelect: true,
       };
-      showInvalidateDialog();
+      showInvalidateDialog(EvaluationsMock);
       const closeSpy = jest.spyOn(Reflect.get(component, 'invalidateEvaluationDialogRef'), 'close');
       const invalidateSpy = jest.spyOn(TestBed.inject(DataService), 'invalidateEvaluation');
 
@@ -153,7 +153,7 @@ describe(KtbEvaluationDetailsComponent.name, () => {
     return template;
   }
 
-  function showInvalidateDialog(): TemplateRef<Trace | undefined> {
+  function showInvalidateDialog(selectedEvaluation: Trace): TemplateRef<Trace | undefined> {
     const template = {
       get elementRef(): ElementRef {
         return {
@@ -164,7 +164,7 @@ describe(KtbEvaluationDetailsComponent.name, () => {
         return undefined as unknown as EmbeddedViewRef<Trace | undefined>;
       },
     };
-    component.invalidateEvaluationTrigger(template);
+    component.invalidateEvaluationTrigger(template, selectedEvaluation);
     return template;
   }
 

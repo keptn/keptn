@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
-import { filter, map, takeUntil, tap } from 'rxjs/operators';
+import { map, takeUntil, tap } from 'rxjs/operators';
 import { IClientFeatureFlags } from '../../../../../shared/interfaces/feature-flags';
 import { FeatureFlagsService } from '../../../_services/feature-flags.service';
 import {
@@ -65,15 +65,16 @@ export class KtbEvaluationChartComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.dataService.evaluationResults
       .pipe(
-        filter((results): results is Required<EvaluationHistory> => !!results.traces?.length),
         tap((results) => {
-          parseSloOfEvaluations(results.traces);
+          if (results.traces) {
+            parseSloOfEvaluations(results.traces);
+          }
         }),
         takeUntil(this.unsubscribe$)
       )
       .subscribe((results) => {
         // check if there already are evaluations and the incoming data is an update. If it is an update postpone it and show a refresh button
-        if (this.evaluationData.evaluation?.data.evaluationHistory?.length) {
+        if (this.evaluationData.evaluation?.data.evaluationHistory?.length && results.type === 'evaluationHistory') {
           this.evaluationHistoryUpdates = results;
         } else {
           this.refreshEvaluationBoard(results);
