@@ -85,6 +85,8 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*
 		_, serviceErr := sr.ServiceHandler.GetService(project, stage, service)
 		if serviceErr != nil {
 			return nil, nil, checkNotFound(serviceErr, err)
+		} else if !strings.Contains(err.Error(), "not found") {
+			return nil, nil, err
 		}
 	}
 	if sloFile == nil || sloFile.ResourceContent == "" {
@@ -111,7 +113,7 @@ func checkNotFound(notFound, checkOut error) error {
 		if strings.Contains(strings.ToLower(checkOut.Error()), "could not check out ") {
 			return ErrConfigService
 		}
-		return ErrSLOFileNotFound
+		return checkOut
 	}
 }
 
