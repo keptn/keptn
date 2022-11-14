@@ -46,7 +46,7 @@
           <button
             dt-button
             variant="secondary"
-            (click)="invalidateEvaluationTrigger(invalidateEvaluationDialog)"
+            (click)="invalidateEvaluationTrigger(invalidateEvaluationDialog, selectedEvaluationTrace)"
             *ngIf="!isInvalidated"
           >
             Ignore for comparison
@@ -182,13 +182,21 @@
           class="wide-input"
           type="text"
           dtInput
+          uitestid="ktb-invalidate-reason-input"
           placeholder="Place for a comment why it has been invalidated (optional)"
         />
       </dt-form-field>
     </div>
   </div>
   <div mat-dialog-actions>
-    <button dt-button variant="secondary" (click)="invalidateEvaluation(data, reasonInput.value)">Invalidate</button>
+    <button
+      dt-button
+      uitestid="ktb-invalidate-confirm-button"
+      variant="secondary"
+      (click)="invalidateEvaluation(data, reasonInput.value)"
+    >
+      Invalidate
+    </button>
     <button dt-button (click)="closeInvalidateEvaluationDialog()">Close</button>
   </div>
 </ng-template>

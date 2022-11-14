@@ -188,6 +188,11 @@ export class HeatmapComponentPage {
     cy.byTestId(`ktb-heatmap-tile-${id}`).eq(0).click();
     return this;
   }
+
+  public assertEvaluationExists(id: string, exists = true): this {
+    cy.byTestId(`ktb-heatmap-tile-${id}`).should(exists ? 'exist' : 'not.exist');
+    return this;
+  }
 }
 
 export const range = (start: number, stop: number, step: number): number[] =>
