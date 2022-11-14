@@ -3,6 +3,7 @@ import {
   interceptEvaluationOfApproval,
   interceptMain,
   interceptSequencesPage,
+  interceptSequencesPageEmpty,
   interceptSequencesPageWithSequenceThatIsNotLoaded,
 } from '../intercept';
 import { EvaluationBadgeVariant } from '../../../client/app/_components/ktb-evaluation-badge/ktb-evaluation-badge.utils';
@@ -14,6 +15,11 @@ export class SequencesPage {
 
   public intercept(): this {
     interceptSequencesPage();
+    return this;
+  }
+
+  public interceptEmpty(project: string): this {
+    interceptSequencesPageEmpty(project);
     return this;
   }
 
@@ -70,6 +76,14 @@ export class SequencesPage {
 
   public visitByEventType(keptnContext: string, eventType: EventTypes | string): this {
     cy.visit(`/trace/${keptnContext}/${eventType}`).wait('@metadata');
+    return this;
+  }
+
+  public waitForInitialRequests(project?: string): this {
+    const projectSuffix = project ? `_${project}` : '';
+    cy.wait(`@Sequences${projectSuffix}`);
+    cy.wait(`@SequencesMetadata${projectSuffix}`);
+
     return this;
   }
 

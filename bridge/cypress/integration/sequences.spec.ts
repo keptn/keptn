@@ -1,6 +1,7 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
 import { interceptSequenceExecution } from '../support/intercept';
+import BasePage from '../support/pageobjects/BasePage';
 
 describe('Sequences', () => {
   const sequencePage = new SequencesPage();
@@ -351,6 +352,27 @@ describe('Sequences', () => {
         .assertFilterIsChecked('Status', 'Succeeded', false)
         .assertSequenceCount(2)
         .assertStatusOfSequences('started');
+    });
+
+    it('should navigate to other project and load filter correctly', () => {
+      const basePage = new BasePage();
+      const secondProject = 'my-error-project';
+      const project = 'sockshop';
+
+      sequencePage.interceptEmpty(secondProject);
+      sequencePage.visit(project, {
+        Service: 'carts',
+      });
+      cy.wait(`@Sequences`);
+      cy.wait(500);
+
+      basePage.selectProjectThroughHeader(secondProject);
+
+      sequencePage.waitForInitialRequests(secondProject).assertRootDeepLink(secondProject).assertQueryParams('');
+
+      basePage.selectProjectThroughHeader(project);
+
+      sequencePage.assertQueryParams('?Service=carts').assertFilterIsChecked('Service', 'carts', true);
     });
 
     it('should apply filters also when loading more sequences', () => {
