@@ -82,11 +82,12 @@ func (sr *SLOFileRetriever) GetSLOs(project, stage, service, commitID string) (*
 	resourceScope := *utils.NewResourceScope().Project(project).Stage(stage).Service(service).Resource("slo.yaml")
 	sloFile, err := sr.ResourceHandler.GetResource(resourceScope, utils.AppendQuery(commitOption))
 	if err != nil {
+		if !strings.Contains(err.Error(), "not found") {
+			return nil, nil, err
+		}
 		_, serviceErr := sr.ServiceHandler.GetService(project, stage, service)
 		if serviceErr != nil {
 			return nil, nil, checkNotFound(serviceErr, err)
-		} else if !strings.Contains(err.Error(), "not found") {
-			return nil, nil, err
 		}
 	}
 	if sloFile == nil || sloFile.ResourceContent == "" {
