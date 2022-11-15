@@ -517,3 +517,71 @@ func TestSLOFileRetriever_GetSLOs_UnexpectedError(t *testing.T) {
 	require.NotNil(t, err)
 	require.NotErrorIs(t, err, ErrSLOFileNotFound)
 }
+
+func Test_checkNotFound(t *testing.T) {
+	type args struct {
+		notFound error
+		checkOut error
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr error
+	}{
+		{
+			name: "project not found",
+			args: args{
+				notFound: errors.New("project not found"),
+				checkOut: errors.New("oops"),
+			},
+			wantErr: ErrProjectNotFound,
+		},
+		{
+			name: "stage not found",
+			args: args{
+				notFound: errors.New("stage not found"),
+				checkOut: errors.New("oops"),
+			},
+			wantErr: ErrStageNotFound,
+		},
+		{
+			name: "service not found",
+			args: args{
+				notFound: errors.New("service not found"),
+				checkOut: errors.New("oops"),
+			},
+			wantErr: ErrServiceNotFound,
+		},
+		{
+			name: "resource not found",
+			args: args{
+				notFound: errors.New("resource not found"),
+				checkOut: errors.New("oops"),
+			},
+			wantErr: ErrSLOFileNotFound,
+		},
+		{
+			name: "resource not found",
+			args: args{
+				notFound: errors.New("oops"),
+				checkOut: errors.New("resource not found"),
+			},
+			wantErr: ErrSLOFileNotFound,
+		},
+		{
+			name: "could not check out",
+			args: args{
+				notFound: errors.New("oops"),
+				checkOut: errors.New("could not check out branch"),
+			},
+			wantErr: ErrConfigService,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := checkNotFound(tt.args.notFound, tt.args.checkOut)
+
+			require.ErrorIs(t, err, tt.wantErr)
+		})
+	}
+}
