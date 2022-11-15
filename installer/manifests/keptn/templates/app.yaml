@@ -2,6 +2,7 @@ apiVersion: lifecycle.keptn.sh/v1alpha1
 kind: KeptnApp
 metadata:
   name: keptn
+  namespace: keptn
 spec:
   version: {{ .Chart.AppVersion }}-1
   workloads:
