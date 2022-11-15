@@ -119,6 +119,8 @@ github.com/go-git/go-git-fixtures/v4 v4.3.1 h1:y5z6dd3qi8Hl+stezc8p3JxDkoTRqMAlK
 github.com/go-git/go-git-fixtures/v4 v4.3.1/go.mod h1:8LHG1a3SRW71ettAD/jW13h8c6AqjVSeL11RAdgaqpo=
 github.com/go-git/go-git/v5 v5.4.3-0.20220529141257-bc1f419cebcf h1:tmTaR5nN6RJs6G9+tmd3MRBNXSk6YTI9+8nv1WrIKzI=
 github.com/go-git/go-git/v5 v5.4.3-0.20220529141257-bc1f419cebcf/go.mod h1:cGzI9Lmtnh5wmJ5NjO/Cr3d6Iljyy588mEFUKs5vMvw=
+github.com/go-git/go-git/v5 v5.4.3-0.20221107161654-452df976faca h1:pt3/YBSYHmJH1DEVOXYuneDWiMFPr026n1Qteu/N+OM=
+github.com/go-git/go-git/v5 v5.4.3-0.20221107161654-452df976faca/go.mod h1:YpPgMNvxopDCZUuSFjkbcx/vWhCDvPsuoBCTTEd9dDc=
 github.com/go-gl/glfw v0.0.0-20190409004039-e6da0acd62b1/go.mod h1:vR7hzQXu2zJy9AVAgeJqvqgH9Q5CA+iKCZ2gyEVpxRU=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20191125211704-12ad95a8df72/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
 github.com/go-gl/glfw/v3.3/glfw v0.0.0-20200222043503-6f7a984d4dc4/go.mod h1:tQ2UAYgL5IevRw8kRxooKSPJfGvJ9fJQFa0TUsXzTg8=
@@ -336,6 +338,8 @@ github.com/sergi/go-diff v1.1.0/go.mod h1:STckp+ISIX8hZLjrqAeVduY0gWCT9IjLuqbuNX
 github.com/sirupsen/logrus v1.7.0/go.mod h1:yWOB1SBYBC5VeMP7gHvWumXLIWorT60ONWic61uBYv0=
 github.com/sirupsen/logrus v1.9.0 h1:trlNQbNUG3OdDrDil03MCb1H2o9nJ1x4/5LYw7byDE0=
 github.com/sirupsen/logrus v1.9.0/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
+github.com/skeema/knownhosts v1.1.0 h1:Wvr9V0MxhjRbl3f9nMnKnFfiWTJmtECJ9Njkea3ysW0=
+github.com/skeema/knownhosts v1.1.0/go.mod h1:sKFq3RD6/TKZkSWn8boUbDC7Qkgcv+8XXijpFO6roag=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
 github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
