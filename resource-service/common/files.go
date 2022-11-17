@@ -16,6 +16,7 @@ import (
 )
 
 // IFileSystem is an interface for writing files
+//
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/file_writer_mock.go . IFileSystem
 type IFileSystem interface {
 	WriteBase64EncodedFile(path string, content string) error
@@ -164,7 +165,7 @@ func (fw FileSystem) untarHelm(filePath string) error {
 	defer func() {
 		err := os.RemoveAll(tmpDir)
 		if err != nil {
-			logger.WithError(err).Errorf("Could not remove directory %s", tmpDir)
+			logger.Errorf("Could not remove directory %s: %v", tmpDir, err)
 		}
 	}()
 
