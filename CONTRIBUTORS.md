@@ -89,3 +89,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Zhou Zhiqiang](https://github.com/STRRL)
 * [Sarah Huber](https://github.com/sarahhuber001)
 * [Salvador Cavadini](https://github.com/chavacava)
+* [Nitin Mewar](https://github.com/nitinmewar)

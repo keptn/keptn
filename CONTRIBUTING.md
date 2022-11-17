@@ -177,7 +177,7 @@ git checkout feature/123/foo
 git rebase master
 git push --set-upstream origin feature/123/foo
 ```
-
+Make sure you sign off your commits. To do this automatically check [this](https://github.com/keptn/keptn/blob/master/CONTRIBUTING.md#auto-signoff-commit-messages).
 Finally, go to GitHub and create a Pull Request. There should be a PR template already prepared for you.
 If not, you will find it at `.github/pull_request_template.md`.
 Please describe what this PR is about and add a link to relevant GitHub issues.
@@ -252,3 +252,37 @@ Your PR will usually be reviewed by the Keptn team within a couple of days, but 
 - secret-service
 - shipyard-controller
 - statistics-service
+
+### Auto signoff commit messages
+
+We have a DCO check which runs on every PR to verify that the commit has been signed off.
+
+To sign off the last commit you made, you can use
+```bash
+git commit --amend --signoff
+```
+
+or the command below to sign off the last 2 commits you made
+```bash
+git rebase HEAD~2 --signoff
+```
+
+This process is sometimes inconvenient but you can automate it
+by creating a pre-commit git hook as follows:
+1. Create the hook:
+``` bash
+touch .git/hooks/prepare-commit-msg
+```
+
+1. Add the following to the `prepare-commit-msg` file:
+```bash
+SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+```
+
+1. Give it execution permissions by calling:
+```bash
+chmod +x ./.git/hooks/prepare-commit-msg
+```
+
+
