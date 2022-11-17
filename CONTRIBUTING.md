@@ -267,10 +267,8 @@ or the command below to sign off the last 2 commits you made
 git rebase HEAD~2 --signoff
 ```
 
-But this process is sometimes inconvenient.
-You can automate this process though.
-
-To automatically sign off commits, you can create a pre-commit git hook as follows:
+This process is sometimes inconvenient but you can automate it
+by creating a pre-commit git hook as follows:
 Create the hook:
 ``` bash
 touch .git/hooks/prepare-commit-msg
