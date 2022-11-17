@@ -20,6 +20,6 @@ func (b *BasicTokenValidator) ValidateToken(token string) (*models.Principal, er
 		prin := models.Principal(token)
 		return &prin, nil
 	}
-	log.Errorf("Access attempt with incorrect api key auth: %s", token)
+	log.Warn("Access attempt with incorrect API token")
 	return nil, openapierrors.New(http.StatusUnauthorized, "incorrect api key auth")
 }
