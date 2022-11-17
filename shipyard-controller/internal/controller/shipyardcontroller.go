@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/keptn/keptn/shipyard-controller/internal/common"
@@ -173,7 +172,7 @@ func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 		go func() {
 			err := sc.handleSequenceTriggered(event)
 			if err != nil {
-				log.WithError(err).Error("Unable to handle sequence '.triggered' event")
+				log.Errorf("Unable to handle sequence '.triggered' event: %v", err)
 			}
 			cb(err)
 		}()
@@ -182,7 +181,7 @@ func (sc *ShipyardController) HandleIncomingEvent(event apimodels.KeptnContextEx
 			err := sc.handleTaskEvent(event)
 			if err != nil {
 				if errors.Is(err, common.ErrSequenceNotFound) || errors.Is(err, models.ErrInvalidEventScope) {
-					log.Infof("Unable to handle task event: %v", err)
+					log.Warnf("Unable to handle task event: %v", err)
 				} else {
 					log.Errorf("Unable to handle task event: %v", err)
 				}
@@ -239,7 +238,8 @@ func (sc *ShipyardController) handleSequenceTriggered(event apimodels.KeptnConte
 	sequence, err := GetTaskSequenceInStage(eventScope.Stage, taskSequenceName, shipyard)
 	if err != nil {
 		msg := fmt.Sprintf("Unable to start sequence %s: %v", taskSequenceName, err)
-		log.Error(msg)
+		// use 'warn' level here since a sequence not being present is not an error in the service
+		log.Warn(msg)
 		return sc.triggerSequenceFailed(*eventScope, msg, taskSequenceName)
 	}
 
@@ -321,7 +321,7 @@ func (sc *ShipyardController) handleTaskEvent(event apimodels.KeptnContextExtend
 	}
 
 	if sequenceExecution == nil {
-		log.Infof("The received %s event with keptn context %s is not accociated with a task that was previously triggered",
+		log.Warnf("The received %s event with keptn context %s is not accociated with a task that was previously triggered",
 			eventScope.EventType, eventScope.KeptnContext)
 		return common.ErrSequenceNotFound
 	}
@@ -375,7 +375,7 @@ func (sc *ShipyardController) onTaskProgress(event apimodels.KeptnContextExtende
 		return fmt.Errorf("unable to retrieve associated task '.triggered' event with ID %s: %w", eventScope.TriggeredID, err)
 	}
 	if len(triggeredEvents) == 0 {
-		return fmt.Errorf("no matching task '.triggered' event found for event %s with triggered ID %s", eventScope.WrappedEvent.ID, eventScope.TriggeredID)
+		return fmt.Errorf("no matching task '.triggered' event found for event %s with triggered ID %s: %w", eventScope.WrappedEvent.ID, eventScope.TriggeredID, common.ErrSequenceNotFound)
 	}
 
 	// the '.triggered' event can now be removed
@@ -416,7 +416,7 @@ func (sc *ShipyardController) cancelSequence(cancel apimodels.SequenceControl) e
 	}
 
 	if len(sequenceExecutions) == 0 {
-		log.Infof(noActiveSequencesErrMsg, cancel.Project, cancel.Stage, cancel.KeptnContext)
+		log.Warnf(noActiveSequencesErrMsg, cancel.Project, cancel.Stage, cancel.KeptnContext)
 		return nil
 	}
 
@@ -431,7 +431,7 @@ func (sc *ShipyardController) cancelSequence(cancel apimodels.SequenceControl) e
 	)
 
 	if err != nil {
-		log.WithError(err).Errorf("could not remove sequence %s from sequence queue", cancel.KeptnContext)
+		log.Errorf("could not remove sequence %s from sequence queue: %v", cancel.KeptnContext, err)
 	}
 
 	// delete all open .triggered events for the task sequence
@@ -439,7 +439,7 @@ func (sc *ShipyardController) cancelSequence(cancel apimodels.SequenceControl) e
 		err := sc.eventRepo.DeleteEvent(cancel.Project, sequenceExecution.Status.CurrentTask.TriggeredID, common.TriggeredEvent)
 		if err != nil {
 			// log the error, but continue
-			log.WithError(err).Error("could not delete event")
+			log.Errorf("could not delete event: %v", err)
 		}
 
 		if err := sc.forceTaskSequenceCompletion(sequenceExecution); err != nil {
@@ -467,7 +467,7 @@ func (sc *ShipyardController) pauseSequence(pause apimodels.SequenceControl) err
 	}
 
 	if len(sequenceExecutions) == 0 {
-		log.Infof(noActiveSequencesErrMsg, pause.Project, pause.Stage, pause.KeptnContext)
+		log.Warnf(noActiveSequencesErrMsg, pause.Project, pause.Stage, pause.KeptnContext)
 		return nil
 	}
 
@@ -501,7 +501,7 @@ func (sc *ShipyardController) resumeSequence(resume apimodels.SequenceControl) e
 	}
 
 	if len(sequenceExecutions) == 0 {
-		log.Infof("no active sequence executions for context %s found.", resume.KeptnContext)
+		log.Warnf("no active sequence executions for context %s found.", resume.KeptnContext)
 		return nil
 	}
 
@@ -547,7 +547,7 @@ func (sc *ShipyardController) timeoutSequence(timeout apimodels.SequenceTimeout)
 	}
 
 	if len(sequenceExecutions) == 0 {
-		log.Infof("No task executions associated with eventID %s found", timeout.LastEvent.ID)
+		log.Warnf("No task executions associated with eventID %s found", timeout.LastEvent.ID)
 		return nil
 	}
 
@@ -636,30 +636,6 @@ func (sc *ShipyardController) getOpenSequenceExecution(eventScope models.EventSc
 		return nil, nil
 	}
 	return &sequenceExecutions[0], nil
-}
-
-func (sc *ShipyardController) getFinishedEventData(eventScope models.EventScope) ([]interface{}, error) {
-	allFinishedEventsForTask, err := sc.eventRepo.GetEvents(eventScope.Project, common.EventFilter{
-		Type:         "",
-		Stage:        &eventScope.Stage,
-		Service:      &eventScope.Service,
-		KeptnContext: &eventScope.KeptnContext,
-	}, common.FinishedEvent)
-	if err != nil {
-		return nil, fmt.Errorf("could not retrieve %s events: %s", eventScope.EventType, err.Error())
-	}
-
-	log.Infof("Found %d events. Aggregating their properties for next task ", len(allFinishedEventsForTask))
-
-	finishedEventsData := []interface{}{}
-
-	for index := range allFinishedEventsForTask {
-		marshal, _ := json.Marshal(allFinishedEventsForTask[index].Data)
-		var tmp interface{}
-		_ = json.Unmarshal(marshal, &tmp)
-		finishedEventsData = append(finishedEventsData, tmp)
-	}
-	return finishedEventsData, nil
 }
 
 func (sc *ShipyardController) GetAllTriggeredEvents(filter common.EventFilter) ([]apimodels.KeptnContextExtendedCE, error) {
@@ -784,7 +760,7 @@ func (sc *ShipyardController) triggerTask(eventScope models.EventScope, sequence
 
 	storeEvent := &apimodels.KeptnContextExtendedCE{}
 	if err := keptnv2.Decode(event, storeEvent); err != nil {
-		log.Errorf("could not transform CloudEvent for storage in mongodb: %s", err.Error())
+		log.Errorf("could not transform CloudEvent for storage in mongodb: %v", err)
 		return err
 	}
 
@@ -793,14 +769,14 @@ func (sc *ShipyardController) triggerTask(eventScope models.EventScope, sequence
 		if duration, err := time.ParseDuration(task.TriggeredAfter); err == nil {
 			sendTaskTimestamp = sendTaskTimestamp.Add(duration)
 		} else {
-			log.Errorf("could not parse triggeredAfter property: %s", err.Error())
+			log.Errorf("could not parse triggeredAfter property: %v", err)
 		}
 		log.Infof("queueing %s event with ID %s to be sent at %s", event.Type(), event.ID(), sendTaskTimestamp.String())
 	}
 	storeEvent.Time = sendTaskTimestamp
 
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, *storeEvent, common.TriggeredEvent); err != nil {
-		log.Errorf("Could not store event: %s", err.Error())
+		log.Errorf("Could not store event: %v", err)
 		return err
 	}
 
@@ -829,11 +805,11 @@ func (sc *ShipyardController) sendTaskSequenceTriggeredEvent(eventScope *models.
 
 	toEvent, err := models.ConvertToEvent(event)
 	if err != nil {
-		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
+		return fmt.Errorf("could not store event that triggered task sequence: %w", err)
 	}
 	sc.appendLatestCommitIDToEvent(*eventScope, toEvent)
 	if err := sc.eventRepo.InsertEvent(eventScope.Project, *toEvent, common.TriggeredEvent); err != nil {
-		return fmt.Errorf("could not store event that triggered task sequence: " + err.Error())
+		return fmt.Errorf("could not store event that triggered task sequence: %w", err)
 	}
 
 	return sc.eventDispatcher.Add(models.DispatcherEvent{TimeStamp: time.Now().UTC(), Event: event}, true)
