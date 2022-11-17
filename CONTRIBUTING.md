@@ -280,7 +280,7 @@ SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
 grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
 ```
 
-and finally give it execution permissions by calling:
+1. Give it execution permissions by calling:
 ```bash
 chmod +x ./.git/hooks/prepare-commit-msg
 ```
