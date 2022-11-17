@@ -34,7 +34,7 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 
 	err := eh.Event.DataAs(e)
 	if err != nil {
-		logger.Error("Could not parse event payload: " + err.Error())
+		logger.Errorf("Could not parse event payload: %v", err)
 		return err
 	}
 
@@ -46,7 +46,7 @@ func (eh *StartEvaluationHandler) HandleEvent(ctx context.Context) error {
 	// send evaluation.started event
 	err = sendEvent(keptnContext, eh.Event.ID(), keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, startedEvent)
 	if err != nil {
-		logger.Error("Could not send evaluation.started event: " + err.Error())
+		logger.Errorf("Could not send evaluation.started event: %v", err.Error())
 		return err
 	}
 
@@ -94,7 +94,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 		sliProvider, err = eh.SLIProviderConfig.GetDefaultSLIProvider()
 		if err != nil {
 			// no default SLI provider configured
-			logger.Error("no SLI-provider configured for project " + e.Project + ", no evaluation conducted")
+			logger.Warnf("No SLI-provider configured for project '%s', no evaluation conducted", e.Project)
 			evaluationDetails := keptnv2.EvaluationDetails{
 				IndicatorResults: nil,
 				TimeStart:        evaluationStartTimestamp,
@@ -119,7 +119,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 		}
 	}
 	// send a new event to trigger the SLI retrieval
-	logger.Debug("SLI provider for project " + e.Project + " is: " + sliProvider)
+	logger.Debugf("SLI provider for project '%s' is: '%s'", e.Project, sliProvider)
 	err = eh.sendInternalGetSLIEvent(keptnContext, commitID, e, sliProvider, indicators, evaluationStartTimestamp, evaluationEndTimestamp, filters)
 	return nil
 }
@@ -127,7 +127,7 @@ func (eh *StartEvaluationHandler) sendGetSliCloudEvent(ctx context.Context, kept
 func (eh *StartEvaluationHandler) computeObjectives(e *keptnv2.EvaluationTriggeredEventData, commitID string, indicators *[]string, filters *[]*keptnv2.SLIFilter, evaluationStartTimestamp string, evaluationEndTimestamp string) (error, bool) {
 	objectives, _, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 	if err == nil && objectives != nil {
-		logger.Info("SLO file found")
+		logger.Debugf("SLO file found for '%s/%s/%s'", e.Project, e.Stage, e.Service)
 		for _, objective := range objectives.Objectives {
 			*indicators = append(*indicators, objective.SLI)
 		}
@@ -155,7 +155,7 @@ func (eh *StartEvaluationHandler) computeObjectives(e *keptnv2.EvaluationTrigger
 		logger.Error(message)
 		return eh.sendEvaluationFinishedWithErrorEvent(evaluationStartTimestamp, evaluationEndTimestamp, e, message), true
 	} else if err != nil && err == ErrSLOFileNotFound {
-		logger.Error("no SLO file found")
+		logger.Debugf("No SLO file found for '%s/%s/%s'", e.Project, e.Stage, e.Service)
 	}
 	return nil, false
 }
