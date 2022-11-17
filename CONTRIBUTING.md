@@ -255,7 +255,7 @@ Your PR will usually be reviewed by the Keptn team within a couple of days, but 
 
 ### Auto signoff commit messages
 
-We have a DCO check which runs on every PR to check if the commit has been signed off.
+We have a DCO check which runs on every PR to verify that the commit has been signed off.
 
 To sign off the last commit you made, you can use
 ```bash
