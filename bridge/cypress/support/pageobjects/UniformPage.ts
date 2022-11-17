@@ -28,12 +28,12 @@ class UniformPage {
   SEND_STARTED_BUTTONS = 'edit-webhook-field-sendStarted';
 
   public visit(project: string): this {
-    cy.visit(`/project/${project}/settings/uniform/integrations`).wait('@metadata');
+    cy.visit(`/project/${project}/settings/uniform/integrations`).wait('@bridgeInfo');
     return this;
   }
 
   public visitAdd(integrationID: string, isWebhook = false): this {
-    cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/add`).wait('@metadata');
+    cy.visit(`/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/add`).wait('@bridgeInfo');
     if (isWebhook) {
       cy.wait('@webhook-secrets');
     }
@@ -43,7 +43,7 @@ class UniformPage {
   public visitEdit(integrationID: string, subscriptionId: string): this {
     cy.visit(
       `/project/sockshop/settings/uniform/integrations/${integrationID}/subscriptions/${subscriptionId}/edit`
-    ).wait('@metadata');
+    ).wait('@bridgeInfo');
     return this;
   }
 

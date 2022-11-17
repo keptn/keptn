@@ -2,15 +2,12 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { Observable, of } from 'rxjs';
-import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
 import moment from 'moment';
-import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { Project } from '../_models/project';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
 import { IWebhookConfigClient, WebhookConfigMethod } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
-import { IMetadata } from '../_interfaces/metadata';
 import { FileTree } from '../../../shared/interfaces/resourceFileTree';
 import { HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
@@ -45,6 +42,7 @@ import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-exe
 import { SequenceExecutionResultMock } from './_mockData/sequence-execution-result.mock';
 import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
 import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
+import { BridgeInfo } from '../../../shared/interfaces/bridge-info';
 
 @Injectable({
   providedIn: null,
@@ -70,8 +68,12 @@ export class ApiServiceMock extends ApiService {
     this.localStoreMock.set(this.INTEGRATION_DATES, JSON.stringify(dates));
   }
 
-  public getKeptnInfo(): Observable<KeptnInfoResult> {
-    return of(BridgeInfoResponseMock);
+  public getKeptnInfo(): Observable<BridgeInfo> {
+    return of({
+      info: BridgeInfoResponseMock,
+      metadata: MetadataResponseMock,
+      versions: VersionResponseMock,
+    });
   }
 
   public getIntegrationsPage(): Observable<string> {
@@ -92,10 +94,6 @@ export class ApiServiceMock extends ApiService {
 
   public setVersionCheck(enabled: boolean): void {
     this.localStoreMock.set(this.VERSION_CHECK_COOKIE, JSON.stringify({ enabled, time: moment().valueOf() }));
-  }
-
-  public getAvailableVersions(): Observable<KeptnVersions | undefined> {
-    return of(VersionResponseMock);
   }
 
   public deleteProject(projectName: string): Observable<Record<string, unknown>> {
@@ -215,10 +213,6 @@ export class ApiServiceMock extends ApiService {
     isWebhookService: boolean
   ): Observable<Record<string, unknown>> {
     return of({});
-  }
-
-  public getMetadata(): Observable<IMetadata> {
-    return of(MetadataResponseMock);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {

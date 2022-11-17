@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, debounceTime, forkJoin, Observable, of, Subject } from 'rxjs';
+import { BehaviorSubject, debounceTime, Observable, of, Subject } from 'rxjs';
 import { catchError, map, mergeMap, take, tap } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
@@ -8,7 +8,7 @@ import { ApiService } from './api.service';
 import moment from 'moment';
 import { SequenceState } from '../_models/sequenceState';
 import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
@@ -27,7 +27,7 @@ import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-inf
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { KeptnService } from '../../../shared/models/keptn-service';
-import { IMetadata } from '../_interfaces/metadata';
+import { IMetadata } from '../../../shared/interfaces/metadata';
 import {
   ISequenceState,
   ISequenceStateInfo,
@@ -38,6 +38,7 @@ import { IGitDataExtended } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
 import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
+import { BridgeInfo } from '../../../shared/interfaces/bridge-info';
 
 @Injectable({
   providedIn: 'root',
@@ -235,21 +236,24 @@ export class DataService {
   public loadKeptnInfo(): void {
     // #4165 Get bridge info first to get info if versions.json should be loaded or not
     // Versions should not be loaded if enableVersionCheckFeature is set to false (when ENABLE_VERSION_CHECK is set to false in env)
+    const versionCheckEnabled = !!this.apiService.isVersionCheckEnabled();
     this.apiService
-      .getKeptnInfo()
+      .getKeptnInfo(versionCheckEnabled)
       .pipe(
-        mergeMap((bridgeInfo) => {
-          return forkJoin([
-            of(bridgeInfo),
-            bridgeInfo.enableVersionCheckFeature
-              ? this.apiService.getAvailableVersions().pipe(catchError(() => of(undefined)))
-              : of(undefined),
-            of(this.apiService.isVersionCheckEnabled()),
-            this.apiService.getMetadata().pipe(catchError(() => of(null))),
-          ]);
+        catchError((error: HttpErrorResponse): Observable<BridgeInfo> => {
+          return of({
+            info: {
+              showApiToken: false,
+              enableVersionCheckFeature: false,
+              authType: error.headers.get('keptn-auth-type') ?? 'BASIC',
+              featureFlags: {},
+              cliDownloadLink: '',
+            },
+            metadata: null,
+          });
         })
       )
-      .subscribe(([bridgeInfo, availableVersions, versionCheckEnabled, metadata]) => {
+      .subscribe(({ info: bridgeInfo, versions: availableVersions, metadata }) => {
         const keptnInfo: KeptnInfo = {
           bridgeInfo,
           availableVersions,

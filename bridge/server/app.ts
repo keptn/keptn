@@ -304,9 +304,7 @@ function handleError(err: any, req: Request, res: Response, authType: AuthType):
   if (err.response?.data?.message) {
     err.message = err.response?.data.message;
   }
-  if (err.response?.status === 401) {
-    res.setHeader('keptn-auth-type', authType);
-  }
+  res.setHeader('keptn-auth-type', authType);
 
   printError(err);
   log.info(`Response status: ${err.response?.status}`);

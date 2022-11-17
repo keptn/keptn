@@ -66,19 +66,18 @@ function setEvaluationUrls(project: string, service: string): void {
 
 export function interceptMainAutomaticProvisioningEnabled(): void {
   interceptMain();
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
+  cy.intercept('/api/bridgeInfo*', { fixture: 'bridgeInfo.ap-enabled.mock' }).as('bridgeInfo');
 }
 
 export function interceptMain(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  cy.intercept('/api/bridgeInfo*', { fixture: 'bridgeInfo.mock' }).as('bridgeInfo');
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
     'projects'
   );
 }
 
-export function interceptFailedMetadata(): void {
-  cy.intercept('/api/v1/metadata', { forceNetworkError: true }).as('metadata');
+export function interceptFailedBridgeInfo(): void {
+  cy.intercept('/api/bridgeInfo*', { forceNetworkError: true }).as('bridgeInfo');
 }
 
 export function interceptCreateProject(): void {

@@ -9,7 +9,7 @@ import { takeUntil } from 'rxjs/operators';
 import semver from 'semver';
 import { VersionInfo } from '../../../../shared/interfaces/keptn-versions';
 import { environment } from '../../../environments/environment';
-import { IMetadata } from '../../_interfaces/metadata';
+import { IMetadata } from '../../../../shared/interfaces/metadata';
 import { KeptnInfo } from '../../_models/keptn-info';
 import { NotificationType } from '../../_models/notification';
 import { Project } from '../../_models/project';

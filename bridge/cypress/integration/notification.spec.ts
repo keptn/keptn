@@ -99,7 +99,7 @@ describe('Test notifications', () => {
       body: {},
     }).as('createProjectUrl');
 
-    cy.visit('/').wait('@metadata');
+    cy.visit('/').wait('@bridgeInfo');
     dashboardPage
       .clickCreateNewProjectButton()
       .typeProjectName(PROJECT_NAME)

@@ -45,9 +45,9 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 500 });
     testRequest.flush('server error', errorEvent);
 
@@ -59,24 +59,24 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: ErrorEvent = new ErrorEvent('client error');
     testRequest.error(errorEvent, { status: 404 });
 
     // then
-    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Http failure response for ./api/v1/metadata: 404 ');
+    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Http failure response for ./api/bridgeInfo: 404 ');
   });
 
   it('should show a generic error notification when unauthorized', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 401 });
     testRequest.flush('', errorEvent);
 
@@ -94,10 +94,10 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 401 });
     testRequest.flush('incorrect api key auth', errorEvent);
 
@@ -118,10 +118,10 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
     testRequest.error(errorEvent, { headers, status: 401 });
@@ -143,10 +143,10 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
     testRequest.error(errorEvent, { headers, status: 401 });
@@ -165,9 +165,9 @@ describe('HttpErrorInterceptorService', () => {
     // given
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     testRequest.error(errorEvent, { status: 403 });
 
@@ -186,9 +186,9 @@ describe('HttpErrorInterceptorService', () => {
 
     const spy = jest.spyOn(TestBed.inject(NotificationsService), 'addNotification');
 
-    apiService.getMetadata().subscribe();
+    apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/v1/metadata');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     testRequest.error(errorEvent, { status: 403 });
 

@@ -14,7 +14,7 @@ describe('Trigger a sequence', () => {
 
     // Sequence screen
     sequencePage.intercept();
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoCD.mock' });
+    cy.intercept('/api/bridgeInfo*', { fixture: 'bridgeInfoCD.mock' }).as('bridgeInfo');
     triggerSequencePage.visit(project);
   });
 
@@ -224,7 +224,7 @@ describe('Trigger a sequence', () => {
 describe('Trigger an evaluation sequence', () => {
   beforeEach(() => {
     interceptEnvironmentScreen();
-    cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfoCD.mock' });
+    cy.intercept('/api/bridgeInfo*', { fixture: 'bridgeInfoCD.mock' });
     sequencePage.intercept();
     triggerSequencePage
       .visit(project)

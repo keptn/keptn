@@ -73,12 +73,12 @@ class ServicesPage {
   }
 
   public visitServicePage(projectName: string): this {
-    cy.visit(`/project/${projectName}/service`).wait('@metadata');
+    cy.visit(`/project/${projectName}/service`).wait('@bridgeInfo');
     return this;
   }
 
   public visitService(projectName: string, serviceName: string): this {
-    cy.visit(`/project/${projectName}/service/${serviceName}`).wait('@metadata');
+    cy.visit(`/project/${projectName}/service/${serviceName}`).wait('@bridgeInfo');
     return this;
   }
 
@@ -87,7 +87,7 @@ class ServicesPage {
     if (stage) {
       url += `/stage/${stage}`;
     }
-    cy.visit(url).wait('@metadata');
+    cy.visit(url).wait('@bridgeInfo');
     return this;
   }
 
