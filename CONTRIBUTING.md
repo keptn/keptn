@@ -269,7 +269,7 @@ git rebase HEAD~2 --signoff
 
 This process is sometimes inconvenient but you can automate it
 by creating a pre-commit git hook as follows:
-Create the hook:
+1. Create the hook:
 ``` bash
 touch .git/hooks/prepare-commit-msg
 ```
