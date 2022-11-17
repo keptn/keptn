@@ -6,7 +6,6 @@ import * as http from 'http';
 import { contentSecurityPolicy, frameguard, noSniff, permittedCrossDomainPolicies, xssFilter } from 'helmet';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
-import logger from 'morgan';
 import { ComponentLogger } from './utils/logger';
 import cookieParser from 'cookie-parser';
 import AdmZip from 'adm-zip';
@@ -74,7 +73,11 @@ async function init(configuration: BridgeConfiguration): Promise<Express> {
   );
 
   // add some middlewares
-  app.use(logger('dev'));
+  const logExpress = new ComponentLogger('Express');
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    logExpress.info(`${req.method} ${req.url} ${res.statusCode}`);
+    next();
+  });
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
