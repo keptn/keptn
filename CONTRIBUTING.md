@@ -274,7 +274,7 @@ by creating a pre-commit git hook as follows:
 touch .git/hooks/prepare-commit-msg
 ```
 
-Add this to `prepare-commit-msg` file:
+1. Add the following to the `prepare-commit-msg` file:
 ```bash
 SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
 grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
