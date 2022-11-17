@@ -255,41 +255,36 @@ Your PR will usually be reviewed by the Keptn team within a couple of days, but 
 
 ### Auto signoff commit messages
 
-
-
 We have a DCO check which runs on every PR to check if the commit has been signed off.
 
-you can do 
+To sign off the last commit you made, you can use
 ```bash
 git commit --amend --signoff
 ```
 
-or something like
+or the command below to sign off the last 2 commits you made
 ```bash
 git rebase HEAD~2 --signoff
 ```
 
-to sign off commits, but it is inconvenient. You can automate this process.
+But this process is sometimes inconvenient.
+You can automate this process though.
 
-To automatically sign off commits  : 
+To automatically sign off commits, you can create a pre-commit git hook as follows:
+Create the hook:
 ``` bash
 touch .git/hooks/prepare-commit-msg
 ```
 
-``` bash
-vim .git/hooks/prepare-commit-msg
-```
-add this to `prepare-commit-msg` file:
-
+Add this to `prepare-commit-msg` file:
 ```bash
 SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
 grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
 ```
 
-and finally give it permission to execute using:
-
+and finally give it execution permissions by calling:
 ```bash
-chmod +x .git/hooks/prepare-commit-msg
+chmod +x ./.git/hooks/prepare-commit-msg
 ```
 
 
