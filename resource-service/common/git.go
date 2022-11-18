@@ -26,6 +26,7 @@ import (
 const gitHeadFilePath = "/.git/HEAD"
 
 // IGit provides functions to interact with the git repository of a project
+//
 //go:generate moq -pkg common_mock -skip-ensure -out ./fake/git_mock.go . IGit
 type IGit interface {
 	ProjectExists(gitContext common_models.GitContext) bool
@@ -263,18 +264,18 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
 		if err = g.ResetHard(gitContext, "HEAD~0"); err != nil {
-			logger.WithError(err).Warn("could not reset after commitAll")
+			logger.Warnf("Could not reset after commitAll: %v", err)
 		} else {
-			logger.Warn("untracked changes were removed")
+			logger.Warn("Untracked changes were removed")
 		}
 		return "", fmt.Errorf(kerrors.ErrMsgCouldNotCommit, gitContext.Project, mapError(err))
 	}
 	rollbackFunc := func() {
 		err := g.ResetHard(gitContext, "HEAD~1")
 		if err != nil {
-			logger.WithError(err).Warn("could not reset")
+			logger.Warnf("Could not reset: %v", err)
 		} else {
-			logger.Warn("commited changes were removed")
+			logger.Warn("Committed changes were removed")
 		}
 	}
 	err = g.Pull(gitContext)
@@ -842,28 +843,28 @@ func resolve(obj object.Object, path string) (*object.Blob, error) {
 	case *object.Commit:
 		t, err := o.Tree()
 		if err != nil {
-			logger.Debugf("Could not resolve commit for path %s: %s ", path, err)
+			logger.Debugf("Could not resolve commit for path %s: %v", path, err)
 			return nil, err
 		}
 		return resolve(t, path)
 	case *object.Tag:
 		target, err := o.Object()
 		if err != nil {
-			logger.Debugf("Could not resolve tag for path %s: %s ", path, err)
+			logger.Debugf("Could not resolve tag for path %s: %v", path, err)
 			return nil, err
 		}
 		return resolve(target, path)
 	case *object.Tree:
 		file, err := o.File(path)
 		if err != nil {
-			logger.Debugf("Could not resolve file for path %s: %s ", path, err)
+			logger.Debugf("Could not resolve file for path %s: %v", path, err)
 			return nil, err
 		}
 		return &file.Blob, nil
 	case *object.Blob:
 		return o, nil
 	default:
-		logger.Debug("Could not resolve unsupported object for path: ", path)
+		logger.Debugf("Could not resolve unsupported object for path: %s", path)
 		return nil, object.ErrUnsupportedObject
 	}
 }

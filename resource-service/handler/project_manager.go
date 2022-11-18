@@ -15,7 +15,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-//IProjectManager provides an interface for project CRUD operations
+// IProjectManager provides an interface for project CRUD operations
+//
 //go:generate moq -pkg handler_mock -skip-ensure -out ./fake/project_manager_mock.go . IProjectManager
 type IProjectManager interface {
 	CreateProject(project models.CreateProjectParams) error
@@ -67,7 +68,7 @@ func (p ProjectManager) CreateProject(project models.CreateProjectParams) error 
 	}
 
 	rollbackFunc := func() {
-		logger.Infof("Rollback: try to delete created directory for project %s", project.ProjectName)
+		logger.Debugf("Rollback: try to delete created directory for project %s", project.ProjectName)
 		if err := p.fileSystem.DeleteFile(projectDirectory); err != nil {
 			logger.Errorf("Rollback failed: could not delete created directory for project %s: %s", project.ProjectName, err.Error())
 		}
