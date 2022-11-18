@@ -18,8 +18,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 // ISequenceDispatcher is responsible for dispatching events to be sent to the event broker
+//
+//go:generate moq -pkg fake -skip-ensure -out ./fake/sequencedispatcher.go . ISequenceDispatcher
 type ISequenceDispatcher interface {
 	Add(queueItem models.QueueItem) error
 	Run(ctx context.Context, mode common.SDMode, startSequenceFunc func(event apimodels.KeptnContextExtendedCE) error)
@@ -154,7 +155,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 			// if no sequences are in the queue, we can return here
 			return
 		}
-		log.WithError(err).Error("Could not load queued sequences")
+		log.Errorf("Could not load queued sequences: %v", err)
 		return
 	}
 
@@ -163,7 +164,7 @@ func (sd *SequenceDispatcher) dispatchSequences() {
 			if errors.Is(err, common.ErrSequenceBlocked) || errors.Is(err, common.ErrSequenceBlockedWaiting) {
 				log.Debugf("Could not dispatch sequence with keptnContext %s. Sequence is currently blocked by other sequence", queuedSequence.Scope.KeptnContext)
 			} else {
-				log.WithError(err).Errorf("Could not dispatch sequence with keptnContext %s", queuedSequence.Scope.KeptnContext)
+				log.Errorf("Could not dispatch sequence with keptnContext %s: %v", queuedSequence.Scope.KeptnContext, err)
 			}
 		} else {
 			_, seqName, _, err := keptnv2.ParseSequenceEventType(queuedSequence.Scope.EventType)

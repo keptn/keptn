@@ -19,8 +19,9 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-//go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 // IEventDispatcher is responsible for dispatching events to be sent to the event broker
+//
+//go:generate moq -pkg fake -skip-ensure -out ./fake/eventdispatcher.go . IEventDispatcher
 type IEventDispatcher interface {
 	Add(event models.DispatcherEvent, skipQueue bool) error
 	Run(ctx context.Context)
@@ -212,7 +213,7 @@ func (e *EventDispatcher) dispatchEvents() {
 
 func (e *EventDispatcher) tryToSendEvent(eventScope models.EventScope, event models.DispatcherEvent) error {
 	if e.sequenceExecutionRepo.IsContextPaused(eventScope) {
-		log.Infof("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
+		log.Debugf("sequence %s is currently paused. will not send event %s", eventScope.KeptnContext, event.Event.ID())
 		return common.ErrSequencePaused
 	}
 	sequenceExecutions, err := e.sequenceExecutionRepo.Get(
