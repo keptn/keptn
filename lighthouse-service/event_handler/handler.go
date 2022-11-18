@@ -69,7 +69,7 @@ func NewEventHandler(ctx context.Context, event cloudevents.Event, kubeAPI kuber
 	case keptn.ConfigureMonitoringEventType:
 		return NewConfigureMonitoringHandler(event, logger.StandardLogger(), WithK8sClient(kubeAPI))
 	default:
-		logger.Info("received unhandled event type")
+		logger.Debugf("received unhandled event type '%s'", event.Type())
 		return nil, nil
 	}
 }
