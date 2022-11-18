@@ -69,16 +69,13 @@ func (mr *MongoDBEventRepo) InsertEvent(event keptnapi.KeptnContextExtendedCE) e
 
 	eventInterface, err := transformEventToInterface(event)
 	if err != nil {
-		err := fmt.Errorf("failed to transform event: %v", err)
-		logger.Error(err.Error())
-		return err
+		return fmt.Errorf("failed to transform event: %w", err)
 	}
 
 	// additionally store "invalidated" events in a dedicated collection
 	if strings.HasSuffix(string(*event.Type), ".invalidated") {
 		if err := mr.storeEvaluationInvalidatedEvent(ctx, collection, eventInterface); err != nil {
-			logger.Errorf("could not store .invalidated event: %v", err)
-			return err
+			return fmt.Errorf("could not store .invalidated event: %w", err)
 		}
 	}
 
@@ -92,9 +89,7 @@ func (mr *MongoDBEventRepo) InsertEvent(event keptnapi.KeptnContextExtendedCE) e
 
 	res, err := collection.InsertOne(ctx, eventInterface)
 	if err != nil {
-		err := fmt.Errorf("failed to insert into collection: %v", err)
-		logger.Error(err.Error())
-		return err
+		return fmt.Errorf("failed to insert into collection: %w", err)
 	}
 	logger.Debugf("insertedID: %s", res.InsertedID)
 
@@ -146,7 +141,6 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event keptnapi.KeptnContextEx
 	const dropCollectionErrorMsg = "failed to drop collection %s: %v"
 	if err != nil {
 		err := fmt.Errorf(dropCollectionErrorMsg, projectCollection.Name(), err)
-		logger.Errorf("Could not drop project collection: %v", err)
 		return err
 	}
 
@@ -155,7 +149,6 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event keptnapi.KeptnContextEx
 	err = rootEventsCollection.Drop(ctx)
 	if err != nil {
 		err := fmt.Errorf(dropCollectionErrorMsg, rootEventsCollection.Name(), err)
-		logger.Errorf("Could not drop root event collection: %v", err)
 		return err
 	}
 
@@ -165,15 +158,13 @@ func (mr *MongoDBEventRepo) DropProjectCollections(event keptnapi.KeptnContextEx
 	err = invalidatedEventsCollection.Drop(ctx)
 	if err != nil {
 		// log the error but continue
-		err := fmt.Errorf(dropCollectionErrorMsg, invalidatedEventsCollection.Name(), err)
-		logger.Errorf("Could not drop invalidatedEvents collection: %v", err)
+		logger.Errorf("Could not drop collection '%s': %v", invalidatedEventsCollection.Name(), err)
 	}
 
 	logger.Debugf("Delete context-to-project mappings of project %s", projectName)
 	contextToProjectCollection := mdbClient.Database(mongoDBName).Collection(contextToProjectCollection)
 	if _, err := contextToProjectCollection.DeleteMany(ctx, bson.M{"project": projectName}); err != nil {
 		err := fmt.Errorf("failed to delete context-to-project mapping for project %s: %v", projectName, err)
-		logger.Errorf("Could not delete context-to-project mapping: %v", err)
 		return err
 	}
 
@@ -323,9 +314,7 @@ func (mr *MongoDBEventRepo) storeContextToProjectMapping(ctx context.Context, ev
 				logger.Debugf("Mapping '%s->%s' already exists in collection", event.Shkeptncontext, collectionName)
 			}
 		} else {
-			err := fmt.Errorf("failed to store mapping '%s->%s': %v", event.Shkeptncontext, collectionName, err)
-			logger.Error(err.Error())
-			return err
+			return fmt.Errorf("failed to store mapping '%s->%s': %v", event.Shkeptncontext, collectionName, err)
 		}
 	}
 
@@ -357,8 +346,7 @@ func (mr *MongoDBEventRepo) storeRootEvent(ctx context.Context, collectionName s
 	if result.Err() != nil && result.Err() == mongo.ErrNoDocuments {
 		err := mr.storeEventInCollection(ctx, event, rootEventsForProjectCollection)
 		if err != nil {
-			err = fmt.Errorf("failed to store root event for KeptnContext '%s': %w", event.Shkeptncontext, err)
-			return err
+			return fmt.Errorf("failed to store root event for KeptnContext '%s': %w", event.Shkeptncontext, err)
 		}
 		logger.Debugf("Stored root event for KeptnContext '%s'", event.Shkeptncontext)
 	} else if result.Err() != nil {
@@ -386,8 +374,7 @@ func (mr *MongoDBEventRepo) overWriteExistingRootEvent(ctx context.Context, resu
 		logger.Debugf("Replacing root event for KeptnContext '%s'", event.Shkeptncontext)
 		_, err := rootEventsForProjectCollection.DeleteOne(ctx, bson.M{"_id": existingEvent.ID})
 		if err != nil {
-			logger.Errorf("Could not delete previous root event: %v", err)
-			return err
+			return fmt.Errorf("could not delete previous root event: %v", err)
 		}
 		err = mr.storeEventInCollection(ctx, event, rootEventsForProjectCollection)
 		if err != nil {
@@ -425,8 +412,7 @@ func (mr *MongoDBEventRepo) getCollectionNameForQuery(searchOptions bson.M) (str
 				logger.Infof("No project found for KeptnContext '%s'", searchOptions[keptnContextPropertyPath])
 				return unmappedEventsCollectionName, nil
 			}
-			logger.Errorf("Error loading project for KeptnContext '%s': %v", searchOptions[keptnContextPropertyPath], err)
-			return "", err
+			return "", fmt.Errorf("could not load project for KeptnContext '%s': %v", searchOptions[keptnContextPropertyPath], err)
 		}
 	}
 
@@ -482,8 +468,7 @@ func (mr *MongoDBEventRepo) aggregateFromDB(collectionName string, pipeline mong
 		}
 	}()
 	if err != nil {
-		logger.Errorf("Could not retrieve events from collectiong elements in events collection: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("could not retrieve events from collection: %w", err)
 	}
 
 	result.Events = formatEventResults(ctx, cur)
@@ -541,8 +526,7 @@ func (mr *MongoDBEventRepo) findInDB(collectionName string, pageSize int64, next
 		}
 	}()
 	if err != nil {
-		logger.Errorf("Could not retrieve elements from events collection: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("could not retrieve elements from events collection: %w", err)
 	}
 
 	result.Events = formatEventResults(ctx, cur)
