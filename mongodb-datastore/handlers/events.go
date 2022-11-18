@@ -2,10 +2,13 @@ package handlers
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"github.com/kelseyhightower/envconfig"
 	keptnapi "github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"github.com/keptn/go-utils/pkg/sdk/connector/controlplane"
+	"github.com/keptn/keptn/mongodb-datastore/common"
 	"github.com/keptn/keptn/mongodb-datastore/db"
 	"github.com/keptn/keptn/mongodb-datastore/restapi/operations/event"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +24,11 @@ type EventRequestHandler struct {
 }
 
 func (erh EventRequestHandler) OnEvent(ctx context.Context, event keptnapi.KeptnContextExtendedCE) error {
-	return erh.ProcessEvent(event)
+	if err := erh.ProcessEvent(event); err != nil {
+		log.Errorf("Could not handle incoming event: %v", err)
+		return err
+	}
+	return nil
 }
 
 func (erh EventRequestHandler) RegistrationData() controlplane.RegistrationData {
@@ -64,6 +71,7 @@ func (erh *EventRequestHandler) ProcessEvent(event keptnapi.KeptnContextExtended
 func (erh *EventRequestHandler) GetEvents(params event.GetEventsParams) (*event.GetEventsOKBody, error) {
 	events, err := erh.eventRepo.GetEvents(params)
 	if err != nil {
+		log.Errorf("Could not get events: %v", err)
 		return nil, err
 	}
 	if events.Events == nil {
@@ -75,6 +83,12 @@ func (erh *EventRequestHandler) GetEvents(params event.GetEventsParams) (*event.
 func (erh *EventRequestHandler) GetEventsByType(params event.GetEventsByTypeParams) (*event.GetEventsByTypeOKBody, error) {
 	events, err := erh.eventRepo.GetEventsByType(params)
 	if err != nil {
+		errMsg := fmt.Sprintf("Could not get events: %v", err)
+		if errors.Is(err, common.ErrInvalidEventFilter) {
+			log.Warn(errMsg)
+		} else {
+			log.Error(errMsg)
+		}
 		return nil, err
 	}
 	if events.Events == nil {

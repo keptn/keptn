@@ -66,7 +66,7 @@ func (eh *ConfigureMonitoringHandler) HandleEvent(ctx context.Context) error {
 	e := &keptnevents.ConfigureMonitoringEventData{}
 	err := eh.Event.DataAs(e)
 	if err != nil {
-		eh.Logger.Error("Could not parse event payload: " + err.Error())
+		eh.Logger.Warnf("Could not parse event payload: %v", err)
 		return err
 	}
 
@@ -77,11 +77,11 @@ func (eh *ConfigureMonitoringHandler) HandleEvent(ctx context.Context) error {
 	if err != nil && k8serrors.IsAlreadyExists(err) {
 		_, err = eh.K8sClient.CoreV1().ConfigMaps(namespace).Update(context.TODO(), configMap, metav1.UpdateOptions{})
 		if err != nil {
-			eh.Logger.WithError(err).Error("could not update sli-provider ConfigMap")
+			eh.Logger.Errorf("could not update sli-provider ConfigMap: %v", err)
 			return err
 		}
 	} else if err != nil {
-		eh.Logger.WithError(err).Error("could not create sli-provider ConfigMap")
+		eh.Logger.Errorf("could not create sli-provider ConfigMap: %v", err)
 		return err
 	}
 	return nil
