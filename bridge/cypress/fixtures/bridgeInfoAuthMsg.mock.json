@@ -1,5 +1,5 @@
 {
-  "info":{
+  "info": {
     "bridgeVersion": "0.10.0-next.1",
     "keptnInstallationType": "QUALITY_GATES",
     "apiUrl": "/api",
