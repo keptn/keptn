@@ -47,7 +47,7 @@ func (k K8sSecretBackend) checkScopeDefined(secret model.Secret) (model.Scopes, 
 		return model.Scopes{}, err
 	}
 	if _, ok := scopes.Scopes[secret.Scope]; !ok {
-		log.Errorf("Unable to find scope %s for secret %s", secret.Scope, secret.Name)
+		log.Warnf("Unable to find scope %s for secret %s", secret.Scope, secret.Name)
 		return model.Scopes{}, fmt.Errorf("unable to check defined scope %s for secret %s: %w", secret.Scope, secret.Name, ErrScopeNotFound)
 	}
 	return scopes, nil
@@ -62,13 +62,16 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 	namespace := k.KeptnNamespaceProvider()
 	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Create(context.TODO(), k.createK8sSecretObj(secret, namespace), metav1.CreateOptions{})
 	if err != nil {
-		log.Errorf("Unable to create secret %s with scope %s: %s", secret.Name, secret.Scope, err)
+		couldNotCreateSecretMsg := "Could not create secret %s with scope %s: %v"
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonInvalid && strings.Contains(statusError.Status().Message, "must be no more than 253 characters") {
+			log.Warnf(couldNotCreateSecretMsg, secret.Name, secret.Scope, ErrTooBigKeySize)
 			return ErrTooBigKeySize
 		}
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
+			log.Warnf(couldNotCreateSecretMsg, secret.Name, secret.Scope, ErrSecretAlreadyExists)
 			return ErrSecretAlreadyExists
 		}
+		log.Errorf(couldNotCreateSecretMsg, secret.Name, secret.Scope, err)
 		return err
 	}
 
@@ -81,12 +84,12 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 				log.Infof("Try to update role %s as it already exists", roles[i].Name)
 				role, err := k.KubeAPI.RbacV1().Roles(namespace).Get(context.TODO(), roles[i].Name, metav1.GetOptions{})
 				if err != nil {
-					log.Errorf("Unable to get details of role %s", roles[i].Name)
+					log.Errorf("Unable to get details of role %s: %v", roles[i].Name, err)
 					return err
 				}
 				role.Rules[0].ResourceNames = append(role.Rules[0].ResourceNames, secret.Name)
 				if _, err := k.KubeAPI.RbacV1().Roles(namespace).Update(context.TODO(), role, metav1.UpdateOptions{}); err != nil {
-					log.Errorf("Unable to update role %s", roles[i].Name)
+					log.Errorf("Unable to update role %s: %v", roles[i].Name, err)
 					return err
 				}
 			} else {
@@ -101,7 +104,7 @@ func (k K8sSecretBackend) CreateSecret(secret model.Secret) error {
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonAlreadyExists {
 			//no op
 		} else {
-			log.Errorf("Unable to create role binding: %s", err.Error())
+			log.Errorf("Unable to create role binding: %v", err)
 			return err
 		}
 	}
@@ -134,10 +137,10 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	if len(secretsWithScope.Items) == 1 {
 		log.Infof("No more secret with scope: %s. Deleting associated roles and role bindings", secret.Scope)
 		if err := k.KubeAPI.RbacV1().Roles(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
-			log.Warnf("Unable to delete roles: %s", err.Error())
+			log.Warnf("Unable to delete roles: %v", err)
 		}
 		if err := k.KubeAPI.RbacV1().RoleBindings(namespace).DeleteCollection(context.TODO(), metav1.DeleteOptions{}, metav1.ListOptions{LabelSelector: "app.kubernetes.io/scope=" + secret.Scope}); err != nil {
-			log.Warnf("Unable to delete role bindings: %s", err.Error())
+			log.Warnf("Unable to delete role bindings: %v", err)
 		}
 	}
 
@@ -147,15 +150,15 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 		// update the role resources, otherwise
 		roles := k.createK8sRoleObj(secret, scopes, namespace)
 		for i := range roles {
-			log.Infof("Updating role %s", roles[i].Name)
+			log.Debugf("Updating role %s", roles[i].Name)
 			role, err := k.KubeAPI.RbacV1().Roles(namespace).Get(context.TODO(), roles[i].Name, metav1.GetOptions{})
 			if err != nil {
-				log.Errorf("Unable to get details of role %s", roles[i].Name)
+				log.Errorf("Could not get details of role %s: %v", roles[i].Name, err)
 				return err
 			}
 			role.Rules[0].ResourceNames = remove(role.Rules[0].ResourceNames, secret.Name)
 			if _, err := k.KubeAPI.RbacV1().Roles(namespace).Update(context.TODO(), role, metav1.UpdateOptions{}); err != nil {
-				log.Errorf("Unable to update role %s", roles[i].Name)
+				log.Errorf("Could not update role %s: %v", roles[i].Name, err)
 				return err
 			}
 		}
@@ -164,10 +167,11 @@ func (k K8sSecretBackend) DeleteSecret(secret model.Secret) error {
 	// finally, delete the secret itself
 	err = k.KubeAPI.CoreV1().Secrets(namespace).Delete(context.TODO(), secretName, metav1.DeleteOptions{})
 	if err != nil {
-		log.Errorf("Unable to delete secret %s with scope %s: %s", secret.Name, secret.Scope, err)
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
+			log.Warnf("Could not secret %s with scope %s: %v", secret.Name, secret.Scope, ErrSecretNotFound)
 			return ErrSecretNotFound
 		}
+		log.Errorf("Could not delete secret %s with scope %s: %v", secret.Name, secret.Scope, err)
 		return err
 	}
 
@@ -182,7 +186,7 @@ func (k K8sSecretBackend) GetSecrets(secret model.Secret) ([]model.GetSecretResp
 		s, err := k.KubeAPI.CoreV1().Secrets(namespace).Get(context.TODO(), secret.Name, metav1.GetOptions{})
 
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason != metav1.StatusReasonNotFound {
-			return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
+			return nil, fmt.Errorf("could not retrieve secrets: %w", err)
 		}
 		if s != nil && (secret.Scope == "" || s.Labels["app.kubernetes.io/scope"] == secret.Scope) {
 			result = append(result, createGetResponseItem(s))
@@ -199,7 +203,7 @@ func (k K8sSecretBackend) GetSecrets(secret model.Secret) ([]model.GetSecretResp
 
 		list, err := k.KubeAPI.CoreV1().Secrets(namespace).List(context.TODO(), options)
 		if err != nil {
-			return nil, fmt.Errorf("could not retrieve secrets: %s", err.Error())
+			return nil, fmt.Errorf("could not retrieve secrets: %w", err)
 		}
 
 		for _, secretItem := range list.Items {
@@ -244,10 +248,11 @@ func (k K8sSecretBackend) UpdateSecret(secret model.Secret) error {
 
 	_, err = k.KubeAPI.CoreV1().Secrets(namespace).Update(context.TODO(), kubeSecret, metav1.UpdateOptions{})
 	if err != nil {
-		log.Errorf("Unable to update secret %s: %s", secret.Name, err)
 		if statusError, isStatus := err.(*k8serr.StatusError); isStatus && statusError.Status().Reason == metav1.StatusReasonNotFound {
+			log.Warnf("Could not update secret %s: %v", secret.Name, ErrSecretNotFound)
 			return ErrSecretNotFound
 		}
+		log.Warnf("Could not update secret %s: %v", secret.Name, err)
 		return err
 	}
 	return nil
