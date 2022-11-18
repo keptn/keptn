@@ -26,7 +26,7 @@ func main() {
 	}
 	kubeAPI, err := createKubeAPI()
 	if err != nil {
-		log.Fatalf("could not create kubernetes client: %s", err.Error())
+		log.Fatalf("could not create kubernetes client: %v", err)
 	}
 	secretReader := lib.NewK8sSecretReader(kubeAPI)
 

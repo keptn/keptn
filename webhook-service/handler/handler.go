@@ -46,7 +46,7 @@ func (th *TaskHandler) Execute(keptnHandler sdk.IKeptn, event sdk.KeptnEvent) (i
 	}
 	subscriptionID, err := eventAdapter.SubscriptionID()
 	if err != nil {
-		logger.Infof("will not handle event: %s", err.Error())
+		logger.Warnf("Will not handle event: %v", err)
 		return nil, nil
 	}
 	webhook, err := th.getWebHookConfig(keptnHandler, eventAdapter, subscriptionID, event.GitCommitID)
@@ -110,7 +110,7 @@ func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.Ke
 	// in this case, send .started and .finished event immediately
 	if err := keptnHandler.SendStartedEvent(event); err != nil {
 		// log the error but continue - we need to try to send the .finished event nevertheless
-		logger.WithError(err).Error("could not send .started event")
+		logger.Errorf("could not send .started event: %v", err)
 	}
 	result := map[string]interface{}{
 		"project": eventAdapter.Project(),
@@ -126,7 +126,7 @@ func (th *TaskHandler) onPreExecutionError(keptnHandler sdk.IKeptn, event sdk.Ke
 
 func (th *TaskHandler) getErrorCallbackForWebhookConfig(keptnHandler sdk.IKeptn, event sdk.KeptnEvent, eventAdapter *lib.EventDataAdapter, webhook *lib.Webhook) func(err error, secrets map[string]string) {
 	return func(err error, secrets map[string]string) {
-		logger.WithError(err).Error("error during webhook execution")
+		logger.Errorf("Error during webhook execution: %v", err)
 		whe, ok := err.(*lib.WebhookExecutionError)
 
 		result := map[string]interface{}{
@@ -169,7 +169,7 @@ func (th *TaskHandler) sendFinishedEvent(keptnHandler sdk.IKeptn, event sdk.Kept
 		return
 	}
 	if err := keptnHandler.SendFinishedEvent(event, result); err != nil {
-		logger.WithError(err).Error("could not send .finished event")
+		logger.Errorf("Could not send .finished event: %v", err)
 	}
 }
 
@@ -204,11 +204,11 @@ func (th *TaskHandler) onStartedWebhookExecution(keptnHandler sdk.IKeptn, event 
 func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter *lib.EventDataAdapter, responses []interface{}) ([]interface{}, error) {
 
 	executedRequests := 0
-	logger.Infof("executing webhooks for subscriptionID %s", webhook.SubscriptionID)
+	logger.Debugf("Executing webhooks for subscriptionID %s", webhook.SubscriptionID)
 	for _, req := range webhook.Requests {
 		request, err := th.CreateRequest(req)
 		if err != nil {
-			logger.Infof("creating CURL request failed: %s", err.Error())
+			logger.Warnf("creating CURL request failed: %v", err)
 			return nil, lib.NewWebhookExecutionError(true, fmt.Errorf("creating CURL request failed: %s", err.Error()), lib.WithNrOfExecutedRequests(executedRequests))
 		}
 		// parse the data from the event, together with the secret env vars
@@ -229,7 +229,7 @@ func (th *TaskHandler) performWebhookRequests(webhook lib.Webhook, eventAdapter 
 	return responses, nil
 }
 
-//UnmarshalResponse attempts to create a json object out of the response as requested in https://github.com/keptn/keptn/issues/8256
+// UnmarshalResponse attempts to create a json object out of the response as requested in https://github.com/keptn/keptn/issues/8256
 func UnmarshalResponse(response string) interface{} {
 	dat := map[string]interface{}{}
 

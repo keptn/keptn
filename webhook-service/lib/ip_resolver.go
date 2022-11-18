@@ -32,13 +32,13 @@ func (i ipResolver) Resolve(url string) (AdrDomainNameMapping, error) {
 	ipAddresses := make(AdrDomainNameMapping, 0)
 	parsedURL, err := i.parse(url)
 	if err != nil {
-		logger.Errorf("Unable to parse URL: %s", url)
+		logger.Errorf("Unable to parse URL '%s': %v", url, err)
 		return ipAddresses, err
 	}
 
 	ips, err := i.lookupIP(parsedURL.Hostname())
 	if err != nil {
-		logger.Errorf("Unable to look up IP for URL: %s", url)
+		logger.Errorf("Unable to look up IP for URL '%s': %v", url, err)
 		return ipAddresses, err
 	}
 	for _, ip := range ips {
@@ -46,7 +46,7 @@ func (i ipResolver) Resolve(url string) (AdrDomainNameMapping, error) {
 		// for each ip get all its domains to check if they are among the denied
 		hosts, err := i.lookupAddr(ip.String())
 		if err != nil {
-			logger.Errorf("Unable to look up domains for URL: %s", url)
+			logger.Errorf("Unable to look up domains for URL '%s': %v", url, err)
 		}
 		ipAddresses[ip.String()] = hosts
 	}
