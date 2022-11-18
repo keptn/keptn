@@ -20,7 +20,7 @@ func sendEvents(keptnHandler *keptnv2.Keptn, events []cloudevents.Event) {
 	for _, outgoingEvent := range events {
 		err := keptnHandler.SendCloudEvent(outgoingEvent)
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Errorf("Could not send CloudEvent: %v", err)
 		}
 	}
 }
