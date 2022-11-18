@@ -47,7 +47,7 @@ describe('HttpErrorInterceptorService', () => {
 
     apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 500 });
     testRequest.flush('server error', errorEvent);
 
@@ -61,12 +61,15 @@ describe('HttpErrorInterceptorService', () => {
 
     apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: ErrorEvent = new ErrorEvent('client error');
     testRequest.error(errorEvent, { status: 404 });
 
     // then
-    expect(spy).toHaveBeenCalledWith(NotificationType.ERROR, 'Http failure response for ./api/bridgeInfo: 404 ');
+    expect(spy).toHaveBeenCalledWith(
+      NotificationType.ERROR,
+      'Http failure response for ./api/bridgeInfo?isVersionCheckEnabled=false: 404 '
+    );
   });
 
   it('should show a generic error notification when unauthorized', () => {
@@ -76,7 +79,7 @@ describe('HttpErrorInterceptorService', () => {
     apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 401 });
     testRequest.flush('', errorEvent);
 
@@ -97,7 +100,7 @@ describe('HttpErrorInterceptorService', () => {
     apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: HttpErrorResponse = new HttpErrorResponse({ status: 401 });
     testRequest.flush('incorrect api key auth', errorEvent);
 
@@ -121,7 +124,7 @@ describe('HttpErrorInterceptorService', () => {
     apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     const headers = new HttpHeaders({ 'keptn-auth-type': 'BASIC' });
     testRequest.error(errorEvent, { headers, status: 401 });
@@ -146,7 +149,7 @@ describe('HttpErrorInterceptorService', () => {
     apiService.getKeptnInfo(false).subscribe();
     apiService.getProjects().subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     const headers = new HttpHeaders({ 'keptn-auth-type': 'OAUTH' });
     testRequest.error(errorEvent, { headers, status: 401 });
@@ -167,7 +170,7 @@ describe('HttpErrorInterceptorService', () => {
 
     apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     testRequest.error(errorEvent, { status: 403 });
 
@@ -188,7 +191,7 @@ describe('HttpErrorInterceptorService', () => {
 
     apiService.getKeptnInfo(false).subscribe();
 
-    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo');
+    const testRequest: TestRequest = httpMock.expectOne('./api/bridgeInfo?isVersionCheckEnabled=false');
     const errorEvent: ErrorEvent = new ErrorEvent('', { error: {} });
     testRequest.error(errorEvent, { status: 403 });
 
