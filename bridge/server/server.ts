@@ -39,7 +39,7 @@ if (typeof PORT === 'number') {
     }
   })();
 } else {
-  log.error(`Error while starting the application. Invalid port`);
+  log.error(`Error while starting the application. Invalid port: ${PORT}`);
   process.exit(1);
 }
 

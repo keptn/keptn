@@ -254,7 +254,7 @@ const apiRouter = (params: {
             deleteWebhook
           );
         } else {
-          log.info('No available subscription or integration ID.');
+          log.warning('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {
@@ -277,7 +277,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         } else {
-          log.info('No available subscription or integration ID.');
+          log.warning('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {
@@ -301,7 +301,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         } else {
-          log.info('No available subscription or integration ID.');
+          log.warning('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {

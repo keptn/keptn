@@ -289,7 +289,7 @@ export class SessionService {
       this.sessionConfig.cookie.secure = true;
 
       const trustProxy = this.configuration.oauth.session.trustProxyHops;
-      this.log.info('Using trust proxy hops value : ' + trustProxy);
+      this.log.info(`Using trust proxy hops value : ${trustProxy}`);
       app.set('trust proxy', trustProxy);
     }
 
