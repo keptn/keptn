@@ -193,7 +193,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v0.8.3
+        uses: google-github-actions/auth@v1.0.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
