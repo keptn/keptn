@@ -199,7 +199,7 @@ jobs:
 
       - name: Set up Google Cloud SDK
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/setup-gcloud@v0.6.2
+        uses: google-github-actions/setup-gcloud@v1.0.1
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
