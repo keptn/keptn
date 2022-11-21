@@ -38,7 +38,7 @@ export class ApiService {
       // log request using the same format of morgan but without response time
       this.axios.interceptors.response.use((response) => {
         //Example: GET /api/project/podtato 200
-        this.log.info(`${response.config.method} ${response.config.url} ${response.status} :: ${response.headers}`);
+        this.log.info(`${response.config.method} ${response.config.url} ${response.status} ::  ${this.log.prettyPrint(response.headers)}`);
         return response;
       });
     }
