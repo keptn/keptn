@@ -108,8 +108,10 @@ func (pm *ProjectManager) GetByName(projectName string) (*apimodels.ExpandedProj
 
 func (pm *ProjectManager) modifyProjectResponse(project *apimodels.ExpandedProject) {
 	if project.IsUpstreamAutoProvisioned && pm.hideAutoProvisionedURL {
-		project.GitCredentials.User = ""
-		project.GitCredentials.RemoteURL = ""
+		project.GitCredentials = &apimodels.GitAuthCredentialsSecure{
+			User:      "",
+			RemoteURL: "",
+		}
 	}
 }
 
