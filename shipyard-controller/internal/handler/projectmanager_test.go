@@ -2476,6 +2476,23 @@ func Test_ModifyProjectResponse(t *testing.T) {
 			},
 		},
 		{
+			name: "hide - true; provisioned - true; git credentials nil",
+			projectManager: &ProjectManager{
+				hideAutoProvisionedURL: true,
+			},
+			project: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: true,
+				GitCredentials:            nil,
+			},
+			expected: &apimodels.ExpandedProject{
+				IsUpstreamAutoProvisioned: true,
+				GitCredentials: &apimodels.GitAuthCredentialsSecure{
+					RemoteURL: "",
+					User:      "",
+				},
+			},
+		},
+		{
 			name: "hide - false; provisioned - true",
 			projectManager: &ProjectManager{
 				hideAutoProvisionedURL: false,
