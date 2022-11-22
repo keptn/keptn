@@ -9,7 +9,7 @@ import { Service } from 'client/app/_models/service';
 import { KtbAppHeaderComponent } from '../../client/app/_components/ktb-app-header/ktb-app-header.component';
 import { KtbAppHeaderModule } from '../../client/app/_components/ktb-app-header/ktb-app-header.module';
 import { KtbSelectableTileModule } from '../../client/app/_components/ktb-selectable-tile/ktb-selectable-tile.module';
-import { IMetadata } from '../../client/app/_interfaces/metadata';
+import { IMetadata } from '../../shared/interfaces/metadata';
 import { KeptnInfo } from '../../client/app/_models/keptn-info';
 import { Project } from '../../client/app/_models/project';
 import { Stage } from '../../client/app/_models/stage';

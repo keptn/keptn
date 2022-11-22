@@ -5,7 +5,7 @@ import { environment } from '../../../environments/environment';
 import { DataService } from '../../_services/data.service';
 import { AppUtils, POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ProjectSequences } from './ktb-project-list/ktb-project-list.component';
-import { IMetadata } from '../../_interfaces/metadata';
+import { IMetadata } from '../../../../shared/interfaces/metadata';
 import { IProject } from '../../../../shared/interfaces/project';
 import { Router } from '@angular/router';
 

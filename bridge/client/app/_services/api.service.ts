@@ -1,15 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Trace } from '../_models/trace';
 import { ApprovalStates } from '../../../shared/models/approval-states';
 import { EventTypes } from '../../../shared/interfaces/event-types';
-import { IMetadata } from '../_interfaces/metadata';
 import moment from 'moment';
 import { SequenceResult } from '../_models/sequence-result';
 import { UniformRegistrationLogResponse } from '../../../shared/interfaces/uniform-registration-log';
-import { KeptnInfoResult } from '../../../shared/interfaces/keptn-info-result';
-import { KeptnVersions } from '../../../shared/interfaces/keptn-versions';
 import { EventResult } from '../_interfaces/event-result';
 import { IWebhookConfigClient } from '../../../shared/interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../../shared/interfaces/uniform-registration-info';
@@ -34,6 +31,7 @@ import { SequenceExecutionResult } from '../../../shared/interfaces/sequence-exe
 import { SequenceStatus } from '../../../shared/interfaces/sequence';
 import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
 import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
+import { BridgeInfo } from '../../../shared/interfaces/bridge-info';
 
 @Injectable({
   providedIn: 'root',
@@ -89,9 +87,13 @@ export class ApiService {
     localStorage.setItem(this.INTEGRATION_DATES, JSON.stringify(dates));
   }
 
-  public getKeptnInfo(): Observable<KeptnInfoResult> {
+  public getKeptnInfo(isVersionCheckEnabled: boolean): Observable<BridgeInfo> {
     const url = `${this._baseUrl}/bridgeInfo`;
-    return this.http.get<KeptnInfoResult>(url);
+    return this.http.get<BridgeInfo>(url, {
+      params: {
+        isVersionCheckEnabled: isVersionCheckEnabled.valueOf(),
+      },
+    });
   }
 
   public isVersionCheckEnabled(): boolean | undefined {
@@ -106,15 +108,6 @@ export class ApiService {
 
   public setVersionCheck(enabled: boolean): void {
     localStorage.setItem(this.VERSION_CHECK_COOKIE, JSON.stringify({ enabled, time: moment().valueOf() }));
-  }
-
-  public getAvailableVersions(): Observable<KeptnVersions | undefined> {
-    if (this.isVersionCheckEnabled()) {
-      const url = `${this._baseUrl}/version.json`;
-      return this.http.get<KeptnVersions>(url);
-    } else {
-      return of(undefined);
-    }
   }
 
   public deleteProject(projectName: string): Observable<Record<string, unknown>> {
@@ -257,10 +250,6 @@ export class ApiService {
         isWebhookService: String(isWebhookService),
       },
     });
-  }
-
-  public getMetadata(): Observable<IMetadata> {
-    return this.http.get<IMetadata>(`${this._baseUrl}/v1/metadata`);
   }
 
   public getFileTreeForService(projectName: string, serviceName: string): Observable<FileTree[]> {

@@ -46,7 +46,7 @@ export class SequencesPage {
       url: `/project/${projectName}/sequence`,
       qs: queryParams,
     })
-      .wait('@metadata')
+      .wait('@bridgeInfo')
       .wait('@SequencesMetadata');
     return this;
   }
@@ -56,12 +56,12 @@ export class SequencesPage {
     if (stage) {
       url += `/stage/${stage}`;
     }
-    cy.visit(url).wait('@metadata');
+    cy.visit(url).wait('@bridgeInfo');
     return this;
   }
 
   public visitEvent(projectName: string, keptnContext: string, eventId: string): this {
-    cy.visit(`/project/${projectName}/sequence/${keptnContext}/event/${eventId}`).wait('@metadata');
+    cy.visit(`/project/${projectName}/sequence/${keptnContext}/event/${eventId}`).wait('@bridgeInfo');
     return this;
   }
 
@@ -70,12 +70,12 @@ export class SequencesPage {
     if (stage) {
       url += `/${stage}`;
     }
-    cy.visit(url).wait('@metadata');
+    cy.visit(url).wait('@bridgeInfo');
     return this;
   }
 
   public visitByEventType(keptnContext: string, eventType: EventTypes | string): this {
-    cy.visit(`/trace/${keptnContext}/${eventType}`).wait('@metadata');
+    cy.visit(`/trace/${keptnContext}/${eventType}`).wait('@bridgeInfo');
     return this;
   }
 

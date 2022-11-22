@@ -37,12 +37,12 @@ class ProjectSettingsPage {
   }
 
   public visit(): this {
-    cy.visit('/create/project').wait('@metadata');
+    cy.visit('/create/project').wait('@bridgeInfo');
     return this;
   }
 
   public visitSettings(project: string): this {
-    cy.visit(`/project/${project}/settings/project`).wait('@metadata').wait('@projectPlain');
+    cy.visit(`/project/${project}/settings/project`).wait('@bridgeInfo').wait('@projectPlain');
     return this;
   }
 

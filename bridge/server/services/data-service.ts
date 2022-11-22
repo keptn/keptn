@@ -14,7 +14,7 @@ import { IWebhookConfigFilter } from '../interfaces/webhook-config';
 import { UniformRegistrationInfo } from '../../shared/interfaces/uniform-registration-info';
 import { WebhookConfigYaml } from '../models/webhook-config-yaml';
 import { IUniformSubscription, IUniformSubscriptionFilter } from '../../shared/interfaces/uniform-subscription';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Resource } from '../../shared/interfaces/resource';
 import { FileTree, TreeEntry } from '../../shared/interfaces/resourceFileTree';
 import { EventResult } from '../interfaces/event-result';
@@ -44,6 +44,9 @@ import { EnvType } from '../interfaces/configuration';
 import { IClientSecret } from '../../shared/interfaces/secret';
 import { IServerSequenceStage } from '../interfaces/sequence-stage';
 import { IUniformRegistration } from '../../shared/interfaces/uniform-registration';
+import { IMetadata } from '../../shared/interfaces/metadata';
+import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
+import { printError } from '../utils/print-utils';
 
 type TreeDirectory = ({ _: string[] } & { [key: string]: TreeDirectory }) | { _: string[] };
 type StageRemediationInformation = {
@@ -1402,5 +1405,30 @@ export class DataService {
           });
       });
     return eventIds;
+  }
+
+  public async getMetadata(accessToken: string | undefined): Promise<IMetadata> {
+    const { data } = await this.apiService.getMetadata(accessToken);
+    return data;
+  }
+
+  /**
+   * Fetches all Keptn versions.
+   * @throws never. It does not throw any errors
+   * @returns Keptn versions for CLI, bridge and upgradeable keptn versions. Fallback to empty if not found.
+   * @param bridgeVersion
+   */
+  public async getKeptnVersions(bridgeVersion: string): Promise<KeptnVersions> {
+    try {
+      const { data } = await this.apiService.getKeptnVersions(bridgeVersion);
+      return data;
+    } catch (err) {
+      printError(err as AxiosError);
+      return {
+        cli: { stable: [], prerelease: [] },
+        bridge: { stable: [], prerelease: [] },
+        keptn: { stable: [] },
+      };
+    }
   }
 }

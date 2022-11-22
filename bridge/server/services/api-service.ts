@@ -1,4 +1,4 @@
-import Axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import Axios, { AxiosInstance, AxiosPromise, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { Project } from '../models/project';
 import { SequenceResult } from '../interfaces/sequence-result';
@@ -15,6 +15,8 @@ import { IProjectResult } from '../../shared/interfaces/project-result';
 import { EnvType } from '../interfaces/configuration';
 import { IClientSecret } from '../../shared/interfaces/secret';
 import { IUniformRegistration } from '../../shared/interfaces/uniform-registration';
+import { IMetadata } from '../../shared/interfaces/metadata';
+import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
 
 export class ApiService {
   private readonly axios: AxiosInstance;
@@ -362,6 +364,20 @@ export class ApiService {
   public getStages(accessToken: string | undefined, projectName: string): Promise<AxiosResponse<{ stages: IStage[] }>> {
     const url = `${this.baseUrl}/controlPlane/v1/project/${projectName}/stage`;
     return this.axios.get(url, this.getAuthHeaders(accessToken));
+  }
+
+  public getMetadata(accessToken: string | undefined): AxiosPromise<IMetadata> {
+    const url = `${this.baseUrl}/v1/metadata`;
+    return this.axios.get(url, this.getAuthHeaders(accessToken));
+  }
+
+  public getKeptnVersions(bridgeVersion: string): AxiosPromise<KeptnVersions> {
+    return this.axios.get(`https://get.keptn.sh/version.json`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': `keptn/bridge:${bridgeVersion}`,
+      },
+    });
   }
 
   private getAuthHeaders(accessToken: string | undefined): { headers: AxiosRequestConfig['headers'] } | undefined {

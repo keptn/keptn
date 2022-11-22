@@ -15,7 +15,7 @@ class DashboardPage {
   }
 
   public visit(waitForProjects = true): this {
-    cy.visit(`/`).wait('@metadata');
+    cy.visit(`/`).wait('@bridgeInfo');
     if (waitForProjects) {
       this.waitForProjects();
     }

@@ -7,7 +7,7 @@ export class ServicesSettingsPage {
   }
 
   public visitService(project: string, service: string): this {
-    cy.visit(`/project/${project}/settings/services/edit/${service}`).wait('@metadata').wait('@projectPlain');
+    cy.visit(`/project/${project}/settings/services/edit/${service}`).wait('@bridgeInfo').wait('@projectPlain');
     return this;
   }
 

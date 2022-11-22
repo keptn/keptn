@@ -4,11 +4,11 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ApiService } from './api.service';
 import { TriggerSequenceData } from '../_models/trigger-sequence';
 import moment from 'moment';
-import { firstValueFrom, of } from 'rxjs';
+import { firstValueFrom, of, throwError } from 'rxjs';
 import { Service } from '../_models/service';
 import { IService } from '../../../shared/interfaces/service';
 import { Trace } from '../_models/trace';
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { EventTypes } from '../../../shared/interfaces/event-types';
 import { ApiServiceMock } from './api.service.mock';
 import { filter } from 'rxjs/operators';
@@ -153,6 +153,23 @@ describe('DataService', () => {
     const result = await firstValueFrom(dataService.getTracesByIds('myProject', ['id1', 'id2']));
 
     expect(result[0]).toBeInstanceOf(Trace);
+  });
+
+  it('should return default bridgeInfo if request failed', async () => {
+    const errorResponse = new HttpErrorResponse({
+      headers: new HttpHeaders({ 'keptn-auth-type': 'OAUTH' }),
+      status: 403,
+    });
+    jest.spyOn(apiService, 'getKeptnInfo').mockReturnValue(throwError(() => errorResponse));
+    dataService.loadKeptnInfo();
+    const keptnInfo = await firstValueFrom(dataService.keptnInfo);
+    expect(keptnInfo?.bridgeInfo).toEqual({
+      authType: 'OAUTH',
+      cliDownloadLink: '',
+      enableVersionCheckFeature: false,
+      featureFlags: {},
+      showApiToken: false,
+    });
   });
 
   function setGetTracesResponse(traces: Trace[]): void {
