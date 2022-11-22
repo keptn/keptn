@@ -75,7 +75,7 @@ async function init(configuration: BridgeConfiguration): Promise<Express> {
   // add some middlewares
   const logExpress = new ComponentLogger('Express');
   app.use((req: Request, res: Response, next: NextFunction) => {
-    logExpress.info(`${req.method} ${req.url} ${res.statusCode} :: ${logExpress.prettyPrint(req.rawHeaders)}`);
+    logExpress.info(`${req.method} ${req.url} ${res.statusCode} :: ${logExpress.prettyPrint(req.headers)}`);
     next();
   });
   app.use(express.json());
