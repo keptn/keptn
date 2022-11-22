@@ -1479,6 +1479,78 @@ const evaluationData = {
   label: 'evaluation',
 };
 
+const failedEventWithPassEvaluation = Trace.fromJSON({
+  traces: [],
+  data: {
+    evaluation: {
+      indicatorResults: [],
+      result: 'pass',
+      score: 70,
+      sloFileContent: '',
+      timeEnd: '2021-04-08T15:45:02Z',
+      timeStart: '2021-04-08T15:43:09Z',
+      sloFileContentParsed: '',
+      score_pass: '90',
+      score_warning: '75',
+      compare_with: 'single_result\n',
+      include_result_with_score: 'pass\n',
+      number_of_comparison_results: 1,
+      number_of_missing_comparison_results: 0,
+    },
+    labels: {
+      DtCreds: 'dynatrace',
+    },
+    project: 'sockshop',
+    result: 'fail',
+    service: 'carts',
+    stage: 'staging',
+    status: 'succeeded',
+  },
+  id: '01b1eff1-5bd9-4955-b2ef-30fac990b761',
+  source: 'lighthouse-service',
+  specversion: '1.0',
+  type: 'sh.keptn.event.evaluation.finished',
+  shkeptncontext: '468286b0-9ea8-450e-800d-51897947c668',
+  triggeredid: '7a718389-0c3a-4997-a917-9112df3f8c2a',
+});
+
+const passedEventWithFailedEvaluation = Trace.fromJSON({
+  traces: [],
+  data: {
+    evaluation: {
+      indicatorResults: [],
+      result: 'fail',
+      score: 70,
+      sloFileContent: '',
+      timeEnd: '2021-04-08T15:45:02Z',
+      timeStart: '2021-04-08T15:43:09Z',
+      sloFileContentParsed: '',
+      score_pass: '90',
+      score_warning: '75',
+      compare_with: 'single_result\n',
+      include_result_with_score: 'pass\n',
+      number_of_comparison_results: 1,
+      number_of_missing_comparison_results: 0,
+    },
+    labels: {
+      DtCreds: 'dynatrace',
+    },
+    project: 'sockshop',
+    result: 'pass',
+    service: 'carts',
+    stage: 'staging',
+    status: 'succeeded',
+  },
+  id: '01b1eff1-5bd9-4955-b2ef-30fac990b761',
+  source: 'lighthouse-service',
+  specversion: '1.0',
+  type: 'sh.keptn.event.evaluation.finished',
+  shkeptncontext: '468286b0-9ea8-450e-800d-51897947c668',
+  triggeredid: '7a718389-0c3a-4997-a917-9112df3f8c2a',
+});
+
 const evaluations: Trace = Trace.fromJSON(evaluationData);
 export { evaluations as EvaluationsMock };
 export { evaluationData as EvaluationTraceResponse };
+export { failedEventWithPassEvaluation as FailedEventWithPassEvaluation };
+export { passedEventWithFailedEvaluation as PassedEventWithFailedEvaluation };
