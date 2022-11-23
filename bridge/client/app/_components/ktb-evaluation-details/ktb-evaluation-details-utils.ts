@@ -103,7 +103,7 @@ export function evaluationToScoreDataPoint(evaluation: Trace, scoreValue: number
   return {
     xElement: evaluation.getChartLabel(),
     yElement: 'Score',
-    color: evaluation.data.evaluation?.result ?? EvaluationResultTypeExtension.INFO,
+    color: evaluation.data.result ?? EvaluationResultTypeExtension.INFO,
     identifier: evaluation.id,
     comparedIdentifier: evaluation.data.evaluation?.comparedEvents ?? [],
     tooltip: {
