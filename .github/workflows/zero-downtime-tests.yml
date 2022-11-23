@@ -203,7 +203,7 @@ jobs:
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/get-gke-credentials@v0.8.2
+        uses: google-github-actions/get-gke-credentials@v1.0.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
