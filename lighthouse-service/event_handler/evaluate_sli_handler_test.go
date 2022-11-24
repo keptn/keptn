@@ -2413,6 +2413,56 @@ func TestEvaluateObjectives(t *testing.T) {
 								KeySLI:         false,
 								Status:         "pass",
 							},
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "a_different_metric",
+									Value:   5.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+						},
+					},
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
+				},
+				{
+					Evaluation: keptnv2.EvaluationDetails{
+						TimeStart: "",
+						TimeEnd:   "",
+						Result:    "pass",
+						Score:     2,
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "my-test-metric-1",
+									Value:   10.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+							{
+								Score:          2,
+								Value:          nil,
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
 						},
 					},
 					EventData: keptnv2.EventData{
@@ -2438,10 +2488,32 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success: false,
 								Message: "no value received from SLI provider",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=15.0",
+									TargetValue: 15,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+10%",
+									TargetValue: 5,
+									Violated:    true,
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=20.0",
+									TargetValue: 20,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+15%",
+									TargetValue: 5,
+									Violated:    true,
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},

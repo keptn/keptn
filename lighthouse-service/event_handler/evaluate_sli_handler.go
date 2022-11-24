@@ -42,6 +42,14 @@ type criteriaObject struct {
 	CheckIncrease   bool
 }
 
+func (o criteriaObject) getTargetValue(sloConfig *keptn.ServiceLevelObjectives, previousResults []*keptnv2.SLIEvaluationResult) float64 {
+	if !o.IsComparison {
+		return o.Value
+	}
+	aggregatedValue, _ := aggregateValues(previousResults, sloConfig.Comparison)
+	return aggregatedValue
+}
+
 type EvaluateSLIHandler struct {
 	Event            cloudevents.Event
 	HTTPClient       *http.Client
@@ -216,6 +224,23 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		if len(objective.Pass) > 0 {
 			maximumAchievableScore += float64(objective.Weight)
 		}
+
+		// gather the previous results for the current SLI
+		var previousSLIResults []*keptnv2.SLIEvaluationResult
+
+		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
+			for _, event := range previousEvaluationEvents {
+				for _, prevSLIResult := range event.Evaluation.IndicatorResults {
+					if prevSLIResult.Value == nil {
+						continue
+					}
+					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
+						previousSLIResults = append(previousSLIResults, prevSLIResult)
+					}
+				}
+			}
+		}
+
 		sliEvaluationResult := &keptnv2.SLIEvaluationResult{}
 		result := getSLIResult(&e.GetSLI.IndicatorValues, objective.SLI)
 
@@ -228,23 +253,14 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			}
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
+			sliEvaluationResult.DisplayName = objective.DisplayName
+			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
+			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
 			sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 			continue
 		}
-		sliEvaluationResult.Value = (*keptnv2.SLIResult)(result)
 
-		// gather the previous results for the current SLI
-		var previousSLIResults []*keptnv2.SLIEvaluationResult
-
-		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
-			for _, event := range previousEvaluationEvents {
-				for _, prevSLIResult := range event.Evaluation.IndicatorResults {
-					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
-						previousSLIResults = append(previousSLIResults, prevSLIResult)
-					}
-				}
-			}
-		}
+		sliEvaluationResult.Value = result
 
 		var passTargets []*keptnv2.SLITarget
 		var warningTargets []*keptnv2.SLITarget
@@ -291,6 +307,26 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 
 	return evaluationResult, maximumAchievableScore, keySLIFailed
+}
+
+func getEmptyTargets(sloConfig *keptn.ServiceLevelObjectives, targets []*keptn.SLOCriteria, previousResults []*keptnv2.SLIEvaluationResult) []*keptnv2.SLITarget {
+	res := []*keptnv2.SLITarget{}
+
+	for _, obj := range targets {
+		for _, crit := range obj.Criteria {
+			criteriaObj, err := parseCriteriaString(crit)
+			if err != nil {
+				continue
+			}
+			res = append(res, &keptnv2.SLITarget{
+				Criteria:    crit,
+				Violated:    true,
+				TargetValue: criteriaObj.getTargetValue(sloConfig, previousResults),
+			})
+		}
+	}
+
+	return res
 }
 
 func checkLeftoverSLI(results []*keptnv2.SLIResult, evaluationResult *keptnv2.EvaluationFinishedEventData) {
@@ -466,9 +502,9 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	return evaluateValue(sliResult.Value, targetValue, co.Operator)
 }
 
-//aggregateValues combines the previous values into a single one, based on the aggregation function
-//it returns the aggregated value and a boolean telling if the rest of the evaluation should be skipped
-//(no previous results or no successful previous results)
+// aggregateValues combines the previous values into a single one, based on the aggregation function
+// it returns the aggregated value and a boolean telling if the rest of the evaluation should be skipped
+// (no previous results or no successful previous results)
 func aggregateValues(previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison) (float64, bool) {
 
 	if len(previousResults) == 0 {
