@@ -42,6 +42,14 @@ type criteriaObject struct {
 	CheckIncrease   bool
 }
 
+func (o criteriaObject) getTargetValue(sloConfig *keptn.ServiceLevelObjectives, previousResults []*keptnv2.SLIEvaluationResult) float64 {
+	if !o.IsComparison {
+		return o.Value
+	}
+	aggregatedValue, _ := aggregateValues(previousResults, sloConfig.Comparison)
+	return aggregatedValue
+}
+
 type EvaluateSLIHandler struct {
 	Event            cloudevents.Event
 	HTTPClient       *http.Client
@@ -216,6 +224,23 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		if len(objective.Pass) > 0 {
 			maximumAchievableScore += float64(objective.Weight)
 		}
+
+		// gather the previous results for the current SLI
+		var previousSLIResults []*keptnv2.SLIEvaluationResult
+
+		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
+			for _, event := range previousEvaluationEvents {
+				for _, prevSLIResult := range event.Evaluation.IndicatorResults {
+					if prevSLIResult.Value == nil {
+						continue
+					}
+					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
+						previousSLIResults = append(previousSLIResults, prevSLIResult)
+					}
+				}
+			}
+		}
+
 		sliEvaluationResult := &keptnv2.SLIEvaluationResult{}
 		result := getSLIResult(&e.GetSLI.IndicatorValues, objective.SLI)
 
@@ -229,25 +254,13 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
 			sliEvaluationResult.DisplayName = objective.DisplayName
-			sliEvaluationResult.PassTargets = getEmptyTargets(objective.Pass)
-			sliEvaluationResult.WarningTargets = getEmptyTargets(objective.Warning)
+			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
+			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
 			sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 			continue
 		}
-		sliEvaluationResult.Value = (*keptnv2.SLIResult)(result)
 
-		// gather the previous results for the current SLI
-		var previousSLIResults []*keptnv2.SLIEvaluationResult
-
-		if previousEvaluationEvents != nil && len(previousEvaluationEvents) > 0 {
-			for _, event := range previousEvaluationEvents {
-				for _, prevSLIResult := range event.Evaluation.IndicatorResults {
-					if strings.Compare(prevSLIResult.Value.Metric, objective.SLI) == 0 {
-						previousSLIResults = append(previousSLIResults, prevSLIResult)
-					}
-				}
-			}
-		}
+		sliEvaluationResult.Value = result
 
 		var passTargets []*keptnv2.SLITarget
 		var warningTargets []*keptnv2.SLITarget
@@ -296,14 +309,19 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	return evaluationResult, maximumAchievableScore, keySLIFailed
 }
 
-func getEmptyTargets(targets []*keptn.SLOCriteria) []*keptnv2.SLITarget {
+func getEmptyTargets(sloConfig *keptn.ServiceLevelObjectives, targets []*keptn.SLOCriteria, previousResults []*keptnv2.SLIEvaluationResult) []*keptnv2.SLITarget {
 	res := []*keptnv2.SLITarget{}
 
 	for _, obj := range targets {
 		for _, crit := range obj.Criteria {
+			criteriaObj, err := parseCriteriaString(crit)
+			if err != nil {
+				continue
+			}
 			res = append(res, &keptnv2.SLITarget{
-				Criteria: crit,
-				Violated: true,
+				Criteria:    crit,
+				Violated:    true,
+				TargetValue: criteriaObj.getTargetValue(sloConfig, previousResults),
 			})
 		}
 	}
