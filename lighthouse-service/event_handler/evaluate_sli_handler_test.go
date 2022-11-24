@@ -2438,10 +2438,32 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success: false,
 								Message: "no value received from SLI provider",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=15.0",
+									TargetValue: 0,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+10%",
+									TargetValue: 0,
+									Violated:    true,
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=20.0",
+									TargetValue: 0,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+15%",
+									TargetValue: 0,
+									Violated:    true,
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},

@@ -228,6 +228,9 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			}
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
+			sliEvaluationResult.DisplayName = objective.DisplayName
+			sliEvaluationResult.PassTargets = getEmptyTargets(objective.Pass)
+			sliEvaluationResult.WarningTargets = getEmptyTargets(objective.Warning)
 			sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 			continue
 		}
@@ -291,6 +294,21 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 
 	return evaluationResult, maximumAchievableScore, keySLIFailed
+}
+
+func getEmptyTargets(targets []*keptn.SLOCriteria) []*keptnv2.SLITarget {
+	res := []*keptnv2.SLITarget{}
+
+	for _, obj := range targets {
+		for _, crit := range obj.Criteria {
+			res = append(res, &keptnv2.SLITarget{
+				Criteria: crit,
+				Violated: true,
+			})
+		}
+	}
+
+	return res
 }
 
 func checkLeftoverSLI(results []*keptnv2.SLIResult, evaluationResult *keptnv2.EvaluationFinishedEventData) {
@@ -466,9 +484,9 @@ func evaluateComparison(sliResult *keptnv2.SLIResult, co *criteriaObject, previo
 	return evaluateValue(sliResult.Value, targetValue, co.Operator)
 }
 
-//aggregateValues combines the previous values into a single one, based on the aggregation function
-//it returns the aggregated value and a boolean telling if the rest of the evaluation should be skipped
-//(no previous results or no successful previous results)
+// aggregateValues combines the previous values into a single one, based on the aggregation function
+// it returns the aggregated value and a boolean telling if the rest of the evaluation should be skipped
+// (no previous results or no successful previous results)
 func aggregateValues(previousResults []*keptnv2.SLIEvaluationResult, comparison *keptn.SLOComparison) (float64, bool) {
 
 	if len(previousResults) == 0 {
