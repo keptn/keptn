@@ -3858,20 +3858,3 @@ func Test_getSLIResult(t *testing.T) {
 		})
 	}
 }
-
-//func Test_sloparsing(t *testing.T) {
-//	input := `---
-//spec_version: "1.0"
-//comparison:
-//  aggregate_function: "avg"
-//  compare_with: "single_result"
-//  include_result_with_score: "pass"
-//  number_of_comparison_results: 1
-//filter:
-//objectives:
-//total_score:
-//  pass: "90%"
-//  warning: "75%"`
-//	slo := &apimodelsv2.ServiceLevelObjectives{}
-//	err := yaml.Unmarshal([]byte(input), &slo)
-//}

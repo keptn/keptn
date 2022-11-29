@@ -195,6 +195,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
+	// no slo objectives were provided
 	if len(sloConfig.Objectives) == 0 {
 		e.Result = keptnv2.ResultFailed
 		evaluationResult.EventData.Result = keptnv2.ResultFailed
