@@ -2571,8 +2571,8 @@ func TestEvaluateObjectives(t *testing.T) {
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart:        "2019-10-20T07:57:27.152330783Z",
 					TimeEnd:          "2019-10-22T08:57:27.152330783Z",
-					Result:           "", // not set by the tested function
-					Score:            0,  // not calculated by tested function
+					Result:           "fail",
+					Score:            0, // not calculated by tested function
 					IndicatorResults: nil,
 				},
 				EventData: keptnv2.EventData{
@@ -2580,10 +2580,10 @@ func TestEvaluateObjectives(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
-					Message: "lighthouse failed because SLI failed with message no SLIs were requested",
+					Message: "",
 				},
 			},
-			ExpectedMaximumScore: 1,
+			ExpectedMaximumScore: 100,
 			ExpectedKeySLIFailed: false,
 		},
 	}
