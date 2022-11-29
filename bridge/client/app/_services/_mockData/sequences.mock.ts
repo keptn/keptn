@@ -1,6 +1,7 @@
 import { SequenceState } from '../../_models/sequenceState';
 import { ISequenceState, SequenceStatus } from '../../../../shared/interfaces/sequence';
 import { ResultTypes } from '../../../../shared/models/result-types';
+import { Trace } from '../../_models/trace';
 
 const deliveryWithDevAndStaging = {
   name: 'delivery',
@@ -1108,8 +1109,97 @@ const sequencesData = [
     ],
   },
 ] as ISequenceState[];
+
+const sequenceWithStartedSequenceMock = SequenceState.fromJSON({
+  name: 'evaluation',
+  service: 'carts',
+  project: 'sockshop',
+  time: '2021-07-05T13:35:36.482Z',
+  shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+  state: SequenceStatus.WAITING,
+  stages: [],
+});
+sequenceWithStartedSequenceMock.traces = [
+  Trace.fromJSON({
+    data: {
+      project: 'hipstershop',
+      service: 'frontend',
+      stage: 'production',
+    },
+    id: '3cc20fb1-02d4-410f-a60b-8b216d432759',
+    shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+    time: '2022-11-29T08:30:03.322814139Z',
+    type: 'sh.keptn.event.staging.delivery.triggered',
+  }),
+];
+
+const sequenceWithStagesAndStartedSequenceMock = SequenceState.fromJSON({
+  name: 'evaluation',
+  service: 'carts',
+  project: 'sockshop',
+  time: '2021-07-05T13:35:36.482Z',
+  shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+  state: SequenceStatus.WAITING,
+  stages: [
+    {
+      name: 'dev',
+    },
+  ],
+});
+sequenceWithStagesAndStartedSequenceMock.traces = [
+  Trace.fromJSON({
+    data: {
+      project: 'hipstershop',
+      service: 'frontend',
+      stage: 'staging',
+    },
+    id: '3cc20fb1-02d4-410f-a60b-8b216d432759',
+    shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+    time: '2022-11-29T08:30:03.322814139Z',
+    type: 'sh.keptn.event.staging.delivery.triggered',
+  }),
+];
+
+const sequenceWithoutStagesAndEvents = SequenceState.fromJSON({
+  name: 'evaluation',
+  service: 'carts',
+  project: 'sockshop',
+  time: '2021-07-05T13:35:36.482Z',
+  shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+  state: SequenceStatus.WAITING,
+  stages: [],
+});
+
+const sequenceWithUnknownEventStage = SequenceState.fromJSON({
+  name: 'evaluation',
+  service: 'carts',
+  project: 'sockshop',
+  time: '2021-07-05T13:35:36.482Z',
+  shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+  state: SequenceStatus.WAITING,
+  stages: [],
+});
+
+sequenceWithUnknownEventStage.traces = [
+  Trace.fromJSON({
+    data: {
+      project: 'hipstershop',
+      service: 'frontend',
+      stage: 'stageNotFound',
+    },
+    id: '3cc20fb1-02d4-410f-a60b-8b216d432759',
+    shkeptncontext: '7a5127e2-8dc0-4d85-9046-450ef054484b',
+    time: '2022-11-29T08:30:03.322814139Z',
+    type: 'sh.keptn.event.staging.delivery.triggered',
+  }),
+];
+
 const data = sequencesData.map((sequence) => SequenceState.fromJSON(sequence));
 export { data as SequencesMock };
 export { sequencesData as SequenceResponseMock };
 export { deliveryWithDevAndStaging as SequenceResponseWithDevAndStagingMock };
 export { evaluationSequence as SequenceResponseWithoutFailing };
+export { sequenceWithStartedSequenceMock as SequenceWithStartedSequenceMock };
+export { sequenceWithStagesAndStartedSequenceMock as SequenceWithStagesAndStartedSequenceMock };
+export { sequenceWithoutStagesAndEvents as SequenceWithoutStagesAndEvents };
+export { sequenceWithUnknownEventStage as SequenceWithUnknownEventStage };

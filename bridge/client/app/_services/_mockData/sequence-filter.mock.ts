@@ -1,5 +1,5 @@
 const sequenceFilter = {
-  stages: ['dev', 'production', 'staging'],
+  stages: ['dev', 'staging', 'production'],
   services: ['carts-db', 'carts'],
 };
 

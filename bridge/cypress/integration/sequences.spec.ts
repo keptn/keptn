@@ -1,6 +1,6 @@
 import { SequencesPage } from '../support/pageobjects/SequencesPage';
 import EnvironmentPage from '../support/pageobjects/EnvironmentPage';
-import { interceptSequenceExecution } from '../support/intercept';
+import { interceptBlockingSequence, interceptSequenceExecution } from '../support/intercept';
 import BasePage from '../support/pageobjects/BasePage';
 
 describe('Sequences', () => {
@@ -124,6 +124,26 @@ describe('Sequences', () => {
         events: [],
       },
     });
+    interceptSequenceExecution(project, blockingContext, 'production', 'carts-db');
+
+    sequencePage
+      .visit(project)
+      .assertIsWaitingSequence(context, true)
+      .selectSequence(context)
+      .clickBlockingSequenceNavigationButton()
+      .assertSequenceDeepLink(project, blockingContext, 'dev');
+  });
+
+  it('should navigate to blocking sequence that is not initially loaded', () => {
+    const context = 'f78c2fc7-d272-4bcd-9845-3f3041080ae1';
+    const blockingContext = '88d5f9c0-1e2c-474b-af27-13fe12e038a7';
+    const project = 'sockshop';
+    cy.intercept(`/api/mongodb-datastore/event?keptnContext=${context}&project=${project}`, {
+      body: {
+        events: [],
+      },
+    });
+    interceptBlockingSequence(project, blockingContext);
     interceptSequenceExecution(project, blockingContext, 'production', 'carts-db');
 
     sequencePage

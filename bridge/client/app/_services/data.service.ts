@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, debounceTime, Observable, of, Subject } from 'rxjs';
-import { catchError, map, mergeMap, take, tap } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
@@ -353,13 +353,18 @@ export class DataService {
       .subscribe((projects) => this._projects.next(projects));
   }
 
-  public loadSequences(projectName: string, fromTime?: Date, beforeTime?: Date, oldSequence?: SequenceState): void {
+  public loadSequences(
+    projectName: string,
+    fromTime?: Date,
+    beforeTime?: Date,
+    oldSequence?: SequenceState
+  ): Observable<SequenceState[]> {
     if (!beforeTime && !fromTime) {
       // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[projectName];
     }
     this._sequencesLastUpdated[projectName] = new Date();
-    this.apiService
+    return this.apiService
       .getSequences(
         projectName,
         beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE,
@@ -377,24 +382,30 @@ export class DataService {
           const count = body?.totalCount ?? body?.states.length ?? 0;
           const sequences = body?.states.map((sequence) => SequenceState.fromJSON(sequence)) ?? [];
           return [sequences, count] as [SequenceState[], number];
+        }),
+        map(([sequences, totalCount]: [SequenceState[], number]) => {
+          const previousSequences = this._sequences.getValue();
+          const sequenceData = previousSequences[projectName];
+          const newSequences = this.addNewSequences(
+            sequenceData?.sequences ?? [],
+            sequences,
+            !!beforeTime,
+            oldSequence
+          );
+          const allSequencesLoaded =
+            previousSequences[projectName]?.allSequencesLoaded ||
+            this.allSequencesLoaded(newSequences.length, totalCount, fromTime, beforeTime);
+
+          previousSequences[projectName] = {
+            allSequencesLoaded,
+            sequences: newSequences,
+            state: oldSequence ? SequencesState.LOAD_UNTIL_ROOT : SequencesState.UPDATE,
+          };
+
+          this._sequences.next(previousSequences);
+          return newSequences;
         })
-      )
-      .subscribe(([sequences, totalCount]: [SequenceState[], number]) => {
-        const previousSequences = this._sequences.getValue();
-        const sequenceData = previousSequences[projectName];
-        const newSequences = this.addNewSequences(sequenceData?.sequences ?? [], sequences, !!beforeTime, oldSequence);
-        const allSequencesLoaded =
-          previousSequences[projectName]?.allSequencesLoaded ||
-          this.allSequencesLoaded(newSequences.length, totalCount, fromTime, beforeTime);
-
-        previousSequences[projectName] = {
-          allSequencesLoaded,
-          sequences: newSequences,
-          state: oldSequence ? SequencesState.LOAD_UNTIL_ROOT : SequencesState.UPDATE,
-        };
-
-        this._sequences.next(previousSequences);
-      });
+      );
   }
 
   public loadLatestSequences(projectName: string, pageSize: number): Observable<SequenceState[]> {
@@ -448,12 +459,16 @@ export class DataService {
     );
   }
 
-  public loadOldSequences(projectName: string, fromTime?: Date, oldSequence?: SequenceState): void {
+  public loadOldSequences(
+    projectName: string,
+    fromTime?: Date,
+    oldSequence?: SequenceState
+  ): Observable<SequenceState[]> {
     const sequences = this._sequences.getValue()[projectName]?.sequences;
     if (!sequences?.length) {
-      return;
+      return of([]);
     }
-    this.loadSequences(projectName, fromTime, new Date(sequences[sequences.length - 1].time), oldSequence);
+    return this.loadSequences(projectName, fromTime, new Date(sequences[sequences.length - 1].time), oldSequence);
   }
 
   public updateSequence(projectName: string, keptnContext: string): void {
@@ -475,12 +490,15 @@ export class DataService {
     });
   }
 
-  public loadUntilRoot(projectName: string, shkeptncontext: string): void {
-    this.getSequenceByContext(projectName, shkeptncontext).subscribe((sequence) => {
-      if (sequence) {
-        this.loadOldSequences(projectName, new Date(sequence.time), sequence);
-      }
-    });
+  public loadUntilRoot(projectName: string, shkeptncontext: string): Observable<SequenceState[]> {
+    return this.getSequenceByContext(projectName, shkeptncontext).pipe(
+      switchMap((sequence) => {
+        if (sequence) {
+          return this.loadOldSequences(projectName, new Date(sequence.time), sequence);
+        }
+        return of([]);
+      })
+    );
   }
 
   public getTracesOfSequence(sequence: SequenceState): Observable<Trace[]> {
