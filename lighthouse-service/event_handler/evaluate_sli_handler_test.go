@@ -2528,6 +2528,64 @@ func TestEvaluateObjectives(t *testing.T) {
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
 		},
+		{
+			Name: "9198 SLO file does not have objectives",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Result:  "fail",
+					Status:  "succeeded",
+				},
+				GetSLI: keptnv2.GetSLIFinished{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "no metric",
+							Value:   0,
+							Success: false,
+							Message: "no SLIs were requested",
+						},
+					},
+				},
+			},
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &apimodelsv2.SLOComparison{
+					CompareWith:               "single_result",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 1,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*apimodelsv2.SLO{},
+				TotalScore: &apimodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{},
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart:        "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:          "2019-10-22T08:57:27.152330783Z",
+					Result:           "", // not set by the tested function
+					Score:            0,  // not calculated by tested function
+					IndicatorResults: nil,
+				},
+				EventData: keptnv2.EventData{
+					Result:  "fail",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Message: "lighthouse failed because SLI failed with message no SLIs were requested",
+				},
+			},
+			ExpectedMaximumScore: 1,
+			ExpectedKeySLIFailed: false,
+		},
 	}
 
 	for _, test := range tests {
@@ -3800,3 +3858,20 @@ func Test_getSLIResult(t *testing.T) {
 		})
 	}
 }
+
+//func Test_sloparsing(t *testing.T) {
+//	input := `---
+//spec_version: "1.0"
+//comparison:
+//  aggregate_function: "avg"
+//  compare_with: "single_result"
+//  include_result_with_score: "pass"
+//  number_of_comparison_results: 1
+//filter:
+//objectives:
+//total_score:
+//  pass: "90%"
+//  warning: "75%"`
+//	slo := &apimodelsv2.ServiceLevelObjectives{}
+//	err := yaml.Unmarshal([]byte(input), &slo)
+//}

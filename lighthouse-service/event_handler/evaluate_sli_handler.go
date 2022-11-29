@@ -195,7 +195,11 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
-	if e.Result == keptnv2.ResultFailed {
+	if len(sloConfig.Objectives) == 0 {
+		e.Result = keptnv2.ResultFailed
+		evaluationResult.EventData.Result = keptnv2.ResultFailed
+		evaluationResult.Message = fmt.Sprintf("lighthouse failed because no SLO objective was provided")
+	} else if e.Result == keptnv2.ResultFailed {
 		evaluationResult.EventData.Result = keptnv2.ResultFailed
 		evaluationResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
 	}
@@ -219,6 +223,13 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	var sliEvaluationResults []*keptnv2.SLIEvaluationResult
 	maximumAchievableScore := 0.0
 	keySLIFailed := false
+	// no objectives provided
+	if len(sloConfig.Objectives) == 0 {
+		evaluationResult.Evaluation.Result = "fail"
+		evaluationResult.Evaluation.Score = 0
+		evaluationResult.EventData.Result = "fail"
+		return evaluationResult, 100, keySLIFailed
+	}
 	for _, objective := range sloConfig.Objectives {
 		// only consider the SLI for the total score if pass criteria have been included
 		if len(objective.Pass) > 0 {
