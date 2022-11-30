@@ -390,8 +390,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 		return errors.New("could not parse pass target percentage")
 	}
 	if sloConfig.TotalScore.Warning != "" {
-		_, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64)
-		if err != nil {
+		if _, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64); err != nil {
 			return errors.New("could not parse warning target percentage")
 		}
 	}
