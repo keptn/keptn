@@ -70,7 +70,7 @@ func TestProvideRepository(t *testing.T) {
 			Body:       `invalid body`,
 			StatusCode: http.StatusCreated,
 			expResult:  nil,
-			expErr:     fmt.Errorf(common.UnableUnMarshallProvisioningData, "invalid character 'i' looking for beginning of value"),
+			expErr:     fmt.Errorf(common.UnableProvisionInstance, "cannot parse the response"),
 		},
 	}
 
