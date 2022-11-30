@@ -182,9 +182,19 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
 	}
 
-	evaluationResult, maximumAchievableScore, keySLIFailed := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
+	evaluationResult, maximumAchievableScore, keySLIFailed, err := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
 	evaluationResult.Labels = e.Labels
 	evaluationResult.Evaluation.ComparedEvents = comparisonEventIDs
+	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
+
+	if err != nil {
+		e.Result = keptnv2.ResultFailed
+		evaluationResult.EventData.Result = keptnv2.ResultFailed
+		evaluationResult.EventData.Status = keptnv2.StatusSucceeded
+		evaluationResult.Message = err.Error()
+		//sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
+	}
 
 	// calculate the total score
 	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLIFailed)
@@ -192,8 +202,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
 	}
 	logger.Debug("Evaluation result: " + string(evaluationResult.Result))
-
-	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
 
 	// no slo objectives were provided
 	if len(sloConfig.Objectives) == 0 {
@@ -205,10 +213,10 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		evaluationResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
 	}
 
-	return sendEvent(shkeptncontext, triggeredEvents[0].ID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
+	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
 }
 
-func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool) {
+func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, bool, error) {
 	evaluationResult := &keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Status:  "",
@@ -229,7 +237,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		evaluationResult.Evaluation.Result = "fail"
 		evaluationResult.Evaluation.Score = 0
 		evaluationResult.EventData.Result = "fail"
-		return evaluationResult, 100, keySLIFailed
+		return evaluationResult, 100, keySLIFailed, nil
 	}
 	for _, objective := range sloConfig.Objectives {
 		// only consider the SLI for the total score if pass criteria have been included
@@ -279,7 +287,20 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		isPassed := true
 		isWarning := true
 		if objective.Pass != nil && len(objective.Pass) > 0 {
-			isPassed, passTargets, _ = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
+			var err error
+			isPassed, passTargets, err = evaluateOrCombinedCriteria(sliEvaluationResult.Value, objective.Pass, previousSLIResults, sloConfig.Comparison)
+			if err != nil {
+				evaluationResult.Evaluation.Result = "fail"
+				evaluationResult.Evaluation.Score = 0
+				evaluationResult.EventData.Result = "fail"
+				var errMsg error
+				if objective.DisplayName != "" {
+					errMsg = fmt.Errorf("error with %s: %v", objective.DisplayName, err)
+				} else {
+					errMsg = fmt.Errorf("error with %s: %v", objective.SLI, err)
+				}
+				return evaluationResult, 100, keySLIFailed, errMsg
+			}
 			if isPassed {
 				sliEvaluationResult.Score = float64(objective.Weight)
 				sliEvaluationResult.Status = "pass"
@@ -318,7 +339,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	checkLeftoverSLI(e.GetSLI.IndicatorValues, evaluationResult)
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 
-	return evaluationResult, maximumAchievableScore, keySLIFailed
+	return evaluationResult, maximumAchievableScore, keySLIFailed, nil
 }
 
 func getEmptyTargets(sloConfig *keptn.ServiceLevelObjectives, targets []*keptn.SLOCriteria, previousResults []*keptnv2.SLIEvaluationResult) []*keptnv2.SLITarget {
@@ -361,6 +382,20 @@ func checkLeftoverSLI(results []*keptnv2.SLIResult, evaluationResult *keptnv2.Ev
 }
 
 func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.EvaluationFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, keySLIFailed bool) error {
+	if sloConfig.TotalScore == nil || sloConfig.TotalScore.Pass == "" {
+		return errors.New("no target score defined")
+	}
+	passTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Pass, "%"), 64)
+	if err != nil {
+		return errors.New("could not parse pass target percentage")
+	}
+	if sloConfig.TotalScore.Warning != "" {
+		_, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64)
+		if err != nil {
+			return errors.New("could not parse warning target percentage")
+		}
+	}
+
 	if maximumAchievableScore == 0 {
 		evaluationResult.Evaluation.Result = "pass"
 		evaluationResult.Result = keptnv2.ResultPass
@@ -374,13 +409,6 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	}
 	achievedPercentage := 100.0 * (totalScore / maximumAchievableScore)
 	evaluationResult.Evaluation.Score = achievedPercentage
-	if sloConfig.TotalScore == nil || sloConfig.TotalScore.Pass == "" {
-		return errors.New("no target score defined")
-	}
-	passTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Pass, "%"), 64)
-	if err != nil {
-		return errors.New("could not parse pass target percentage")
-	}
 	if achievedPercentage >= passTargetPercentage && !keySLIFailed {
 		evaluationResult.Evaluation.Result = "pass"
 		evaluationResult.Result = keptnv2.ResultPass
@@ -432,7 +460,10 @@ func evaluateOrCombinedCriteria(result *keptnv2.SLIResult, sloCriteria []*keptn.
 	satisfied = false
 	var sliTargets []*keptnv2.SLITarget
 	for _, crit := range sloCriteria {
-		criteriaSatisfied, evaluatedTargets, _ := evaluateCriteriaSet(result, crit, previousResults, comparison)
+		criteriaSatisfied, evaluatedTargets, err := evaluateCriteriaSet(result, crit, previousResults, comparison)
+		if err != nil {
+			return false, []*keptnv2.SLITarget{}, err
+		}
 		if criteriaSatisfied {
 			// one matching criteria set is sufficient to satisfy the evaluation. Other criteria sets are evaluated nevertheless, to get potential violations
 			satisfied = true
@@ -453,7 +484,10 @@ func evaluateCriteriaSet(result *keptnv2.SLIResult, sloCriteria *keptn.SLOCriter
 		target := &keptnv2.SLITarget{
 			Criteria: criteria,
 		}
-		criteriaSatisfied, _ := evaluateSingleCriteria(result, criteria, previousResults, comparison, target)
+		criteriaSatisfied, err := evaluateSingleCriteria(result, criteria, previousResults, comparison, target)
+		if err != nil {
+			return false, []*keptnv2.SLITarget{}, err
+		}
 		if !criteriaSatisfied {
 			target.Violated = true
 			satisfied = false

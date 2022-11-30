@@ -189,7 +189,58 @@ total_score:
   pass: "90%"
   warning: "75%"`
 
+const wrongTotalScoreSLOFileContent = `---
+spec_version: "1.0"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"
+total_score:
+  pass: "bla"
+  warning: "bla"`
+
+const wrongCriteriaSLOFileContent = `---
+spec_version: "1.0"
+comparison:
+  aggregate_function: "avg"
+  compare_with: "single_result"
+  include_result_with_score: "pass"
+  number_of_comparison_results: 1
+filter:
+objectives:
+  - sli: "response_time_p95"
+    key_sli: false
+    pass:             # pass if (relative change <= 75% AND absolute value is < 75ms)
+      - criteria:
+          - "<=+75%"  # relative values require a prefixed sign (plus or minus)
+          - "invalid"     # absolute values only require a logical operator
+    warning:          # if the response time is below 200ms, the result should be a warning
+      - criteria:
+          - "<=1000"
+          - "<<='"
+    weight: 1
+total_score:
+  pass: "90%"
+  warning: "70%"`
+
 const natsTestPort = 8370
+
+type SLOFile int
+
+const (
+	QualityGateShort SLOFile = iota
+	NoObjectives
+	WrongTotalScore
+	WrongCriteria
+)
 
 var keptnContext = "context"
 var projectName = "quality-gates-invalid-finish"
@@ -704,10 +755,10 @@ func (n *testNatsClient) getLatestEventOfType(keptnContext, projectName, stage, 
 }
 
 func setupFakeConfigurationService() {
-	_setupFakeConfigurationService(false)
+	_setupFakeConfigurationService(QualityGateShort)
 }
 
-func _setupFakeConfigurationService(noObjectives bool) {
+func _setupFakeConfigurationService(slo SLOFile) {
 	configurationService.Config.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 
@@ -724,12 +775,22 @@ func _setupFakeConfigurationService(noObjectives bool) {
 			return
 		} else if strings.Contains(r.RequestURI, "/slo.yaml") {
 			w.WriteHeader(200)
-			var encodedSLO string
-			if noObjectives {
-				encodedSLO = base64.StdEncoding.EncodeToString([]byte(noObjectivesSLOFileContent))
-			} else {
-				encodedSLO = base64.StdEncoding.EncodeToString([]byte(qualityGatesShortSLOFileContent))
+			var inputContent []byte
+
+			switch slo {
+			case NoObjectives:
+				inputContent = []byte(noObjectivesSLOFileContent)
+			case QualityGateShort:
+				inputContent = []byte(qualityGatesShortSLOFileContent)
+			case WrongTotalScore:
+				inputContent = []byte(wrongTotalScoreSLOFileContent)
+			case WrongCriteria:
+				inputContent = []byte(wrongCriteriaSLOFileContent)
+			default:
+				inputContent = []byte("")
 			}
+
+			encodedSLO := base64.StdEncoding.EncodeToString(inputContent)
 			res := apimodels.Resource{
 				ResourceContent: encodedSLO,
 			}
@@ -746,7 +807,7 @@ func _setupFakeConfigurationService(noObjectives bool) {
 }
 
 func Test_NoSLOObjectives(t *testing.T) {
-	_setupFakeConfigurationService(true)
+	_setupFakeConfigurationService(NoObjectives)
 
 	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
 	natsClient, err := newTestNatsClient(natsURL, t)
@@ -930,6 +991,388 @@ func Test_NoSLOObjectives(t *testing.T) {
 	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
 	require.Equal(t, "lighthouse failed because no SLO objective was provided", evaluationFinishedPayload.EventData.Message)
+
+	go func() {
+		natsClient.Close()
+	}()
+}
+
+func Test_WrongCriteria(t *testing.T) {
+	_setupFakeConfigurationService(WrongCriteria)
+
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
+	natsClient, err := newTestNatsClient(natsURL, t)
+	require.Nil(t, err)
+
+	t.Log("sending evaluation.triggered event")
+	payload := apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.EvaluationTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+			},
+			Test: keptnv2.Test{},
+			Evaluation: keptnv2.Evaluation{
+				End:       "2022-01-26T10:10:53.931Z",
+				Start:     "2022-01-26T10:05:53.931Z",
+				Timeframe: "",
+			},
+			Deployment: keptnv2.Deployment{},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+	}
+
+	marshal, err := json.Marshal(payload)
+	require.Nil(t, err)
+
+	err = natsClient.Publish(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), marshal)
+	require.Nil(t, err)
+
+	t.Log("expecting evaluation.started event")
+	var evaluationStartedEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName))
+		if event != nil {
+			evaluationStartedEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("got evaluation.started event")
+	evaluationStartedPayload := &keptnv2.EvaluationStartedEventData{}
+	err = keptnv2.Decode(evaluationStartedEvent.Data, evaluationStartedPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, evaluationStartedEvent.Shkeptncontext)
+	require.Equal(t, projectName, evaluationStartedPayload.EventData.Project)
+	require.Equal(t, stageName, evaluationStartedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationStartedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationStartedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultType(""), evaluationStartedPayload.EventData.Result)
+	require.Empty(t, evaluationStartedPayload.EventData.Message)
+
+	t.Log("expecting get-sli.triggered event")
+	var getSLITriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if event != nil {
+			getSLITriggeredEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("got get-sli.triggered event")
+	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
+	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, getSLITriggeredEvent.Shkeptncontext)
+	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
+	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
+	require.NotEmpty(t, getSLIPayload.GetSLI.End)
+	require.Equal(t, projectName, getSLIPayload.EventData.Project)
+	require.Equal(t, stageName, getSLIPayload.EventData.Stage)
+	require.Equal(t, serviceName, getSLIPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusType(""), getSLIPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultType(""), getSLIPayload.EventData.Result)
+	require.Empty(t, getSLIPayload.EventData.Message)
+
+	t.Log("sending get-sli.started event")
+	payload = apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}
+
+	marshal, err = json.Marshal(payload)
+	require.Nil(t, err)
+
+	err = natsClient.Publish(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName), marshal)
+	require.Nil(t, err)
+
+	t.Log("sending get-sli.finished event")
+	payload = apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+				Labels:  nil,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "no SLIs were requested",
+			},
+			GetSLI: keptnv2.GetSLIFinished{
+				IndicatorValues: []*keptnv2.SLIResult{
+					{
+						Message: "",
+						Metric:  "response_time_p95",
+						Success: true,
+						Value:   100,
+					},
+				},
+			},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
+	}
+
+	marshal, err = json.Marshal(payload)
+	require.Nil(t, err)
+
+	err = natsClient.Publish(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName), marshal)
+	require.Nil(t, err)
+
+	t.Log("expecting evaluation.finished event")
+	var evaluationFinishedEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if event != nil {
+			evaluationFinishedEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Minute, 100*time.Millisecond)
+
+	t.Log("got evaluation.finished event")
+	evaluationFinishedPayload := &keptnv2.EvaluationFinishedEventData{}
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, evaluationFinishedEvent.Shkeptncontext)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, stageName, evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
+	require.Equal(t, "error with response_time_p95: invalid criteria string", evaluationFinishedPayload.EventData.Message)
+
+	go func() {
+		natsClient.Close()
+	}()
+}
+
+func Test_WrongTotalScore(t *testing.T) {
+	_setupFakeConfigurationService(WrongTotalScore)
+
+	natsURL := fmt.Sprintf("nats://127.0.0.1:%d", natsTestPort)
+	natsClient, err := newTestNatsClient(natsURL, t)
+	require.Nil(t, err)
+
+	t.Log("sending evaluation.triggered event")
+	payload := apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: keptnv2.EvaluationTriggeredEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+			},
+			Test: keptnv2.Test{},
+			Evaluation: keptnv2.Evaluation{
+				End:       "2022-01-26T10:10:53.931Z",
+				Start:     "2022-01-26T10:05:53.931Z",
+				Timeframe: "",
+			},
+			Deployment: keptnv2.Deployment{},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName)),
+	}
+
+	marshal, err := json.Marshal(payload)
+	require.Nil(t, err)
+
+	err = natsClient.Publish(keptnv2.GetTriggeredEventType(keptnv2.EvaluationTaskName), marshal)
+	require.Nil(t, err)
+
+	t.Log("expecting evaluation.started event")
+	var evaluationStartedEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetStartedEventType(keptnv2.EvaluationTaskName))
+		if event != nil {
+			evaluationStartedEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("got evaluation.started event")
+	evaluationStartedPayload := &keptnv2.EvaluationStartedEventData{}
+	err = keptnv2.Decode(evaluationStartedEvent.Data, evaluationStartedPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, evaluationStartedEvent.Shkeptncontext)
+	require.Equal(t, projectName, evaluationStartedPayload.EventData.Project)
+	require.Equal(t, stageName, evaluationStartedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationStartedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusSucceeded, evaluationStartedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultType(""), evaluationStartedPayload.EventData.Result)
+	require.Empty(t, evaluationStartedPayload.EventData.Message)
+
+	t.Log("expecting get-sli.triggered event")
+	var getSLITriggeredEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetTriggeredEventType(keptnv2.GetSLITaskName))
+		if event != nil {
+			getSLITriggeredEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Second, 100*time.Millisecond)
+
+	t.Log("got get-sli.triggered event")
+	getSLIPayload := &keptnv2.GetSLITriggeredEventData{}
+	err = keptnv2.Decode(getSLITriggeredEvent.Data, getSLIPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, getSLITriggeredEvent.Shkeptncontext)
+	require.Equal(t, "my-sli-provider", getSLIPayload.GetSLI.SLIProvider)
+	require.NotEmpty(t, getSLIPayload.GetSLI.Start)
+	require.NotEmpty(t, getSLIPayload.GetSLI.End)
+	require.Equal(t, projectName, getSLIPayload.EventData.Project)
+	require.Equal(t, stageName, getSLIPayload.EventData.Stage)
+	require.Equal(t, serviceName, getSLIPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusType(""), getSLIPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultType(""), getSLIPayload.EventData.Result)
+	require.Empty(t, getSLIPayload.EventData.Message)
+
+	t.Log("sending get-sli.started event")
+	payload = apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIStartedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "",
+			},
+		},
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName)),
+	}
+
+	marshal, err = json.Marshal(payload)
+	require.Nil(t, err)
+
+	err = natsClient.Publish(keptnv2.GetStartedEventType(keptnv2.GetSLITaskName), marshal)
+	require.Nil(t, err)
+
+	t.Log("sending get-sli.finished event")
+	payload = apimodels.KeptnContextExtendedCE{
+		Contenttype: "application/json",
+		Data: &keptnv2.GetSLIFinishedEventData{
+			EventData: keptnv2.EventData{
+				Project: projectName,
+				Stage:   stageName,
+				Service: serviceName,
+				Labels:  nil,
+				Status:  keptnv2.StatusSucceeded,
+				Result:  keptnv2.ResultPass,
+				Message: "no SLIs were requested",
+			},
+			GetSLI: keptnv2.GetSLIFinished{
+				IndicatorValues: []*keptnv2.SLIResult{
+					{
+						Message: "",
+						Metric:  "response_time_p95",
+						Success: true,
+						Value:   100,
+					},
+				},
+			},
+		},
+		Extensions:         nil,
+		ID:                 uuid.NewString(),
+		Shkeptncontext:     keptnContext,
+		Shkeptnspecversion: "0.2.3",
+		Source:             strutils.Stringp("fakeshipyard"),
+		Specversion:        "1.0",
+		Time:               time.Now(),
+		Triggeredid:        "",
+		GitCommitID:        "",
+		Type:               strutils.Stringp(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName)),
+	}
+
+	marshal, err = json.Marshal(payload)
+	require.Nil(t, err)
+
+	err = natsClient.Publish(keptnv2.GetFinishedEventType(keptnv2.GetSLITaskName), marshal)
+	require.Nil(t, err)
+
+	t.Log("expecting evaluation.finished event")
+	var evaluationFinishedEvent *apimodels.KeptnContextExtendedCE
+	require.Eventually(t, func() bool {
+		event := natsClient.getLatestEventOfType(keptnContext, projectName, stageName, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName))
+		if event != nil {
+			evaluationFinishedEvent = event
+			return true
+		}
+		return false
+	}, 10*time.Minute, 100*time.Millisecond)
+
+	t.Log("got evaluation.finished event")
+	evaluationFinishedPayload := &keptnv2.EvaluationFinishedEventData{}
+	err = keptnv2.Decode(evaluationFinishedEvent.Data, evaluationFinishedPayload)
+	require.Nil(t, err)
+	require.Equal(t, keptnContext, evaluationFinishedEvent.Shkeptncontext)
+	require.Equal(t, projectName, evaluationFinishedPayload.EventData.Project)
+	require.Equal(t, stageName, evaluationFinishedPayload.EventData.Stage)
+	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
+	require.Equal(t, keptnv2.StatusErrored, evaluationFinishedPayload.EventData.Status)
+	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
+	require.Equal(t, "could not parse pass target percentage", evaluationFinishedPayload.EventData.Message)
 
 	go func() {
 		natsClient.Close()

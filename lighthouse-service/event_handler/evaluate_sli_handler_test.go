@@ -2590,7 +2590,8 @@ func TestEvaluateObjectives(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			evaluationDoneData, maximumScore, keySLIFailed := evaluateObjectives(test.InGetSLIDoneEvent, test.InSLOConfig, test.InPreviousEvaluationEvents)
+			evaluationDoneData, maximumScore, keySLIFailed, err := evaluateObjectives(test.InGetSLIDoneEvent, test.InSLOConfig, test.InPreviousEvaluationEvents)
+			assert.Nil(t, err)
 			assert.EqualValues(t, test.ExpectedEvaluationResult, evaluationDoneData)
 			assert.EqualValues(t, test.ExpectedMaximumScore, maximumScore)
 			assert.EqualValues(t, test.ExpectedKeySLIFailed, keySLIFailed)
