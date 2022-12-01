@@ -429,16 +429,16 @@ export class KtbSequenceViewComponent implements OnDestroy {
     }
 
     const lastEventStage = currentSequence.traces.slice().reverse()[0]?.stage;
-    if (lastEventStage) {
-      const lastIndex = stages.indexOf(lastEventStage);
-      // if the stage is finished it would be in sequence.stages therefore we don't need to check if the stage is actually not finished
-      if (lastIndex !== -1) {
-        return lastIndex;
-      }
-      return lastIndex + 1;
+    if (!lastEventStage) {
+      return 0;
     }
 
-    return 0;
+    const lastIndex = stages.indexOf(lastEventStage);
+    // if the stage is finished it would be in sequence.stages therefore we don't need to check if the stage is actually not finished
+    if (lastIndex !== -1) {
+      return lastIndex;
+    }
+    return lastIndex + 1;
   }
 
   public navigateToBlockingSequence(currentSequence: SequenceState, state?: ISequenceViewState): void {
@@ -457,32 +457,36 @@ export class KtbSequenceViewComponent implements OnDestroy {
       .pipe(
         finalize(() => {
           this.navigationToRunningSequenceLoading = false;
-        })
+        }),
+        switchMap((sequenceExecutionResult) => {
+          if (sequenceExecutionResult.sequenceExecutions.length === 0) {
+            return of(undefined);
+          }
+          const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
+          const sequence = state?.sequenceInfo?.sequences.find(
+            (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext
+          );
+          if (sequence && sequence.shkeptncontext === currentSequence.shkeptncontext) {
+            this.dataService.updateSequence(sequence.project, sequence.shkeptncontext);
+            return of(undefined);
+          }
+          if (!sequence) {
+            return this.dataService
+              .loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext)
+              .pipe(
+                map((sequences) => ({
+                  sequence: sequences.find((seq) => seq.shkeptncontext === sequenceExecution.scope.keptnContext),
+                  stage: sequenceExecution.scope.stage,
+                }))
+              );
+          }
+          return of({ sequence, stage: sequenceExecution.scope.stage });
+        }),
+        filter((data): data is { sequence: SequenceState; stage: string } => !!data?.sequence)
       )
-      .subscribe((sequenceExecutionResult) => {
-        if (sequenceExecutionResult.sequenceExecutions.length === 0) {
-          return;
-        }
-        const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
-        const sequence = state?.sequenceInfo?.sequences.find(
-          (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext
-        );
-        if (sequence && sequence.shkeptncontext === currentSequence.shkeptncontext) {
-          this.dataService.updateSequence(sequence.project, sequence.shkeptncontext);
-        } else if (sequence) {
-          this.selectSequence({ sequence: sequence });
-          this.loadTraces(sequence, undefined, sequenceExecution.scope.stage);
-        } else {
-          this.dataService
-            .loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext)
-            .subscribe((sequences) => {
-              const newSequence = sequences.find((seq) => seq.shkeptncontext === sequenceExecution.scope.keptnContext);
-              if (newSequence) {
-                this.selectSequence({ sequence: newSequence });
-                this.loadTraces(newSequence, undefined, sequenceExecution.scope.stage);
-              }
-            });
-        }
+      .subscribe(({ sequence, stage }) => {
+        this.selectSequence({ sequence });
+        this.loadTraces(sequence, undefined, stage);
       });
   }
 
