@@ -1169,7 +1169,7 @@ func Test_WrongCriteria(t *testing.T) {
 			return true
 		}
 		return false
-	}, 10*time.Minute, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	t.Log("got evaluation.finished event")
 	evaluationFinishedPayload := &keptnv2.EvaluationFinishedEventData{}
@@ -1360,7 +1360,7 @@ func Test_WrongTotalScore(t *testing.T) {
 			return true
 		}
 		return false
-	}, 10*time.Minute, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	t.Log("got evaluation.finished event")
 	evaluationFinishedPayload := &keptnv2.EvaluationFinishedEventData{}
