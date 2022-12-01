@@ -19,6 +19,7 @@ import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/cont
 import { printError } from './utils/print-utils';
 import { AuthType } from '../shared/models/auth-type';
 import { AuthConfig, BridgeConfiguration, EnvType } from './interfaces/configuration';
+import { IncomingHttpHeaders } from 'http';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -75,7 +76,9 @@ async function init(configuration: BridgeConfiguration): Promise<Express> {
   // add some middlewares
   const logExpress = new ComponentLogger('Express');
   app.use((req: Request, res: Response, next: NextFunction) => {
-    logExpress.info(`${req.method} ${req.url} ${res.statusCode} :: ${logExpress.prettyPrint(req.headers)}`);
+    logExpress.info(
+      `${req.method} ${req.url} ${res.statusCode} :: ${logExpress.prettyPrint(filterHeaders(req.headers))}`
+    );
     next();
   });
   app.use(express.json());
@@ -312,6 +315,22 @@ function handleError(err: any, req: Request, res: Response, authType: AuthType):
   log.error(`Response status ${err.response?.status} for ${req.method} ${req.url}`);
 
   return err.response?.status || 500;
+}
+
+function filterHeaders(headers: IncomingHttpHeaders): IncomingHttpHeaders {
+  const filteredHeaders = { ...headers };
+  const denyList = ['cookies', 'user-agent'];
+  for (const item of denyList) {
+    // it is safe to delete because all properties are marked as optional ?
+    delete filteredHeaders[item];
+  }
+  // remove additional sec headers
+  Object.keys(headers).forEach((key) => {
+    if (key.startsWith('sec')) {
+      delete filteredHeaders[key];
+    }
+  });
+  return filteredHeaders;
 }
 
 export { init, defaultContentSecurityPolicyOptions };
