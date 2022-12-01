@@ -26,6 +26,14 @@ describe('evaluations', () => {
     evaluationBoard.invalidateAndAssert('124fa9d0-cbfd-493b-b9eb-1a8d806a133f', 'myReason');
     heatmap.assertEvaluationExists('8a549059-8dcd-43ea-adff-b7c2ea9a0d99', false);
   });
+
+  it('should correctly revert to empty score progress bar', () => {
+    heatmap
+      .visitPageWithHeatmapComponent()
+      .selectEvaluation('182d10b8-b68d-49d4-86cd-5521352d7a42')
+      .selectEvaluation('25ab0f26-e6d8-48d5-a08f-08c8a136a688');
+    evaluationBoard.assertScoreProgressBarExists(false);
+  });
 });
 
 describe('evaluations with key sli', () => {
