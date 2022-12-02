@@ -145,7 +145,7 @@ async function setBasicAUTH(app: Express, auth: AuthConfig): Promise<void> {
     ) {
       updateBucket(!!(login || password), auth, userIP);
 
-      log.error(`Access denied for IP: ${userIP}`);
+      log.error(`Access denied`);
       res.set('WWW-Authenticate', 'Basic realm="Keptn"');
       next({ response: { status: 401 } });
       return;
