@@ -16,9 +16,9 @@ require (
 	golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.24.7
-	k8s.io/apimachinery v0.24.7
-	k8s.io/client-go v0.24.7
+	k8s.io/api v0.24.8
+	k8s.io/apimachinery v0.24.8
+	k8s.io/client-go v0.24.8
 )
 
 require github.com/libgit2/git2go/v33 v33.0.0
