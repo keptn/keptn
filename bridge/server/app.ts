@@ -16,10 +16,9 @@ import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
 import { SessionService } from './user/session';
 import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
-import { printError } from './utils/print-utils';
+import { printError, filterHeaders } from './utils/print-utils';
 import { AuthType } from '../shared/models/auth-type';
 import { AuthConfig, BridgeConfiguration, EnvType } from './interfaces/configuration';
-import { IncomingHttpHeaders } from 'http';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -137,7 +136,7 @@ async function setBasicAUTH(app: Express, auth: AuthConfig): Promise<void> {
     userIP = userIP instanceof Array ? userIP[0] : userIP;
 
     if (userIP && isIPThrottled(userIP, auth)) {
-      log.error(`Request limit reached for IP ${userIP}`);
+      log.error('Request limit reached');
       res.status(429).send('Reached request limit');
       return;
     } else if (
@@ -315,22 +314,6 @@ function handleError(err: any, req: Request, res: Response, authType: AuthType):
   log.error(`Response status ${err.response?.status} for ${req.method} ${req.url}`);
 
   return err.response?.status || 500;
-}
-
-function filterHeaders(headers: IncomingHttpHeaders): IncomingHttpHeaders {
-  const filteredHeaders = { ...headers };
-  const denyList = ['cookies', 'user-agent'];
-  for (const item of denyList) {
-    // it is safe to delete because all properties are marked as optional ?
-    delete filteredHeaders[item];
-  }
-  // remove additional sec headers
-  Object.keys(headers).forEach((key) => {
-    if (key.startsWith('sec')) {
-      delete filteredHeaders[key];
-    }
-  });
-  return filteredHeaders;
 }
 
 export { init, defaultContentSecurityPolicyOptions };

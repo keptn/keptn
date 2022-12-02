@@ -1,5 +1,6 @@
 import { AxiosError } from 'axios';
 import { ComponentLogger } from './logger';
+import { IncomingHttpHeaders } from 'http';
 
 const log = new ComponentLogger('API');
 
@@ -16,4 +17,20 @@ export function printError(err: AxiosError | Error): void {
 
 function isAxiosError(err: Error | AxiosError): err is AxiosError {
   return err.hasOwnProperty('isAxiosError');
+}
+
+export function filterHeaders(headers: IncomingHttpHeaders): IncomingHttpHeaders {
+  const filteredHeaders = { ...headers };
+  const denyList = ['cookies', 'user-agent'];
+  for (const item of denyList) {
+    // it is safe to delete because all properties are marked as optional ?
+    delete filteredHeaders[item];
+  }
+  // remove additional sec headers
+  Object.keys(headers).forEach((key) => {
+    if (key.startsWith('sec')) {
+      delete filteredHeaders[key];
+    }
+  });
+  return filteredHeaders;
 }
