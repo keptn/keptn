@@ -41,7 +41,7 @@ function oauthRouter(
   const router = Router();
   const additionalScopes = configuration.oauth.scope ? ` ${configuration.oauth.scope.trim()}` : '';
   const scope = `openid${additionalScopes}`;
-  log.info(`Using scope: ${scope}`);
+  log.info(`Using OAuth scope: ${scope}`);
 
   /**
    * Router level middleware for login
