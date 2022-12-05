@@ -519,7 +519,7 @@ jobs:
 
       - name: Create issue if tests failed
         if: always() && github.event_name == 'schedule' && steps.test_zero_downtime.outcome != 'success'
-        uses: JasonEtco/create-an-issue@v2.8.0
+        uses: JasonEtco/create-an-issue@v2.8.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
