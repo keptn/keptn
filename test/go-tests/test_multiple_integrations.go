@@ -306,7 +306,7 @@ func RegisterEchoIntegration(t *testing.T) func() {
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.DistributorVersion)
 	require.Equal(t, "develop", fetchedEchoIntegration.MetaData.IntegrationVersion)
 
-	_, err = CreateSubscription(t, "echo-service", models.EventSubscription{
+	_, err = CreateSubscription(t, "echo", models.EventSubscription{
 		Event:  "sh.keptn.event.echo.triggered",
 		Filter: models.EventSubscriptionFilter{},
 	})

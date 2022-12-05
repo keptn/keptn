@@ -33,8 +33,9 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegration", Test_UniformRegistration_RegistrationOfKeptnIntegration)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods", Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods)
 	t.Run("Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane", Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane)
-	t.Run("Test_multipleIntegrations", Test_multipleIntegrations)
 	t.Run("Test_ImportCorrectManifest", Test_ImportCorrectManifest)
 	t.Run("Test_ImportCorrectManifestNonExistingProject", Test_ImportCorrectManifestNonExistingProject)
 	t.Run("Test_ImportMalformedZipFileCorrectName", Test_ImportMalformedZipFileCorrectName)
+	t.Run("Test_multipleIntegrations", Test_multipleIntegrations)
+
 }
