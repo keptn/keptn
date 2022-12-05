@@ -1,7 +1,7 @@
 dependencies:
 - name: mongodb
   repository: https://charts.bitnami.com/bitnami
-  version: 13.3.1
+  version: 13.5.0
 - name: nats
   repository: https://nats-io.github.io/k8s/helm/charts/
   version: 0.19.1
