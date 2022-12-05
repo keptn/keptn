@@ -23,7 +23,7 @@ require (
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.34.0
 	golang.org/x/exp v0.0.0-20221204150635-6dcec336b2bb
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af
-	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
+	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.8
