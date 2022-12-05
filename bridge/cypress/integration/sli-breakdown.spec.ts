@@ -177,7 +177,6 @@ describe('sli-breakdown with fallback api call', () => {
 
 describe('sli-breakdown with info sli', () => {
   const servicesPage = new ServicesPage();
-  const heatmapPage = new HeatmapComponentPage();
 
   beforeEach(() => {
     servicesPage.interceptAll().interceptWithInfoSli();

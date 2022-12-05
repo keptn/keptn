@@ -163,7 +163,7 @@
           class="underline-info"
         >
           <span *ngIf="result.result !== ResultTypes.INFO; else infoScoreBlock"
-            >{{ result.score | truncateNumber: 2 }}/{{ getRelativeSliWeight(result) | truncateNumber: 2 }}</span
+            >{{ result.score | truncateNumber : 2 }}/{{ getRelativeSliWeight(result) | truncateNumber : 2 }}</span
           >
           <ng-template #infoScoreBlock>-</ng-template>
         </span>

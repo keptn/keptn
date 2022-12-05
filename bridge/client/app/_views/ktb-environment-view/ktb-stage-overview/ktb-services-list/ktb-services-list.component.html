@@ -3,7 +3,7 @@
     <dt-table [dataSource]="dataSource">
       <ng-container dtColumnDef="recentSequence" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType: ServiceClass as service">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
             <div
               fxLayout="row"
               fxLayoutAlign="start center"
@@ -46,7 +46,7 @@
 
       <ng-container dtColumnDef="serviceName" [dtColumnProportion]="2" uitestid="keptn-services-list-problems">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType: ServiceClass as service">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
             <p
               [class.highlight]="service.getOpenApprovals().length > 0"
               [class.error]="service.openRemediations.length > 0"
@@ -80,7 +80,7 @@
 
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number">
         <dt-cell *dtCellDef="let row">
-          <ng-container *ngIf="row | toType: ServiceClass as service">
+          <ng-container *ngIf="row | toType : ServiceClass as service">
             <div *ngIf="service.latestSequence">
               <ktb-evaluation-info
                 *ngIf="{ value: service.latestSequence.getEvaluationTrace(service.stage) } as evaluation"

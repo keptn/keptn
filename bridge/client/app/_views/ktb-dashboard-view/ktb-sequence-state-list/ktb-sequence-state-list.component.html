@@ -14,7 +14,10 @@
       <ng-container dtColumnDef="recentEvaluation" dtColumnAlign="number" [dtColumnProportion]="2">
         <dt-cell *dtCellDef="let row">
           <ng-container *ngIf="toSequence(row) as sequence">
-            <p class="m-0 small" [textContent]="sequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"></p>
+            <p
+              class="m-0 small"
+              [textContent]="sequence.time | toDate | amCalendar : dateUtil.getCalendarFormats()"
+            ></p>
           </ng-container>
         </dt-cell>
       </ng-container>

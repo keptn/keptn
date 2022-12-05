@@ -31,7 +31,7 @@
     <dt-key-value-list>
       <dt-key-value-list-item *ngFor="let metric of tooltipState.metricValues">
         <dt-key-value-list-key>{{ metric.label }}</dt-key-value-list-key>
-        <dt-key-value-list-value>{{ metric.value | truncateNumber: 2 }}</dt-key-value-list-value>
+        <dt-key-value-list-value>{{ metric.value | truncateNumber : 2 }}</dt-key-value-list-value>
       </dt-key-value-list-item>
     </dt-key-value-list>
   </div>
