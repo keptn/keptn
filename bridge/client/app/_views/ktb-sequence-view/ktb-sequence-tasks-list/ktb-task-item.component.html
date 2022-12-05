@@ -14,11 +14,11 @@
         <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="5px">
           <div *ngIf="task.time">
             <ng-template #overlay>
-              <span>{{ task.time | amDateFormat: 'YYYY-MM-DD HH:mm:ss' }}</span>
+              <span>{{ task.time | amDateFormat : 'YYYY-MM-DD HH:mm:ss' }}</span>
             </ng-template>
             <p
               class="m-0 mt-1 mb-1 mr-2"
-              [textContent]="task.time | amDateFormat: dateUtil.getTimeFormat()"
+              [textContent]="task.time | amDateFormat : dateUtil.getTimeFormat()"
               [dtOverlay]="overlay"
             ></p>
           </div>
@@ -138,11 +138,11 @@
           <p class="m-0">
             <span *ngIf="subTask.time">
               <ng-template #subTaskTimeOverlay>
-                <span>{{ subTask.time | amDateFormat: 'YYYY-MM-DD HH:mm:ss' }}</span>
+                <span>{{ subTask.time | amDateFormat : 'YYYY-MM-DD HH:mm:ss' }}</span>
               </ng-template>
               <span
                 class="mr-2"
-                [textContent]="subTask.time | amDateFormat: dateUtil.getTimeFormat()"
+                [textContent]="subTask.time | amDateFormat : dateUtil.getTimeFormat()"
                 [dtOverlay]="subTaskTimeOverlay"
               ></span>
             </span>

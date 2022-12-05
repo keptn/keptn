@@ -30,7 +30,7 @@
       <ng-template #notWaiting>
         <p class="m-0 small" uitestid="keptn-root-events-list-eventTiming">
           Started
-          <span [textContent]="sequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"></span>
+          <span [textContent]="sequence.time | toDate | amCalendar : dateUtil.getCalendarFormats()"></span>
           and
           <span *ngIf="sequence.isFinished()"
             >took

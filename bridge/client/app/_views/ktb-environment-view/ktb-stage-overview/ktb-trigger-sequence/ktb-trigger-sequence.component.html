@@ -190,7 +190,7 @@
             uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
-            [ngModel]="evaluationFormData.timeframeStart | date: DATE_FORMAT"
+            [ngModel]="evaluationFormData.timeframeStart | date : DATE_FORMAT"
           />
           <dt-hint>The start date and time of an evaluation that defaults to now if not specified.</dt-hint>
           <button
@@ -241,7 +241,7 @@
             uitestid="keptn-trigger-evaluation-start-date"
             readonly
             dtInput
-            [ngModel]="evaluationFormData.startDatetime | date: DATE_FORMAT"
+            [ngModel]="evaluationFormData.startDatetime | date : DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
@@ -275,7 +275,7 @@
             uitestid="keptn-trigger-evaluation-end-date"
             readonly
             dtInput
-            [ngModel]="evaluationFormData.endDatetime | date: DATE_FORMAT"
+            [ngModel]="evaluationFormData.endDatetime | date : DATE_FORMAT"
             [errorStateMatcher]="showErrorStateMatcher"
           />
           <button
