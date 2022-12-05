@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "adm-zip": "0.5.9",
-    "axios": "0.27.2",
+    "axios": "1.2.0",
     "connect-mongo": "4.6.0",
     "cookie-parser": "1.4.6",
     "crypto-random-string": "5.0.0",
