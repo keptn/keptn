@@ -87,7 +87,7 @@ require (
 )
 
 replace (
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
 	github.com/gobuffalo/packr/v2 => github.com/gobuffalo/packr/v2 v2.8.3
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
 	golang.org/x/net => golang.org/x/net v0.0.0-20221004154528-8021a29435af

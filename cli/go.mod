@@ -106,7 +106,7 @@ require (
 replace (
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
 	github.com/keptn/keptn/webhook-service => ../webhook-service
 	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
 	golang.org/x/text => golang.org/x/text v0.3.7
