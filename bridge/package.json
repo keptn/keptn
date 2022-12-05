@@ -130,6 +130,7 @@
     "webpack-bundle-analyzer": "4.7.0"
   },
   "resolutions": {
+    "@angular-devkit/build-angular/loader-utils": "2.0.4",
     "minimist": "1.2.7",
     "css-what": "~6.1.0",
     "glob-parent": "~6.0.0",
