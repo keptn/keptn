@@ -102,6 +102,7 @@
     "@types/marked": "4.0.7",
     "@types/node": "14.18.32",
     "@types/semver": "7.3.13",
+    "@types/node": "14.18.34",
     "@types/uuid": "8.3.4",
     "@typescript-eslint/eslint-plugin": "5.33.1",
     "@typescript-eslint/parser": "5.33.1",
