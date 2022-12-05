@@ -11,7 +11,7 @@ require (
 	github.com/swaggo/swag v1.8.7
 	k8s.io/api v0.24.8
 	k8s.io/apimachinery v0.24.8
-	k8s.io/client-go v0.24.8
+	k8s.io/client-go/v11 v11.0.0+incompatible
 )
 
 require (

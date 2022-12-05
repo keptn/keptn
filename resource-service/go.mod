@@ -18,7 +18,7 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.8
 	k8s.io/apimachinery v0.24.8
-	k8s.io/client-go v0.24.8
+	k8s.io/client-go/v11 v11.0.0+incompatible
 )
 
 require github.com/libgit2/git2go/v33 v33.0.0
