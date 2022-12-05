@@ -70,7 +70,7 @@ require (
 
 replace (
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
+	golang.org/x/crypto => golang.org/x/crypto v0.3.0
 	golang.org/x/net => golang.org/x/net v0.2.0
 	golang.org/x/text => golang.org/x/text v0.5.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0

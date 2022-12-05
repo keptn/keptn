@@ -109,7 +109,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby/v20 v20.10.21+incompatible
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.9.0
 	github.com/keptn/keptn/webhook-service => ../webhook-service
-	golang.org/x/crypto => golang.org/x/crypto v0.0.0-20221010152910-d6f0a8c073c2
+	golang.org/x/crypto => golang.org/x/crypto v0.3.0
 	golang.org/x/text => golang.org/x/text v0.5.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
