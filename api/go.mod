@@ -21,7 +21,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.34.0
-	golang.org/x/exp v0.0.0-20221019170559-20944726eadf
+	golang.org/x/exp v0.0.0-20221204150635-6dcec336b2bb
 	golang.org/x/net v0.0.0-20221004154528-8021a29435af
 	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af
 	gopkg.in/yaml.v2 v2.4.0
@@ -73,7 +73,7 @@ require (
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c // indirect
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
