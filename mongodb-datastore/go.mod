@@ -18,7 +18,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.0
 	github.com/tryvium-travels/memongo v0.8.0
-	go.mongodb.org/mongo-driver v1.10.3
+	go.mongodb.org/mongo-driver v1.11.0
 	golang.org/x/net v0.2.0
 )
 
