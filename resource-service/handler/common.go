@@ -84,6 +84,28 @@ func getAuthMethod(credentials *common_models.GitCredentials) (*common_models.Au
 	return nil, nil
 }
 
+type sshPk struct {
+	pk *ssh.PublicKeys
+}
+
+func (s *sshPk) String() string {
+	return s.pk.String()
+}
+
+func (s *sshPk) Name() string {
+	return s.pk.Name()
+}
+
+func (s *sshPk) ClientConfig() (*ssh2.ClientConfig, error) {
+	config, err := s.pk.ClientConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	config.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+	return config, nil
+}
+
 func getSshGitAuth(credentials *common_models.GitCredentials) (*common_models.AuthMethod, error) {
 	publicKey, err := ssh.NewPublicKeys("git", []byte(credentials.SshAuth.PrivateKey), credentials.SshAuth.PrivateKeyPass)
 	if err != nil {
@@ -107,7 +129,7 @@ func getSshGitAuth(credentials *common_models.GitCredentials) (*common_models.Au
 	}
 
 	return &common_models.AuthMethod{
-		GoGitAuth: publicKey,
+		GoGitAuth: &sshPk{pk: publicKey},
 		Git2GoAuth: common_models.Git2GoAuth{
 			CredCallback: credCallback,
 			CertCallback: certCallback,
