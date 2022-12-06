@@ -74,7 +74,7 @@ jobs:
       if: inputs.artifact == 'resource-service'
       id: install-libgit2
       run: |
-        git clone --branch v1.3.0 --single-branch https://github.com/libgit2/libgit2.git
+        git clone --branch v1.5.0 --single-branch https://github.com/libgit2/libgit2.git
         cd libgit2
         mkdir build && cd build
         cmake ..
