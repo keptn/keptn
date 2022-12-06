@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/keptn/keptn/shipyard-controller/internal/common"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/keptn/keptn/shipyard-controller/internal/common"
 
 	oauthutils "github.com/keptn/go-utils/pkg/common/oauth2"
 	"github.com/keptn/keptn/shipyard-controller/models"
@@ -41,11 +42,12 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName, namespace string
 	}
 
 	req, err := http.NewRequest(http.MethodPost, rp.provisioningURL+"/repository", bytes.NewBuffer(jsonRequestData))
-	req.Header.Set("Content-type", "application/json")
-	req.Header.Set("Accept", "application/json")
 	if err != nil {
 		return nil, fmt.Errorf(common.UnableProvisionPostReq, err.Error())
 	}
+
+	req.Header.Set("Content-type", "application/json")
+	req.Header.Set("Accept", "application/json")
 
 	resp, err := rp.client.Do(req)
 	if err != nil {
