@@ -267,8 +267,8 @@ github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0Lh
 github.com/karrick/godirwalk v1.16.1/go.mod h1:j4mkqPuvaLI8mp1DroR3P6ad7cyYd4c1qeJ3RV7ULlk=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.19.1-0.20221206121002-92a531a19a8b h1:ScadCQuso5eolPyb/0kflqe1T1kZ2sA9VqMT+9ebY8M=
-github.com/keptn/go-utils v0.19.1-0.20221206121002-92a531a19a8b/go.mod h1:1FdUrOdCxBtZb3m5Ld02pNvQemrsnixLteWfPBS2kNo=
+github.com/keptn/go-utils v0.19.1-0.20221206122733-c5d5f4f16d16 h1:i7JdaqYnPipZip22eYba0WCtFi6Bv+eACa87rjxyYAg=
+github.com/keptn/go-utils v0.19.1-0.20221206122733-c5d5f4f16d16/go.mod h1:jY+JzVTp1yKRelJctutNHuKdVFvvCLk0ESfSVNPt7Q4=
 github.com/kisielk/errcheck v1.5.0/go.mod h1:pFxgyoBC7bSaBwPgfKdkLd5X25qrDl4LWUI2bnpBCr8=
 github.com/kisielk/gotool v1.0.0/go.mod h1:XhKaO+MFFWcvkIS/tQcRk01m1F5IRFswLeQ+oQHNcck=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
