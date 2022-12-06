@@ -2413,6 +2413,56 @@ func TestEvaluateObjectives(t *testing.T) {
 								KeySLI:         false,
 								Status:         "pass",
 							},
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "a_different_metric",
+									Value:   5.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+						},
+					},
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
+				},
+				{
+					Evaluation: keptnv2.EvaluationDetails{
+						TimeStart: "",
+						TimeEnd:   "",
+						Result:    "pass",
+						Score:     2,
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "my-test-metric-1",
+									Value:   10.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+							{
+								Score:          2,
+								Value:          nil,
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
 						},
 					},
 					EventData: keptnv2.EventData{
@@ -2438,10 +2488,32 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success: false,
 								Message: "no value received from SLI provider",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=15.0",
+									TargetValue: 15,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+10%",
+									TargetValue: 5,
+									Violated:    true,
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=20.0",
+									TargetValue: 20,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+15%",
+									TargetValue: 5,
+									Violated:    true,
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},
@@ -2456,11 +2528,70 @@ func TestEvaluateObjectives(t *testing.T) {
 			ExpectedMaximumScore: 1,
 			ExpectedKeySLIFailed: false,
 		},
+		{
+			Name: "9198 SLO file does not have objectives",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Result:  "fail",
+					Status:  "succeeded",
+				},
+				GetSLI: keptnv2.GetSLIFinished{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "no metric",
+							Value:   0,
+							Success: false,
+							Message: "no SLIs were requested",
+						},
+					},
+				},
+			},
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &apimodelsv2.SLOComparison{
+					CompareWith:               "single_result",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 1,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*apimodelsv2.SLO{},
+				TotalScore: &apimodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{},
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart:        "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:          "2019-10-22T08:57:27.152330783Z",
+					Result:           "fail",
+					Score:            0, // not calculated by tested function
+					IndicatorResults: nil,
+				},
+				EventData: keptnv2.EventData{
+					Result:  "fail",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+					Message: "",
+				},
+			},
+			ExpectedMaximumScore: 100,
+			ExpectedKeySLIFailed: false,
+		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.Name, func(t *testing.T) {
-			evaluationDoneData, maximumScore, keySLIFailed := evaluateObjectives(test.InGetSLIDoneEvent, test.InSLOConfig, test.InPreviousEvaluationEvents)
+			evaluationDoneData, maximumScore, keySLIFailed, err := evaluateObjectives(test.InGetSLIDoneEvent, test.InSLOConfig, test.InPreviousEvaluationEvents)
+			assert.Nil(t, err)
 			assert.EqualValues(t, test.ExpectedEvaluationResult, evaluationDoneData)
 			assert.EqualValues(t, test.ExpectedMaximumScore, maximumScore)
 			assert.EqualValues(t, test.ExpectedKeySLIFailed, keySLIFailed)

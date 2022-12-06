@@ -66,19 +66,18 @@ function setEvaluationUrls(project: string, service: string): void {
 
 export function interceptMainAutomaticProvisioningEnabled(): void {
   interceptMain();
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.ap-enabled.mock' }).as('metadata');
+  cy.intercept('/api/bridgeInfo*', { fixture: 'bridgeInfo.ap-enabled.mock' }).as('bridgeInfo');
 }
 
 export function interceptMain(): void {
-  cy.intercept('/api/v1/metadata', { fixture: 'metadata.mock' }).as('metadata');
-  cy.intercept('/api/bridgeInfo', { fixture: 'bridgeInfo.mock' });
+  cy.intercept('/api/bridgeInfo*', { fixture: 'bridgeInfo.mock' }).as('bridgeInfo');
   cy.intercept('/api/controlPlane/v1/project?disableUpstreamSync=true&pageSize=50', { fixture: 'projects.mock' }).as(
     'projects'
   );
 }
 
-export function interceptFailedMetadata(): void {
-  cy.intercept('/api/v1/metadata', { forceNetworkError: true }).as('metadata');
+export function interceptFailedBridgeInfo(): void {
+  cy.intercept('/api/bridgeInfo*', { forceNetworkError: true }).as('bridgeInfo');
 }
 
 export function interceptCreateProject(): void {
@@ -501,9 +500,62 @@ export function interceptSequenceExecution(
           scope: {
             keptnContext: returnKeptnContext,
             stage: 'dev',
+            project,
           },
         },
       ],
     },
   }).as('sequenceExecution');
+}
+
+export function interceptBlockingSequence(project: string, blockingContext: string): void {
+  // Intercept blocking sequence
+  cy.intercept(`/api/mongodb-datastore/event?keptnContext=${blockingContext}&project=${project}`, {
+    body: {
+      events: [],
+    },
+  });
+  cy.intercept(
+    `/api/controlPlane/v1/sequence/${project}?pageSize=10&fromTime=2021-07-06T09:21:43.659Z&beforeTime=2021-07-06T09:22:56.433Z`,
+    {
+      body: {
+        states: [],
+      },
+    }
+  );
+
+  // intercept sequence information retrieval of blocking sequence
+  cy.intercept(`/api/controlPlane/v1/sequence/${project}?pageSize=1&keptnContext=${blockingContext}`, {
+    body: {
+      states: [
+        {
+          name: 'evaluation',
+          service: 'carts',
+          project: 'sockshop',
+          time: '2021-07-06T09:21:43.659Z',
+          shkeptncontext: '88d5f9c0-1e2c-474b-af27-13fe12e038a7',
+          state: 'finished',
+          stages: [
+            {
+              name: 'staging',
+              latestEvaluation: {
+                result: 'fail',
+                score: 66.66666666666666,
+              },
+              latestEvent: {
+                type: 'sh.keptn.event.staging.evaluation.finished',
+                id: '16614663-aea7-4420-bafe-41f480b572d8',
+                time: '2021-07-06T09:21:53.145Z',
+              },
+              latestFailedEvent: {
+                type: 'sh.keptn.event.staging.evaluation.finished',
+                id: '16614663-aea7-4420-bafe-41f480b572d8',
+                time: '2021-07-06T09:21:53.145Z',
+              },
+            },
+          ],
+        },
+      ],
+    },
+  });
 }

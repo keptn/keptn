@@ -7,13 +7,21 @@ import { POLLING_INTERVAL_MILLIS } from '../../_utils/app.utils';
 import { ApiService } from '../../_services/api.service';
 import { ApiServiceMock } from '../../_services/api.service.mock';
 import { SequenceFilterMock } from '../../_services/_mockData/sequence-filter.mock';
-import { SequencesMock } from '../../_services/_mockData/sequences.mock';
+import {
+  SequencesMock,
+  SequenceWithoutStagesAndEvents,
+  SequenceWithStagesAndStartedSequenceMock,
+  SequenceWithStartedSequenceMock,
+  SequenceWithUnknownEventStage,
+} from '../../_services/_mockData/sequences.mock';
 import moment from 'moment';
 import { DtQuickFilterDefaultDataSourceAutocomplete } from '@dynatrace/barista-components/quick-filter';
 import { KtbSequenceViewModule } from './ktb-sequence-view.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
 import { DataService } from '../../_services/data.service';
+import { SequenceStatus } from '../../../../shared/interfaces/sequence';
+import { SequenceExecutionResult } from '../../../../shared/interfaces/sequence-execution-result';
 
 // debounceTime seems untestable. No matter if fakeAsync and tick is used, it never happens to go inside the subscribe function
 jest.mock('rxjs/operators', () => ({
@@ -337,13 +345,28 @@ describe('KtbSequenceViewComponent', () => {
   it("should call loadUntilRoot if sequence isn't loaded", () => {
     // given
     const dataService = TestBed.inject(DataService);
+    const apiService = TestBed.inject(ApiService);
     const spyLoadUntilRoot = jest.spyOn(dataService, 'loadUntilRoot');
+    spyLoadUntilRoot.mockReturnValue(of(SequencesMock.slice(0, 25)));
+    jest.spyOn(apiService, 'getSequenceExecution').mockReturnValue(
+      of({
+        sequenceExecutions: [
+          {
+            scope: {
+              keptnContext: '5b8d8f9c-faba-43f2-9c87-fc0b69d6fc3e',
+              stage: 'dev',
+            },
+          },
+        ],
+      } as SequenceExecutionResult)
+    );
 
     // when
     component.navigateToBlockingSequence(SequencesMock[0]);
 
     // then
     expect(spyLoadUntilRoot).toHaveBeenCalled();
+    expect(component.currentSequence?.shkeptncontext).toBe('5b8d8f9c-faba-43f2-9c87-fc0b69d6fc3e');
   });
 
   it("should not run data loading or sequence selection if sequence-execution doesn't return anything", () => {
@@ -379,6 +402,78 @@ describe('KtbSequenceViewComponent', () => {
 
     // then
     expect(spyLoadTraces).toHaveBeenCalledWith(component.currentSequence, undefined, 'staging');
+  });
+
+  it('should go to the latest stage of the latest event if the sequence does not have any stages and the event is not finished', () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    const getSequenceExecutionSpy = jest.spyOn(apiService, 'getSequenceExecution');
+
+    // when
+    component.navigateToBlockingSequence(SequenceWithStartedSequenceMock);
+
+    // then
+    expect(getSequenceExecutionSpy).toHaveBeenCalledWith({
+      project: 'sockshop',
+      stage: 'production',
+      service: 'carts',
+      status: SequenceStatus.STARTED,
+      pageSize: 1,
+    });
+  });
+
+  it('should go to the next stage of the sequence', () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    const getSequenceExecutionSpy = jest.spyOn(apiService, 'getSequenceExecution');
+
+    // when
+    component.navigateToBlockingSequence(SequenceWithStagesAndStartedSequenceMock);
+
+    // then
+    expect(getSequenceExecutionSpy).toHaveBeenCalledWith({
+      project: 'sockshop',
+      stage: 'staging',
+      service: 'carts',
+      status: SequenceStatus.STARTED,
+      pageSize: 1,
+    });
+  });
+
+  it('should go to the first stage if the sequence does not have any stages nor events', () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    const getSequenceExecutionSpy = jest.spyOn(apiService, 'getSequenceExecution');
+
+    // when
+    component.navigateToBlockingSequence(SequenceWithoutStagesAndEvents);
+
+    // then
+    expect(getSequenceExecutionSpy).toHaveBeenCalledWith({
+      project: 'sockshop',
+      stage: 'dev',
+      service: 'carts',
+      status: SequenceStatus.STARTED,
+      pageSize: 1,
+    });
+  });
+
+  it('should go to the first stage if the given stage is not found', () => {
+    // given
+    const apiService = TestBed.inject(ApiService);
+    const getSequenceExecutionSpy = jest.spyOn(apiService, 'getSequenceExecution');
+
+    // when
+    component.navigateToBlockingSequence(SequenceWithUnknownEventStage);
+
+    // then
+    expect(getSequenceExecutionSpy).toHaveBeenCalledWith({
+      project: 'sockshop',
+      stage: 'dev',
+      service: 'carts',
+      status: SequenceStatus.STARTED,
+      pageSize: 1,
+    });
   });
 
   function getServiceFilter(): { autocomplete: { name: string; value: string }[] } {

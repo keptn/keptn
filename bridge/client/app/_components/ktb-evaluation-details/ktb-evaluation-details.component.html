@@ -54,8 +54,8 @@
         </div>
       </div>
       <dt-consumption
-        [max]="selectedEvaluationData.indicatorResults ? 100 : 0"
-        [value]="selectedEvaluationData.score"
+        [max]="100"
+        [value]="selectedEvaluationData.indicatorResults ? selectedEvaluationData.score : 0"
         [color]="
           selectedEvaluationTrace.data.result ? _evaluationState[selectedEvaluationTrace.data.result] : undefined
         "
@@ -76,7 +76,7 @@
               [class.warning]="selectedEvaluationData.score_state === 'warning'"
               [class.success]="selectedEvaluationData.score_state === 'pass'"
             >
-              <span class="bold" [textContent]="selectedEvaluationData.score | truncateNumber: 2"></span>
+              <span class="bold" [textContent]="selectedEvaluationData.score | truncateNumber : 2"></span>
               <span [textContent]="selectedEvaluationData.score_info"></span>
             </span>
             <span class="small" uitestid="keptn-evaluation-details-resultInfo">
@@ -108,8 +108,8 @@
           </p>
           <p class="m-0 small">
             <span class="bold">Evaluation timeframe: </span
-            ><span [textContent]="selectedEvaluationData.timeStart | amDateFormat: 'YYYY-MM-DD HH:mm'"></span> -
-            <span [textContent]="selectedEvaluationData.timeEnd | amDateFormat: 'YYYY-MM-DD HH:mm'"></span> (<span
+            ><span [textContent]="selectedEvaluationData.timeStart | amDateFormat : 'YYYY-MM-DD HH:mm'"></span> -
+            <span [textContent]="selectedEvaluationData.timeEnd | amDateFormat : 'YYYY-MM-DD HH:mm'"></span> (<span
               [textContent]="
                 dateUtil.getDurationFormatted(selectedEvaluationData.timeStart, selectedEvaluationData.timeEnd)
               "

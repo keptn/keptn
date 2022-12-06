@@ -9,12 +9,17 @@ import {
   indicatorResultToDataPoint,
   parseSloOfEvaluations,
 } from './ktb-evaluation-details-utils';
-import { EvaluationsMock } from '../../_services/_mockData/evaluations.mock';
+import {
+  EvaluationsMock,
+  FailedEventWithPassEvaluation,
+  PassedEventWithFailedEvaluation,
+} from '../../_services/_mockData/evaluations.mock';
 import { IDataPoint, IHeatmapScoreTooltip, IHeatmapSliTooltip, IHeatmapTooltipType } from '../../_interfaces/heatmap';
 import { IndicatorResult } from '../../../../shared/interfaces/indicator-result';
 import { EventTypes } from '../../../../shared/interfaces/event-types';
 import { IEvaluationData } from '../../../../shared/models/trace';
 import { EvaluationsKeySliMock } from '../../_services/_mockData/evaluations-keySli.mock';
+import { ResultTypes } from '../../../../shared/models/result-types';
 
 describe('KtbEvaluationDetailsUtils', () => {
   const validSLOFile =
@@ -57,6 +62,29 @@ describe('KtbEvaluationDetailsUtils', () => {
     expect(tooltip.fail).toBe(false);
     expect(tooltip.warn).toBe(false);
   });
+
+  it('should set score status to fail if the evaluation succeeded but the event failed', () => {
+    // given
+    const evaluation = FailedEventWithPassEvaluation;
+    const scoreValue = evaluation.data.evaluation?.score ?? 0;
+
+    // when
+    const dataPoint = evaluationToScoreDataPoint(evaluation, scoreValue);
+
+    expect(dataPoint.color).toEqual<ResultTypes>(ResultTypes.FAILED);
+  });
+
+  it('should set score status to pass if the evaluation failed but the event succeeded', () => {
+    // given
+    const evaluation = PassedEventWithFailedEvaluation;
+    const scoreValue = evaluation.data.evaluation?.score ?? 0;
+
+    // when
+    const dataPoint = evaluationToScoreDataPoint(evaluation, scoreValue);
+
+    expect(dataPoint.color).toEqual<ResultTypes>(ResultTypes.PASSED);
+  });
+
   it('should transform an indicator result to a data point', () => {
     // given
     const traces = EvaluationsMock.data.evaluationHistory as Trace[];

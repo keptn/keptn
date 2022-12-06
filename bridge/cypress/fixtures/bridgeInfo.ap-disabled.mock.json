@@ -1,0 +1,22 @@
+{
+  "info": {
+    "bridgeVersion": "0.10.0-next.1",
+    "keptnInstallationType": "QUALITY_GATES",
+    "apiUrl": "",
+    "apiToken": "",
+    "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.10.0-next.1",
+    "enableVersionCheckFeature": false,
+    "showApiToken": true,
+    "authType": "OAUTH",
+    "user": "claus.keptn-dev@ruxitlabs.com",
+    "featureFlags": {}
+  },
+  "metadata": {
+    "bridgeversion": "docker.io/keptn/bridge2:0.9.0",
+    "keptnlabel": "keptn",
+    "keptnversion": "0.9.0",
+    "namespace": "keptn",
+    "shipyardversion": "0.2.0",
+    "automaticprovisioning": false
+  }
+}

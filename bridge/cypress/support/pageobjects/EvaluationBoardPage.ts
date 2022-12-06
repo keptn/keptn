@@ -67,6 +67,7 @@ export class EvaluationBoardPage {
     cy.byTestId('keptn-evaluation-details-scoreInfo').should('have.text', `${score} ${equality} ${threshold}`);
     return this;
   }
+
   public assertResultInfo(type: ResultTypes): this {
     cy.byTestId('keptn-evaluation-details-resultInfo').should('have.text', `Result: ${type}`);
     return this;
@@ -98,6 +99,13 @@ export class EvaluationBoardPage {
     cy.byTestId('ktb-invalidate-confirm-button').click();
     cy.wait('@invalidateEvent');
 
+    return this;
+  }
+
+  public assertScoreProgressBarExists(exists = true): this {
+    cy.get('.dt-progress-bar-progress')
+      .invoke('outerWidth')
+      .should(exists ? 'be.greaterThan' : 'eq', 0);
     return this;
   }
 }

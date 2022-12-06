@@ -16,7 +16,7 @@
               [class.success]="sequence.isSuccessful(this.stage)"
             ></dt-icon>
           </ng-template>
-          <span [textContent]="sequence.time | amDateFormat: dateUtil.getDateTimeFormat()"></span>
+          <span [textContent]="sequence.time | amDateFormat : dateUtil.getDateTimeFormat()"></span>
         </div>
       </ng-container>
       <ng-template #trace>
@@ -36,7 +36,7 @@
           </ng-template>
           <span
             *ngIf="subSequence.time"
-            [textContent]="subSequence.time | toDate | amCalendar: dateUtil.getCalendarFormats()"
+            [textContent]="subSequence.time | toDate | amCalendar : dateUtil.getCalendarFormats()"
           ></span>
         </ng-container>
       </ng-template>

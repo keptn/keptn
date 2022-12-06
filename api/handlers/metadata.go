@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -61,7 +62,7 @@ type metadataHandler struct {
 }
 
 func (h *metadataHandler) getMetadata() middleware.Responder {
-	logger.Info("API received a GET metadata event")
+	logger.Debug("API received a GET metadata event")
 
 	namespace := os.Getenv("POD_NAMESPACE")
 	automaticProvisioningURL := os.Getenv("AUTOMATIC_PROVISIONING_URL")
@@ -76,13 +77,13 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 	payload.Automaticprovisioning = &automaticProvisioningURLValue
 
 	if bridgeVersion, err := h.getBridgeVersion(namespace); err != nil {
-		logger.WithError(err).Error("Error getting bridge version")
+		logger.Errorf("Could not get bridge version: %v", err)
 	} else {
 		payload.Bridgeversion = bridgeVersion
 	}
 
 	if keptnVersion, err := h.getSwaggerKeptnVersion(); err != nil {
-		logger.WithError(err).Error("Error getting swagger info")
+		logger.Errorf("Could not get swagger info: %v", err)
 	} else {
 		payload.Keptnversion = keptnVersion
 	}
@@ -93,11 +94,15 @@ func (h *metadataHandler) getMetadata() middleware.Responder {
 func (h *metadataHandler) getBridgeVersion(namespace string) (string, error) {
 
 	if h.k8sClient == nil {
-		return "", fmt.Errorf("unable to get bridge version")
+		return "", fmt.Errorf("no K8s client available")
 	}
 	bridgeDeployment, err := h.k8sClient.AppsV1().Deployments(namespace).Get(context.TODO(), "bridge", metav1.GetOptions{})
 	if err != nil {
-		return "", fmt.Errorf("unable to get bridge version %w", err)
+		return "", fmt.Errorf("unable to get bridge version: %w", err)
+	}
+
+	if len(bridgeDeployment.Spec.Template.Spec.Containers) == 0 {
+		return "", errors.New("bridge deployment does not contain any image")
 	}
 
 	v := strings.Split(bridgeDeployment.Spec.Template.Spec.Containers[0].Image, ":")
@@ -105,7 +110,7 @@ func (h *metadataHandler) getBridgeVersion(namespace string) (string, error) {
 		return v[1], nil
 	}
 
-	return "", fmt.Errorf("unable to get bridge version")
+	return "", errors.New("could not determine bridge version from deployment")
 }
 
 func (h *metadataHandler) getSwaggerKeptnVersion() (string, error) {

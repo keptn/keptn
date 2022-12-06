@@ -32,7 +32,7 @@ func (d denyListProvider) Get() []string {
 
 	configMap, err := d.kubeClient.CoreV1().ConfigMaps(GetNamespaceFromEnvVar()).Get(context.TODO(), WebhookConfigMap, metav1.GetOptions{})
 	if err != nil {
-		logger.Errorf("Unable to get ConfigMap %s content: %s", WebhookConfigMap, err.Error())
+		logger.Errorf("Could not get ConfigMap %s content: %v", WebhookConfigMap, err)
 		return denyList
 	}
 

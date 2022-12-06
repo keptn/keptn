@@ -59,12 +59,12 @@ func (rp *RepositoryProvisioner) ProvideRepository(projectName, namespace string
 
 	jsonProvisioningData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf(common.UnableReadProvisioningData, err.Error())
+		return nil, fmt.Errorf(common.UnableProvisionInstance, "cannot read the response")
 	}
 
 	provisioningData := models.ProvisioningData{}
 	if err := json.Unmarshal(jsonProvisioningData, &provisioningData); err != nil {
-		return nil, fmt.Errorf(common.UnableUnMarshallProvisioningData, err.Error())
+		return nil, fmt.Errorf(common.UnableProvisionInstance, "cannot parse the response")
 	}
 
 	return &provisioningData, nil

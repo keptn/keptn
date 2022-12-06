@@ -32,7 +32,7 @@ class EnvironmentPage {
   public visit(project: string, stage = '', filterType = ''): this {
     const query = filterType ? `?filterType=${filterType}` : '';
     cy.visit(stage ? `/project/${project}/environment/stage/${stage}${query}` : `/project/${project}`)
-      .wait('@metadata')
+      .wait('@bridgeInfo')
       .wait('@project');
     return this;
   }

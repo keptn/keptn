@@ -6,7 +6,6 @@ import * as http from 'http';
 import { contentSecurityPolicy, frameguard, noSniff, permittedCrossDomainPolicies, xssFilter } from 'helmet';
 import express, { Express, NextFunction, Request, Response } from 'express';
 import { fileURLToPath, URL } from 'url';
-import logger from 'morgan';
 import { ComponentLogger } from './utils/logger';
 import cookieParser from 'cookie-parser';
 import AdmZip from 'adm-zip';
@@ -17,7 +16,7 @@ import { ClientFeatureFlags, ServerFeatureFlags } from './feature-flags';
 import { setupOAuth } from './user/oauth';
 import { SessionService } from './user/session';
 import { ContentSecurityPolicyOptions } from 'helmet/dist/types/middlewares/content-security-policy';
-import { printError } from './utils/print-utils';
+import { printError, filterHeaders } from './utils/print-utils';
 import { AuthType } from '../shared/models/auth-type';
 import { AuthConfig, BridgeConfiguration, EnvType } from './interfaces/configuration';
 
@@ -74,7 +73,13 @@ async function init(configuration: BridgeConfiguration): Promise<Express> {
   );
 
   // add some middlewares
-  app.use(logger('dev'));
+  const logExpress = new ComponentLogger('Express');
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    logExpress.info(
+      `${req.method} ${req.url} ${res.statusCode} :: ${logExpress.prettyPrint(filterHeaders(req.headers))}`
+    );
+    next();
+  });
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use(cookieParser());
@@ -119,7 +124,7 @@ async function init(configuration: BridgeConfiguration): Promise<Express> {
 }
 
 async function setBasicAUTH(app: Express, auth: AuthConfig): Promise<void> {
-  log.error('Installing Basic authentication - please check environment variables!');
+  log.warning('Installing Basic authentication - please check environment variables!');
 
   setInterval(cleanIpBuckets, auth.cleanBucketIntervalMs);
 
@@ -140,7 +145,7 @@ async function setBasicAUTH(app: Express, auth: AuthConfig): Promise<void> {
     ) {
       updateBucket(!!(login || password), auth, userIP);
 
-      log.error('Access denied');
+      log.error(`Access denied`);
       res.set('WWW-Authenticate', 'Basic realm="Keptn"');
       next({ response: { status: 401 } });
       return;
@@ -165,7 +170,7 @@ async function setAuth(
     await setBasicAUTH(app, configuration.auth);
   } else {
     authType = AuthType.NONE;
-    log.info('Not installing authentication middleware');
+    log.warning('No authentication middleware is installed');
   }
 
   return { authType, session };
@@ -173,7 +178,7 @@ async function setAuth(
 
 function setupDefaultLookAndFeel(mode: EnvType, rootFolder: string): void {
   try {
-    log.info('Installing default Look-and-Feel');
+    log.debug('Installing default Look-and-Feel');
 
     const destDir = join(rootFolder, 'dist/assets/branding');
     const srcDir = join(rootFolder, `${mode === EnvType.DEV ? 'client' : 'dist'}/assets/default-branding`);
@@ -196,7 +201,7 @@ function setupLookAndFeel(url: string, rootFolder: string): void {
   let fl: WriteStream | undefined;
 
   try {
-    log.info(`Downloading custom Look-and-Feel file from ${url}`);
+    log.debug(`Downloading custom Look-and-Feel file from ${url}`);
 
     const destDir = join(rootFolder, 'dist/assets/branding');
     const destFile = join(destDir, '/lookandfeel.zip');
@@ -220,13 +225,13 @@ function setupLookAndFeel(url: string, rootFolder: string): void {
             zip.extractAllToAsync(destDir, true, false, (error?: Error) => {
               unlinkSync(destFile);
               if (error) {
-                log.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+                log.error(`Error while extracting custom Look-and-Feel file: ${error}`);
                 return;
               }
               log.info('Custom Look-and-Feel downloaded and extracted successfully');
             });
           } catch (error) {
-            log.error(`[ERROR] Error while extracting custom Look-and-Feel file. ${error}`);
+            log.error(`Error while extracting custom Look-and-Feel file: ${error}`);
           }
         });
         file.on('error', async (err) => {
@@ -234,18 +239,18 @@ function setupLookAndFeel(url: string, rootFolder: string): void {
           try {
             await unlink(destFile);
           } catch (error) {
-            log.error(`[ERROR] Error while saving custom Look-and-Feel file. ${error}`);
+            log.error(`Error while saving custom Look-and-Feel file. ${error}`);
           }
-          log.error(`[ERROR] Error while saving custom Look-and-Feel file. ${err}`);
+          log.error(`Error while saving custom Look-and-Feel file. ${err}`);
         });
       })
       .on('error', (err) => {
         file.end();
-        log.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+        log.error(`Error while downloading custom Look-and-Feel file. ${err}`);
       });
   } catch (err) {
     fl?.end();
-    log.error(`[ERROR] Error while downloading custom Look-and-Feel file. ${err}`);
+    log.error(`Error while downloading custom Look-and-Feel file. ${err}`);
   }
 }
 
@@ -301,12 +306,10 @@ function handleError(err: any, req: Request, res: Response, authType: AuthType):
   if (err.response?.data?.message) {
     err.message = err.response?.data.message;
   }
-  if (err.response?.status === 401) {
-    res.setHeader('keptn-auth-type', authType);
-  }
+  res.setHeader('keptn-auth-type', authType);
 
   printError(err);
-  log.info(`Response status: ${err.response?.status}`);
+  log.error(`Response status ${err.response?.status} for ${req.method} ${req.url}`);
 
   return err.response?.status || 500;
 }

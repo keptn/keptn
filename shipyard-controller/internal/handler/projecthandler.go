@@ -306,7 +306,7 @@ func (ph *ProjectHandler) CreateProject(c *gin.Context) {
 		provisioningData, err := ph.RepositoryProvisioner.ProvideRepository(*params.Name, common.GetKeptnNamespace())
 		if err != nil {
 			log.Errorf(err.Error())
-			SetFailedDependencyErrorResponse(c, common.UnableProvisionInstanceGeneric)
+			SetFailedDependencyErrorResponse(c, err.Error())
 			return
 		}
 

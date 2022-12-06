@@ -116,7 +116,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.24.0
+        uses: dawidd6/action-download-artifact@v2.24.2
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -193,17 +193,17 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v0.8.3
+        uses: google-github-actions/auth@v1.0.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
       - name: Set up Google Cloud SDK
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/setup-gcloud@v0.6.2
+        uses: google-github-actions/setup-gcloud@v1.0.1
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/get-gke-credentials@v0.8.2
+        uses: google-github-actions/get-gke-credentials@v1.0.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
@@ -519,7 +519,7 @@ jobs:
 
       - name: Create issue if tests failed
         if: always() && github.event_name == 'schedule' && steps.test_zero_downtime.outcome != 'success'
-        uses: JasonEtco/create-an-issue@v2.8.0
+        uses: JasonEtco/create-an-issue@v2.8.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

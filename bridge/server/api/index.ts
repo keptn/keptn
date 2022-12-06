@@ -1,17 +1,16 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import { AxiosError, Method } from 'axios';
+import { Method } from 'axios';
 import { axios } from '../services/axios-instance';
 import { DataService } from '../services/data-service';
-import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
 import { ClientFeatureFlags } from '../feature-flags';
 import { EventTypes } from '../../shared/interfaces/event-types';
 import { SessionService } from '../user/session';
 import { KeptnService } from '../../shared/models/keptn-service';
 import { AuthType } from '../../shared/models/auth-type';
-import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
-import { printError } from '../utils/print-utils';
 import { ComponentLogger } from '../utils/logger';
 import { BridgeConfiguration } from '../interfaces/configuration';
+import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
+import { BridgeInfo } from '../../shared/interfaces/bridge-info';
 
 const router = Router();
 const log = new ComponentLogger('APIService');
@@ -38,25 +37,37 @@ const apiRouter = (params: {
 
   // bridgeInfo endpoint: Provide certain metadata for Bridge
   router.get('/bridgeInfo', async (req, res, next) => {
-    const user = session?.getCurrentPrincipal(req);
-    const bridgeInfo: KeptnInfoResult = {
-      bridgeVersion,
-      featureFlags,
-      keptnInstallationType,
-      apiUrl,
-      ...(showApiToken && { apiToken }),
-      cliDownloadLink: configuration.urls.CLI,
-      enableVersionCheckFeature,
-      showApiToken,
-      projectsPageSize,
-      servicesPageSize,
-      authType,
-      ...(user && { user }),
-      automaticProvisioningMsg,
-      authMsg,
-    };
-
     try {
+      const accessToken = req.session?.tokenSet?.access_token;
+      const metadata = await dataService.getMetadata(accessToken);
+      const isVersionCheckEnabled = req.query.isVersionCheckEnabled === 'true';
+      let versions: KeptnVersions | undefined;
+      if (isVersionCheckEnabled) {
+        versions = await dataService.getKeptnVersions(bridgeVersion);
+      }
+      const user = session?.getCurrentPrincipal(req);
+
+      const bridgeInfo: BridgeInfo = {
+        info: {
+          bridgeVersion,
+          featureFlags,
+          keptnInstallationType,
+          apiUrl,
+          ...(showApiToken && { apiToken }),
+          cliDownloadLink: configuration.urls.CLI,
+          enableVersionCheckFeature,
+          showApiToken,
+          projectsPageSize,
+          servicesPageSize,
+          authType,
+          ...(user && { user }),
+          automaticProvisioningMsg,
+          authMsg,
+        },
+        metadata,
+        versions,
+      };
+
       return res.json(bridgeInfo);
     } catch (err) {
       return next(err);
@@ -75,28 +86,6 @@ const apiRouter = (params: {
       return res.json(result.data);
     } catch (err) {
       return next(err);
-    }
-  });
-
-  router.get('/version.json', async (req, res) => {
-    try {
-      const result = await axios({
-        method: req.method as Method,
-        url: `https://get.keptn.sh/version.json`,
-        headers: {
-          'Content-Type': 'application/json',
-          'User-Agent': `keptn/bridge:${bridgeVersion}`,
-        },
-      });
-      return res.json(result.data);
-    } catch (err) {
-      const defaultVersions: KeptnVersions = {
-        cli: { stable: [], prerelease: [] },
-        bridge: { stable: [], prerelease: [] },
-        keptn: { stable: [] },
-      };
-      printError(err as AxiosError);
-      return res.json(defaultVersions);
     }
   });
 
@@ -254,7 +243,7 @@ const apiRouter = (params: {
             deleteWebhook
           );
         } else {
-          log.info('No available subscription or integration ID.');
+          log.warning('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {
@@ -277,7 +266,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         } else {
-          log.info('No available subscription or integration ID.');
+          log.warning('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {
@@ -301,7 +290,7 @@ const apiRouter = (params: {
             req.body.webhookConfig
           );
         } else {
-          log.info('No available subscription or integration ID.');
+          log.warning('No available subscription or integration ID.');
         }
         return res.json();
       } catch (error) {

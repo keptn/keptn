@@ -45,7 +45,7 @@
         <p
           *ngIf="showTime && _event.time"
           class="m-0 mt-1 mb-1"
-          [textContent]="_event.time | amDateFormat: dateUtil.getDateTimeFormat()"
+          [textContent]="_event.time | amDateFormat : dateUtil.getDateTimeFormat()"
         ></p>
         <button
           dt-icon-button

@@ -20,7 +20,7 @@ func NewApprovalTriggeredEventHandler(ctx context.Context, event cloudevents.Eve
 	eventSender := ctx.Value(controlplane.EventSenderKeyType{}).(controlplane.EventSender)
 	keptnHandlerV2, err := keptnv2.NewKeptn(&event, keptncommon.KeptnOpts{EventSender: &CPEventSender{Sender: eventSender}})
 	if err != nil {
-		logger.WithError(err).Error("Failed to initialize Keptn handler")
+		logger.Errorf("Failed to initialize Keptn handler: %v", err)
 		return nil, err
 	}
 	return &ApprovalTriggeredEventHandler{keptn: keptnHandlerV2}, nil
@@ -52,7 +52,7 @@ func getResult(data keptnv2.ApprovalTriggeredEventData, event cloudevents.Event)
 func (a *ApprovalTriggeredEventHandler) Handle(event cloudevents.Event) error {
 	data := &keptnv2.ApprovalTriggeredEventData{}
 	if err := event.DataAs(data); err != nil {
-		logger.WithError(err).Error("failed to parse ApprovalTriggeredEventData")
+		logger.Errorf("Could not parse ApprovalTriggeredEventData: %v", err)
 		return err
 	}
 
@@ -75,15 +75,14 @@ func (a *ApprovalTriggeredEventHandler) handleApprovalTriggeredEvent(inputEvent 
 	if inputEvent.Result == keptnv2.ResultPass && inputEvent.Approval.Pass == keptnv2.ApprovalAutomatic ||
 		inputEvent.Result == keptnv2.ResultWarning && inputEvent.Approval.Warning == keptnv2.ApprovalAutomatic {
 
-		logger.Info(fmt.Sprintf("Automatically approve release of service %s of project %s and current stage %s",
-			inputEvent.Service, inputEvent.Project, inputEvent.Stage))
+		logger.Debugf("Automatically approve release of service %s of project %s and current stage %s",
+			inputEvent.Service, inputEvent.Project, inputEvent.Stage)
 
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultPass, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *finishedEvent)
 	} else if inputEvent.Result == keptnv2.ResultFailed {
 		// Handle case if an ApprovalTriggered event was sent even the evaluation result is failed
-		logger.Info(fmt.Sprintf("Disapprove release of service %s of project %s and current stage %s because"+
-			"the previous step failed", inputEvent.Service, inputEvent.Project, inputEvent.Stage))
+		logger.Debugf("Disapprove release of service %s of project %s and current stage %s because the previous step failed", inputEvent.Service, inputEvent.Project, inputEvent.Stage)
 		finishedEvent := a.getApprovalFinishedEvent(inputEvent, keptnv2.ResultFailed, triggeredID, shkeptncontext)
 		outgoingEvents = append(outgoingEvents, *finishedEvent)
 	}

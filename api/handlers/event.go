@@ -47,9 +47,10 @@ func GetEventHandlerInstance(eventValidation bool) *EventHandler {
 }
 
 func (eh *EventHandler) PostEvent(event models.KeptnContextExtendedCE) (*models.EventContext, error) {
-	logger.Info("API received a keptn event")
+	logger.Debugf("API received a Keptn event with ID %s", event.ID)
 	if eh.EventValidationEnabled {
 		if err := Validate(event); err != nil {
+			logger.Warnf("Received invalid Keptn event: %v", err)
 			return nil, err
 		}
 	}

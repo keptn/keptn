@@ -1,7 +1,7 @@
 import ProjectSettingsPage from '../support/pageobjects/ProjectSettingsPage';
 import { IProject } from '../../shared/interfaces/project';
 import BasePage from '../support/pageobjects/BasePage';
-import { interceptFailedMetadata } from '../support/intercept';
+import { interceptFailedBridgeInfo } from '../support/intercept';
 import { ProjectBoardPage } from '../support/pageobjects/ProjectBoardPage';
 
 describe('Git upstream extended settings project https test', () => {
@@ -154,7 +154,7 @@ describe('Project settings with invalid metadata', () => {
     };
 
     projectSettingsPage.interceptSettings().interceptProject(project);
-    interceptFailedMetadata();
+    interceptFailedBridgeInfo();
     projectSettingsPage.visitSettings('sockshop').assertErrorVisible(true);
   });
 });

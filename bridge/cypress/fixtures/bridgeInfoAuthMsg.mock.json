@@ -1,13 +1,22 @@
 {
-  "bridgeVersion": "0.10.0-next.1",
-  "keptnInstallationType": "QUALITY_GATES",
-  "apiUrl": "/api",
-  "apiToken": "xxx",
-  "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.10.0-next.1",
-  "enableVersionCheckFeature": false,
-  "showApiToken": true,
-  "authType": "OAUTH",
-  "user": "claus.keptn-dev@ruxitlabs.com",
-  "authMsg": "Hello handsome",
-  "featureFlags": {}
+  "info": {
+    "bridgeVersion": "0.10.0-next.1",
+    "keptnInstallationType": "QUALITY_GATES",
+    "apiUrl": "/api",
+    "apiToken": "xxx",
+    "cliDownloadLink": "https://github.com/keptn/keptn/releases/tag/0.10.0-next.1",
+    "enableVersionCheckFeature": false,
+    "showApiToken": true,
+    "authType": "OAUTH",
+    "user": "claus.keptn-dev@ruxitlabs.com",
+    "authMsg": "Hello handsome",
+    "featureFlags": {}
+  },
+  "metadata": {
+    "bridgeversion": "docker.io/keptn/bridge2:0.8.5",
+    "keptnlabel": "keptn",
+    "keptnversion": "0.8.5",
+    "shipyardversion": "0.2.0",
+    "namespace": "keptn"
+  }
 }

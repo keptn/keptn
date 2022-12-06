@@ -35,7 +35,7 @@ describe('Test setting header authorization', () => {
     accessToken: string | undefined,
     responseAuthorization: string | undefined
   ): Promise<void> {
-    const ignoreMethods = ['getAuthHeaders', 'constructor'];
+    const ignoreMethods = ['getAuthHeaders', 'constructor', 'getKeptnVersions'];
     axiosMock.onAny().reply(200);
 
     for (const key of Reflect.ownKeys(Object.getPrototypeOf(apiService))) {

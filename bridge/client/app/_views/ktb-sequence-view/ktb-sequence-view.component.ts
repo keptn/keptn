@@ -159,7 +159,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
       filter((state) => state.sequenceInfo?.state === SequencesState.LOAD_UNTIL_ROOT)
     );
     combineLatest([this.route.paramMap, loadUntilRootTriggered$])
-      .pipe(takeUntil(this.unsubscribe$))
+      .pipe(takeUntil(this.unsubscribe$), take(1))
       .subscribe(([params, state]) => {
         this.setParams(params, state);
       });
@@ -189,11 +189,10 @@ export class KtbSequenceViewComponent implements OnDestroy {
     AppUtils.createTimer(0, this._sequenceTimerInterval)
       .pipe(
         switchMap(() => projectName$),
+        switchMap((projectName) => this.dataService.loadSequences(projectName)),
         takeUntil(this.unsubscribe$)
       )
-      .subscribe((projectName) => {
-        this.dataService.loadSequences(projectName);
-      });
+      .subscribe();
 
     // update unfinished sequences
     AppUtils.createTimer(0, this._tracesTimerInterval)
@@ -230,7 +229,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
       return;
     }
 
-    this.dataService.loadUntilRoot(state.projectName, keptnContext);
+    this.dataService.loadUntilRoot(state.projectName, keptnContext).subscribe();
   }
 
   public loadSequenceMetadata(projectName: string): void {
@@ -423,12 +422,30 @@ export class KtbSequenceViewComponent implements OnDestroy {
     this.router.navigate(['/project/' + projectName]);
   }
 
+  private getNextStageIndex(currentSequence: SequenceState, stages: string[]): number {
+    const lastStage: string | undefined = currentSequence.getLastStage();
+    if (lastStage) {
+      return stages.indexOf(lastStage) + 1;
+    }
+
+    const lastEventStage = currentSequence.traces.slice().reverse()[0]?.stage;
+    if (!lastEventStage) {
+      return 0;
+    }
+
+    const lastIndex = stages.indexOf(lastEventStage);
+    // if the stage is finished it would be in sequence.stages therefore we don't need to check if the stage is actually not finished
+    if (lastIndex !== -1) {
+      return lastIndex;
+    }
+    return lastIndex + 1;
+  }
+
   public navigateToBlockingSequence(currentSequence: SequenceState, state?: ISequenceViewState): void {
     this.navigationToRunningSequenceLoading = true;
     const stages = this.metadata?.stages ?? [];
-    const lastStage = currentSequence.getLastStage() || '';
-    const nextStageIndex = stages.indexOf(lastStage);
-    const nextStage = stages[nextStageIndex + 1];
+    const nextStageIndex = this.getNextStageIndex(currentSequence, stages);
+    const nextStage = stages[nextStageIndex];
     this.apiService
       .getSequenceExecution({
         project: currentSequence.project,
@@ -440,24 +457,36 @@ export class KtbSequenceViewComponent implements OnDestroy {
       .pipe(
         finalize(() => {
           this.navigationToRunningSequenceLoading = false;
-        })
+        }),
+        switchMap((sequenceExecutionResult) => {
+          if (sequenceExecutionResult.sequenceExecutions.length === 0) {
+            return of(undefined);
+          }
+          const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
+          const sequence = state?.sequenceInfo?.sequences.find(
+            (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext
+          );
+          if (sequence && sequence.shkeptncontext === currentSequence.shkeptncontext) {
+            this.dataService.updateSequence(sequence.project, sequence.shkeptncontext);
+            return of(undefined);
+          }
+          if (!sequence) {
+            return this.dataService
+              .loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext)
+              .pipe(
+                map((sequences) => ({
+                  sequence: sequences.find((seq) => seq.shkeptncontext === sequenceExecution.scope.keptnContext),
+                  stage: sequenceExecution.scope.stage,
+                }))
+              );
+          }
+          return of({ sequence, stage: sequenceExecution.scope.stage });
+        }),
+        filter((data): data is { sequence: SequenceState; stage: string } => !!data?.sequence)
       )
-      .subscribe((sequenceExecutionResult) => {
-        if (sequenceExecutionResult.sequenceExecutions.length === 0) {
-          return;
-        }
-        const sequenceExecution = sequenceExecutionResult.sequenceExecutions[0];
-        const sequence = state?.sequenceInfo?.sequences.find(
-          (s) => s.shkeptncontext === sequenceExecution.scope.keptnContext
-        );
-        if (sequence && sequence.shkeptncontext === currentSequence.shkeptncontext) {
-          this.dataService.updateSequence(sequence.project, sequence.shkeptncontext);
-        } else if (sequence) {
-          this.selectSequence({ sequence: sequence });
-          this.loadTraces(sequence, undefined, sequenceExecution.scope.stage);
-        } else {
-          this.dataService.loadUntilRoot(sequenceExecution.scope.project, sequenceExecution.scope.keptnContext);
-        }
+      .subscribe(({ sequence, stage }) => {
+        this.selectSequence({ sequence });
+        this.loadTraces(sequence, undefined, stage);
       });
   }
 
@@ -504,7 +533,7 @@ export class KtbSequenceViewComponent implements OnDestroy {
 
   public loadOldSequences(projectName: string): void {
     this.loading = true;
-    this.dataService.loadOldSequences(projectName);
+    this.dataService.loadOldSequences(projectName).subscribe();
   }
 
   public ngOnDestroy(): void {

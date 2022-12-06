@@ -40,13 +40,13 @@ jobs:
             KEPTN_SERVICE_TYPE: "NodePort"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
-          - CLOUD_PROVIDER: "k3s-on-GHA"
-            PLATFORM_VERSION: "v1.24.4+k3s1" # see https://github.com/rancher/k3s/releases
-            KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "NodePort"
-            COLLECT_RESOURCE_LIMITS: "false"
-            USE_RESOURCE_SERVICE_DIRECTORY: "true"
+          #- CLOUD_PROVIDER: "k3s-on-GHA"
+          #  PLATFORM_VERSION: "v1.24.4+k3s1" # see https://github.com/rancher/k3s/releases
+          #  KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
+          #  PLATFORM: "kubernetes"
+          #  KEPTN_SERVICE_TYPE: "NodePort"
+          #  COLLECT_RESOURCE_LIMITS: "false"
+          #  USE_RESOURCE_SERVICE_DIRECTORY: "true"
           - CLOUD_PROVIDER: "k3d-on-GHA"
             PLATFORM_VERSION: "v5.4.6" # see https://github.com/k3d-io/k3d/releases
             KUBECONFIG: ""
@@ -162,7 +162,7 @@ jobs:
 
       # download artifacts from the specified branch with event type push (e.g., push to master/release branch)
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.24.0
+        uses: dawidd6/action-download-artifact@v2.24.2
         id: download_artifacts_push
         with:
           # Download last successful artifact from a CI build
@@ -244,7 +244,7 @@ jobs:
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v0.8.3
+        uses: google-github-actions/auth@v1.0.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
           access_token_lifetime: "7200s"
@@ -252,7 +252,7 @@ jobs:
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/get-gke-credentials@v0.8.2
+        uses: google-github-actions/get-gke-credentials@v1.0.0
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
@@ -721,7 +721,7 @@ jobs:
           path: ${{ env.FINAL_TEST_REPORT_FILEPATH_MARKDOWN }}
 
       - name: Download all artifacts from last successful build of specified branch
-        uses: dawidd6/action-download-artifact@v2.24.0
+        uses: dawidd6/action-download-artifact@v2.24.2
         with:
           # Download last successful artifact from a CI build
           github_token: ${{secrets.GITHUB_TOKEN}}
@@ -798,7 +798,7 @@ jobs:
 
       - name: Create issue if tests failed
         if: always() && github.event_name == 'schedule' && steps.formulate_bug_issue.outputs.INTEGRATION_TESTS_FAILED == 'true'
-        uses: JasonEtco/create-an-issue@v2.8.0
+        uses: JasonEtco/create-an-issue@v2.8.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:

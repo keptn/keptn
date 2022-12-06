@@ -53,7 +53,7 @@ func main() {
 	if os.Getenv(envVarLogLevel) != "" {
 		logLevel, err := log.ParseLevel(os.Getenv(envVarLogLevel))
 		if err != nil {
-			log.WithError(err).Error("could not parse log level provided by 'LOG_LEVEL' env var")
+			log.Errorf("could not parse log level provided by 'LOG_LEVEL' env var: %v", err)
 		} else {
 			log.SetLevel(logLevel)
 		}
@@ -132,7 +132,7 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.WithError(err).Error("could not start API server")
+			log.Errorf("could not start API server: %v", err)
 		}
 	}()
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, debounceTime, forkJoin, Observable, of, Subject } from 'rxjs';
-import { catchError, map, mergeMap, take, tap } from 'rxjs/operators';
+import { BehaviorSubject, debounceTime, Observable, of, Subject } from 'rxjs';
+import { catchError, map, mergeMap, switchMap, take, tap } from 'rxjs/operators';
 import { Trace } from '../_models/trace';
 import { Project } from '../_models/project';
 import { EventTypes } from '../../../shared/interfaces/event-types';
@@ -8,7 +8,7 @@ import { ApiService } from './api.service';
 import moment from 'moment';
 import { SequenceState } from '../_models/sequenceState';
 import { UniformRegistrationLog } from '../../../shared/interfaces/uniform-registration-log';
-import { HttpResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { SequenceResult } from '../_models/sequence-result';
 import { EventResult } from '../../../shared/interfaces/event-result';
 import { KeptnInfo } from '../_models/keptn-info';
@@ -27,7 +27,7 @@ import { EventData } from '../_components/ktb-evaluation-info/ktb-evaluation-inf
 import { SecretScope } from '../../../shared/interfaces/secret-scope';
 import { ICustomSequences } from '../../../shared/interfaces/custom-sequences';
 import { KeptnService } from '../../../shared/models/keptn-service';
-import { IMetadata } from '../_interfaces/metadata';
+import { IMetadata } from '../../../shared/interfaces/metadata';
 import {
   ISequenceState,
   ISequenceStateInfo,
@@ -38,6 +38,7 @@ import { IGitDataExtended } from '../../../shared/interfaces/project';
 import { IClientSecret, IServiceSecret } from '../../../shared/interfaces/secret';
 import { IUniformSubscription } from '../../../shared/interfaces/uniform-subscription';
 import { IUniformRegistration } from '../../../shared/interfaces/uniform-registration';
+import { BridgeInfo } from '../../../shared/interfaces/bridge-info';
 
 @Injectable({
   providedIn: 'root',
@@ -235,21 +236,24 @@ export class DataService {
   public loadKeptnInfo(): void {
     // #4165 Get bridge info first to get info if versions.json should be loaded or not
     // Versions should not be loaded if enableVersionCheckFeature is set to false (when ENABLE_VERSION_CHECK is set to false in env)
+    const versionCheckEnabled = !!this.apiService.isVersionCheckEnabled();
     this.apiService
-      .getKeptnInfo()
+      .getKeptnInfo(versionCheckEnabled)
       .pipe(
-        mergeMap((bridgeInfo) => {
-          return forkJoin([
-            of(bridgeInfo),
-            bridgeInfo.enableVersionCheckFeature
-              ? this.apiService.getAvailableVersions().pipe(catchError(() => of(undefined)))
-              : of(undefined),
-            of(this.apiService.isVersionCheckEnabled()),
-            this.apiService.getMetadata().pipe(catchError(() => of(null))),
-          ]);
+        catchError((error: HttpErrorResponse): Observable<BridgeInfo> => {
+          return of({
+            info: {
+              showApiToken: false,
+              enableVersionCheckFeature: false,
+              authType: error.headers.get('keptn-auth-type') ?? 'BASIC',
+              featureFlags: {},
+              cliDownloadLink: '',
+            },
+            metadata: null,
+          });
         })
       )
-      .subscribe(([bridgeInfo, availableVersions, versionCheckEnabled, metadata]) => {
+      .subscribe(({ info: bridgeInfo, versions: availableVersions, metadata }) => {
         const keptnInfo: KeptnInfo = {
           bridgeInfo,
           availableVersions,
@@ -349,13 +353,18 @@ export class DataService {
       .subscribe((projects) => this._projects.next(projects));
   }
 
-  public loadSequences(projectName: string, fromTime?: Date, beforeTime?: Date, oldSequence?: SequenceState): void {
+  public loadSequences(
+    projectName: string,
+    fromTime?: Date,
+    beforeTime?: Date,
+    oldSequence?: SequenceState
+  ): Observable<SequenceState[]> {
     if (!beforeTime && !fromTime) {
       // set fromTime if it isn't loadOldSequences
       fromTime = this._sequencesLastUpdated[projectName];
     }
     this._sequencesLastUpdated[projectName] = new Date();
-    this.apiService
+    return this.apiService
       .getSequences(
         projectName,
         beforeTime ? this.DEFAULT_NEXT_SEQUENCE_PAGE_SIZE : this.DEFAULT_SEQUENCE_PAGE_SIZE,
@@ -373,24 +382,30 @@ export class DataService {
           const count = body?.totalCount ?? body?.states.length ?? 0;
           const sequences = body?.states.map((sequence) => SequenceState.fromJSON(sequence)) ?? [];
           return [sequences, count] as [SequenceState[], number];
+        }),
+        map(([sequences, totalCount]: [SequenceState[], number]) => {
+          const previousSequences = this._sequences.getValue();
+          const sequenceData = previousSequences[projectName];
+          const newSequences = this.addNewSequences(
+            sequenceData?.sequences ?? [],
+            sequences,
+            !!beforeTime,
+            oldSequence
+          );
+          const allSequencesLoaded =
+            previousSequences[projectName]?.allSequencesLoaded ||
+            this.allSequencesLoaded(newSequences.length, totalCount, fromTime, beforeTime);
+
+          previousSequences[projectName] = {
+            allSequencesLoaded,
+            sequences: newSequences,
+            state: oldSequence ? SequencesState.LOAD_UNTIL_ROOT : SequencesState.UPDATE,
+          };
+
+          this._sequences.next(previousSequences);
+          return newSequences;
         })
-      )
-      .subscribe(([sequences, totalCount]: [SequenceState[], number]) => {
-        const previousSequences = this._sequences.getValue();
-        const sequenceData = previousSequences[projectName];
-        const newSequences = this.addNewSequences(sequenceData?.sequences ?? [], sequences, !!beforeTime, oldSequence);
-        const allSequencesLoaded =
-          previousSequences[projectName]?.allSequencesLoaded ||
-          this.allSequencesLoaded(newSequences.length, totalCount, fromTime, beforeTime);
-
-        previousSequences[projectName] = {
-          allSequencesLoaded,
-          sequences: newSequences,
-          state: oldSequence ? SequencesState.LOAD_UNTIL_ROOT : SequencesState.UPDATE,
-        };
-
-        this._sequences.next(previousSequences);
-      });
+      );
   }
 
   public loadLatestSequences(projectName: string, pageSize: number): Observable<SequenceState[]> {
@@ -444,12 +459,16 @@ export class DataService {
     );
   }
 
-  public loadOldSequences(projectName: string, fromTime?: Date, oldSequence?: SequenceState): void {
+  public loadOldSequences(
+    projectName: string,
+    fromTime?: Date,
+    oldSequence?: SequenceState
+  ): Observable<SequenceState[]> {
     const sequences = this._sequences.getValue()[projectName]?.sequences;
     if (!sequences?.length) {
-      return;
+      return of([]);
     }
-    this.loadSequences(projectName, fromTime, new Date(sequences[sequences.length - 1].time), oldSequence);
+    return this.loadSequences(projectName, fromTime, new Date(sequences[sequences.length - 1].time), oldSequence);
   }
 
   public updateSequence(projectName: string, keptnContext: string): void {
@@ -471,12 +490,15 @@ export class DataService {
     });
   }
 
-  public loadUntilRoot(projectName: string, shkeptncontext: string): void {
-    this.getSequenceByContext(projectName, shkeptncontext).subscribe((sequence) => {
-      if (sequence) {
-        this.loadOldSequences(projectName, new Date(sequence.time), sequence);
-      }
-    });
+  public loadUntilRoot(projectName: string, shkeptncontext: string): Observable<SequenceState[]> {
+    return this.getSequenceByContext(projectName, shkeptncontext).pipe(
+      switchMap((sequence) => {
+        if (sequence) {
+          return this.loadOldSequences(projectName, new Date(sequence.time), sequence);
+        }
+        return of([]);
+      })
+    );
   }
 
   public getTracesOfSequence(sequence: SequenceState): Observable<Trace[]> {
