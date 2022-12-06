@@ -256,6 +256,7 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 	err := retry.Retry(func() error {
 		if err := RecreateProjectUpstream(newProjectName); err != nil {
+			fmt.Println("ERROR: " + err.Error())
 			return err
 		}
 
@@ -263,12 +264,14 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 		privateKey, passphrase, err := GetPrivateKeyAndPassphrase()
 		if err != nil {
+			fmt.Println("ERROR: " + err.Error())
 			return err
 		}
 
 		privateKeyPath := "private-key"
 		err = os.WriteFile(privateKeyPath, []byte(privateKey), 0777)
 		if err != nil {
+			fmt.Println("ERROR: " + err.Error())
 			return err
 		}
 
@@ -278,8 +281,12 @@ func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, 
 
 		// apply the k8s job for creating the git upstream
 		out, err := ExecuteCommand(fmt.Sprintf("keptn create project %s --shipyard=%s --git-remote-url=ssh://gitea-ssh:22/%s/%s.git --git-user=%s --git-private-key=%s --git-private-key-pass=%s", newProjectName, shipyardFilePath, user, newProjectName, user, privateKeyPath, passphrase))
+		if err != nil {
+			fmt.Println("ERROR: " + err.Error())
+		}
 
 		if !strings.Contains(out, "created successfully") {
+			fmt.Println("ERROR: " + out)
 			return fmt.Errorf("unable to create project: %s", out)
 		}
 		return nil
