@@ -15,7 +15,8 @@ import (
 	"github.com/keptn/keptn/resource-service/models"
 )
 
-//IResourceManager provides an interface for resource CRUD operations
+// IResourceManager provides an interface for resource CRUD operations
+//
 //go:generate moq -pkg handler_mock -skip-ensure -out ./fake/resource_manager_mock.go . IResourceManager
 type IResourceManager interface {
 	CreateResources(params models.CreateResourcesParams) (*models.WriteResourceResponse, error)
@@ -61,6 +62,9 @@ func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models
 
 	gitContext, configPath, err := p.establishContext(params.Project, params.Stage, params.Service)
 	if err != nil {
+		return nil, err
+	}
+	if err := p.git.Pull(*gitContext); err != nil {
 		return nil, err
 	}
 	revision, err := p.git.GetCurrentRevision(*gitContext)
