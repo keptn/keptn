@@ -6,7 +6,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/keptn/keptn/resource-service/common_models"
 	kerrors "github.com/keptn/keptn/resource-service/errors"
-	git2go "github.com/libgit2/git2go/v33"
+	git2go "github.com/libgit2/git2go/v34"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )

@@ -21,7 +21,7 @@ require (
 	k8s.io/client-go v0.24.8
 )
 
-require github.com/libgit2/git2go/v33 v33.0.9
+require github.com/libgit2/git2go/v34 v34.0.0
 
 require (
 	github.com/Microsoft/go-winio v0.5.2 // indirect
