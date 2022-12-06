@@ -88,7 +88,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiGatewayNginx.containerSecurityContext`                 | Define a container security context for the API Gateway                                   |                      |
 | `apiGatewayNginx.image.registry`                           | API Gateway image registry                                                                | `docker.io/nginxinc` |
 | `apiGatewayNginx.image.repository`                         | API Gateway image repository                                                              | `nginx-unprivileged` |
-| `apiGatewayNginx.image.tag`                                | API Gateway image tag                                                                     | `1.23.1-alpine`      |
+| `apiGatewayNginx.image.tag`                                | API Gateway image tag                                                                     | `1.23.2-alpine`      |
 | `apiGatewayNginx.nodeSelector`                             | API Gateway node labels for pod assignment                                                | `{}`                 |
 | `apiGatewayNginx.podAffinity.podAffinityPreset`            | Pod affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`       | `""`                 |
 | `apiGatewayNginx.podAffinity.podAntiAffinityPreset`        | Pod anti-affinity preset. Ignored if `affinity` is set. Allowed values: `soft` or `hard`  | `""`                 |
