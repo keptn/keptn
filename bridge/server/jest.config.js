@@ -3,11 +3,14 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
-  globals: {
-    'ts-jest': {
-      useESM: true,
-      tsconfig: './tsconfig.spec.json',
-    },
+  transform: {
+    '^.+\\.ts$': [
+      'ts-jest/legacy',
+      {
+        useESM: true,
+        tsconfig: './tsconfig.spec.json',
+      },
+    ],
   },
   collectCoverage: true,
   coverageDirectory: '<rootDir>/coverage',
