@@ -22,7 +22,7 @@ helm template keptn "${KEPTN_HELM_CHART}" -n "${KEPTN_NAMESPACE}" \
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}curlimages/curl,\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
-nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.9.3-alpine,\
+nats.nats.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nats,\
 apiGatewayNginx.image.registry="",\
 apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
 
@@ -31,7 +31,7 @@ helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --cre
 global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
 global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}curlimages/curl,\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
-nats.nats.image=${TARGET_INTERNAL_DOCKER_REGISTRY}nats:2.9.3-alpine,\
+nats.nats.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nats,\
 apiGatewayNginx.image.registry="",\
 apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/nginx-unprivileged"
 
