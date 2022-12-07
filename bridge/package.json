@@ -131,7 +131,7 @@
   },
   "resolutions": {
     "@angular-devkit/build-angular/loader-utils": "2.0.4",
-    "@angular-devkit/build-angular/minimatch": "3.0.8",
+    "@angular-devkit/build-angular/minimatch": "3.1.2",
     "minimist": "1.2.7",
     "node-forge": "1.3.1",
     "css-what": "~6.1.0",
