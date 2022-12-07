@@ -89,11 +89,7 @@ func getSshGitAuth(credentials *common_models.GitCredentials) (*common_models.Au
 	if err != nil {
 		return nil, err
 	}
-	config, err := publicKey.ClientConfig()
-	if err != nil {
-		return nil, err
-	}
-	config.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
+	publicKey.HostKeyCallback = ssh2.InsecureIgnoreHostKey()
 
 	credCallback := func(url string, usernameFromUrl string, allowedTypes git2go.CredentialType) (*git2go.Credential, error) {
 		cred, err := git2go.NewCredentialSSHKeyFromMemory(credentials.User, string(publicKey.Signer.PublicKey().Marshal()), credentials.SshAuth.PrivateKey, credentials.SshAuth.PrivateKeyPass)
