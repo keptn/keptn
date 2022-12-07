@@ -120,8 +120,8 @@ github.com/json-iterator/go v1.1.12 h1:PV8peI4a0ysnczrg+LtxykD8LfKY9ML6u2jnxaEnr
 github.com/json-iterator/go v1.1.12/go.mod h1:e30LSqwooZae/UwlEbR2852Gd8hjQvJoHmT4TnhNGBo=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.19.1-0.20221207065441-851343d1d3e6 h1:L0BJ/1EjqEv+h7mXPlEZcCkGc3qdAOt/sFkrWuctW8o=
-github.com/keptn/go-utils v0.19.1-0.20221207065441-851343d1d3e6/go.mod h1:hh0mlm1bc0dEtqdPCDZLXec0vnKjktPA1+QLl58elpk=
+github.com/keptn/go-utils v0.20.0 h1:scQZjcrCVWN9pBEcalNJPG51vLKohuHoBgN7Q0rk3qM=
+github.com/keptn/go-utils v0.20.0/go.mod h1:hh0mlm1bc0dEtqdPCDZLXec0vnKjktPA1+QLl58elpk=
 github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
 github.com/kevinburke/ssh_config v1.2.0 h1:x584FjTGwHzMwvHx18PXxbBVzfnxogHaAReU4gf13a4=
 github.com/kevinburke/ssh_config v1.2.0/go.mod h1:CT57kijsi8u/K/BOFA39wgDQJ9CxiF4nAY/ojJ6r6mM=
