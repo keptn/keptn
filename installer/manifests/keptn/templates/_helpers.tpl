@@ -472,7 +472,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
@@ -495,7 +495,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
@@ -518,7 +518,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
@@ -541,7 +541,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
@@ -564,7 +564,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
@@ -587,7 +587,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
@@ -610,7 +610,7 @@ Usage:
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
-      cpu: "100m"
+      cpu: "50m"
       memory: "16Mi"
     requests:
       cpu: "25m"
