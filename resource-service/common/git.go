@@ -104,6 +104,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	)
 
 	if err != nil {
+		logger.Errorf("Could not clone project %s: %v", gitContext.Project, err.Error())
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
