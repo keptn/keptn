@@ -27,12 +27,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - CLOUD_PROVIDER: "minishift-on-GHA"
-            PLATFORM: "openshift"
-            PLATFORM_VERSION: "3.11"
-            KEPTN_SERVICE_TYPE: "ClusterIP"
-            COLLECT_RESOURCE_LIMITS: "true"
-            USE_RESOURCE_SERVICE_DIRECTORY: "false"
+          #- CLOUD_PROVIDER: "minishift-on-GHA"
+          #  PLATFORM: "openshift"
+          #  PLATFORM_VERSION: "3.11"
+          #  KEPTN_SERVICE_TYPE: "ClusterIP"
+          #  COLLECT_RESOURCE_LIMITS: "true"
+          #  USE_RESOURCE_SERVICE_DIRECTORY: "false"
           - CLOUD_PROVIDER: "k3s-on-GHA"
             PLATFORM_VERSION: "v1.22.8+k3s1" # see https://github.com/rancher/k3s/releases
             KUBECONFIG: "/etc/rancher/k3s/k3s.yaml"
@@ -55,22 +55,22 @@ jobs:
             RUN_AIRGAPPED_TEST: "true"
             COLLECT_RESOURCE_LIMITS: "false"
             USE_RESOURCE_SERVICE_DIRECTORY: "false"
-          - CLUSTER_NAME: "keptn-integration-tests-1"
-            CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.22"
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            COLLECT_RESOURCE_LIMITS: "false"
-            USE_RESOURCE_SERVICE_DIRECTORY: "false"
-          - CLUSTER_NAME: "keptn-integration-tests-2"
-            CLOUD_PROVIDER: "GKE"
-            PLATFORM_VERSION: "1.24"
-            KUBECONFIG: ""
-            PLATFORM: "kubernetes"
-            KEPTN_SERVICE_TYPE: "LoadBalancer"
-            COLLECT_RESOURCE_LIMITS: "true"
-            USE_RESOURCE_SERVICE_DIRECTORY: "true"
+          #- CLUSTER_NAME: "keptn-integration-tests-1"
+          #  CLOUD_PROVIDER: "GKE"
+          #  PLATFORM_VERSION: "1.22"
+          #  KUBECONFIG: ""
+          #  PLATFORM: "kubernetes"
+          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
+          #  COLLECT_RESOURCE_LIMITS: "false"
+          #  USE_RESOURCE_SERVICE_DIRECTORY: "false"
+          #- CLUSTER_NAME: "keptn-integration-tests-2"
+          #  CLOUD_PROVIDER: "GKE"
+          #  PLATFORM_VERSION: "1.24"
+          #  KUBECONFIG: ""
+          #  PLATFORM: "kubernetes"
+          #  KEPTN_SERVICE_TYPE: "LoadBalancer"
+          #  COLLECT_RESOURCE_LIMITS: "true"
+          #  USE_RESOURCE_SERVICE_DIRECTORY: "true"
 
     env:
       CLOUD_PROVIDER: ${{ matrix.CLOUD_PROVIDER }}
@@ -333,6 +333,7 @@ jobs:
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
+                --set resourceService.env.SSH_KNOWN_HOSTS="*" \
                 $EXTRA_NATS_VALUES
             else
               helm install -n ${KEPTN_NAMESPACE} keptn ${HELM_CHART_NAME} --wait --timeout 14m \
@@ -340,6 +341,7 @@ jobs:
                 --create-namespace \
                 --set apiGatewayNginx.type=${KEPTN_SERVICE_TYPE} \
                 --set resourceService.env.DIRECTORY_STAGE_STRUCTURE=${USE_RESOURCE_SERVICE_DIRECTORY} \
+                --set resourceService.env.SSH_KNOWN_HOSTS="*" \
                 $EXTRA_NATS_VALUES
             fi
           fi
