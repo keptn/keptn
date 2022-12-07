@@ -5,12 +5,12 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### Global values
 
-| Name                          | Description                                                   | Value             |
-| ----------------------------- | ------------------------------------------------------------- | ----------------- |
-| `global.keptn.registry`       | Global Docker image registry                                  | `docker.io/keptn` |
-| `global.keptn.tag`            | The tag of Keptn that should be used for all images           | `""`              |
-| `global.initContainers.image` | Init container image to enable staggered rollout of Keptn     | `curlimages/curl` |
-| `global.initContainers.tag`   | Init container image tag to enable staggered rollout of Keptn | `7.85.0`          |
+| Name                          | Description                                                   | Value                   |
+| ----------------------------- | ------------------------------------------------------------- | ----------------------- |
+| `global.keptn.registry`       | Global Docker image registry                                  | `docker.keptn.sh/keptn` |
+| `global.keptn.tag`            | The tag of Keptn that should be used for all images           | `""`                    |
+| `global.initContainers.image` | Init container image to enable staggered rollout of Keptn     | `curlimages/curl`       |
+| `global.initContainers.tag`   | Init container image tag to enable staggered rollout of Keptn | `7.85.0`                |
 
 
 ### MongoDB

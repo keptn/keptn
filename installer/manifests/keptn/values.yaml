@@ -2,7 +2,7 @@
 global:
   keptn:
     ## @param global.keptn.registry Global Docker image registry
-    registry: docker.io/keptn
+    registry: docker.keptn.sh/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
   initContainers:
