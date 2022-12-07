@@ -473,7 +473,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
@@ -496,7 +496,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
@@ -519,7 +519,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
@@ -542,7 +542,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
@@ -565,7 +565,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
@@ -588,7 +588,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
@@ -611,7 +611,7 @@ Usage:
   resources:
     limits:
       cpu: "100m"
-      memory: "32Mi"
+      memory: "16Mi"
     requests:
       cpu: "25m"
       memory: "8Mi"
