@@ -631,6 +631,17 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID, 3)
 	require.Nil(t, err)
 	require.Equal(t, 404, resp.Response().StatusCode)
+
+	logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+	require.Nil(t, err)
+	t.Log("logs from RService: ")
+	t.Log(logs)
+
+	logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+	require.Nil(t, err)
+	t.Log("logs from Shippy: ")
+	t.Log(logsShippy)
+
 }
 
 func createConfigServiceUpstreamRepo(projectName string) (string, string, error) {
