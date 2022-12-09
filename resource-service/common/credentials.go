@@ -39,11 +39,11 @@ func (kr K8sCredentialReader) GetCredentials(secretName string) (*common_models.
 	}
 	secret, err := kr.k8sClient.CoreV1().Secrets(GetKeptnNamespace()).Get(context.TODO(), secretName, metav1.GetOptions{})
 	if err != nil && k8serrors.IsNotFound(err) {
-		logger.Debug("Could not retrieve credentials named: ", secretName)
+		logger.Debugf("Could not retrieve credentials named1: %s, err is %s", secretName, err.Error())
 		return nil, errors2.ErrCredentialsNotFound
 	}
 	if err != nil {
-		logger.Debug("Could not retrieve credentials named: ", secretName)
+		logger.Debugf("Could not retrieve credentials named2: %s, err is %s", secretName, err.Error())
 		return nil, err
 	}
 

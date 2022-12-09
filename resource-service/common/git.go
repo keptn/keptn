@@ -83,6 +83,7 @@ func getGitKeptnEmail() string {
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if (gitContext.Credentials == nil) || (*gitContext.Credentials == common_models.GitCredentials{}) {
+		logger.Debugf("failed to clone repo: git credentials are nil")
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", "project", kerrors.ErrInvalidGitContext)
 	}
 
@@ -93,6 +94,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	}
 	err := ensureDirectoryExists(projectPath)
 	if err != nil {
+		logger.Debugf("failed to clone repo: ensureDirectory exists err: %s", err.Error())
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
 	clone, err := g.git.PlainClone(gitContext, projectPath, false,
@@ -107,28 +109,34 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
+				logger.Debugf("err2: %s", err.Error())
 				return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "init", gitContext.Project, mapError(err))
 			}
 		} else {
+			logger.Debugf("err3: %s", err.Error())
 			return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 		}
 	}
 
 	err = configureGitUser(clone)
 	if err != nil {
+		logger.Debugf("err4: %s", err.Error())
 		return false, err
 	}
 
 	head, err := clone.Head()
 	if err != nil {
+		logger.Debugf("err5: %s", err.Error())
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 	}
 
 	if err = g.fetch(gitContext, clone); err != nil {
+		logger.Debugf("err6: %s", err.Error())
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "fetch", gitContext.Project, mapError(err))
 	}
 
 	if err := g.storeDefaultBranchConfig(gitContext, err, clone, head); err != nil {
+		logger.Debugf("err7: %s", err.Error())
 		return false, err
 	}
 
@@ -323,16 +331,19 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 
 func (g *Git) Pull(gitContext common_models.GitContext) error {
 	if !g.ProjectExists(gitContext) {
+		logger.Debugf("project already exists pull")
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, kerrors.ErrProjectNotFound)
 	}
 
 	r, w, err := g.getWorkTree(gitContext)
 	if err != nil {
+		logger.Debugf("err8: %s", err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
 	}
 
 	head, err := r.Head()
 	if err != nil {
+		logger.Debugf("err9: %s", err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "pull", gitContext.Project, mapError(err))
 	}
 	err = w.Pull(&git.PullOptions{
@@ -347,6 +358,7 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod.GoGitAuth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
 	}
 	if err != nil {
+		logger.Debugf("err10: %s", err.Error())
 		// do not return an error if we are alread< up to date or if the repository is empty
 		if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
 			return nil
