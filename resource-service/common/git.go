@@ -496,7 +496,7 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 
 	err = r.CreateBranch(newBranch)
 	if err != nil {
-		logger.Debugf("could not create branch %s for project %s err44: %s", newBranch, gitContext.Project, err.Error())
+		logger.Debugf("could not create branch %s for project %s err44: %s", newBranch.Name, gitContext.Project, err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, mapError(err))
 	}
 
