@@ -151,6 +151,18 @@ func Test_ProxyAuth(t *testing.T) {
 
 	mockServerIP := "localhost:1080"
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingProxyShipyard)
 	require.Nil(t, err)

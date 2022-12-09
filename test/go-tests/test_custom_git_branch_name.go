@@ -12,6 +12,18 @@ func Test_CreateProjectWithCustomBranchName(t *testing.T) {
 	projectMain := "project-main-custom"
 	keptnNamespace := GetKeptnNameSpaceFromEnv()
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectMaster)
 	shipyardFilePath, err := CreateTmpShipyardFile(testingShipyard)
 	require.Nil(t, err)

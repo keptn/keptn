@@ -1,10 +1,12 @@
 package go_tests
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -236,4 +238,32 @@ func CompareServiceNameWithDeploymentName(serviceName string, deploymentName str
 	}
 
 	return false, nil
+}
+
+func PrintLogsWithDeploymentName(deploymentName string) (string, error) {
+	api, err := kubeutils.GetClientSet(false)
+	if err != nil {
+		return "", err
+	}
+
+	pods, err := GetPodNamesOfDeployment(deploymentName)
+	if len(pods) > 0 {
+
+		req := api.CoreV1().Pods(GetKeptnNameSpaceFromEnv()).GetLogs(pods[0], &v1.PodLogOptions{})
+		podLogs, err := req.Stream(context.Background())
+		if err != nil {
+			return "", fmt.Errorf("error in opening stream")
+		}
+		defer podLogs.Close()
+
+		buf := new(bytes.Buffer)
+		_, err = io.Copy(buf, podLogs)
+		if err != nil {
+			return "", fmt.Errorf("error in copy information from podLogs to buf")
+		}
+		str := buf.String()
+
+		return str, nil
+	}
+	return "", fmt.Errorf("no pod found")
 }

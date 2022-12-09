@@ -94,6 +94,18 @@ func Test_QualityGates(t *testing.T) {
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	source := "golang-test"
 
 	t.Logf("creating project %s", projectName)

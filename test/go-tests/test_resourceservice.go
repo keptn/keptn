@@ -86,6 +86,18 @@ func Test_ResourceServiceBasic(t *testing.T) {
 		GitCredentials: &gitCredentials,
 	}
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	ctx, closeInternalKeptnAPI := context.WithCancel(context.Background())
 	defer closeInternalKeptnAPI()
 	internalKeptnAPI, err := GetInternalKeptnAPI(ctx, "service/resource-service", "8888", "8080")
@@ -552,6 +564,18 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath)
 	require.Nil(t, err)
@@ -631,6 +655,7 @@ func Test_ResourceServiceGETCommitID(t *testing.T) {
 	resp, err = ApiGETRequest("/resource-service/v1/project/"+projectName+"/stage/hardening/service/"+serviceName+"/resource/"+newResourceUri+"?gitCommitID="+commitID, 3)
 	require.Nil(t, err)
 	require.Equal(t, 404, resp.Response().StatusCode)
+
 }
 
 func createConfigServiceUpstreamRepo(projectName string) (string, string, error) {

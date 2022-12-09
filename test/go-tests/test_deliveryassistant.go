@@ -67,6 +67,18 @@ func Test_DeliveryAssistant(t *testing.T) {
 		}
 	}()
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath)

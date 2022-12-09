@@ -83,6 +83,7 @@ func getGitKeptnEmail() string {
 
 func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	if (gitContext.Credentials == nil) || (*gitContext.Credentials == common_models.GitCredentials{}) {
+		logger.Debugf("Could not do naything, credentials missing")
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", "project", kerrors.ErrInvalidGitContext)
 	}
 
@@ -93,6 +94,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	}
 	err := ensureDirectoryExists(projectPath)
 	if err != nil {
+		logger.Debugf("ensureDirectoryExists projectpath %s err1: %s", projectPath, err.Error())
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotCreatePath, projectPath, err)
 	}
 	clone, err := g.git.PlainClone(gitContext, projectPath, false,
@@ -104,6 +106,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 	)
 
 	if err != nil {
+		logger.Debugf("could not clone project %s err2: %s", gitContext.Project, err.Error())
 		if kerrors.ErrEmptyRemoteRepository.Is(err) {
 			clone, err = g.init(gitContext, projectPath)
 			if err != nil {
@@ -116,19 +119,23 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 
 	err = configureGitUser(clone)
 	if err != nil {
+		logger.Debugf("configure git user project %s err3: %s", gitContext.Project, err.Error())
 		return false, err
 	}
 
 	head, err := clone.Head()
 	if err != nil {
+		logger.Debugf("could not get head for project %s err4: %s", gitContext.Project, err.Error())
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "clone", gitContext.Project, mapError(err))
 	}
 
 	if err = g.fetch(gitContext, clone); err != nil {
+		logger.Debugf("could not fetch project %s err5: %s", gitContext.Project, err.Error())
 		return false, fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "fetch", gitContext.Project, mapError(err))
 	}
 
 	if err := g.storeDefaultBranchConfig(gitContext, err, clone, head); err != nil {
+		logger.Debugf("could not store default branch config for project %s err6: %s", gitContext.Project, err.Error())
 		return false, err
 	}
 
@@ -138,6 +145,7 @@ func (g Git) CloneRepo(gitContext common_models.GitContext) (bool, error) {
 func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err error, clone *git.Repository, head *plumbing.Reference) error {
 	cfg, err := clone.Config()
 	if err != nil {
+		logger.Debugf("could not get config for project %s err7: %s", gitContext.Project, err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "get config", gitContext.Project, mapError(err))
 	}
 
@@ -145,6 +153,7 @@ func (g Git) storeDefaultBranchConfig(gitContext common_models.GitContext, err e
 
 	err = clone.SetConfig(cfg)
 	if err != nil {
+		logger.Debugf("could not set config for project %s err8: %s", gitContext.Project, err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "set config", gitContext.Project, mapError(err))
 	}
 	return nil
@@ -156,12 +165,14 @@ func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 		logger.Infof("Setting default branch to %s", defaultBranch)
 		input, err := ioutil.ReadFile(path)
 		if err != nil {
+			logger.Debugf("could not read file %s err9: %s", path, err.Error())
 			return err
 		}
 
 		output := bytes.Replace(input, []byte(common_models.GitInitDefaultBranchName), []byte(defaultBranch), -1)
 
 		if err = ioutil.WriteFile(path, output, 0700); err != nil {
+			logger.Debugf("could not write file %s err10: %s", path, err.Error())
 			return err
 		}
 	}
@@ -171,6 +182,7 @@ func (g Git) rewriteDefaultBranch(path string, env envconfig.EnvConfig) error {
 func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git.Repository, error) {
 	init, err := g.git.PlainInit(projectPath, false)
 	if err != nil {
+		logger.Debugf("could not plaininit for project %s err11: %s", gitContext.Project, err.Error())
 		if errors.Is(err, git.ErrRepositoryAlreadyExists) {
 			init, err = g.git.PlainOpen(projectPath)
 			if err != nil {
@@ -182,6 +194,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 	}
 
 	if err := g.rewriteDefaultBranch(projectPath+gitHeadFilePath, envconfig.Global); err != nil {
+		logger.Debugf("could not rewrite default branch for project %s err12: %s", gitContext.Project, err.Error())
 		return nil, err
 	}
 
@@ -191,6 +204,7 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 			URLs: []string{gitContext.Credentials.RemoteURL},
 		})
 		if err != nil {
+			logger.Debugf("could not create remote for project %s err13: %s", gitContext.Project, err.Error())
 			return nil, err
 		}
 	}
@@ -225,11 +239,13 @@ func (g Git) init(gitContext common_models.GitContext, projectPath string) (*git
 			},
 		})
 	if err != nil {
+		logger.Debugf("could not commit for project %s err18: %s", gitContext.Project, err.Error())
 		return nil, err
 	}
 
 	err = g.Push(gitContext)
 	if err != nil {
+		logger.Debugf("could not push for project %s err19: %s", gitContext.Project, err.Error())
 		return nil, err
 	}
 	return init, nil
@@ -257,12 +273,16 @@ func (g Git) commitAll(gitContext common_models.GitContext, message string) (str
 				When:  time.Now(),
 			},
 		})
+	if err != nil {
+		logger.Debugf("could not commit for project %s err22: %s", gitContext.Project, err.Error())
+	}
 	return id.String(), err
 }
 
 func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message string) (string, error) {
 	id, err := g.commitAll(gitContext, message)
 	if err != nil {
+		logger.Debugf("could not commit for project %s err23: %s", gitContext.Project, err.Error())
 		if err = g.ResetHard(gitContext, "HEAD~0"); err != nil {
 			logger.Warnf("Could not reset after commitAll: %v", err)
 		} else {
@@ -280,12 +300,14 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 	}
 	err = g.Pull(gitContext)
 	if err != nil {
+		logger.Debugf("could not pull for project %s err24: %s", gitContext.Project, err.Error())
 		rollbackFunc()
 		return "", err
 	}
 
 	err = g.Push(gitContext)
 	if err != nil {
+		logger.Debugf("could not push for project %s err25: %s", gitContext.Project, err.Error())
 		rollbackFunc()
 		return "", err
 	}
@@ -316,6 +338,7 @@ func (g Git) Push(gitContext common_models.GitContext) error {
 		InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials),
 	})
 	if err != nil && !errors.Is(err, git.NoErrAlreadyUpToDate) {
+		logger.Debugf("could not push for project %s err27: %s", gitContext.Project, err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotGitAction, "push", gitContext.Project, mapError(err))
 	}
 	return nil
@@ -347,6 +370,7 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		err = w.Pull(&git.PullOptions{RemoteName: "origin", Force: true, Auth: gitContext.AuthMethod.GoGitAuth, InsecureSkipTLS: retrieveInsecureSkipTLS(gitContext.Credentials)})
 	}
 	if err != nil {
+		logger.Debugf("could not pull for project %s err30: %s", gitContext.Project, err.Error())
 		// do not return an error if we are alread< up to date or if the repository is empty
 		if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
 			return nil
@@ -411,11 +435,13 @@ func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (str
 	// ... retrieving the commit objects
 	revCommit, err := repo.CommitObject(*revHash)
 	if err != nil {
+		logger.Debugf("could not commit object %s err36: %s", gitContext.Project, err.Error())
 		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
 	}
 
 	headCommit, err := repo.CommitObject(headRef.Hash())
 	if err != nil {
+		logger.Debugf("could not commit object %s err37: %s", gitContext.Project, err.Error())
 		return "", false, fmt.Errorf(kerrors.ErrMsgCouldNotGetRevision, gitContext.Project, err)
 	}
 
@@ -439,6 +465,7 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	// move head to sourceBranch
 	err := g.CheckoutBranch(gitContext, sourceBranch)
 	if err != nil {
+		logger.Debugf("could not checkout branch for project %s err39: %s", gitContext.Project, err.Error())
 		return err
 	}
 	b := plumbing.NewBranchReferenceName(branch)
@@ -459,14 +486,17 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	}
 
 	if err != nil {
+		logger.Debugf("could not checkout for project %s err42: %s", gitContext.Project, err.Error())
 		// got an error  - try to create it
 		if err := w.Checkout(&git.CheckoutOptions{Create: true, Force: false, Branch: b}); err != nil {
+			logger.Debugf("could not checkout for project %s err43: %s", gitContext.Project, err.Error())
 			return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, mapError(err))
 		}
 	}
 
 	err = r.CreateBranch(newBranch)
 	if err != nil {
+		logger.Debugf("could not create branch %s for project %s err44: %s", newBranch.Name, gitContext.Project, err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, mapError(err))
 	}
 
@@ -487,6 +517,7 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 		Force:  true,
 	})
 	if err != nil {
+		logger.Debugf("could not checkout branch for project %s err45: %s", gitContext.Project, err.Error())
 		if errors.Is(err, plumbing.ErrReferenceNotFound) {
 			return fmt.Errorf(kerrors.ErrMsgCouldNotCheckout, branch, kerrors.ErrReferenceNotFound)
 		}
@@ -502,6 +533,7 @@ func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.C
 			return err
 		}
 		if err = g.fetch(gitContext, r); err != nil {
+			logger.Debugf("could not fetch for project %s err47: %s", gitContext.Project, err.Error())
 			return err
 		}
 

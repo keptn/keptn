@@ -94,6 +94,18 @@ func Test_ProvisioningURL(t *testing.T) {
 	provisioningConfigMap := fmt.Sprintf(provisioningConfigMapTemplate, user, token, user)
 	shipyardPod := "shipyard-controller"
 
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
+
 	mockserverconfigFilePath, err := CreateTmpFile(mockserverConfigFileName, provisioningConfigMap)
 	defer func() {
 		if err := os.Remove(mockserverconfigFilePath); err != nil {
