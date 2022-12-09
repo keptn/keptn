@@ -1,10 +1,11 @@
 package go_tests
 
 import (
-	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 	"os"
 	"testing"
 	"time"
+
+	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	"github.com/stretchr/testify/require"
@@ -34,6 +35,18 @@ func Test_BackupRestore(t *testing.T) {
 		if err := os.RemoveAll(mongoDBBackupFolder); err != nil {
 			t.Logf("could not remove temp dir '%s': %v", mongoDBBackupFolder, err)
 		}
+	}()
+
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
 	}()
 
 	t.Logf("Creating a new project %s with a Gitea Upstream", projectName)

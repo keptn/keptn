@@ -2,8 +2,9 @@ package go_tests
 
 import (
 	"context"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/keptn/go-utils/pkg/common/kubeutils"
 	"github.com/stretchr/testify/require"
@@ -17,6 +18,18 @@ func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
 	var ns = GetKeptnNameSpaceFromEnv()
 	secret1 := "my-new-secret"
 	secret2 := "my-new-secret-2"
+
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
 
 	// create secret 1
 	_, err = ExecuteCommandf("keptn create secret %s --from-literal=mykey1=myvalue1", secret1)

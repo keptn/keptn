@@ -8,6 +8,7 @@ import (
 
 	"github.com/keptn/go-utils/pkg/api/models"
 	keptnv2 "github.com/keptn/go-utils/pkg/lib/v0_2_0"
+
 	//models "github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/stretchr/testify/require"
 )
@@ -38,6 +39,18 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard2)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
+
+	defer func() {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
+		require.Nil(t, err)
+		t.Log("logs from RService: ")
+		t.Log(logs)
+
+		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
+		require.Nil(t, err)
+		t.Log("logs from Shippy: ")
+		t.Log(logsShippy)
+	}()
 
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath)
