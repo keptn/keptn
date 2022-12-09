@@ -498,7 +498,6 @@ func (g *Git) CreateBranch(gitContext common_models.GitContext, branch string, s
 	// First try to check out branch
 	err = w.Checkout(&git.CheckoutOptions{Create: false, Force: false, Branch: b})
 	if err == nil {
-		logger.Debugf("err41 %s", err.Error())
 		return fmt.Errorf(kerrors.ErrMsgCouldNotCreate, branch, gitContext.Project, kerrors.ErrBranchExists)
 	}
 
