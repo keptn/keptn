@@ -307,7 +307,7 @@ func (g Git) StageAndCommitAll(gitContext common_models.GitContext, message stri
 
 	err = g.Push(gitContext)
 	if err != nil {
-		logger.Debugf("could not push for project %S err25: %s", gitContext.Project, err.Error())
+		logger.Debugf("could not push for project %s err25: %s", gitContext.Project, err.Error())
 		rollbackFunc()
 		return "", err
 	}
