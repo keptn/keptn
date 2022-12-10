@@ -107,7 +107,7 @@ lifecycle:
 - name: K8S_POD_NAME
   valueFrom:
     fieldRef:
-     fieldPath: metadata.name
+      fieldPath: metadata.name
 - name: K8S_NAMESPACE
 {{- if .Values.distributor.metadata.namespace }}
   value: {{ .Values.distributor.metadata.namespace }}
