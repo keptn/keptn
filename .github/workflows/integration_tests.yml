@@ -157,6 +157,8 @@ jobs:
             jq '[.workflow_runs[] | select(
               (.head_commit != null) and (.head_commit.author.name | endswith("[bot]") | not ) and ( .conclusion == "success" ) 
             )][0] | .id')
+          # here we skip BOT PRs because they don't build artifacts
+          # Secrets are not there in the builds so there is no artifact pushed and retagged
           echo "Run ID that will be used to download artifacts from: $RUN_ID"
           echo "RUN_ID=$RUN_ID" >> $GITHUB_OUTPUT
 
