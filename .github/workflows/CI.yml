@@ -164,12 +164,18 @@ jobs:
           --repo-url=keptn/keptn \
           --dry-run=true > release-please-output
           
+          echo "done with RP"
+          
           GIT_NEXT_TAG=""
-          if grep -q "title: build(release):" 'release-please-output'; then
-            GIT_NEXT_TAG="next"
+          if grep -q 'title: build(release):' 'release-please-output'; then
+            echo "didnt find version"
+            GIT_NEXT_TAG='next'
           else
+            echo "found version"
             GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
           fi
+          
+          echo "done with if"
           
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
