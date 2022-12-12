@@ -168,7 +168,7 @@ jobs:
           if grep -q 'title: build(release):' 'release-please-output'; then
             GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
           else
-            GIT_NEXT_TAG='next'
+            GIT_NEXT_TAG='0.0.0'
           fi
           
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
