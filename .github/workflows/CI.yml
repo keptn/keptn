@@ -168,11 +168,11 @@ jobs:
           
           GIT_NEXT_TAG=""
           if grep -q 'title: build(release):' 'release-please-output'; then
-            echo "didnt find version"
-            GIT_NEXT_TAG='next'
-          else
             echo "found version"
             GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
+          else
+            echo "didnt find version"
+            GIT_NEXT_TAG='next'
           fi
           
           echo "done with if"
