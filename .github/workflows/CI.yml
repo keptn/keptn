@@ -165,7 +165,7 @@ jobs:
           --dry-run=true > release-please-output
           
           GIT_NEXT_TAG=""
-          if [ cat release-please-output | grep -q 'title: build(release):' ]; then
+          if [[ cat release-please-output | grep -q -e 'title: build(release):' ]]; then
             GIT_NEXT_TAG="next"
           else
             GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
