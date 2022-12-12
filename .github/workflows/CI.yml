@@ -163,8 +163,13 @@ jobs:
           --token="$GH_TOKEN" \
           --repo-url=keptn/keptn \
           --dry-run=true > release-please-output
-
-          GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
+          
+          GIT_NEXT_TAG=""
+          if grep -q 'title: build(release):' 'release-please-output'; then
+            GIT_NEXT_TAG=$(cat release-please-output | grep 'title: build(release):' | cut -d ' ' -f3)
+          else
+            GIT_NEXT_TAG='next'
+          fi
           
           echo "GIT_NEXT_TAG=${GIT_NEXT_TAG}"
 
