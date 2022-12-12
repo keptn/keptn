@@ -36,21 +36,13 @@ func Test_SequenceQueue_TriggerMultiple(t *testing.T) {
 
 	numSequences := 10
 
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"resource-service", "shipyard-controller"})
+	}(t)
+
 	shipyardFilePath, err := CreateTmpShipyardFile(sequenceQueueShipyard2)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
-
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
 
 	t.Logf("creating project %s", projectName)
 	projectName, err = CreateProject(projectName, shipyardFilePath)

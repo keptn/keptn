@@ -32,17 +32,9 @@ func Test_ImportCorrectManifest(t *testing.T) {
 	projectName := "keptn-importer-test"
 	serviceName := "my-service-name"
 
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"resource-service", "shipyard-controller"})
+	}(t)
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(importerShipyard)
@@ -85,17 +77,9 @@ func Test_ImportCorrectManifestNonExistingProject(t *testing.T) {
 	errorMessage := fmt.Sprintf("project %s does not exist", wrongProjectName)
 	expectedErrorCode := 404
 
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"resource-service", "shipyard-controller"})
+	}(t)
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(importerShipyard)
@@ -120,17 +104,9 @@ func Test_ImportMalformedZipFileCorrectName(t *testing.T) {
 	errorMessage := "Error opening import archive"
 	expectedErrorCode := 415
 
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"resource-service", "shipyard-controller"})
+	}(t)
 
 	t.Logf("Creating a new project %s with Gitea Upstream", projectName)
 	shipyardFilePath, err := CreateTmpShipyardFile(importerShipyard)

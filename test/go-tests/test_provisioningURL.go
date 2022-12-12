@@ -94,17 +94,9 @@ func Test_ProvisioningURL(t *testing.T) {
 	provisioningConfigMap := fmt.Sprintf(provisioningConfigMapTemplate, user, token, user)
 	shipyardPod := "shipyard-controller"
 
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"resource-service", "shipyard-controller"})
+	}(t)
 
 	mockserverconfigFilePath, err := CreateTmpFile(mockserverConfigFileName, provisioningConfigMap)
 	defer func() {
@@ -187,8 +179,8 @@ func Test_ProvisioningURL(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller AUTOMATIC_PROVISIONING_URL=%s -n %s", "", keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 30s to make sure shipyard pod is deleted...")
-	time.Sleep(30 * time.Second)
+	t.Logf("Sleeping for 90s to make sure shipyard pod is deleted...")
+	time.Sleep(90 * time.Second)
 	t.Logf("Waiting for Shipyard-controller to be running")
 	err = WaitForPodOfDeployment(shipyardPod)
 	require.Nil(t, err)
@@ -214,6 +206,10 @@ func Test_ProvisioningURL_hiddenURL(t *testing.T) {
 			t.Logf("Could not delete file: %v", err)
 		}
 	}()
+
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"resource-service", "shipyard-controller"})
+	}(t)
 
 	t.Logf("Create mock server ConfigMap")
 	_, err = ExecuteCommandf("kubectl apply -f %s -n %s", mockserverconfigFilePath, keptnNamespace)
@@ -292,8 +288,8 @@ func Test_ProvisioningURL_hiddenURL(t *testing.T) {
 	_, err = ExecuteCommandf("kubectl set env deployment/shipyard-controller HIDE_AUTOMATIC_PROVISIONED_URL=%s -n %s", "false", keptnNamespace)
 	require.Nil(t, err)
 
-	t.Logf("Sleeping for 30s to make sure shipyard pod is deleted...")
-	time.Sleep(30 * time.Second)
+	t.Logf("Sleeping for 90s to make sure shipyard pod is deleted...")
+	time.Sleep(90 * time.Second)
 	t.Logf("Waiting for Shipyard-controller to be running")
 	err = WaitForPodOfDeployment(shipyardPod)
 	require.Nil(t, err)

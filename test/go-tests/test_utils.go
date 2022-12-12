@@ -250,6 +250,21 @@ func AddNamespaceToName(projectName string) string {
 	return osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName
 }
 
+func PrintLogsOfPods(t *testing.T, pods []string) {
+	for _, name := range pods {
+		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=" + name)
+		if err != nil {
+			t.Log("Logs from " + name + " not found: " + err.Error())
+			continue
+		}
+		t.Log("--------------------------------------------------------------------------------------")
+		t.Log("Logs from " + name + ": ")
+		t.Log("--------------------------------------------------------------------------------------")
+		t.Log(logs)
+		t.Log("--------------------------------------------------------------------------------------")
+	}
+}
+
 func CreateProjectWithSSH(projectName string, shipyardFilePath string) (string, error) {
 	// The project name is prefixed with the keptn test namespace to avoid name collisions during parallel integration test runs on CI
 	newProjectName := osutils.GetOSEnvOrDefault(KeptnNamespaceEnvVar, DefaultKeptnNamespace) + "-" + projectName

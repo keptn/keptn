@@ -59,17 +59,9 @@ func Test_EvaluationGitCommitID(t *testing.T) {
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
 
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"lighthouse-service", "resource-service", "shipyard-controller"})
+	}(t)
 
 	t.Log("deleting lighthouse configmap from previous test run")
 	ExecuteCommandf("kubectl delete configmap -n %s lighthouse-config-keptn-%s", GetKeptnNameSpaceFromEnv(), projectName)

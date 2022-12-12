@@ -90,21 +90,14 @@ const invalidSLOFileContent = "invalid"
 func Test_QualityGates(t *testing.T) {
 	projectName := "quality-gates"
 	serviceName := "my-service"
+
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"lighthouse-service", "resource-service", "shipyard-controller"})
+	}(t)
+
 	shipyardFilePath, err := CreateTmpShipyardFile(qualityGatesShipyard)
 	require.Nil(t, err)
 	defer os.Remove(shipyardFilePath)
-
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
 
 	source := "golang-test"
 

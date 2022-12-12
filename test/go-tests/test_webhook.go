@@ -201,6 +201,11 @@ func CreateWebhookProject(t *testing.T, projectName, serviceName string) (string
 func Test_Webhook_Failures(t *testing.T) {
 	projectName := "webhooks-b"
 	serviceName := "myservice"
+
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"webhook-service", "resource-service", "shipyard-controller"})
+	}(t)
+
 	projectName, shipyardFilePath := CreateWebhookProject(t, projectName, serviceName)
 	defer DeleteFile(t, shipyardFilePath)
 	stageName := "dev"
@@ -330,6 +335,10 @@ func Test_Webhook_Failures(t *testing.T) {
 // Note, that for this test we temporarily disable the restriction of only being allowed
 // to call external targets with the webhook service
 func Test_Webhook(t *testing.T) {
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"webhook-service", "resource-service", "shipyard-controller"})
+	}(t)
+
 	const webhookConfigMap = "keptn-webhook-config"
 	oldConfig, err := GetFromConfigMap(GetKeptnNameSpaceFromEnv(), webhookConfigMap, func(data map[string]string) string {
 		return data["denyList"]
@@ -405,6 +414,11 @@ func Test_ExecutingWebhookTargetingClusterInternalAddressesFails(t *testing.T) {
 	serviceName := "myservice"
 	sequencename := "mysequence"
 	taskname := "mytask"
+
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"webhook-service", "resource-service", "shipyard-controller"})
+	}(t)
+
 	projectName, shipyardFile := CreateWebhookProject(t, projectName, serviceName)
 	defer DeleteFile(t, shipyardFile)
 
