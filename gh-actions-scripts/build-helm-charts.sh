@@ -95,15 +95,15 @@ do
   BASE_PATH=${charts[$i]}
 
   echo "::group::Helm dependency build"
-  helm dependency build ${BASE_PATH}
+  helm dependency build "${BASE_PATH}"
   echo "::endgroup::"
 
   if [[ "$SIGN_CHART" == 'true' ]]; then
     # shellcheck disable=SC2002
-    cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
+    cat "$SIGNING_KEY_PASSPHRASE_PATH" | helm package "${BASE_PATH}" --app-version "$IMAGE_TAG" --version "$VERSION" --sign --key "$SIGNING_KEY_NAME" --keyring "$SIGNING_KEY_PATH" --passphrase-file -
     mv "${BASE_NAME}-${VERSION}.tgz.prov" 'keptn-charts/'
   else
-    helm package ${BASE_PATH} --app-version "$IMAGE_TAG" --version "$VERSION"
+    helm package "${BASE_PATH}" --app-version "$IMAGE_TAG" --version "$VERSION"
   fi
 
   if [ $? -ne 0 ]; then
