@@ -134,6 +134,10 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 		}},
 	}
 
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"shipyard-controller"})
+	}(t)
+
 	// Scenario 1: Simple API Test (create, read, delete)
 	// register the integration at the shipyard controller
 	resp, err := ApiPOSTRequest("/controlPlane/v1/uniform/registration", uniformIntegration, 3)
@@ -329,6 +333,10 @@ func Test_UniformRegistration_TestAPI(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"shipyard-controller"})
+	}(t)
+
 	// make sure the echo-service uses the same distributor as Keptn core
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
@@ -362,6 +370,10 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegration(t *testing.T) {
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *testing.T) {
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"shipyard-controller"})
+	}(t)
+
 	// make sure the echo-service uses the same distributor as Keptn core
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")
 	require.Nil(t, err)
@@ -396,6 +408,10 @@ func Test_UniformRegistration_RegistrationOfKeptnIntegrationMultiplePods(t *test
 // Test_UniformRegistration_RegistrationOfKeptnIntegration tests whether a deployed Keptn Integration gets correctly
 // registered/unregistered to/from the Keptn control plane - in this case, the service runs in the remote execution plane
 func Test_UniformRegistration_RegistrationOfKeptnIntegrationRemoteExecPlane(t *testing.T) {
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"shipyard-controller"})
+	}(t)
+
 	// install echo integration
 	// make sure the echo-service uses the same distributor as Keptn core
 	imageName, err := GetImageOfDeploymentContainer("lighthouse-service", "lighthouse-service")

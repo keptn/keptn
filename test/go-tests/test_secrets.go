@@ -19,17 +19,9 @@ func Test_ManageSecrets_CreateUpdateAndDeleteSecret(t *testing.T) {
 	secret1 := "my-new-secret"
 	secret2 := "my-new-secret-2"
 
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
-	}()
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"secret-service", "shipyard-controller"})
+	}(t)
 
 	// create secret 1
 	_, err = ExecuteCommandf("keptn create secret %s --from-literal=mykey1=myvalue1", secret1)

@@ -93,6 +93,11 @@ const webhookURI = "/%252Fwebhook%252Fwebhook.yaml"
 func Test_Webhook_Migrator(t *testing.T) {
 	baseProjectName := "webhook-migration"
 	serviceName := "myservice"
+
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"webhook-service", "resource-service", "shipyard-controller"})
+	}(t)
+
 	shipyardFilePath, err := CreateTmpShipyardFile(webhookShipyard)
 	require.Nil(t, err)
 	defer func() {
@@ -154,9 +159,9 @@ func Test_Webhook_Migrator(t *testing.T) {
 	require.Nil(t, err)
 
 	t.Logf("Checking if all webhooks contain the right version")
-	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI,projectName+"1", serviceName, webhookConfigMigrationBeta)
+	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+"1", serviceName, webhookConfigMigrationBeta)
 	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+"2", serviceName, webhookConfigMigrationAlpha)
-	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI,projectName+"3", serviceName, webhookConfigMigrationAlpha)
+	checkWebhooksHaveCorrectVersion(t, internalKeptnAPI, projectName+"3", serviceName, webhookConfigMigrationAlpha)
 
 	t.Logf("Executing migration for all projects")
 	_, err = ExecuteCommandf("keptn migrate-webhooks -y")

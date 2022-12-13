@@ -59,24 +59,16 @@ func Test_DeliveryAssistant(t *testing.T) {
 	projectName := "delivery-assistant"
 	serviceName := "my-service"
 
+	defer func(t *testing.T) {
+		PrintLogsOfPods(t, []string{"approval-service", "resource-service", "shipyard-controller"})
+	}(t)
+
 	shipyardFilePath, err := CreateTmpShipyardFile(deliveryAssistantShipyard)
 	require.Nil(t, err)
 	defer func() {
 		if err := os.Remove(shipyardFilePath); err != nil {
 			t.Logf("warning: could not remove shipyard file %s", shipyardFilePath)
 		}
-	}()
-
-	defer func() {
-		logs, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=resource-service")
-		require.Nil(t, err)
-		t.Log("logs from RService: ")
-		t.Log(logs)
-
-		logsShippy, err := PrintLogsWithDeploymentName("app.kubernetes.io/name=shipyard-controller")
-		require.Nil(t, err)
-		t.Log("logs from Shippy: ")
-		t.Log(logsShippy)
 	}()
 
 	_, err = ExecuteCommand(fmt.Sprintf("kubectl delete configmap -n %s lighthouse-config-%s", GetKeptnNameSpaceFromEnv(), projectName))
