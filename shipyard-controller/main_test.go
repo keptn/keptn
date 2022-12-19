@@ -27,6 +27,7 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
+	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
