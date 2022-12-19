@@ -268,7 +268,7 @@ jobs:
       - name: Run test command
         run: |
           gcloud version
-          gke-gcloud-auth-plugin --version
+#          gke-gcloud-auth-plugin --version
           kubectl get ns
 
       - name: Push images to airgapped registry
