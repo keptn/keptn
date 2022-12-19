@@ -191,12 +191,6 @@ jobs:
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
 
-      - name: Authenticate to Google Cloud
-        if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/auth@v1.0.0
-        with:
-          credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
-
       - name: Set up Google Cloud SDK
         if: env.CLOUD_PROVIDER == 'GKE'
         uses: google-github-actions/setup-gcloud@v1.0.1
@@ -206,6 +200,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+
+      - name: Authenticate to Google Cloud
+        if: env.CLOUD_PROVIDER == 'GKE'
+        uses: google-github-actions/auth@v1.0.0
+        with:
+          credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
