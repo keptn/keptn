@@ -27,7 +27,6 @@ import (
 	"github.com/keptn/keptn/shipyard-controller/models"
 	"github.com/nats-io/nats-server/v2/server"
 	natsserver "github.com/nats-io/nats-server/v2/test"
-	"github.com/nats-io/nats.go"
 	"github.com/stretchr/testify/require"
 	"github.com/tryvium-travels/memongo"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -1027,7 +1026,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return true
-	}, 3*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	// now finish the sequence in staging-2
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
