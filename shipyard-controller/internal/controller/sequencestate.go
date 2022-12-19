@@ -54,8 +54,7 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event apimodels.Ke
 		State:          apimodels.SequenceTriggeredState,
 		Stages: []apimodels.SequenceStateStage{
 			{
-				Name:  eventScope.Stage,
-				State: apimodels.SequenceTriggeredState,
+				Name: eventScope.Stage,
 			},
 		},
 	}
