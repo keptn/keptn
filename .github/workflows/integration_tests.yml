@@ -247,7 +247,8 @@ jobs:
       - name: Install Gcloud auth plugin
         if: env.CLOUD_PROVIDER == 'GKE'
         run: |
-          gcloud components install gke-gcloud-auth-plugin
+          sudo apt-get update
+          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
