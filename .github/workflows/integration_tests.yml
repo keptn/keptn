@@ -269,6 +269,11 @@ jobs:
           location: "europe-west2"
           use_auth_provider: true
 
+      - name: Run test command
+        run: |
+          gcloud version
+          kubectl get ns
+
       - name: Push images to airgapped registry
         if: env.RUN_AIRGAPPED_TEST == 'true'
         timeout-minutes: 15
