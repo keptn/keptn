@@ -191,17 +191,13 @@ jobs:
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
 
-      - name: Install Gcloud auth plugin
-        if: env.CLOUD_PROVIDER == 'GKE'
-        run: |
-          sudo apt-get update
-          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
-
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
         uses: google-github-actions/auth@v1.0.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
+          access_token_lifetime: "7200s"
+          token_format: "access_token"
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
@@ -209,6 +205,10 @@ jobs:
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
+
+      - name: Set permissions on Kubeconfig
+        run: |
+          chmod 600 "$KUBECONFIG"
 
       - name: Install Keptn
         id: keptn_install

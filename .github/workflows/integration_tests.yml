@@ -244,12 +244,6 @@ jobs:
           k3d cluster create mykeptn --k3s-arg "--no-deploy=traefik@server:*" --agents 1 --k3s-arg "--no-deploy=servicelb@server:*" --k3s-arg "--kube-proxy-arg=conntrack-max-per-core=0@server:*" --registry-use "$AIRGAPPED_REGISTRY_URL"
           kubectl config use-context k3d-mykeptn
 
-#      - name: Install Gcloud auth plugin
-#        if: env.CLOUD_PROVIDER == 'GKE'
-#        run: |
-#          sudo apt-get update
-#          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
-
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
         uses: google-github-actions/auth@v1.0.0
@@ -265,11 +259,9 @@ jobs:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
 
-      - name: Run test command
+      - name: Set permissions on Kubeconfig
         run: |
-          gcloud version
-          kubectl get ns
-#          gke-gcloud-auth-plugin --version
+          chmod 600 "$KUBECONFIG"
 
       - name: Push images to airgapped registry
         if: env.RUN_AIRGAPPED_TEST == 'true'
