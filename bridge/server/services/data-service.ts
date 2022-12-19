@@ -497,6 +497,7 @@ export class DataService {
       );
       registration.unreadEventsCount = logResponse.data.logs.length;
     }
+    registrations.sort((a, b) => (a.name < b.name ? -1 : 1));
     return registrations;
   }
 
