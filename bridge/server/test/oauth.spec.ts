@@ -8,12 +8,28 @@ import { jest } from '@jest/globals';
 
 let store: CachedStore = {};
 const fakeGetOAuthSecrets = jest.fn();
+const getBasicSecretsSpy = jest.fn();
+const getMongoDbSecretsSpy = jest.fn();
+getBasicSecretsSpy.mockReturnValue({
+  apiToken: 'api token',
+  user: '',
+  password: '',
+});
+getMongoDbSecretsSpy.mockReturnValue({
+  user: 'user',
+  password: 'pwd',
+});
 jest.unstable_mockModule('../user/secrets', () => {
   return {
     getOAuthSecrets: fakeGetOAuthSecrets,
     getOAuthMongoExternalConnectionString(): string {
       return '';
     },
+    getBasicSecrets: getBasicSecretsSpy,
+    getMongoDbSecrets: getMongoDbSecretsSpy,
+    getMongodbFolder: (): string => '',
+    mongodbPasswordFileName: 'pwdName',
+    mongodbUserFileName: 'userName',
   };
 });
 // has to be imported after secrets mock due to mock limitations of jest
