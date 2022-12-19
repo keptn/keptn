@@ -847,6 +847,7 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 		name                        string
 		fields                      SequenceStateMVTestFields
 		expectCreateStateToBeCalled bool
+		expectUpdateStateToBeCalled bool
 		project                     string
 		service                     string
 		stage                       string
@@ -918,6 +919,25 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 					CreateSequenceStateFunc: func(state models.SequenceState) error {
 						return db.ErrStateAlreadyExists
 					},
+					FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
+						return &apimodels.SequenceStates{States: []apimodels.SequenceState{
+							{
+								Name:           "my-sequence",
+								Service:        "my-service",
+								Project:        "my-project",
+								Shkeptncontext: "my-context",
+								State:          "",
+								Stages: []apimodels.SequenceStateStage{
+									{
+										Name: "my-other-stage",
+									},
+								},
+							},
+						}}, nil
+					},
+					UpdateSequenceStateFunc: func(state apimodels.SequenceState) error {
+						return nil
+					},
 				},
 			},
 			expectCreateStateToBeCalled: true,
@@ -946,14 +966,13 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
 			Data := keptnv2.EventData{
 				Project: tt.project,
 				Stage:   tt.stage,
 				Service: tt.service,
 			}
 			var event models.KeptnContextExtendedCE
-			//construnct a remediation event
+			//construct a remediation event
 			if tt.problemTitle != "" {
 				event = models.KeptnContextExtendedCE{
 					Data: keptnv2.GetActionTriggeredEventData{
@@ -988,6 +1007,14 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 
 			} else {
 				require.Equal(t, 0, len(tt.fields.SequenceStateRepo.CreateSequenceStateCalls()))
+			}
+
+			if tt.expectUpdateStateToBeCalled {
+				require.Equal(t, 1, len(tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()))
+				call := tt.fields.SequenceStateRepo.UpdateSequenceStateCalls()[0]
+				require.Equal(t, tt.project, call.State.Project)
+				require.Equal(t, tt.service, call.State.Service)
+				require.Equal(t, tt.stage, call.State.Stages[0])
 			}
 		})
 	}

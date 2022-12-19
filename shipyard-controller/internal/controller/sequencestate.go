@@ -52,7 +52,12 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event apimodels.Ke
 		Time:           timeutils.GetKeptnTimeStamp(event.Time),
 		Shkeptncontext: eventScope.KeptnContext,
 		State:          apimodels.SequenceTriggeredState,
-		Stages:         []apimodels.SequenceStateStage{},
+		Stages: []apimodels.SequenceStateStage{
+			{
+				Name:  eventScope.Stage,
+				State: apimodels.SequenceTriggeredState,
+			},
+		},
 	}
 
 	//if the next event in sequence is an action we get the problem title form it
@@ -63,7 +68,17 @@ func (smv *SequenceStateMaterializedView) OnSequenceTriggered(event apimodels.Ke
 
 	if err := smv.SequenceStateRepo.CreateSequenceState(state); err != nil {
 		if !errors.Is(err, db.ErrStateAlreadyExists) {
-			log.Errorf("could not create task sequence state for keptn context %s: %v", eventScope.KeptnContext, err)
+			log.Errorf("Could not create task sequence state for keptn context %s: %v", eventScope.KeptnContext, err)
+			return
+		}
+		log.Debugf("Adding event %s in stage %s to sequence %s", *event.Type, eventScope.Stage, eventScope.KeptnContext)
+		newState, err := smv.UpdateLastEventOfSequence(event)
+		if err != nil {
+			log.Errorf("Could not update task sequence state for keptn context %s: %v", eventScope.KeptnContext, err)
+			return
+		}
+		if err := smv.SequenceStateRepo.UpdateSequenceState(newState); err != nil {
+			log.Errorf("Could not update task sequence state for keptn context %s: %v", eventScope.KeptnContext, err)
 		}
 	}
 }
@@ -218,6 +233,12 @@ func (smv *SequenceStateMaterializedView) updateOverallSequenceState(eventScope 
 			}
 		}
 	}
+
+	// if the state should be set to 'waiting' - we need to check if it was already finished - in this case, we don't update
+	if status == apimodels.SequenceWaitingState && state.State == apimodels.SequenceFinished {
+		return
+	}
+
 	state.State = status
 	if err := smv.SequenceStateRepo.UpdateSequenceState(*state); err != nil {
 		log.Errorf("could not update sequence state: %s", err.Error())
