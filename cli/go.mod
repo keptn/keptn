@@ -8,7 +8,7 @@ require (
 	github.com/docker/docker-credential-helpers v0.7.0
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/go-version v1.6.0
-	github.com/invopop/jsonschema v0.6.0
+	github.com/invopop/jsonschema v0.7.0
 	github.com/keptn/go-utils v0.20.0
 	github.com/keptn/keptn/webhook-service v0.18.1
 	github.com/mattn/go-shellwords v1.0.12
