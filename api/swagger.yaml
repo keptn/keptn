@@ -73,7 +73,9 @@ paths:
         - Import
       operationId: import
       summary: "Import a zip package"
-      description: "Import a zip package to create services, secrets and webhook subscriptions, as well as add resources to Keptn"
+      description: |-
+        Import a zip package to create services, secrets and webhook subscriptions, as well as add resources to Keptn  
+        <span class="oauth-scopes">Required OAuth scopes: ${prefix}:integrations:write,${prefix}:projects:read,${prefix}:projects:write,${prefix}:services:write,${prefix}:resources:write,${prefix}:secrets:write</span>
       parameters:         
         - in: formData
           name: configPackage
