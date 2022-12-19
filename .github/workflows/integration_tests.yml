@@ -259,6 +259,7 @@ jobs:
       - name: Install Gcloud auth plugin
         if: env.CLOUD_PROVIDER == 'GKE'
         run: |
+          sudo apt-get update
           sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
 
       - name: Get Kubeconfig
