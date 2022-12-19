@@ -244,11 +244,11 @@ jobs:
           k3d cluster create mykeptn --k3s-arg "--no-deploy=traefik@server:*" --agents 1 --k3s-arg "--no-deploy=servicelb@server:*" --k3s-arg "--kube-proxy-arg=conntrack-max-per-core=0@server:*" --registry-use "$AIRGAPPED_REGISTRY_URL"
           kubectl config use-context k3d-mykeptn
 
-      - name: Install Gcloud auth plugin
-        if: env.CLOUD_PROVIDER == 'GKE'
-        run: |
-          sudo apt-get update
-          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
+#      - name: Install Gcloud auth plugin
+#        if: env.CLOUD_PROVIDER == 'GKE'
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
 
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
@@ -264,7 +264,6 @@ jobs:
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
-          use_auth_provider: true
 
       - name: Run test command
         run: |
