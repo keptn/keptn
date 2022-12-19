@@ -196,10 +196,8 @@ jobs:
         uses: google-github-actions/auth@v1.0.0
         with:
           credentials_json: ${{ secrets.GCLOUD_RESTRICTED_SERVICE_KEY }}
-
-      - name: Set up Google Cloud SDK
-        if: env.CLOUD_PROVIDER == 'GKE'
-        uses: google-github-actions/setup-gcloud@v1.0.1
+          access_token_lifetime: "7200s"
+          token_format: "access_token"
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
@@ -207,6 +205,10 @@ jobs:
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
+
+      - name: Set permissions on Kubeconfig
+        run: |
+          chmod 600 "$KUBECONFIG"
 
       - name: Install Keptn
         id: keptn_install

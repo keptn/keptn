@@ -258,7 +258,10 @@ jobs:
         with:
           cluster_name: ${{ matrix.CLUSTER_NAME }}
           location: "europe-west2"
-          use_auth_provider: true
+
+      - name: Set permissions on Kubeconfig
+        run: |
+          chmod 600 "$KUBECONFIG"
 
       - name: Push images to airgapped registry
         if: env.RUN_AIRGAPPED_TEST == 'true'
