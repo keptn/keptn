@@ -191,11 +191,6 @@ jobs:
           echo "Downloaded files:"
           ls -la ./keptn*.tgz
 
-      - name: Install Gcloud auth plugin
-        if: env.CLOUD_PROVIDER == 'GKE'
-        run: |
-          gcloud components install gke-gcloud-auth-plugin
-
       - name: Authenticate to Google Cloud
         if: env.CLOUD_PROVIDER == 'GKE'
         uses: google-github-actions/auth@v1.0.0
@@ -205,6 +200,11 @@ jobs:
       - name: Set up Google Cloud SDK
         if: env.CLOUD_PROVIDER == 'GKE'
         uses: google-github-actions/setup-gcloud@v1.0.1
+
+      - name: Install Gcloud auth plugin
+        if: env.CLOUD_PROVIDER == 'GKE'
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
 
       - name: Get Kubeconfig
         if: env.CLOUD_PROVIDER == 'GKE'
