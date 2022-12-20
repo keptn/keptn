@@ -8,5 +8,5 @@ dependencies:
 - name: common
   repository: file://../common
   version: 0.1.0
-digest: sha256:f14d19acad5b65b23a26b66012db9600a8e5e9857061aee589f1148fde1a276a
-generated: "2022-12-06T14:29:49.051813+01:00"
+digest: sha256:2a773eab2b89fff5b6a018bbb4cfdaff37230f67b0ca7db286d3d73c01a2e7bb
+generated: "2022-12-20T08:49:57.820873+01:00"
