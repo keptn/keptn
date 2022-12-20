@@ -19,7 +19,7 @@ function getOAuthSecrets(configFolder: string): OAuthSecrets {
 }
 
 function getOAuthMongoExternalConnectionString(configFolder: string): string {
-  const mongodbFolder = getMongodbFolder(configFolder);
+  const mongodbFolder = join(configFolder, 'oauth_mongodb_connection_string');
   const mongoSecretPath = join(mongodbFolder, 'external_connection_string');
   return readSecret(mongoSecretPath);
 }
@@ -41,7 +41,8 @@ function getMongodbFolder(configFolder: string): string {
 
 function getBasicSecrets(configFolder: string): BasicSecrets {
   const basicCredentialFolder = join(configFolder, 'basic');
-  const apiTokenPath = join(basicCredentialFolder, 'keptn-api-token');
+  const apiFolder = join(configFolder, 'api-token');
+  const apiTokenPath = join(apiFolder, 'keptn-api-token');
   const basicUser = join(basicCredentialFolder, 'BASIC_AUTH_USERNAME');
   const basicPassword = join(basicCredentialFolder, 'BASIC_AUTH_PASSWORD');
   return {

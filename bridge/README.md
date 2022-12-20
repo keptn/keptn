@@ -117,7 +117,7 @@ If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.pn
    ```console
    set API_URL=http://keptn.127.0.0.1.nip.io/api
    ```
-4. Put your API token into a file called `keptn-api-token` and move it to the folder `bridge/config/basic/`.
+4. Put your API token into a file called `keptn-api-token` and move it to the folder `bridge/config/api-token/`.
 5. Run `yarn start:dev` from bridge root level to start the express server on port 3001 and the Angular app on port 3000.
 6. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 

@@ -54,7 +54,7 @@ describe('Test fetching secrets from the file system', () => {
 
     expect(secret).toBe('secretMongo');
     expect(readFileSyncSpy).toHaveBeenCalledWith(
-      join('config', 'oauth_mongodb', 'external_connection_string'),
+      join('config', 'oauth_mongodb_connection_string', 'external_connection_string'),
       options
     );
   });
@@ -105,7 +105,7 @@ describe('Test fetching secrets from the file system', () => {
       user: 'secret2',
       password: 'secret3',
     });
-    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'basic', 'keptn-api-token'), options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'api-token', 'keptn-api-token'), options);
     expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'basic', 'BASIC_AUTH_USERNAME'), options);
     expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'basic', 'BASIC_AUTH_PASSWORD'), options);
   });

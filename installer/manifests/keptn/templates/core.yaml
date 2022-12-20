@@ -175,13 +175,13 @@ spec:
               mountPath: /config/oauth
               readOnly: true
             - name: bridge-api-token
-              mountPath: /config/basic
+              mountPath: /config/api-token
               readOnly: true
             - name: bridge-basic-auth
               mountPath: /config/basic
               readOnly: true
             - name: bridge-oauth-mongodb-credentials
-              mountPath: /config/oauth_mongodb
+              mountPath: /config/oauth_mongodb_connection_string
               readOnly: true
             - name: bridge-mongodb-credentials
               mountPath: /config/oauth_mongodb
