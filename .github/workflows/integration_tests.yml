@@ -260,6 +260,7 @@ jobs:
           location: "europe-west2"
 
       - name: Set permissions on Kubeconfig
+        if: env.CLOUD_PROVIDER == 'GKE'
         run: |
           chmod 600 "$KUBECONFIG"
 
