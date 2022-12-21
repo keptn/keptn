@@ -126,8 +126,8 @@ github.com/stretchr/testify v1.7.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/
 github.com/stretchr/testify v1.8.0/go.mod h1:yNjHg4UonilssWZ8iaSj1OCr/vHnekPRkoO+kdMU+MU=
 github.com/stretchr/testify v1.8.1 h1:w7B6lhMri9wdJUVmEZPGGhZzrYTPvgJArz7wNPgYKsk=
 github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
-github.com/swaggo/swag v1.8.8 h1:/GgJmrJ8/c0z4R4hoEPZ5UeEhVGdvsII4JbVDLbR7Xc=
-github.com/swaggo/swag v1.8.8/go.mod h1:ezQVUUhly8dludpVk+/PuwJWvLLanB13ygV5Pr9enSk=
+github.com/swaggo/swag v1.8.9 h1:kHtaBe/Ob9AZzAANfcn5c6RyCke9gG9QpH0jky0I/sA=
+github.com/swaggo/swag v1.8.9/go.mod h1:ezQVUUhly8dludpVk+/PuwJWvLLanB13ygV5Pr9enSk=
 github.com/tidwall/pretty v1.0.0 h1:HsD+QiTn7sK6flMKIvNmpqz1qrpP3Ps6jOKIKMooyg4=
 github.com/tidwall/pretty v1.0.0/go.mod h1:XNkn88O1ChpSDQmQeStsy+sBenx6DDtFZJxhVysOjyk=
 github.com/tryvium-travels/memongo v0.6.1 h1:J34VKMXlC6q3YRUg4BWGgptpAeloEtbKHyiKIjHjWHk=
