@@ -109,11 +109,6 @@ spec:
           env:
             - name: API_URL
               value: "http://api-gateway-nginx{{ .Values.prefixPath }}/api"
-            - name: API_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
-                  key: keptn-api-token
             - name: CLI_DOWNLOAD_LINK
               value: "{{ .Values.bridge.cliDownloadLink | default (print "https://github.com/keptn/keptn/releases/tag/" .Chart.AppVersion) }}"
             - name: ENABLE_VERSION_CHECK
@@ -157,16 +152,6 @@ spec:
               value: "{{ .Values.bridge.oauth.trustProxy }}"
             - name: MONGODB_HOST
               value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
-            - name: MONGODB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-user
-            - name: MONGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-passwords
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.bridgeAuthDatabase | default "openid" }}
             - name: CONFIG_DIR
@@ -179,10 +164,6 @@ spec:
             - name: {{ $key }}
               value: {{ $value | quote }}
             {{- end }}
-          envFrom:
-            - secretRef:
-                name: bridge-credentials
-                optional: true
           ports:
             - containerPort: 3000
           resources:
@@ -193,8 +174,18 @@ spec:
             - name: bridge-oauth
               mountPath: /config/oauth
               readOnly: true
+            - name: bridge-api-token
+              mountPath: /config/api-token
+              readOnly: true
+            - name: bridge-basic-auth
+              mountPath: /config/basic
+              readOnly: true
             - name: bridge-oauth-mongodb-credentials
+              mountPath: /config/oauth_mongodb_connection_string
+              readOnly: true
+            - name: bridge-mongodb-credentials
               mountPath: /config/oauth_mongodb
+              readOnly: true
             {{- if .Values.bridge.extraVolumeMounts }}
             {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.bridge.extraVolumeMounts "context" $) | nindent 12 }}
             {{- end }}
@@ -210,10 +201,28 @@ spec:
           secret:
             secretName: bridge-oauth
             defaultMode: 0400
+        - name: bridge-api-token
+          secret:
+            secretName: {{ default "keptn-api-token" .Values.apiService.tokenSecretName }}
+            defaultMode: 0400
+        - name: bridge-basic-auth
+          secret:
+            secretName: bridge-credentials
+            defaultMode: 0400
+            optional: true
         - name: bridge-oauth-mongodb-credentials
           secret:
             secretName: bridge-oauth-mongodb-credentials
             defaultMode: 0400
+        - name: bridge-mongodb-credentials
+          secret:
+            secretName: mongodb-credentials
+            defaultMode: 0400
+            items:
+              - key: mongodb-user
+                path: mongodb-user
+              - key: mongodb-passwords
+                path: mongodb-passwords
         {{- if .Values.bridge.extraVolumes }}
         {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.bridge.extraVolumes "context" $) | nindent 8 }}
         {{- end }}

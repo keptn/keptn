@@ -1,6 +1,9 @@
 import { join } from 'path';
 import { existsSync, readFileSync } from 'fs';
-import { OAuthSecrets } from '../interfaces/configuration';
+import { BasicSecrets, MongoDBSecrets, OAuthSecrets } from '../interfaces/configuration';
+
+export const mongodbUserFileName = 'mongodb-user';
+export const mongodbPasswordFileName = 'mongodb-passwords';
 
 function getOAuthSecrets(configFolder: string): OAuthSecrets {
   const oauthFolder = join(configFolder, 'oauth');
@@ -16,9 +19,37 @@ function getOAuthSecrets(configFolder: string): OAuthSecrets {
 }
 
 function getOAuthMongoExternalConnectionString(configFolder: string): string {
-  const mongodbFolder = join(configFolder, 'oauth_mongodb');
+  const mongodbFolder = join(configFolder, 'oauth_mongodb_connection_string');
   const mongoSecretPath = join(mongodbFolder, 'external_connection_string');
   return readSecret(mongoSecretPath);
+}
+
+function getMongoDbSecrets(configFolder: string): MongoDBSecrets {
+  const mongodbFolder = getMongodbFolder(configFolder);
+  const userPath = join(mongodbFolder, mongodbUserFileName);
+  const passwordPath = join(mongodbFolder, mongodbPasswordFileName);
+
+  return {
+    user: readSecret(userPath),
+    password: readSecret(passwordPath),
+  };
+}
+
+function getMongodbFolder(configFolder: string): string {
+  return join(configFolder, 'oauth_mongodb');
+}
+
+function getBasicSecrets(configFolder: string): BasicSecrets {
+  const basicCredentialFolder = join(configFolder, 'basic');
+  const apiFolder = join(configFolder, 'api-token');
+  const apiTokenPath = join(apiFolder, 'keptn-api-token');
+  const basicUser = join(basicCredentialFolder, 'BASIC_AUTH_USERNAME');
+  const basicPassword = join(basicCredentialFolder, 'BASIC_AUTH_PASSWORD');
+  return {
+    apiToken: readSecret(apiTokenPath),
+    user: readSecret(basicUser),
+    password: readSecret(basicPassword),
+  };
 }
 
 function readSecret(path: string): string {
@@ -28,4 +59,4 @@ function readSecret(path: string): string {
   return '';
 }
 
-export { getOAuthSecrets, getOAuthMongoExternalConnectionString };
+export { getOAuthSecrets, getOAuthMongoExternalConnectionString, getMongoDbSecrets, getBasicSecrets, getMongodbFolder };

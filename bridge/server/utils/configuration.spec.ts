@@ -11,11 +11,18 @@ import { Level, LogDestination } from './logger';
 import { jest } from '@jest/globals';
 
 const getOAuthSecretsSpy = jest.fn();
+const getBasicSecretsSpy = jest.fn();
+const getMongoDbSecretsSpy = jest.fn();
 
 jest.unstable_mockModule('../user/secrets', () => {
   return {
     getOAuthSecrets: getOAuthSecretsSpy,
+    getBasicSecrets: getBasicSecretsSpy,
+    getMongoDbSecrets: getMongoDbSecretsSpy,
     getOAuthMongoExternalConnectionString: (): string => '',
+    getMongodbFolder: (): string => '',
+    mongodbPasswordFileName: 'pwdName',
+    mongodbUserFileName: 'userName',
   };
 });
 
@@ -30,6 +37,15 @@ describe('Configuration', () => {
       sessionSecret: 'session_secret',
       databaseEncryptSecret: 'database_secret_'.repeat(2),
       clientSecret: '',
+    });
+    getBasicSecretsSpy.mockReturnValue({
+      apiToken: defaultAPIToken,
+      user: '',
+      password: '',
+    });
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: '',
+      password: '',
     });
   });
 
@@ -49,8 +65,8 @@ describe('Configuration', () => {
       },
       auth: {
         authMessage: undefined,
-        basicPassword: undefined,
-        basicUsername: undefined,
+        basicPassword: '',
+        basicUsername: '',
         cleanBucketIntervalMs: 60 * 60 * 1000, //1h
         requestTimeLimitMs: 60 * 60 * 1000, //1h
         nRequestWithinTime: 10,
@@ -114,6 +130,15 @@ describe('Configuration', () => {
     const oauthDiscovery = 'mydiscovery';
     const apiUrl = 'myapiurl';
     const apiToken = 'mytoken';
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: 'user',
+      password: 'pwd',
+    });
+    getBasicSecretsSpy.mockReturnValue({
+      apiToken: apiToken,
+      user: '',
+      password: '',
+    });
     const version = '0.0.0';
     const mongoHost = 'localhost';
     let result = getConfiguration({
@@ -128,12 +153,9 @@ describe('Configuration', () => {
       },
       api: {
         showToken: false,
-        token: apiToken,
         url: apiUrl,
       },
       mongo: {
-        user: '',
-        password: '',
         host: mongoHost,
         externalConnectionString: '',
       },
@@ -158,8 +180,8 @@ describe('Configuration', () => {
       },
       auth: {
         authMessage: undefined,
-        basicPassword: undefined,
-        basicUsername: undefined,
+        basicPassword: '',
+        basicUsername: '',
         cleanBucketIntervalMs: 60 * 60 * 1000, //1h
         requestTimeLimitMs: 60 * 60 * 1000, //1h
         nRequestWithinTime: 10,
@@ -204,8 +226,8 @@ describe('Configuration', () => {
         db: 'openid',
         externalConnectionString: '',
         host: mongoHost,
-        password: '',
-        user: '',
+        password: 'pwd',
+        user: 'user',
       },
       mode: EnvType.TEST,
       version: version,
@@ -236,6 +258,10 @@ describe('Configuration', () => {
   });
 
   it('should fail for missing OAuth values', () => {
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: 'user',
+      password: 'pwd',
+    });
     const config: Omit<BridgeOption, 'oauth'> & { oauth: Partial<OAuthConfig> } = {
       api: { url: 'somevalue' },
       oauth: { enabled: true },
@@ -273,6 +299,10 @@ describe('Configuration', () => {
 
   it('should throw error if OAuth secrets are not provided or invalid', () => {
     const config = envToConfiguration(getDefaultOAuthConfig());
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: 'user',
+      password: 'pwd',
+    });
     getOAuthSecretsSpy.mockReturnValue({
       sessionSecret: '',
       databaseEncryptSecret: '',
@@ -307,7 +337,6 @@ describe('Configuration', () => {
     const config: Omit<BridgeOption, 'mongo'> & { mongo: Partial<MongoConfig> } = {
       api: {
         url: 'http://localhost',
-        token: defaultAPIToken,
       },
       oauth: {
         enabled: true,
@@ -317,13 +346,23 @@ describe('Configuration', () => {
       },
       mongo: {},
     };
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: '',
+      password: '',
+    });
     const t = (): BridgeConfiguration => getConfiguration(config);
     expect(t).toThrow(/Could not construct mongodb connection string.*/);
     config.mongo.host = 'mongo://';
     expect(t).toThrow(/Could not construct mongodb connection string.*/);
-    config.mongo.password = 'pwd';
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: '',
+      password: 'pwd',
+    });
     expect(t).toThrow(/Could not construct mongodb connection string.*/);
-    config.mongo.user = 'usr';
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: 'user',
+      password: 'pwd',
+    });
     expect(t).not.toThrow();
   });
 
@@ -357,15 +396,21 @@ describe('Configuration', () => {
   });
 
   it('should correctly map process.env to options', () => {
+    getBasicSecretsSpy.mockReturnValue({
+      apiToken: 'apiToken',
+      user: 'basicUsername',
+      password: 'basicPassword',
+    });
+    getMongoDbSecretsSpy.mockReturnValue({
+      user: 'mongoUser',
+      password: 'mongoPwd',
+    });
     const config: Record<EnvVar, string> = {
       LOGGING_COMPONENTS: 'xyz',
       LOG_LEVEL: 'info',
       SHOW_API_TOKEN: 'invalidBool',
       API_URL: 'apiUrl',
-      API_TOKEN: 'apiToken',
       AUTH_MSG: 'authMsg',
-      BASIC_AUTH_USERNAME: 'basicUsername',
-      BASIC_AUTH_PASSWORD: 'basicPassword',
       REQUEST_TIME_LIMIT: '100',
       REQUESTS_WITHIN_TIME: '5',
       CLEAN_BUCKET_INTERVAL: '2000',
@@ -391,8 +436,6 @@ describe('Configuration', () => {
       ENABLE_VERSION_CHECK: '0',
       MONGODB_DATABASE: 'mongoDatabase',
       MONGODB_HOST: 'mongoHost',
-      MONGODB_PASSWORD: 'mongoPwd',
-      MONGODB_USER: 'mongoUser',
       NODE_ENV: 'test',
       VERSION: '0.0.0',
     };
@@ -402,13 +445,10 @@ describe('Configuration', () => {
     expect(result).toEqual({
       api: {
         showToken: true,
-        token: 'apiToken',
         url: 'apiUrl',
       },
       auth: {
         authMessage: 'authMsg',
-        basicPassword: 'basicPassword',
-        basicUsername: 'basicUsername',
         cleanBucketIntervalMs: 2000,
         nRequestWithinTime: 5,
         requestTimeLimitMs: 100,
@@ -432,8 +472,6 @@ describe('Configuration', () => {
       mongo: {
         db: 'mongoDatabase',
         host: 'mongoHost',
-        password: 'mongoPwd',
-        user: 'mongoUser',
       },
       oauth: {
         allowedLogoutURL: 'logoutUrl',
@@ -462,26 +500,22 @@ describe('Configuration', () => {
   function getBasicEnvVar(): { [key in EnvVar]?: string } {
     return {
       [EnvVar.API_URL]: defaultAPIURL,
-      [EnvVar.API_TOKEN]: defaultAPIToken,
       [EnvVar.MONGODB_HOST]: '',
-      [EnvVar.MONGODB_USER]: '',
-      [EnvVar.MONGODB_PASSWORD]: '',
       [EnvVar.NODE_ENV]: 'test',
+      [EnvVar.CONFIG_DIR]: '/config',
     };
   }
 
   function getDefaultOAuthConfig(): { [key in EnvVar]?: string } {
     return {
       [EnvVar.API_URL]: defaultAPIURL,
-      [EnvVar.API_TOKEN]: defaultAPIToken,
       [EnvVar.MONGODB_HOST]: 'asdf',
-      [EnvVar.MONGODB_USER]: 'asdf',
-      [EnvVar.MONGODB_PASSWORD]: 'asdf',
       [EnvVar.NODE_ENV]: 'test',
       [EnvVar.OAUTH_ENABLED]: 'true',
       [EnvVar.OAUTH_DISCOVERY]: 'asdf',
       [EnvVar.OAUTH_CLIENT_ID]: 'asdf',
       [EnvVar.OAUTH_BASE_URL]: 'asdf',
+      [EnvVar.CONFIG_DIR]: '/config',
     };
   }
 });

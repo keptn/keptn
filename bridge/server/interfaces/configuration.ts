@@ -6,6 +6,17 @@ export interface OAuthSecrets {
   clientSecret?: string;
 }
 
+export interface MongoDBSecrets {
+  user: string;
+  password: string;
+}
+
+export interface BasicSecrets {
+  user: string;
+  password: string;
+  apiToken: string;
+}
+
 type RecursivePartial<T> = {
   [P in keyof T]?: RecursivePartial<T[P]>;
 };
@@ -121,10 +132,7 @@ export enum EnvVar {
   LOG_LEVEL = 'LOG_LEVEL',
   SHOW_API_TOKEN = 'SHOW_API_TOKEN',
   API_URL = 'API_URL',
-  API_TOKEN = 'API_TOKEN',
   AUTH_MSG = 'AUTH_MSG',
-  BASIC_AUTH_USERNAME = 'BASIC_AUTH_USERNAME',
-  BASIC_AUTH_PASSWORD = 'BASIC_AUTH_PASSWORD',
   REQUEST_TIME_LIMIT = 'REQUEST_TIME_LIMIT',
   REQUESTS_WITHIN_TIME = 'REQUESTS_WITHIN_TIME',
   CLEAN_BUCKET_INTERVAL = 'CLEAN_BUCKET_INTERVAL',
@@ -150,8 +158,6 @@ export enum EnvVar {
   ENABLE_VERSION_CHECK = 'ENABLE_VERSION_CHECK',
   MONGODB_DATABASE = 'MONGODB_DATABASE',
   MONGODB_HOST = 'MONGODB_HOST',
-  MONGODB_PASSWORD = 'MONGODB_PASSWORD',
-  MONGODB_USER = 'MONGODB_USER',
   NODE_ENV = 'NODE_ENV',
   VERSION = 'VERSION',
 }

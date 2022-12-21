@@ -16,45 +16,20 @@ The Keptn Bridge is installed as a part of [Keptn](https://keptn.sh). To get sta
 
 ### Setting up Basic Authentication
 
-Keptn Bridge can use [basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication), the following two environment variables define the values:
+Keptn Bridge can use [basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication), the following two files (or volume mounts) define the values:
 
+Folder: `/config/basic`
 - `BASIC_AUTH_USERNAME` - username
 - `BASIC_AUTH_PASSWORD` - password
 
-To enable it within your Kubernetes cluster, we recommend creating a secret that holds the two variables and then applying this secret within the Kubernetes deployment for Keptn Bridge.
-1. Create the secret using
+To enable it within your Kubernetes cluster, we recommend creating a secret that holds the two variables and then applying this secret within the Kubernetes deployment for Keptn Bridge. 
+#### Create the secret using
 
    ```console
    kubectl -n keptn create secret generic bridge-credentials --from-literal="BASIC_AUTH_USERNAME=<USERNAME>" --from-literal="BASIC_AUTH_PASSWORD=<PASSWORD>"
    ```
 
    _Note: Replace `<USERNAME>` and `<PASSWORD>` with the desired credentials._
-
-2. In case you are using Keptn 0.6.1 or older, edit the deployment using
-
-   ```console
-   kubectl -n keptn edit deployment bridge
-   ```
-
-   and add the secret to the `bridge` container, such that the container spec looks like this:
-
-   ```yaml
-       ...
-       spec:
-         containers:
-         - name: bridge
-           image: keptn/bridge2:0.6.1
-           imagePullPolicy: Always
-           # EDIT STARTS HERE
-           envFrom:
-             - secretRef:
-                 name: bridge-credentials
-                 optional: true
-           # EDIT ENDS HERE
-           ports:
-           - containerPort: 3000
-           ...
-   ```
 
 **Note 1**: To disable authentication, just delete the secret using `kubectl -n keptn delete secret bridge-credentials`.
 
@@ -133,19 +108,18 @@ If no `LOOK_AND_FEEL_URL` was provided, the Bridge will use the default `logo.pn
 
 1. Run `yarn install` from the bridge root level.
 2. Run `yarn install` from the server folder.
-3. Set `API_URL` and `API_TOKEN` environment variables, depending on your Keptn installation and operating system:
+3. Set the `API_URL` environment variable, depending on your Keptn installation and operating system:
    **Linux/MacOS**
    ```console
    export API_URL=http://keptn.127.0.0.1.nip.io/api
-   export API_TOKEN=1234-exam-ple
    ```
    **Windows**
    ```console
    set API_URL=http://keptn.127.0.0.1.nip.io/api
-   set API_TOKEN=1234-exam-ple
    ```
-4. Run `yarn start:dev` from bridge root level to start the express server on port 3001 and the Angular app on port 3000.
-5. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
+4. Put your API token into a file called `keptn-api-token` and move it to the folder `bridge/config/api-token/`.
+5. Run `yarn start:dev` from bridge root level to start the express server on port 3001 and the Angular app on port 3000.
+6. Access the web through the url shown on the console (e.g., http://localhost:3000/ ).
 
 ### UI testing with [Cypress](https://docs.cypress.io/api/table-of-contents)
 

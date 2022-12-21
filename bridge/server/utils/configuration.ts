@@ -16,7 +16,15 @@ import {
 } from '../interfaces/configuration';
 
 import { EnabledComponents, Level, LogDestination, logger as log } from './logger';
-import { getOAuthMongoExternalConnectionString, getOAuthSecrets } from '../user/secrets';
+import {
+  getBasicSecrets,
+  getMongodbFolder,
+  getMongoDbSecrets,
+  getOAuthMongoExternalConnectionString,
+  getOAuthSecrets,
+  mongodbPasswordFileName,
+  mongodbUserFileName,
+} from '../user/secrets';
 
 const _componentName = 'Configuration';
 
@@ -27,8 +35,9 @@ const _componentName = 'Configuration';
 export function getConfiguration(options: BridgeOption): BridgeConfiguration {
   const featConfig = getFeatureConfiguration(options);
   const logConfig = getLogConfiguration(options);
-  const apiConfig = getAPIConfiguration(options);
-  const authConfig = getAuthConfiguration(options);
+  const basicSecrets = getBasicSecrets(featConfig.configDir);
+  const apiConfig = getAPIConfiguration(options, basicSecrets.apiToken);
+  const authConfig = getAuthConfiguration(options, basicSecrets.user, basicSecrets.password);
   const oauthConfig = getOAuthConfiguration(featConfig.configDir, options);
   const urlsConfig = getURLsConfiguration(options);
   const mongoConfig = getMongoConfiguration(featConfig.configDir, options, oauthConfig.enabled);
@@ -75,16 +84,15 @@ function getLogConfiguration(options: BridgeOption): LogConfiguration {
   };
 }
 
-function getAPIConfiguration(options: BridgeOption): APIConfig {
+function getAPIConfiguration(options: BridgeOption, apiToken: string): APIConfig {
   const _showToken = options.api?.showToken ?? true;
   const apiUrl = options.api?.url;
-  const apiToken = options.api?.token;
 
   if (!apiUrl) {
     throw new Error('API_URL is not provided');
   }
 
-  if (typeof apiToken !== 'string') {
+  if (!apiToken.length) {
     log.warning(_componentName, 'API_TOKEN was not provided.');
   }
 
@@ -95,10 +103,8 @@ function getAPIConfiguration(options: BridgeOption): APIConfig {
   };
 }
 
-function getAuthConfiguration(options: BridgeOption): AuthConfig {
+function getAuthConfiguration(options: BridgeOption, basicUser: string, basicPassword: string): AuthConfig {
   const authMsg = options.auth?.authMessage;
-  const basicUser = options.auth?.basicUsername;
-  const basicPass = options.auth?.basicPassword;
   const requestLimit = (options.auth?.requestTimeLimitMs ?? 60) * 60 * 1000;
   const requestWithinTime = options.auth?.nRequestWithinTime ?? 10;
   const cleanBucket = (options.auth?.cleanBucketIntervalMs ?? 60) * 60 * 1000;
@@ -106,7 +112,7 @@ function getAuthConfiguration(options: BridgeOption): AuthConfig {
   return {
     authMessage: authMsg,
     basicUsername: basicUser,
-    basicPassword: basicPass,
+    basicPassword: basicPassword,
     requestTimeLimitMs: requestLimit,
     nRequestWithinTime: requestWithinTime,
     cleanBucketIntervalMs: cleanBucket,
@@ -237,29 +243,24 @@ function getFeatureConfiguration(options: BridgeOption): FeatureConfig {
 }
 
 function getMongoConfiguration(configDir: string, options: BridgeOption, doChecks = true): MongoConfig {
+  const mongoCredentials = getMongoDbSecrets(configDir);
   const db = options.mongo?.db ?? 'openid';
   const host = options.mongo?.host;
-  const pwd = options.mongo?.password;
-  const usr = options.mongo?.user;
-  if (doChecks) {
-    const errMsg =
-      'Could not construct mongodb connection string: env vars "MONGODB_HOST", "MONGODB_USER" and "MONGODB_PASSWORD" have to be set';
-    if (!host) {
-      throw Error(errMsg);
-    }
-    if (typeof pwd !== 'string') {
-      throw Error(errMsg);
-    }
-    if (typeof usr !== 'string') {
-      throw Error(errMsg);
-    }
+  const pwd = mongoCredentials.password;
+  const usr = mongoCredentials.user;
+  if (doChecks && (!host || !pwd || !usr)) {
+    throw Error(
+      `Could not construct mongodb connection string: env var "MONGODB_HOST" and volume mounts "${mongodbUserFileName}" and "${mongodbPasswordFileName}" inside "${getMongodbFolder(
+        configDir
+      )}" have to be set`
+    );
   }
 
   return {
     db: db,
     host: host || '',
-    password: pwd || '',
-    user: usr || '',
+    password: pwd,
+    user: usr,
     externalConnectionString: getOAuthMongoExternalConnectionString(configDir),
   };
 }
@@ -313,12 +314,9 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
     api: {
       showToken: env.SHOW_API_TOKEN ? toBool(env.SHOW_API_TOKEN) : undefined,
       url: env.API_URL,
-      token: env.API_TOKEN,
     },
     auth: {
       authMessage: env.AUTH_MSG,
-      basicPassword: env.BASIC_AUTH_PASSWORD,
-      basicUsername: env.BASIC_AUTH_USERNAME,
       requestTimeLimitMs: isInt(env.REQUEST_TIME_LIMIT) ? toInt(env.REQUEST_TIME_LIMIT) : undefined,
       nRequestWithinTime: isInt(env.REQUESTS_WITHIN_TIME) ? toInt(env.REQUESTS_WITHIN_TIME) : undefined,
       cleanBucketIntervalMs: isInt(env.CLEAN_BUCKET_INTERVAL) ? toInt(env.CLEAN_BUCKET_INTERVAL) : undefined,
@@ -340,8 +338,6 @@ export function envToConfiguration(env: { [key in EnvVar]?: string }): BridgeOpt
     mongo: {
       db: env.MONGODB_DATABASE,
       host: env.MONGODB_HOST,
-      password: env.MONGODB_PASSWORD,
-      user: env.MONGODB_USER,
     },
     oauth: {
       enabled: env.OAUTH_ENABLED ? toBool(env.OAUTH_ENABLED) : undefined,

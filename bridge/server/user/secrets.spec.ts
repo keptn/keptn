@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { jest } from '@jest/globals';
 import { join } from 'path';
+import { BasicSecrets, MongoDBSecrets } from '../interfaces/configuration';
 
 const readFileSyncSpy = jest.fn();
 const existsSyncSpy = jest.fn();
@@ -12,7 +13,9 @@ jest.unstable_mockModule('fs', () => {
   };
 });
 
-const { getOAuthMongoExternalConnectionString, getOAuthSecrets } = await import('./secrets');
+const { getOAuthMongoExternalConnectionString, getOAuthSecrets, getBasicSecrets, getMongoDbSecrets } = await import(
+  './secrets'
+);
 
 describe('Test fetching secrets from the file system', () => {
   const options = { encoding: 'utf8', flag: 'r' };
@@ -51,7 +54,7 @@ describe('Test fetching secrets from the file system', () => {
 
     expect(secret).toBe('secretMongo');
     expect(readFileSyncSpy).toHaveBeenCalledWith(
-      join('config', 'oauth_mongodb', 'external_connection_string'),
+      join('config', 'oauth_mongodb_connection_string', 'external_connection_string'),
       options
     );
   });
@@ -72,5 +75,38 @@ describe('Test fetching secrets from the file system', () => {
       clientSecret: '',
     });
     expect(readFileSyncSpy).not.toHaveBeenCalled();
+  });
+
+  it('should return mongodb secrets', () => {
+    existsSyncSpy.mockReturnValue(true);
+    readFileSyncSpy.mockReturnValueOnce('secret1');
+    readFileSyncSpy.mockReturnValueOnce('secret2');
+
+    const mongoSecrets = getMongoDbSecrets('config');
+
+    expect(mongoSecrets).toEqual<MongoDBSecrets>({
+      user: 'secret1',
+      password: 'secret2',
+    });
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'oauth_mongodb', 'mongodb-user'), options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'oauth_mongodb', 'mongodb-passwords'), options);
+  });
+
+  it('should return basic secrets', () => {
+    existsSyncSpy.mockReturnValue(true);
+    readFileSyncSpy.mockReturnValueOnce('secret1');
+    readFileSyncSpy.mockReturnValueOnce('secret2');
+    readFileSyncSpy.mockReturnValueOnce('secret3');
+
+    const mongoSecrets = getBasicSecrets('config');
+
+    expect(mongoSecrets).toEqual<BasicSecrets>({
+      apiToken: 'secret1',
+      user: 'secret2',
+      password: 'secret3',
+    });
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'api-token', 'keptn-api-token'), options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'basic', 'BASIC_AUTH_USERNAME'), options);
+    expect(readFileSyncSpy).toHaveBeenCalledWith(join('config', 'basic', 'BASIC_AUTH_PASSWORD'), options);
   });
 });

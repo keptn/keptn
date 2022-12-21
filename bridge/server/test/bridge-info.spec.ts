@@ -1,18 +1,51 @@
 import request from 'supertest';
-import { getBaseOptions, setupServer } from '../.jest/setupServer';
 import { Express } from 'express';
-import { getConfiguration } from '../utils/configuration';
 import MockAdapter from 'axios-mock-adapter';
 import { IMetadata } from '../../shared/interfaces/metadata';
 import { BridgeInfo } from '../../shared/interfaces/bridge-info';
 import { KeptnVersions } from '../../shared/interfaces/keptn-versions';
 import { KeptnInfoResult } from '../../shared/interfaces/keptn-info-result';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { jest } from '@jest/globals';
+
+const apiToken = 'abcdefg';
+const getOAuthSecretsSpy = jest.fn();
+const getBasicSecretsSpy = jest.fn();
+const getMongoDbSecretsSpy = jest.fn();
+getOAuthSecretsSpy.mockReturnValue({
+  sessionSecret: 'session_secret',
+  databaseEncryptSecret: 'database_secret_'.repeat(2),
+  clientSecret: '',
+});
+getBasicSecretsSpy.mockReturnValue({
+  apiToken: apiToken,
+  user: '',
+  password: '',
+});
+getMongoDbSecretsSpy.mockReturnValue({
+  user: 'user',
+  password: 'pwd',
+});
+
+jest.unstable_mockModule('../user/secrets', () => {
+  return {
+    getOAuthSecrets: getOAuthSecretsSpy,
+    getBasicSecrets: getBasicSecretsSpy,
+    getMongoDbSecrets: getMongoDbSecretsSpy,
+    getOAuthMongoExternalConnectionString: (): string => '',
+    getMongodbFolder: (): string => '',
+    mongodbPasswordFileName: 'pwdName',
+    mongodbUserFileName: 'userName',
+  };
+});
+
+const { getConfiguration } = await import('../utils/configuration');
+const { getBaseOptions, setupServer } = await import('../.jest/setupServer');
 
 describe('Test /bridgeInfo', () => {
   let app: Express;
 
   const apiUrl = 'http://localhost/api/';
-  const apiToken = 'abcdefg';
   const provMsg = '  message   ';
   const authMsg = 'a string';
   const version = 'testVersion';
