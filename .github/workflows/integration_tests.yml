@@ -275,7 +275,7 @@ jobs:
 
       - name: Prevent egress traffic for airgapped system
         # this only prevents pods / containers from accessing services outside of the Kubernetes cluster, it does not
-        # prevent containers/images to be pulled from DockerHub
+        # prevent containers/images to be pulled from DockerHub 
         if: env.RUN_AIRGAPPED_TEST == 'true'
         run: |
           # Deny egress traffic: https://kubernetes.io/docs/concepts/services-networking/network-policies/#default-deny-all-ingress-and-all-egress-traffic
