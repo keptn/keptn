@@ -948,6 +948,41 @@ func TestSequenceStateMaterializedView_OnSequenceTriggered(t *testing.T) {
 			sequenceName:                "my-sequence",
 		},
 		{
+			name: "state already exists - updating fails",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					CreateSequenceStateFunc: func(state models.SequenceState) error {
+						return db.ErrStateAlreadyExists
+					},
+					FindSequenceStatesFunc: func(filter apimodels.StateFilter) (*apimodels.SequenceStates, error) {
+						return &apimodels.SequenceStates{States: []apimodels.SequenceState{
+							{
+								Name:           "my-sequence",
+								Service:        "my-service",
+								Project:        "my-project",
+								Shkeptncontext: "my-context",
+								State:          "",
+								Stages: []apimodels.SequenceStateStage{
+									{
+										Name: "my-other-stage",
+									},
+								},
+							},
+						}}, nil
+					},
+					UpdateSequenceStateFunc: func(state apimodels.SequenceState) error {
+						return errors.New("oops")
+					},
+				},
+			},
+			expectCreateStateToBeCalled: true,
+			project:                     "my-project",
+			service:                     "my-service",
+			stage:                       "my-stage",
+			keptnContext:                "my-context",
+			sequenceName:                "my-sequence",
+		},
+		{
 			name: "create state returns an error",
 			fields: SequenceStateMVTestFields{
 				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
