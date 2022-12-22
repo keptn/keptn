@@ -174,7 +174,7 @@ jobs:
         echo "Note: This issue was auto-generated from [security-scan.yml](.github/workflows/security-scan.yml)" >> security-scan-failure.md
 
     - name: Create issue if versions differ
-      uses: JasonEtco/create-an-issue@v2.8.2
+      uses: JasonEtco/create-an-issue@v2.9.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:

@@ -77,7 +77,7 @@ jobs:
 
     - name: Create issue if versions differ
       if: needs.check-mongodb-versions.outputs.CREATE_ISSUE == 'true'
-      uses: JasonEtco/create-an-issue@v2.8.2
+      uses: JasonEtco/create-an-issue@v2.9.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
