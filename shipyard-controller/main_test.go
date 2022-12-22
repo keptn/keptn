@@ -1027,7 +1027,7 @@ func Test__main_SequenceStateParallelStages(t *testing.T) {
 			return false
 		}
 		return true
-	}, 3*time.Second, 100*time.Millisecond)
+	}, 10*time.Second, 100*time.Millisecond)
 
 	// now finish the sequence in staging-2
 	_, err = keptn.SendTaskFinishedEvent(&keptnv2.EventData{
