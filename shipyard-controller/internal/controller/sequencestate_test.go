@@ -130,6 +130,42 @@ func TestSequenceStateMaterializedView_OnSequenceWaiting(t *testing.T) {
 			},
 			expectUpdateToBeCalled: true,
 		},
+		{
+			name: "try to set finished sequence to 'waiting'",
+			fields: SequenceStateMVTestFields{
+				SequenceStateRepo: &db_mock.SequenceStateRepoMock{
+					FindSequenceStatesFunc: func(filter models.StateFilter) (*models.SequenceStates, error) {
+						return &models.SequenceStates{
+							States: []models.SequenceState{
+								{
+									Name:           "my-sequence",
+									Service:        "my-service",
+									Project:        "my-project",
+									Shkeptncontext: "my-context",
+									State:          apimodels.SequenceFinished,
+									Stages:         nil,
+								},
+							},
+						}, nil
+					},
+					UpdateSequenceStateFunc: func(state models.SequenceState) error {
+						return nil
+					},
+				},
+			},
+			args: args{
+				event: models.KeptnContextExtendedCE{
+					Data: keptnv2.EventData{
+						Project: "my-project",
+						Stage:   "my-stage",
+						Service: "my-service",
+					},
+					Shkeptncontext: "my-context",
+					Type:           common.Stringp("my-type"),
+				},
+			},
+			expectUpdateToBeCalled: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
