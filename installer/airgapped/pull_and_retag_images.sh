@@ -17,7 +17,7 @@ fi
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
   "bitnami/mongodb:6.0.3-debian-11-r9"
   "nats:2.9.9-alpine"
-  "nginxinc/nginx-unprivileged:1.23.2-alpine"
+  "nginxinc/nginx-unprivileged:1.23.3-alpine"
   "curlimages/curl:7.85.0"
 )
 IMAGES_CONTROL_PLANE=(
