@@ -15,7 +15,7 @@
     "url": "https://github.com/keptn/keptn/issues"
   },
   "dependencies": {
-    "adm-zip": "0.5.9",
+    "adm-zip": "0.5.10",
     "axios": "1.2.1",
     "connect-mongo": "4.6.0",
     "cookie-parser": "1.4.6",
