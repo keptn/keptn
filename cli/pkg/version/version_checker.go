@@ -146,6 +146,7 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 		return false, false
 	}
 
+	cliChecked := false
 	msgPrinted := false
 	if cliConfig.AutomaticVersionCheck && IsOfficialKeptnVersion(cliVersion) {
 		checkTime := time.Now()
@@ -158,21 +159,24 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 			}
 			if newVersions.stable.newestCompatible == nil && newVersions.prerelease.newestCompatible == nil {
 				fmt.Printf("Keptn CLI is already on the latest version ( %v )! \n", cliVersion)
-				return false, true
-			}
-			if newVersions.stable.newestCompatible != nil {
-				segments := newVersions.stable.newestCompatible.Segments()
-				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String(),
-					majorMinorXVersion)
 				msgPrinted = true
-			}
-			if newVersions.prerelease.newestCompatible != nil {
-				segments := newVersions.prerelease.newestCompatible.Segments()
-				majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
-				fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible.String(),
-					majorMinorXVersion)
-				msgPrinted = true
+			} else {
+				if newVersions.stable.newestCompatible != nil {
+					segments := newVersions.stable.newestCompatible.Segments()
+					majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+					fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.stable.newestCompatible.String(),
+						majorMinorXVersion)
+					msgPrinted = true
+					cliChecked = true
+				}
+				if newVersions.prerelease.newestCompatible != nil {
+					segments := newVersions.prerelease.newestCompatible.Segments()
+					majorMinorXVersion := fmt.Sprintf("%v.%v.x", segments[0], segments[1])
+					fmt.Printf(newCompatibleVersionMsg+"\n", newVersions.prerelease.newestCompatible.String(),
+						majorMinorXVersion)
+					msgPrinted = true
+					cliChecked = true
+				}
 			}
 			if newVersions.stable.newestIncompatible != nil {
 				segments := newVersions.stable.newestIncompatible.Segments()
@@ -180,11 +184,11 @@ func (v *VersionChecker) CheckCLIVersion(cliVersion string, considerPrevCheck bo
 				fmt.Printf(newIncompatibleVersionMsg+"\n", newVersions.stable.newestIncompatible.String(),
 					majorMinorXVersion)
 				msgPrinted = true
+				cliChecked = true
 			}
-			return true, msgPrinted
 		}
 	}
-	return false, msgPrinted
+	return cliChecked, msgPrinted
 }
 
 // IsOfficialKeptnVersion checks whether the provided version string follows a Keptn version pattern
