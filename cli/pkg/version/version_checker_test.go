@@ -69,7 +69,7 @@ func TestCheckCLIVersion(t *testing.T) {
 
 	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		io.WriteString(w, `{ "cli": { "stable": ["0.5.2", "0.6.1"], "prerelease": ["0.6.0-beta2"] } }`)
+		io.WriteString(w, `{ "cli": { "stable": ["0.5.2", "0.6.1", "0.7.0"], "prerelease": ["0.6.0-beta2"] } }`)
 	})
 
 	httpClient, url, teardown := testingHTTPClient(handler)
@@ -82,11 +82,11 @@ func TestCheckCLIVersion(t *testing.T) {
 	//test no upgrade
 	av, b := versionChecker.CheckCLIVersion("0.6.1", false)
 	assert.Equal(t, b, true, "No message was displayed")
-	assert.Equal(t, av, false, "Some version matched")
+	assert.Equal(t, av, true, "Some version matched")
 
 	//test upgrade available
 	res, err := versionChecker.getNewerCLIVersion("0.6.0")
-	expectedRes := availableVersionInitHelper("0.6.1", "", "", "")
+	expectedRes := availableVersionInitHelper("0.6.1", "0.7.0", "", "")
 
 	assert.Equal(t, err, nil, "Unexpected error")
 	assert.Equal(t, res.equal(expectedRes), true, "Wrong versions")
