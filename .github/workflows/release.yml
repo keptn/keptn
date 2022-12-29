@@ -151,6 +151,9 @@ jobs:
           RELEASE_BUILD: 'true'
         run: |
           ./gh-actions-scripts/prepare_changed_artifacts.sh ""
+        - uses: anchore/sbom-action@v0
+          with:
+            path: ./api/
 
   ############################################################################
   # Build Docker Images
