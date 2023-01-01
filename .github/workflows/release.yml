@@ -89,6 +89,99 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+  ############################################################################
+  # Build SBOMs
+  ############################################################################
+      - name: API-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.API_FOLDER}}
+          artifact-name: ${{env.API_ARTIFACT}}.spdx
+      
+      - name: Approval Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.APPROVAL_SVC_FOLDER}}
+          artifact-name: ${{env.APPROVAL_SVC_ARTIFACT}}.spdx
+
+      - name: CLI
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./api
+          artifact-name: api.spdx
+      
+      - name: Distributor
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.DISTRIBUTOR_FOLDER}}
+          artifact-name: ${{env.DISTRIBUTOR_ARTIFACT}}.spdx
+
+      - name: LightHouse-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.LIGHTHOUSE_SVC_FOLDER}}
+          artifact-name: ${{env.LIGHTHOUSE_SVC_ARTIFACT}}.spdx
+
+      - name: MongoDB Database
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.MONGODB_DS_FOLDER}}
+          artifact-name: ${{env.MONGODB_DS_ARTIFACT}}.spdx
+      
+      - name: Remediation-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.REMEDIATION_SVC_FOLDER}}
+          artifact-name: ${{env.REMEDIATION_SVC_ARTIFACT}}.spdx
+
+      - name: Resource-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.RESOURCE_SVC_FOLDER}}
+          artifact-name: ${{env.RESOURCE_SVC_ARTIFACT}}.spdx
+
+      - name: Secret-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.SECRET_SVC_FOLDER}}
+          artifact-name: ${{env.SECRET_SVC_ARTIFACT}}.spdx
+
+      - name: Shipyard-Controller
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.SHIPYARD_CONTROLLER_FOLDER}}
+          artifact-name: ${{env.SHIPYARD_CONTROLLER_ARTIFACT}}.spdx
+
+      - name: Statistics-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.STATISTICS_SVC_FOLDER}}
+          artifact-name: ${{env.STATISTICS_SVC_ARTIFACT}}.spdx
+
+      - name: Webhook-Service
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          format: spdx
+          path: ./${{env.WEBHOOK_SVC_FOLDER}}
+          artifact-name: ${{env.WEBHOOK_SVC_ARTIFACT}}.spdx
+        
+
+        
+        
+
+
+
       - name: Run release please
         uses: google-github-actions/release-please-action@v3
         id: release
