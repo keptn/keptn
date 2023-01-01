@@ -5,9 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"golang.org/x/oauth2"
 	"net/http"
 	"strings"
+
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -17,7 +18,8 @@ const (
 											close();
 								},1500)
 						</script>`
-	redirectURL = "http://localhost:3000/oauth/redirect"
+	redirectURLHost = "http://localhost:"
+	redirectURLPath = "/oauth/redirect"
 )
 
 // OAuthenticator represents just the interface for a component performing OAuth authentication
@@ -46,7 +48,7 @@ func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore,
 }
 
 // Auth tries to start the Oauth2 Authorization Code Flow
-func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
+func (a *OauthAuthenticator) Auth(clientValues OauthClientValues, port string) error {
 	if err := clientValues.ValidateMandatoryFields(); err != nil {
 		return err
 	}
@@ -64,7 +66,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURL,
+		RedirectURL: redirectURLHost + port + redirectURLPath,
 	}
 
 	enforceOpenIDScope(config)
@@ -118,7 +120,7 @@ func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, err
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURL,
+		RedirectURL: redirectURLHost + "3000" + redirectURLPath,
 	}
 
 	enforceOpenIDScope(config)

@@ -29,6 +29,7 @@ type authCmdParams struct {
 	skipNamespaceListing *bool
 	oauth                *bool
 	oauthLogout          *bool
+	oauthPort            *string
 	oauthDiscovery       *string
 	oauthClientID        *string
 	oauthScopes          *[]string
@@ -96,7 +97,11 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		}
 
 		if *authParams.oauth {
+			var port string = "3000"
 
+			if *authParams.oauthPort != "" {
+				port = *authParams.oauthPort
+			}
 			if *authParams.oauthDiscovery == "" {
 				return fmt.Errorf("Unable to login: No OAuth Discovery URL provided")
 			}
@@ -111,7 +116,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				OauthClientSecret: *authParams.oauthClientSecret,
 				OauthScopes:       *authParams.oauthScopes,
 			}
-			if err := oauth.Auth(clientValues); err != nil {
+			if err := oauth.Auth(clientValues, port); err != nil {
 				return err
 			}
 		}
@@ -133,6 +138,7 @@ func init() {
 	authParams.oauthClientID = authCmd.Flags().String("oauth-client-id", "", "Oauth Client ID used for OAuth")
 	authParams.oauthScopes = authCmd.Flags().StringSlice("oauth-scopes", []string{}, "Oauth scopes used for OAuth")
 	authParams.oauthClientSecret = authCmd.Flags().String("oauth-client-secret", "", "Oauth Client Secret used for OAuth")
+	authParams.oauthPort = authCmd.Flags().String("oauth-port", "p", "", "To set the port for oauth authentication")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
