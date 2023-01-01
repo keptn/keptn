@@ -1,6 +1,6 @@
 # Keptn Versioning
 
-## Compatibility requirement
+## Compatibility requirements
 
 This codebase marks all artifacts with a version of the format `MAJOR.MINOR.PATCH` or
 `MAJOR.MINOR.PATCH-next.ID`. For any artifact with a stable release, that is its version does not
