@@ -76,6 +76,12 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext), auth.NewLocalFileOauthStore())
+		var port string = "3000"
+
+		if *authParams.oauthPort != "" {
+			port = *authParams.oauthPort
+		}
+
 		if *authParams.exportConfig {
 			endpoint, apiToken, err := authenticator.GetCredentials()
 			if err != nil {
@@ -97,11 +103,6 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 		}
 
 		if *authParams.oauth {
-			var port string = "3000"
-
-			if *authParams.oauthPort != "" {
-				port = *authParams.oauthPort
-			}
 			if *authParams.oauthDiscovery == "" {
 				return fmt.Errorf("Unable to login: No OAuth Discovery URL provided")
 			}
@@ -121,7 +122,7 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 			}
 		}
 
-		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken})
+		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken}, port)
 	},
 }
 

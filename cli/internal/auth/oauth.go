@@ -105,7 +105,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues, port string) e
 
 // GetOauthClient will eventually return an already ready to use http client which is configured to use
 // a OAUth Access Token
-func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, error) {
+func (a *OauthAuthenticator) OauthClient(ctx context.Context, port string) (*http.Client, error) {
 
 	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
@@ -120,7 +120,7 @@ func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, err
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURLHost + "3000" + redirectURLPath,
+		RedirectURL: redirectURLHost + port + redirectURLPath,
 	}
 
 	enforceOpenIDScope(config)

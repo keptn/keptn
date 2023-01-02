@@ -50,7 +50,7 @@ func (a *Authenticator) GetCredentials() (url.URL, string, error) {
 	return a.CredentialManager.GetCreds(a.Namespace)
 }
 
-func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
+func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions, port string) error {
 	var endpoint url.URL
 	var apiToken string
 	var err error
@@ -73,7 +73,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		endpoint.Path = "/api"
 	}
 
-	api, err := internal.APIProvider(endpoint.String(), apiToken)
+	api, err := internal.APIProvider(endpoint.String(), apiToken, port)
 	if err != nil {
 		return err
 	}
