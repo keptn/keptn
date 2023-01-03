@@ -116,13 +116,14 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				OauthClientID:     *authParams.oauthClientID,
 				OauthClientSecret: *authParams.oauthClientSecret,
 				OauthScopes:       *authParams.oauthScopes,
+				Port:              port,
 			}
-			if err := oauth.Auth(clientValues, port); err != nil {
+			if err := oauth.Auth(clientValues); err != nil {
 				return err
 			}
 		}
 
-		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken}, port)
+		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken, Port: port})
 	},
 }
 

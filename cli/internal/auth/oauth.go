@@ -48,7 +48,7 @@ func NewOauthAuthenticator(discovery OauthLocationGetter, tokenStore OauthStore,
 }
 
 // Auth tries to start the Oauth2 Authorization Code Flow
-func (a *OauthAuthenticator) Auth(clientValues OauthClientValues, port string) error {
+func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 	if err := clientValues.ValidateMandatoryFields(); err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues, port string) e
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURLHost + port + redirectURLPath,
+		RedirectURL: redirectURLHost + clientValues.Port + redirectURLPath,
 	}
 
 	enforceOpenIDScope(config)
@@ -155,6 +155,7 @@ type OauthClientValues struct {
 	OauthClientID     string   `json:"oauth_client_id"`
 	OauthClientSecret string   `json:"oauth_client_secret"`
 	OauthScopes       []string `json:"oauth_scopes"`
+	Port              string
 }
 
 func (v *OauthClientValues) ValidateMandatoryFields() error {
