@@ -96,7 +96,7 @@
     "@storybook/testing-library": "0.0.13",
     "@types/d3": "7.4.0",
     "@types/dompurify": "2.4.0",
-    "@types/jest": "29.2.4",
+    "@types/jest": "29.2.5",
     "@types/lodash": "4.14.191",
     "@types/lodash-es": "4.17.6",
     "@types/marked": "4.0.8",
