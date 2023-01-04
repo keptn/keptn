@@ -477,6 +477,9 @@ func (g *Git) getCurrentRemoteRevision(gitContext common_models.GitContext) (str
 
 func retrieveInsecureSkipTLS(credentials *common_models.GitCredentials) bool {
 	if credentials != nil && credentials.HttpsAuth != nil {
+		// only return the HttpsAuth.InsecureSkipTLS value if no proxy has been set.
+		// otherwise, the proxy settings will be discarded by go-git.
+		// see https://github.com/go-git/go-git/issues/590
 		if credentials.HttpsAuth.Proxy == nil {
 			return credentials.HttpsAuth.InsecureSkipTLS
 		}

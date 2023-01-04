@@ -1335,6 +1335,18 @@ func TestRetrieveInsecureFlag(t *testing.T) {
 			want: true,
 		},
 		{
+			name: "true, but proxy is set",
+			credentials: &common_models.GitCredentials{
+				HttpsAuth: &apimodels.HttpsGitAuth{
+					InsecureSkipTLS: true,
+					Proxy: &apimodels.ProxyGitAuth{
+						URL: "http://localhost:1080",
+					},
+				},
+			},
+			want: false,
+		},
+		{
 			name: "not set",
 			credentials: &common_models.GitCredentials{
 				HttpsAuth: &apimodels.HttpsGitAuth{},
