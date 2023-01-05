@@ -28,11 +28,11 @@ var APIProvider = getAPISet
 // it is used without further modifications (apart from the modifications being done in go-utils)
 // It is also possible to provide nil as httpClient parameter, in which case a fresh HTTP client will be created
 // but does NOT support OAuth
-func getAPISet(baseURL string, keptnXToken string, port string, httpClient ...*http.Client) (*apiutils.APISet, error) {
-	return getAPISetWithOauthGetter(baseURL, keptnXToken, port, auth.NewOauthAuthenticator(PublicDiscovery, auth.NewLocalFileOauthStore(), auth.NewBrowser(), &auth.ClosingRedirectHandler{}), httpClient...)
+func getAPISet(baseURL string, keptnXToken string, httpClient ...*http.Client) (*apiutils.APISet, error) {
+	return getAPISetWithOauthGetter(baseURL, keptnXToken, auth.NewOauthAuthenticator(PublicDiscovery, auth.NewLocalFileOauthStore(), auth.NewBrowser(), &auth.ClosingRedirectHandler{}), httpClient...)
 }
 
-func getAPISetWithOauthGetter(baseURL string, keptnXToken string, port string, oauthAuthenticator auth.OAuthenticator, httpClient ...*http.Client) (*apiutils.APISet, error) {
+func getAPISetWithOauthGetter(baseURL string, keptnXToken string, oauthAuthenticator auth.OAuthenticator, httpClient ...*http.Client) (*apiutils.APISet, error) {
 	// if an HTTP client was explicitly given,
 	// we just create and return a new APISet with that client
 	if len(httpClient) > 0 {
@@ -52,7 +52,7 @@ func getAPISetWithOauthGetter(baseURL string, keptnXToken string, port string, o
 			return nil, err
 		}
 		// get the ready to use HTTP client
-		client, err := oauthAuthenticator.OauthClient(context.Background(), port)
+		client, err := oauthAuthenticator.OauthClient(context.Background())
 		if err != nil {
 			return nil, err
 		}

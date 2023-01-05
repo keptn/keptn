@@ -22,6 +22,10 @@ const (
 	redirectURLPath = "/oauth/redirect"
 )
 
+var (
+	redirectURLPort = "3000"
+)
+
 // OAuthenticator represents just the interface for a component performing OAuth authentication
 type OAuthenticator interface {
 	Auth(clientValues OauthClientValues) error
@@ -53,6 +57,10 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 		return err
 	}
 
+	if clientValues.Port != "" {
+		redirectURLPort = clientValues.Port
+	}
+
 	discoveryInfo, err := a.discovery.Discover(context.TODO(), clientValues.OauthDiscoveryURL)
 	if err != nil {
 		return fmt.Errorf("failed to perform OAuth Discovery using URL %s: %w: ", clientValues.OauthDiscoveryURL, err)
@@ -66,7 +74,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURLHost + clientValues.Port + redirectURLPath,
+		RedirectURL: redirectURLHost + redirectURLPort + redirectURLPath,
 	}
 
 	enforceOpenIDScope(config)
@@ -105,7 +113,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 
 // GetOauthClient will eventually return an already ready to use http client which is configured to use
 // a OAUth Access Token
-func (a *OauthAuthenticator) OauthClient(ctx context.Context, port string) (*http.Client, error) {
+func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, error) {
 
 	oauthInfo, err := a.tokenStore.GetOauthInfo()
 	if err != nil {
@@ -120,7 +128,7 @@ func (a *OauthAuthenticator) OauthClient(ctx context.Context, port string) (*htt
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURLHost + port + redirectURLPath,
+		RedirectURL: redirectURLHost + redirectURLPort + redirectURLPath,
 	}
 
 	enforceOpenIDScope(config)

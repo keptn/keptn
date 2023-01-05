@@ -36,7 +36,6 @@ type Authenticator struct {
 type AuthenticatorOptions struct {
 	Endpoint string
 	APIToken string
-	Port     string
 }
 
 func NewAuthenticator(namespace string, credentialManager CredentialGetSetter, oauthStore auth.OauthStore) *Authenticator {
@@ -74,7 +73,7 @@ func (a *Authenticator) Auth(authenticatorOptions AuthenticatorOptions) error {
 		endpoint.Path = "/api"
 	}
 
-	api, err := internal.APIProvider(endpoint.String(), apiToken, authenticatorOptions.Port)
+	api, err := internal.APIProvider(endpoint.String(), apiToken)
 	if err != nil {
 		return err
 	}
