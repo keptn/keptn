@@ -112,5 +112,5 @@ replace (
 	golang.org/x/crypto => golang.org/x/crypto v0.4.0
 	golang.org/x/text => golang.org/x/text v0.5.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
-	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v3.0.1
+	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 )
