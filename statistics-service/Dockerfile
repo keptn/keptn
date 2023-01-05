@@ -2,10 +2,6 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.19.4 as builder
 
-ARG version=develop
-# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
-ARG SKAFFOLD_GO_GCFLAGS
-
 # install additional dependencies
 RUN apt-get install -y gcc libc-dev git
 
@@ -34,8 +30,13 @@ RUN GOOS=linux swag init --parseDependency
 
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
+
+ARG version=develop
 # replace version "develop" with actual version
 RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
+
+# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
+ARG SKAFFOLD_GO_GCFLAGS
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here,

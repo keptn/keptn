@@ -2,9 +2,6 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.19.4-alpine3.16 as builder
 
-ARG version=develop
-ARG debugBuild
-
 WORKDIR /go/src/github.com/keptn/keptn/approval-service
 
 # Force the go compiler to use modules
@@ -24,6 +21,7 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+ARG debugBuild
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 

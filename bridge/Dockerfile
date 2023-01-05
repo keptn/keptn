@@ -1,8 +1,5 @@
 FROM node:14-alpine3.15 as bridge-builder
 
-ARG version=develop
-ENV VERSION="${version}"
-
 # Prepare app directory
 WORKDIR /usr/src/app
 
@@ -14,9 +11,6 @@ COPY . /usr/src/app
 RUN yarn build
 
 FROM node:14-alpine3.15 as bridge-server-builder
-
-ARG version=develop
-ENV VERSION="${version}"
 
 # Prepare app directory
 WORKDIR /usr/src/app/server

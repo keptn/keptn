@@ -2,9 +2,6 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.19.4-alpine3.16 as builder
 
-ARG version=develop
-ARG debugBuild
-
 WORKDIR /go/src/github.com/keptn/keptn/api
 
 # Force the go compiler to use modules
@@ -24,9 +21,11 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+ARG debugBuild
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
+ARG version=develop
 RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/api/swagger.yaml
 
 # Build the command inside the container.

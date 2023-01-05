@@ -2,10 +2,6 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.19.4-alpine3.16 as builder
 
-ARG debugBuild
-ARG buildTime=unknown
-ARG gitSha=unknown
-
 WORKDIR /go/src/github.com/keptn/keptn/distributor
 
 # Force the go compiler to use modules
@@ -22,8 +18,12 @@ RUN go mod download
 # Copy local code to the container image.
 COPY . .
 
+ARG debugBuild
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
+
+ARG buildTime=unknown
+ARG gitSha=unknown
 
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
