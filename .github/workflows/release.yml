@@ -269,8 +269,8 @@ jobs:
       release-build: "true"
 
 ### Sboms
-  build-sboms:
-    needs:[release-please,prepare]
+  build_sboms:
+    needs: [release-please,prepare]
     name: Build SBOMs
     strategy:
       matrix: ${{fromJson(needs.prepare.outputs.BUILD_MATRIX)}}
