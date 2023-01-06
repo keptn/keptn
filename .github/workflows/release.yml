@@ -281,7 +281,7 @@ jobs:
         format: spdx
         path: ./${{matrix.config.working-dir}}
         artifact-name: sboms
-      run: gh release upload "$name"
+
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
   ############################################################################
