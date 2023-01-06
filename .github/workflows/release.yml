@@ -89,92 +89,92 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-  ############################################################################
-  # Build SBOMs
-  ############################################################################
-      - name: ${{env.API_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.API_FOLDER}}
-          artifact-name: ${{env.API_ARTIFACT}}.spdx
+  # ############################################################################
+  # # Build SBOMs
+  # ############################################################################
+  #     - name: ${{env.API_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.API_FOLDER}}
+  #         artifact-name: ${{env.API_ARTIFACT}}.spdx
       
-      - name: ${{env.APPROVAL_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.APPROVAL_SVC_FOLDER}}
-          artifact-name: ${{env.APPROVAL_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.APPROVAL_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.APPROVAL_SVC_FOLDER}}
+  #         artifact-name: ${{env.APPROVAL_SVC_ARTIFACT}}.spdx
 
-      - name: CLI
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./api
-          artifact-name: api.spdx
+  #     - name: CLI
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./api
+  #         artifact-name: api.spdx
       
-      - name: ${{env.DISTRIBUTOR_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.DISTRIBUTOR_FOLDER}}
-          artifact-name: ${{env.DISTRIBUTOR_ARTIFACT}}.spdx
+  #     - name: ${{env.DISTRIBUTOR_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.DISTRIBUTOR_FOLDER}}
+  #         artifact-name: ${{env.DISTRIBUTOR_ARTIFACT}}.spdx
 
-      - name: ${{env.LIGHTHOUSE_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.LIGHTHOUSE_SVC_FOLDER}}
-          artifact-name: ${{env.LIGHTHOUSE_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.LIGHTHOUSE_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.LIGHTHOUSE_SVC_FOLDER}}
+  #         artifact-name: ${{env.LIGHTHOUSE_SVC_ARTIFACT}}.spdx
 
-      - name: ${{env.MONGODB_DS_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.MONGODB_DS_FOLDER}}
-          artifact-name: ${{env.MONGODB_DS_ARTIFACT}}.spdx
+  #     - name: ${{env.MONGODB_DS_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.MONGODB_DS_FOLDER}}
+  #         artifact-name: ${{env.MONGODB_DS_ARTIFACT}}.spdx
       
-      - name: ${{env.REMEDIATION_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.REMEDIATION_SVC_FOLDER}}
-          artifact-name: ${{env.REMEDIATION_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.REMEDIATION_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.REMEDIATION_SVC_FOLDER}}
+  #         artifact-name: ${{env.REMEDIATION_SVC_ARTIFACT}}.spdx
 
-      - name: ${{env.RESOURCE_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.RESOURCE_SVC_FOLDER}}
-          artifact-name: ${{env.RESOURCE_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.RESOURCE_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.RESOURCE_SVC_FOLDER}}
+  #         artifact-name: ${{env.RESOURCE_SVC_ARTIFACT}}.spdx
 
-      - name: ${{env.SECRET_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.SECRET_SVC_FOLDER}}
-          artifact-name: ${{env.SECRET_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.SECRET_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.SECRET_SVC_FOLDER}}
+  #         artifact-name: ${{env.SECRET_SVC_ARTIFACT}}.spdx
 
-      - name: ${{env.SHIPYARD_CONTROLLER_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.SHIPYARD_CONTROLLER_FOLDER}}
-          artifact-name: ${{env.SHIPYARD_CONTROLLER_ARTIFACT}}.spdx
+  #     - name: ${{env.SHIPYARD_CONTROLLER_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.SHIPYARD_CONTROLLER_FOLDER}}
+  #         artifact-name: ${{env.SHIPYARD_CONTROLLER_ARTIFACT}}.spdx
 
-      - name: ${{env.STATISTICS_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.STATISTICS_SVC_FOLDER}}
-          artifact-name: ${{env.STATISTICS_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.STATISTICS_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.STATISTICS_SVC_FOLDER}}
+  #         artifact-name: ${{env.STATISTICS_SVC_ARTIFACT}}.spdx
 
-      - name: ${{env.WEBHOOK_SVC_ARTIFACT_PREFIX}}
-        uses: anchore/sbom-action@v0.13.1
-        with:
-          format: spdx
-          path: ./${{env.WEBHOOK_SVC_FOLDER}}
-          artifact-name: ${{env.WEBHOOK_SVC_ARTIFACT}}.spdx
+  #     - name: ${{env.WEBHOOK_SVC_ARTIFACT_PREFIX}}
+  #       uses: anchore/sbom-action@v0.13.1
+  #       with:
+  #         format: spdx
+  #         path: ./${{env.WEBHOOK_SVC_FOLDER}}
+  #         artifact-name: ${{env.WEBHOOK_SVC_ARTIFACT}}.spdx
         
 ###############################################################################################
     
@@ -268,6 +268,20 @@ jobs:
       build-everything: "true"
       release-build: "true"
 
+### Sboms
+  build-sboms:
+    needs:[release-please,prepare]
+    name: Build SBOMs
+    strategy:
+      matrix: ${{fromJson(needs.prepare.outputs.BUILD_MATRIX)}}
+    steps:
+    - name: SBOM ${{martix.config.artifact}}
+      uses: anchore/sbom-action@v0.13.1
+      with:
+        format: spdx
+        path: ./${{matrix.config.working-dir}}
+        artifact-name: sboms
+      run: gh release upload "$name"
   ############################################################################
   # Build Helm Charts (only relevant for build_everything)
   ############################################################################
