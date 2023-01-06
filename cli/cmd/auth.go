@@ -76,11 +76,6 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 	},
 	RunE: func(cmd *cobra.Command, args []string) error {
 		authenticator := NewAuthenticator(namespace, credentialmanager.NewCredentialManager(authParams.acceptContext), auth.NewLocalFileOauthStore())
-		var port string = "3000"
-
-		if *authParams.oauthPort != "" {
-			port = *authParams.oauthPort
-		}
 
 		if *authParams.exportConfig {
 			endpoint, apiToken, err := authenticator.GetCredentials()
@@ -116,14 +111,14 @@ keptn auth --skip-namespace-listing # To skip the listing of namespaces and use 
 				OauthClientID:     *authParams.oauthClientID,
 				OauthClientSecret: *authParams.oauthClientSecret,
 				OauthScopes:       *authParams.oauthScopes,
-				Port:              port,
+				Port:              *authParams.oauthPort,
 			}
 			if err := oauth.Auth(clientValues); err != nil {
 				return err
 			}
 		}
 
-		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken, Port: port})
+		return authenticator.Auth(AuthenticatorOptions{Endpoint: *authParams.endPoint, APIToken: *authParams.apiToken})
 	},
 }
 
@@ -140,7 +135,7 @@ func init() {
 	authParams.oauthClientID = authCmd.Flags().String("oauth-client-id", "", "Oauth Client ID used for OAuth")
 	authParams.oauthScopes = authCmd.Flags().StringSlice("oauth-scopes", []string{}, "Oauth scopes used for OAuth")
 	authParams.oauthClientSecret = authCmd.Flags().String("oauth-client-secret", "", "Oauth Client Secret used for OAuth")
-	authParams.oauthPort = authCmd.Flags().String("oauth-port", "p", "", "To set the port for oauth authentication")
+	authParams.oauthPort = authCmd.Flags().String("oauth-port", "", "To set the port for oauth authentication")
 	authParams.secure = authCmd.Flags().BoolP("secure", "s", false, "To make http/https request to auto fetched endpoint while authentication")
 	authParams.skipNamespaceListing = authCmd.Flags().BoolP("skip-namespace-listing", "i", false, "To skip the listing of namespaces and use the namespace passed with \"--namespace\" flag (default namespace is 'keptn')")
 	authCmd.Flags().BoolVarP(&authParams.acceptContext, "yes", "y", false, "Automatically accept change of Kubernetes Context")
