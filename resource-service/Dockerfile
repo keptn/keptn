@@ -3,10 +3,9 @@
 FROM golang:1.19.4-alpine3.17 as builder
 
 # install additional dependencies
-RUN apk update
-RUN apk upgrade
-RUN apk add --no-cache gcc libc-dev git cmake make openssl
-RUN apk add --no-cache libgit2-dev=1.5.0-r2
+RUN apk update && \
+    apk upgrade && \
+    apk add --no-cache gcc libc-dev git cmake make openssl libgit2-dev=1.5.0-r2
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
@@ -26,7 +25,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy local code to the container image.
-COPY . .
+COPY ./ ./
 
 # generate swagger docs
 RUN GOOS=linux swag init
@@ -48,14 +47,12 @@ RUN GOOS=linux LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ go build -ldfl
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.17 as production
-ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Resource Service" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${version}"
+    org.opencontainers.image.licenses="Apache-2.0"
 
 ENV env=production
 
@@ -63,10 +60,7 @@ ENV env=production
 RUN apk add --no-cache ca-certificates libc6-compat cmake make openssl
 
 # Install git
-#RUN apk update
-#RUN apk upgrade
-RUN apk add --no-cache build-base git pkgconf
-RUN apk add --no-cache libgit2-dev=1.5.0-r2
+RUN apk add --no-cache build-base git pkgconf libgit2-dev=1.5.0-r2
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service
@@ -83,6 +77,9 @@ ENV GOTRACEBACK=all
 
 RUN adduser -D nonroot -u 65532
 USER nonroot
+
+ARG version=develop
+LABEL org.opencontainers.image.version="${version}"
 
 # Run the web service on container startup.
 ENV GIN_MODE=release

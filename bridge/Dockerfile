@@ -27,14 +27,12 @@ RUN yarn build && \
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM node:14-alpine3.15 as production
-ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Bridge" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${version}"
+    org.opencontainers.image.licenses="Apache-2.0"
 
 ENV VERSION="${version}"
 ENV NODE_ENV "production"
@@ -53,6 +51,9 @@ RUN addgroup mygroup --gid 65532 && adduser -D -G mygroup myuser --uid 65532 && 
 
 # Set user
 USER myuser
+
+ARG version=develop
+LABEL org.opencontainers.image.version="${version}"
 
 EXPOSE 3000
 CMD ["npm", "start", "--prefix", "./server"]

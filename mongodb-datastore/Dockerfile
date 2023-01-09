@@ -33,14 +33,12 @@ RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/k
 RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -v -o mongodb-datastore
 
 FROM alpine:3.17 as production
-ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn MongoDB Datastore" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${version}"
+    org.opencontainers.image.licenses="Apache-2.0"
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
@@ -62,6 +60,9 @@ ENV GOTRACEBACK=all
 
 RUN adduser -D nonroot -u 65532
 USER nonroot
+
+ARG version=develop
+LABEL org.opencontainers.image.version="${version}"
 
 # Run the web service on container startup.
 CMD ["/mongodb-datastore", "--port=8080", "--host=0.0.0.0"]
