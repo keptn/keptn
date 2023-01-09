@@ -556,13 +556,9 @@ func (g *Git) CheckoutBranch(gitContext common_models.GitContext, branch string)
 
 func (g *Git) checkoutBranch(gitContext common_models.GitContext, options *git.CheckoutOptions) error {
 	if g.ProjectExists(gitContext) {
-		r, w, err := g.getWorkTree(gitContext)
+		_, w, err := g.getWorkTree(gitContext)
 		if err != nil {
 			logger.Debugf("checkoutBranch(): Could not get worktree for project '%s': %s", gitContext.Project, err.Error())
-			return err
-		}
-		if err = g.fetch(gitContext, r); err != nil {
-			logger.Debugf("checkoutBranch(): Ccould not fetch for project '%s': %s", gitContext.Project, err.Error())
 			return err
 		}
 
