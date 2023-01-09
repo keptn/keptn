@@ -33,10 +33,6 @@ RUN GOOS=linux swag init
 # replace github.com/alecthomas/template; with text/template in docs/docs.go
 RUN sed -i "s|github.com/alecthomas/template|text/template|g" docs/docs.go
 
-ARG version=develop
-# replace version "develop" with actual version
-RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
-
 # `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
 ARG SKAFFOLD_GO_GCFLAGS
 
@@ -44,6 +40,10 @@ ARG SKAFFOLD_GO_GCFLAGS
 # (You may fetch or manage dependencies here, 
 # either manually or with a tool like "godep".)
 RUN GOOS=linux LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v main.go
+
+ARG version=develop
+# replace version "develop" with actual version
+RUN sed -i "s/version: develop/version: ${version}/g" docs/swagger.yaml
 
 # Use a Docker multi-stage build to create a lean production image.
 FROM alpine:3.17 as production
