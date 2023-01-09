@@ -14,5 +14,25 @@
         }
       }
     ]
+  },
+  {
+    "name": "application-credentials-in-configuration-files",
+    "policyType": "postureExceptionPolicy",
+    "actions": [
+      "alertOnly"
+    ],
+    "resources": [
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "Deployment"
+        }
+      }
+    ],
+    "posturePolicies": [
+        {
+            "controlID": "C-0012"
+        }
+    ]
   }
 ]
