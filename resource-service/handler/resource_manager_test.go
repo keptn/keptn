@@ -1250,6 +1250,68 @@ func TestResourceManager_GetResources(t *testing.T) {
 	require.Len(t, fields.fileSystem.WalkPathCalls(), 1)
 }
 
+func TestResourceManager_GetResourcesPullFailed(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.PullFunc = func(gitContext common_models.GitContext) error {
+		return errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	result, err := rm.GetResources(models.GetResourcesParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		GetResourcesQuery: models.GetResourcesQuery{
+			PageSize: 10,
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, result)
+
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+
+	require.Len(t, fields.git.PullCalls(), 1)
+
+	require.Empty(t, fields.git.GetCurrentRevisionCalls())
+
+	require.Empty(t, fields.fileSystem.WalkPathCalls())
+}
+
+func TestResourceManager_GetCurrentRevisionFailed(t *testing.T) {
+	fields := getTestResourceManagerFields()
+
+	fields.git.GetCurrentRevisionFunc = func(gitContext common_models.GitContext) (string, error) {
+		return "", errors.New("oops")
+	}
+
+	rm := NewResourceManager(fields.git, fields.credentialReader, fields.fileSystem, fields.stageContext)
+
+	result, err := rm.GetResources(models.GetResourcesParams{
+		ResourceContext: models.ResourceContext{
+			Project: models.Project{ProjectName: "my-project"},
+		},
+		GetResourcesQuery: models.GetResourcesQuery{
+			PageSize: 10,
+		},
+	})
+
+	require.NotNil(t, err)
+
+	require.Nil(t, result)
+
+	require.Len(t, fields.stageContext.EstablishCalls(), 1)
+
+	require.Len(t, fields.git.PullCalls(), 1)
+
+	require.Len(t, fields.git.GetCurrentRevisionCalls(), 1)
+
+	require.Empty(t, fields.fileSystem.WalkPathCalls())
+}
+
 type fakeFileInfo struct {
 	name  string
 	isDir bool
