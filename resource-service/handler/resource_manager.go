@@ -64,6 +64,8 @@ func (p ResourceManager) GetResources(params models.GetResourcesParams) (*models
 	if err != nil {
 		return nil, err
 	}
+	// since we do not automatically fetch each time when we check out a branch, we need to pull
+	// here to get the latest state from the upstream
 	if err := p.git.Pull(*gitContext); err != nil {
 		return nil, err
 	}
