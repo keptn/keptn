@@ -465,7 +465,6 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-nats" -}}
 - name: "wait-for-nats"
-  namespace: "{{ .Release.Namespace }}"
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
@@ -489,7 +488,6 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-keptn-mongo" -}}
 - name: "wait-for-keptn-mongo"
-  namespace: "{{ .Release.Namespace }}"
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
