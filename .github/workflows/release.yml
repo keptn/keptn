@@ -82,6 +82,8 @@ defaults:
 jobs:
   release-please:
     runs-on: ubuntu-22.04
+    group: release
+    concurrency: 1
     outputs:
       tag_name: ${{ steps.release.outputs.tag_name }}
       releases_created: ${{ steps.release.outputs.releases_created }}
@@ -100,6 +102,8 @@ jobs:
   prepare:
     name: Prepare release run
     runs-on: ubuntu-20.04
+    group: release
+    concurrency: 1
     needs: release-please
     if: needs.release-please.outputs.releases_created == 'true'
     outputs:
