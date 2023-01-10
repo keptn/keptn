@@ -16,47 +16,7 @@
     ]
   },
   {
-    "name": "application-credentials-in-configuration-files",
-    "policyType": "postureExceptionPolicy",
-    "actions": [
-      "alertOnly"
-    ],
-    "resources": [
-      {
-        "designatorType": "Attributes",
-        "attributes": {
-          "kind": "Deployment"
-        }
-      }
-    ],
-    "posturePolicies": [
-        {
-            "controlID": "C-0012"
-        }
-    ]
-  },
-  {
-    "name": "images-allowed-registry",
-    "policyType": "postureExceptionPolicy",
-    "actions": [
-      "alertOnly"
-    ],
-    "resources": [
-      {
-        "designatorType": "Attributes",
-        "attributes": {
-          "kind": "Deployment"
-        }
-      }
-    ],
-    "posturePolicies": [
-        {
-            "controlID": "C-0078"
-        }
-    ]
-  },
-  {
-    "name": "auto-map-service-account-nats",
+    "name": "auto-map-service-account",
     "policyType": "postureExceptionPolicy",
     "actions": [
       "alertOnly"
@@ -68,21 +28,7 @@
           "kind": "ServiceAccount",
           "name": "keptn-nats"
         }
-      }
-    ],
-    "posturePolicies": [
-        {
-            "controlID": "C-0034"
-        }
-    ]
-  },
-  {
-    "name": "auto-map-service-account-mongo",
-    "policyType": "postureExceptionPolicy",
-    "actions": [
-      "alertOnly"
-    ],
-    "resources": [
+      },
       {
         "designatorType": "Attributes",
         "attributes": {
@@ -98,7 +44,7 @@
     ]
   },
   {
-    "name": "ingress-egress-blocked-deployment",
+    "name": "ingress-egress-blocked",
     "policyType": "postureExceptionPolicy",
     "actions": [
       "alertOnly"
@@ -109,21 +55,7 @@
         "attributes": {
           "kind": "Deployment"
         }
-      }
-    ],
-    "posturePolicies": [
-        {
-            "controlID": "C-0030"
-        }
-    ]
-  },
-  {
-    "name": "ingress-egress-blocked-statefulset",
-    "policyType": "postureExceptionPolicy",
-    "actions": [
-      "alertOnly"
-    ],
-    "resources": [
+      },
       {
         "designatorType": "Attributes",
         "attributes": {
@@ -138,26 +70,6 @@
     ]
   },
   {
-    "name": "default-namespace",
-    "policyType": "postureExceptionPolicy",
-    "actions": [
-      "alertOnly"
-    ],
-    "resources": [
-      {
-        "designatorType": "Attributes",
-        "attributes": {
-          "kind": "Deployment"
-        }
-      }
-    ],
-    "posturePolicies": [
-        {
-            "controlID": "C-0061"
-        }
-    ]
-  },
-  {
     "name": "immutable-container-filesystem",
     "policyType": "postureExceptionPolicy",
     "actions": [
@@ -167,7 +79,15 @@
       {
         "designatorType": "Attributes",
         "attributes": {
-          "kind": "Deployment"
+          "kind": "Deployment",
+          "name": "api-gateway-nginx"
+        }
+      },
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "Deployment",
+          "name": "keptn-mongo"
         }
       }
     ],
