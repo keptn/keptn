@@ -14,5 +14,87 @@
         }
       }
     ]
+  },
+  {
+    "name": "auto-map-service-account",
+    "policyType": "postureExceptionPolicy",
+    "actions": [
+      "alertOnly"
+    ],
+    "resources": [
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "ServiceAccount",
+          "name": "keptn-nats"
+        }
+      },
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "Deployment",
+          "name": "keptn-mongo"
+        }
+      }
+    ],
+    "posturePolicies": [
+        {
+            "controlID": "C-0034"
+        }
+    ]
+  },
+  {
+    "name": "ingress-egress-blocked",
+    "policyType": "postureExceptionPolicy",
+    "actions": [
+      "alertOnly"
+    ],
+    "resources": [
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "Deployment"
+        }
+      },
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "StatefulSet"
+        }
+      }
+    ],
+    "posturePolicies": [
+        {
+            "controlID": "C-0030"
+        }
+    ]
+  },
+  {
+    "name": "immutable-container-filesystem",
+    "policyType": "postureExceptionPolicy",
+    "actions": [
+      "alertOnly"
+    ],
+    "resources": [
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "Deployment",
+          "name": "api-gateway-nginx"
+        }
+      },
+      {
+        "designatorType": "Attributes",
+        "attributes": {
+          "kind": "Deployment",
+          "name": "keptn-mongo"
+        }
+      }
+    ],
+    "posturePolicies": [
+        {
+            "controlID": "C-0017"
+        }
+    ]
   }
 ]
