@@ -295,3 +295,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
           RELEASE_TAG: ${{ needs.release-please.outputs.tag_name }}
         run: gh release upload "$RELEASE_TAG" './assets/pubring.gpg'
+
+  generate-sboms:
+    name: Generate SBOMs
+    needs: [release-please, prepare]
+    strategy:
+      matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
+    steps:
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0.13.1
+        with:
+          image: docker.keptn.sh/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
+          artifact-name: sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}
+          output-file: ./sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}.spdx.json
+
+      - name: Attach SBOM to release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.release-please.outputs.tag_name }}
+          files: ./sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}.spdx.json
