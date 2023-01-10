@@ -465,7 +465,7 @@ Usage:
 
 {{- define "keptn.initContainers.wait-for-nats" -}}
 - name: "wait-for-nats"
-namespace: "{{ .context.Release.Namespace }}"
+  namespace: "{{ .context.Release.Namespace }}"
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
