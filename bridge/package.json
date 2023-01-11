@@ -63,7 +63,7 @@
     "cypress-file-upload": "5.0.8",
     "d3": "7.7.0",
     "d3-scale": "4.0.2",
-    "d3-shape": "3.1.0",
+    "d3-shape": "3.2.0",
     "lodash-es": "4.17.21",
     "moment": "2.29.4",
     "ngx-moment": "6.0.2",
