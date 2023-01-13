@@ -23,3 +23,7 @@ COPY . .
 ARG debugBuild
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
+
+# Build the command inside the container.
+# (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
+RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -o keptn
