@@ -3,10 +3,11 @@ package auth
 import (
 	"context"
 	"fmt"
-	"golang.org/x/oauth2"
 	"net"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/oauth2"
 )
 
 // TokenGetter handles the retrieval of oauth access tokens
