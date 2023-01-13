@@ -1,10 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.19.4-alpine3.16 as builder
-
-# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
-ARG SKAFFOLD_GO_GCFLAGS
+FROM golang:1.19.5-alpine3.16 as builder
 
 # Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/lighthouse-service
@@ -25,6 +22,9 @@ RUN go mod download
 
 COPY . .
 
+# `skaffold debug` sets SKAFFOLD_GO_GCFLAGS to disable compiler optimizations
+ARG SKAFFOLD_GO_GCFLAGS
+
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v -o lighthouse-service
@@ -32,14 +32,12 @@ RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GC
 # Use a Docker multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.17 as production
-ARG version=develop
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Lighthouse Service" \
     org.opencontainers.image.vendor="Keptn" \
     org.opencontainers.image.documentation="https://keptn.sh/docs/" \
-    org.opencontainers.image.licenses="Apache-2.0" \
-    org.opencontainers.image.version="${version}"
+    org.opencontainers.image.licenses="Apache-2.0"
 
 # we need to install ca-certificates and libc6-compat for go programs to work properly
 RUN apk add --no-cache ca-certificates libc6-compat
@@ -54,6 +52,9 @@ ENV GOTRACEBACK=all
 
 RUN adduser -D nonroot -u 65532
 USER nonroot
+
+ARG version=develop
+LABEL org.opencontainers.image.version="${version}"
 
 # Run the web service on container startup.
 CMD ["/lighthouse-service"]

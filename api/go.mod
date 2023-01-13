@@ -16,12 +16,12 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.20.0
-	github.com/nats-io/nats-server/v2 v2.9.10
+	github.com/nats-io/nats-server/v2 v2.9.11
 	github.com/nats-io/nats.go v1.22.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.37.0
-	golang.org/x/exp v0.0.0-20230105000112-eab7a2c85304
+	golang.org/x/exp v0.0.0-20230108222341-4b8118a2686a
 	golang.org/x/net v0.5.0
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
@@ -71,7 +71,7 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
+	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/term v0.4.0 // indirect
@@ -91,7 +91,7 @@ replace (
 	github.com/gobuffalo/packr/v2 => github.com/gobuffalo/packr/v2 v2.8.3
 	golang.org/x/crypto => golang.org/x/crypto v0.4.0
 	golang.org/x/net => golang.org/x/net v0.5.0
-	golang.org/x/text => golang.org/x/text v0.5.0
-	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
+	golang.org/x/text => golang.org/x/text v0.6.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )

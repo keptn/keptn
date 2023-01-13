@@ -366,6 +366,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: api-gateway-nginx
+  namespace: {{ .Release.Namespace }}
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: api-gateway-nginx
 spec:

@@ -4,6 +4,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: lighthouse-service
+  namespace: {{ .Release.Namespace }}
   labels: {{- include "keptn.common.labels.standard" . | nindent 4 }}
     app.kubernetes.io/name: lighthouse-service
 spec:

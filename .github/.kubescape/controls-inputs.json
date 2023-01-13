@@ -3,7 +3,8 @@
     "ecr.*amazonaws.com",
     ".*.gcr.io",
     ".*azurecr.io",
-    "docker.io"
+    "docker.io",
+    "docker.keptn.sh"
   ],
   "max_critical_vulnerabilities": [
     "5"
@@ -59,7 +60,9 @@
     "_key_",
     "_secret_"
   ],
-  "sensitiveValuesAllowed": [],
+  "sensitiveValuesAllowed": [
+    "secret-service:8080"
+  ],
   "servicesNames": [
     "nifi-service",
     "argo-server",
