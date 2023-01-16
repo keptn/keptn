@@ -18,7 +18,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Copy local code to the container image.
-COPY . .
+COPY ./ ./
 
 ARG debugBuild
 # set buildflags for debug build
