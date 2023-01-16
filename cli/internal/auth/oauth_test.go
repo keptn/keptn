@@ -132,7 +132,7 @@ func Test_Auth_Scopes(t *testing.T) {
 			assert.Contains(t, c.Scopes, "somescope")
 			return nil, nil
 		}
-		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{"somescope", ""}})
+		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{"somescope"}, ""})
 	})
 }
 
@@ -154,7 +154,7 @@ func Test_Auth_MissingOauthInfo(t *testing.T) {
 				assert.Equal(t, "", c.ClientSecret)
 				return nil, nil
 			}
-			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}})
+			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}, ""})
 		}
 	})
 	t.Run("Auth - client id and secret given", func(t *testing.T) {
