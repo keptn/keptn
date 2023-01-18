@@ -5,8 +5,8 @@ github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.12.0 h1:76lC9OHT
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.12.0/go.mod h1:fwIdM84gpE40VfX1wxUBQHI7hub8htFEbQRynlbJaNE=
 github.com/cloudevents/sdk-go/protocol/nats/v2 v2.12.0 h1:t089Ceil36Lp1uYg5Nber7yhkbxWHBvVhdmg/Mhoi2Q=
 github.com/cloudevents/sdk-go/protocol/nats/v2 v2.12.0/go.mod h1:CcuQxanI2zqettPVu7ptYuy8vs9769efLz0y9JeP+M4=
-github.com/cloudevents/sdk-go/v2 v2.12.0 h1:p1k+ysVOZtNiXfijnwB3WqZNA3y2cGOiKQygWkUHCEI=
-github.com/cloudevents/sdk-go/v2 v2.12.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=
+github.com/cloudevents/sdk-go/v2 v2.13.0 h1:2zxDS8RyY1/wVPULGGbdgniGXSzLaRJVl136fLXGsYw=
+github.com/cloudevents/sdk-go/v2 v2.13.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
