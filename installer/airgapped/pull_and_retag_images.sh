@@ -15,7 +15,7 @@ if [[ "$KEPTN_TAG" == *"dev"* ]]; then
 fi
 
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
-  "bitnami/mongodb:6.0.3-debian-11-r9"
+  "bitnami/mongodb:6.0.3-debian-11-r20"
   "nats:2.9.11-alpine"
   "nginxinc/nginx-unprivileged:1.23.3-alpine"
   "curlimages/curl:7.85.0"
