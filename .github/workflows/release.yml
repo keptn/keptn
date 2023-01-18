@@ -303,7 +303,7 @@ jobs:
   generate-sboms:
     name: Generate SBOMs
     runs-on: ubuntu-22.04
-    needs: [release-please, prepare]
+    needs: [release-please, prepare, docker_build]
     strategy:
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
     steps:
