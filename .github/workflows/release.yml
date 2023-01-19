@@ -43,6 +43,10 @@ env:
   DISTRIBUTOR_FOLDER: "distributor/"
   DISTRIBUTOR_DOCKER_TEST_TARGET: "builder-test"
 
+  CLI_ARTIFACT: "CLI"
+  CLI_FOLDER: "cli/"
+  CLI_DOCKER_TEST_TARGET: "builder-test"
+
   SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
   SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
   SHIPYARD_CONTROLLER_DOCKER_TEST_TARGET: "builder-test"
