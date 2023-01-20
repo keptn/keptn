@@ -23,7 +23,7 @@ require (
 	golang.org/x/net v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.25.5
-	k8s.io/apimachinery v0.25.5
+	k8s.io/apimachinery v0.25.6
 	k8s.io/client-go v0.25.5
 )
 
