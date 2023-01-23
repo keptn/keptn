@@ -1,4 +1,4 @@
-name: Build CLI
+name: Build CLI Binaries
 on:
   workflow_call:
     inputs:
