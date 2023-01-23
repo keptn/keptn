@@ -17,8 +17,8 @@ github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.12.0 h1:76lC9OHTKOtkFChw8aVcPCNqbNT456hrDyNL3Csjnhs=
 github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.12.0/go.mod h1:fwIdM84gpE40VfX1wxUBQHI7hub8htFEbQRynlbJaNE=
-github.com/cloudevents/sdk-go/v2 v2.12.0 h1:p1k+ysVOZtNiXfijnwB3WqZNA3y2cGOiKQygWkUHCEI=
-github.com/cloudevents/sdk-go/v2 v2.12.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=
+github.com/cloudevents/sdk-go/v2 v2.13.0 h1:2zxDS8RyY1/wVPULGGbdgniGXSzLaRJVl136fLXGsYw=
+github.com/cloudevents/sdk-go/v2 v2.13.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
@@ -327,8 +327,8 @@ honnef.co/go/tools v0.0.0-20190102054323-c2f93a96b099/go.mod h1:rf3lG4BRIbNafJWh
 honnef.co/go/tools v0.0.0-20190523083050-ea95bdfd59fc/go.mod h1:rf3lG4BRIbNafJWhAfAdb/ePZxsR/4RtNHQocxwk9r4=
 k8s.io/api v0.25.5 h1:mqyHf7aoaYMpdvO87mqpol+Qnsmo+y09S0PMIXwiZKo=
 k8s.io/api v0.25.5/go.mod h1:RzplZX0Z8rV/WhSTfEvnyd91bBhBQTRWo85qBQwRmb8=
-k8s.io/apimachinery v0.25.5 h1:SQomYHvv+aO43qdu3QKRf9YuI0oI8w3RrOQ1qPbAUGY=
-k8s.io/apimachinery v0.25.5/go.mod h1:1S2i1QHkmxc8+EZCIxe/fX5hpldVXk4gvnJInMEb8D4=
+k8s.io/apimachinery v0.25.6 h1:r6KIF2AHwLqFfZ0LcOA3I11SF62YZK83dxj1fn14NOQ=
+k8s.io/apimachinery v0.25.6/go.mod h1:1S2i1QHkmxc8+EZCIxe/fX5hpldVXk4gvnJInMEb8D4=
 k8s.io/client-go v0.25.5 h1:7QWVK0Ph4bLn0UwotPTc2FTgm8shreQXyvXnnHDd8rE=
 k8s.io/client-go v0.25.5/go.mod h1:bOeoaUUdpyz3WDFGo+Xm3nOQFh2KuYXRDwrvbAPtFQA=
 k8s.io/klog/v2 v2.0.0/go.mod h1:PBfzABfn139FHAV07az/IF9Wp1bkk3vpT2XSJ76fSDE=

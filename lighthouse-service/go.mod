@@ -3,7 +3,7 @@ module github.com/keptn/keptn/lighthouse-service
 go 1.18
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.12.0
+	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/go-test/deep v1.1.0
 	github.com/google/uuid v1.3.0
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -15,7 +15,7 @@ require (
 	github.com/stretchr/testify v1.8.1
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.25.5
-	k8s.io/apimachinery v0.25.5
+	k8s.io/apimachinery v0.25.6
 	k8s.io/client-go v0.25.5
 )
 

@@ -72,7 +72,7 @@ jobs:
         run: mkdir ~/downloads
 
       - name: Cache downloads paths
-        uses: actions/cache@v3.2.2
+        uses: actions/cache@v3.2.3
         with:
           path: |
             ~/downloads
@@ -275,7 +275,7 @@ jobs:
           echo "KEPTN_ENDPOINT=$(echo ${KEPTN_ENDPOINT})" >> $GITHUB_OUTPUT
 
       - name: Set up gotestfmt
-        uses: haveyoudebuggedit/gotestfmt-action@v2.0.0
+        uses: GoTestTools/gotestfmt@v2.4.1
         with:
           # Passing GITHUB_TOKEN to avoid rate limiting.
           token: ${{ secrets.GITHUB_TOKEN }}

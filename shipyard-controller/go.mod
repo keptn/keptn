@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/Masterminds/semver/v3 v3.2.0
 	github.com/benbjohnson/clock v1.3.0
-	github.com/cloudevents/sdk-go/v2 v2.12.0
+	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-test/deep v1.1.0
 	github.com/google/uuid v1.3.0
@@ -23,7 +23,7 @@ require (
 	golang.org/x/net v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.25.5
-	k8s.io/apimachinery v0.25.5
+	k8s.io/apimachinery v0.25.6
 	k8s.io/client-go v0.25.5
 )
 

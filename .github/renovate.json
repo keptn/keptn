@@ -20,7 +20,8 @@
   "packageRules": [
     {
       "matchManagers": ["npm"],
-      "addLabels": ["javascript"]
+      "addLabels": ["javascript"],
+      "enabled": false
     },
     {
       "matchManagers": ["gomod"],
