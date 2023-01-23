@@ -134,11 +134,6 @@ for changed_file in $CHANGED_FILES; do
     continue
   fi
 
-  if [[ $changed_file == "${CLI_FOLDER}"* ]]; then
-    echo "Found changes in CLI"
-    BUILD_CLI=true
-  fi
-
   for artifact in "${artifacts[@]}"; do
     # Prepare variables
     artifact_fullname="${artifact}_ARTIFACT"
