@@ -8,7 +8,7 @@ WORKDIR /go/src/github.com/keptn/keptn/cli
 ENV GO111MODULE=on
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apk add --no-cache gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies
@@ -24,9 +24,11 @@ ARG debugBuild
 # set buildflags for debug build
 RUN if [ ! -z "$debugBuild" ]; then export BUILDFLAGS='-gcflags "all=-N -l"'; fi
 
+ARG version
+
 # Build the command inside the container.
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
-RUN GOOS=linux go build -ldflags '-linkmode=external' $BUILDFLAGS -o keptn
+RUN GOOS=linux go build -ldflags "-linkmode=external -X 'github.com/keptn/keptn/cli/cmd.Version=$version'" $BUILDFLAGS -o keptn
 
 
 FROM alpine:3.17 as production
@@ -52,5 +54,5 @@ USER nonroot
 ARG version=develop
 LABEL org.opencontainers.image.version="${version}"
 
-# Run the web service on container startup.
+# Run the CLI on container startup.
 CMD ["/keptn"]
