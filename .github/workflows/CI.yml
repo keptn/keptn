@@ -12,7 +12,6 @@ on:
       - '[0-9]+.[1-9][0-9]*.x'
 env:
   GO_VERSION: "~1.18"
-  CLI_FOLDER: "cli/"
   INSTALLER_FOLDER: "installer/"
   
   BRIDGE_ARTIFACT_PREFIX: "BRIDGE"
@@ -22,6 +21,7 @@ env:
   API_ARTIFACT_PREFIX: "API"
   APPROVAL_SVC_ARTIFACT_PREFIX: "APPROVAL_SVC"
   DISTRIBUTOR_ARTIFACT_PREFIX: "DISTRIBUTOR"
+  CLI_ARTIFACT_PREFIX: "CLI"
   SHIPYARD_CONTROLLER_ARTIFACT_PREFIX: "SHIPYARD_CONTROLLER"
   SECRET_SVC_ARTIFACT_PREFIX: "SECRET_SVC"
   RESOURCE_SVC_ARTIFACT_PREFIX: "RESOURCE_SVC"
@@ -61,6 +61,10 @@ env:
   DISTRIBUTOR_ARTIFACT: "distributor"
   DISTRIBUTOR_FOLDER: "distributor/"
   DISTRIBUTOR_DOCKER_TEST_TARGET: "builder-test"
+
+  CLI_ARTIFACT: "cli"
+  CLI_FOLDER: "cli/"
+  CLI_DOCKER_TEST_TARGET: "builder-test"
 
   SHIPYARD_CONTROLLER_ARTIFACT: "shipyard-controller"
   SHIPYARD_CONTROLLER_FOLDER: "shipyard-controller/"
@@ -252,47 +256,12 @@ jobs:
       build-everything: ${{ needs.prepare_ci_run.outputs.BUILD_EVERYTHING }}
       build-installer: ${{ needs.prepare_ci_run.outputs.BUILD_INSTALLER }}
 
-  unit-tests-cli:
-    name: Unit Tests CLI (multi OS/arch)
-    needs: prepare_ci_run
-    if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Set up Go 1.x
-        uses: actions/setup-go@v3
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: Checkout Code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      # cache go modules
-      - uses: actions/cache@v3.2.3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-cli
-
-      - name: Test CLI
-        working-directory: cli
-        run: |
-          go install gotest.tools/gotestsum@v1.7.0
-          gotestsum --no-color=false --format=testname -- -race -v  -coverprofile=coverage.txt -covermode=atomic ./...
-
-      - name: Report test coverage for CLI
-        uses: codecov/codecov-action@v3
-        with:
-          fail_ci_if_error: true
-          flags: cli
-
   ############################################################################
   # Build CLI                                                                #
   ############################################################################
   build-cli:
     name: Build Keptn CLI
-    needs: [prepare_ci_run, unit-tests-cli]
+    needs: [prepare_ci_run]
     if: (needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_CLI == 'true')
     uses: ./.github/workflows/build-cli.yml
     with:
