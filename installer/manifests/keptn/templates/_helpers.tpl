@@ -491,7 +491,7 @@ Usage:
   image: "{{ .Values.global.initContainers.image }}:{{ .Values.global.initContainers.tag }}"
   env:
   - name: "ENDPOINT"
-    value: "http://keptn-mongo:27017"
+    value: "http://{{ .Release.Name }}-mongo:{{ .Values.mongo.service.ports.mongodb }}"
   command: ['sh', '-c', 'until curl -s $ENDPOINT; do echo waiting for $ENDPOINT; sleep 2; done;']
   resources:
     limits:
