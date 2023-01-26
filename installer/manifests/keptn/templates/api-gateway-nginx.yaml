@@ -94,6 +94,8 @@ data:
       return 401 '{"code":401, "message":"unauthenticated or invalid credentials"}';
     }
 
+    # Auth requests that are rate-limited will print this message.
+    # Attention: remember to always add a proxy_pass otherwise any 500 errors will be masked with this.
     location @error429 {
       return 429 '{"code":429, "message":"too many requests"}';
     }
