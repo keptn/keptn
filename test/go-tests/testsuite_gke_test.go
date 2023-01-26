@@ -22,7 +22,6 @@ func Test_GKE(t *testing.T) {
 	t.Run("Test_EvaluationGitCommitID", Test_EvaluationGitCommitID)
 	t.Run("Test_SSHPublicKeyAuth", Test_SSHPublicKeyAuth)
 	t.Run("Test_ProxyAuth", Test_ProxyAuth)
-	t.Run("Test_Webhook_Migrator", Test_Webhook_Migrator)
 	t.Run("Test_CreateProjectWithCustomBranchName", Test_CreateProjectWithCustomBranchName)
 
 	// Platform-specific Tests

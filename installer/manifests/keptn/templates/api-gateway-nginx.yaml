@@ -94,6 +94,12 @@ data:
       return 401 '{"code":401, "message":"unauthenticated or invalid credentials"}';
     }
 
+    # Auth requests that are rate-limited will print this message.
+    # Attention: remember to always add a proxy_pass otherwise any 500 errors will be masked with this.
+    location @error429 {
+      return 429 '{"code":429, "message":"too many requests"}';
+    }
+
     # health check
     location /nginx-health {
         access_log off;
@@ -121,6 +127,8 @@ data:
       }
       auth_request               /api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
+
       rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
       proxy_redirect     off;
@@ -142,6 +150,7 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
 
       rewrite {{ .Values.prefixPath }}/api/mongodb-datastore/(.*) /$1  break;
       proxy_pass         http://mongodb-datastore:8080;
@@ -175,6 +184,7 @@ data:
       }
       auth_request               /api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
 
       rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
@@ -192,6 +202,7 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
 
       rewrite {{ .Values.prefixPath }}/api/controlPlane/(.*) /$1  break;
       proxy_pass         http://shipyard-controller:8080;
@@ -224,6 +235,7 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
 
       rewrite {{ .Values.prefixPath }}/api/secrets/(.*) /$1  break;
       proxy_pass         http://secret-service:8080;
@@ -261,6 +273,7 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
 
       rewrite {{ .Values.prefixPath }}/api/statistics/(.*) /$1  break;
       proxy_pass         http://statistics-service:8080;
@@ -334,6 +347,7 @@ data:
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
       auth_request               /api/v1/auth;
       error_page 401 = @error401;
+      error_page 500 = @error429;
 
       rewrite {{ .Values.prefixPath }}/api/resource-service/(.*) /$1  break;
       proxy_pass         http://resource-service:8080;
