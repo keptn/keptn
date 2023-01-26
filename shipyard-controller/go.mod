@@ -22,9 +22,9 @@ require (
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.5
+	k8s.io/api v0.25.6
 	k8s.io/apimachinery v0.25.6
-	k8s.io/client-go v0.25.5
+	k8s.io/client-go v0.25.6
 )
 
 require github.com/kelseyhightower/envconfig v1.4.0
