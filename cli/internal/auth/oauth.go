@@ -74,7 +74,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURLHost + redirectURLPort + redirectURLPath,
+		RedirectURL: redirectUrlComposer(),
 	}
 
 	enforceOpenIDScope(config)
@@ -128,7 +128,7 @@ func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, err
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURLHost + redirectURLPort + redirectURLPath,
+		RedirectURL: redirectUrlComposer(),
 	}
 
 	enforceOpenIDScope(config)
@@ -171,4 +171,8 @@ func (v *OauthClientValues) ValidateMandatoryFields() error {
 		return fmt.Errorf("client values invalid: client id and discovery URL must be set")
 	}
 	return nil
+}
+
+func redirectUrlComposer() string {
+	return redirectURLHost + redirectURLPort + redirectURLPath
 }
