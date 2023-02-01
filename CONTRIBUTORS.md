@@ -91,3 +91,4 @@ For a realtime overview of current contributors to the Keptn project, we refer t
 * [Salvador Cavadini](https://github.com/chavacava)
 * [Nitin Mewar](https://github.com/nitinmewar)
 * [Philipp Hinteregger](https://github.com/philipp-hinteregger)
+* [Sudipto Baral](https://github.com/sudiptob2)

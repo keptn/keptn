@@ -633,7 +633,7 @@ jobs:
           path: ${{ env.TEST_REPORTS_PATH }}
 
       - name: Build multi-platform test report
-        uses: actions/github-script@v6.3.3
+        uses: actions/github-script@v6.4.0
         env:
           TEST_REPORTS_PATH: ${{ env.TEST_REPORTS_PATH }}
           FINAL_TEST_REPORTS_FOLDER: ${{ env.FINAL_TEST_REPORTS_FOLDER }}

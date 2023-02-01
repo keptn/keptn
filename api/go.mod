@@ -21,14 +21,14 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.37.0
-	golang.org/x/exp v0.0.0-20230118134722-a68e582fa157
+	golang.org/x/exp v0.0.0-20230126173853-a67bb567ff2e
 	golang.org/x/net v0.5.0
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.5
+	k8s.io/api v0.25.6
 	k8s.io/apimachinery v0.25.6
-	k8s.io/client-go v0.25.5
+	k8s.io/client-go v0.25.6
 	k8s.io/utils v0.0.0-20230115233650-391b47cb4029
 )
 

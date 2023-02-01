@@ -16,15 +16,15 @@ require (
 	github.com/nats-io/nats.go v1.22.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
-	github.com/swaggo/swag v1.8.9
+	github.com/swaggo/swag v1.8.10
 	github.com/tryvium-travels/memongo v0.6.1
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.5
+	k8s.io/api v0.25.6
 	k8s.io/apimachinery v0.25.6
-	k8s.io/client-go v0.25.5
+	k8s.io/client-go v0.25.6
 )
 
 require github.com/kelseyhightower/envconfig v1.4.0
