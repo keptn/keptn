@@ -3,10 +3,11 @@ package auth
 import (
 	"context"
 	"fmt"
-	"golang.org/x/oauth2"
 	"net"
 	"net/http"
 	"net/url"
+
+	"golang.org/x/oauth2"
 )
 
 // TokenGetter handles the retrieval of oauth access tokens
@@ -60,6 +61,7 @@ func (r *ClosingRedirectHandler) Handle(codeVerifier []byte, oauthConfig *oauth2
 	})
 	l, err := net.Listen("tcp", ":3000")
 	if err != nil {
+		err = fmt.Errorf("%w, configure oauth authentication port using flag --oauth-port with command keptn auth --oauth", err)
 		return nil, err
 	}
 	server.Serve(l)

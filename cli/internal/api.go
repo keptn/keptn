@@ -3,10 +3,11 @@ package internal
 import (
 	"context"
 	"fmt"
-	apiutils "github.com/keptn/go-utils/pkg/api/utils"
-	"github.com/keptn/keptn/cli/internal/auth"
 	"net/http"
 	"strings"
+
+	apiutils "github.com/keptn/go-utils/pkg/api/utils"
+	"github.com/keptn/keptn/cli/internal/auth"
 )
 
 const ErrWithStatusCode = "error with status code %d"

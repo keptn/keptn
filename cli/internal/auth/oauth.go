@@ -5,9 +5,10 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
-	"golang.org/x/oauth2"
 	"net/http"
 	"strings"
+
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -17,7 +18,12 @@ const (
 											close();
 								},1500)
 						</script>`
-	redirectURL = "http://localhost:3000/oauth/redirect"
+	redirectURLHost = "http://localhost:"
+	redirectURLPath = "/oauth/redirect"
+)
+
+var (
+	redirectURLPort = "3000"
 )
 
 // OAuthenticator represents just the interface for a component performing OAuth authentication
@@ -51,6 +57,10 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 		return err
 	}
 
+	if clientValues.Port != "" {
+		redirectURLPort = clientValues.Port
+	}
+
 	discoveryInfo, err := a.discovery.Discover(context.TODO(), clientValues.OauthDiscoveryURL)
 	if err != nil {
 		return fmt.Errorf("failed to perform OAuth Discovery using URL %s: %w: ", clientValues.OauthDiscoveryURL, err)
@@ -64,7 +74,7 @@ func (a *OauthAuthenticator) Auth(clientValues OauthClientValues) error {
 			AuthURL:  discoveryInfo.AuthorizationEndpoint,
 			TokenURL: discoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURL,
+		RedirectURL: redirectUrlComposer(),
 	}
 
 	enforceOpenIDScope(config)
@@ -118,7 +128,7 @@ func (a *OauthAuthenticator) OauthClient(ctx context.Context) (*http.Client, err
 			AuthURL:  oauthInfo.DiscoveryInfo.AuthorizationEndpoint,
 			TokenURL: oauthInfo.DiscoveryInfo.TokenEndpoint,
 		},
-		RedirectURL: redirectURL,
+		RedirectURL: redirectUrlComposer(),
 	}
 
 	enforceOpenIDScope(config)
@@ -153,6 +163,7 @@ type OauthClientValues struct {
 	OauthClientID     string   `json:"oauth_client_id"`
 	OauthClientSecret string   `json:"oauth_client_secret"`
 	OauthScopes       []string `json:"oauth_scopes"`
+	Port              string
 }
 
 func (v *OauthClientValues) ValidateMandatoryFields() error {
@@ -160,4 +171,8 @@ func (v *OauthClientValues) ValidateMandatoryFields() error {
 		return fmt.Errorf("client values invalid: client id and discovery URL must be set")
 	}
 	return nil
+}
+
+func redirectUrlComposer() string {
+	return redirectURLHost + redirectURLPort + redirectURLPath
 }

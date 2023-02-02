@@ -2,9 +2,10 @@ package auth
 
 import (
 	"context"
-	"golang.org/x/oauth2"
 	"net/http"
 	"sync"
+
+	"golang.org/x/oauth2"
 )
 
 // BrwoserMock is an implementation of URLOpener

@@ -101,7 +101,7 @@ func Test_Auth_DependenciesFail(t *testing.T) {
 				browser:         tt.fields.browser,
 				redirectHandler: tt.fields.redirectHandler,
 			}
-			tt.wantErr(t, a.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}}), "Auth()")
+			tt.wantErr(t, a.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}, ""}), "Auth()")
 		})
 	}
 }
@@ -123,7 +123,7 @@ func Test_Auth_Scopes(t *testing.T) {
 			assert.Equal(t, "openid", c.Scopes[0])
 			return nil, nil
 		}
-		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}})
+		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}, ""})
 	})
 	t.Run("Auth - scopes always contain default openid scope", func(t *testing.T) {
 		redirectHandler.handleFn = func(b []byte, c *oauth2.Config, s string) (*oauth2.Token, error) {
@@ -132,7 +132,7 @@ func Test_Auth_Scopes(t *testing.T) {
 			assert.Contains(t, c.Scopes, "somescope")
 			return nil, nil
 		}
-		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{"somescope"}})
+		authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{"somescope"}, ""})
 	})
 }
 
@@ -154,7 +154,7 @@ func Test_Auth_MissingOauthInfo(t *testing.T) {
 				assert.Equal(t, "", c.ClientSecret)
 				return nil, nil
 			}
-			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}})
+			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "", []string{}, ""})
 		}
 	})
 	t.Run("Auth - client id and secret given", func(t *testing.T) {
@@ -164,12 +164,12 @@ func Test_Auth_MissingOauthInfo(t *testing.T) {
 				assert.Equal(t, "clientSecret", c.ClientSecret)
 				return nil, nil
 			}
-			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "clientSecret", []string{}})
+			authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "clientID", "clientSecret", []string{}, ""})
 		}
 	})
 	t.Run("Auth - client id missing", func(t *testing.T) {
 		{
-			err := authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "", "", []string{}})
+			err := authenticator.Auth(OauthClientValues{"http://well-known-discovery-url.com", "", "", []string{}, ""})
 			assert.NotNil(t, err)
 		}
 	})
