@@ -1500,7 +1500,7 @@ type evaluateObjectivesTestObject struct {
 	InPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
 	ExpectedEvaluationResult   *keptnv2.EvaluationFinishedEventData
 	ExpectedMaximumScore       float64
-	ExpectedKeySLIFailed       bool
+	ExpectedKeySLIFailed       KeySLI
 }
 
 func TestEvaluateObjectives(t *testing.T) {
@@ -1647,7 +1647,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "Expect Warning",
@@ -1791,7 +1793,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "Logging SLI with no pass criteria should not affect score",
@@ -1958,7 +1962,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "Logging SLI with empty pass criteria array should not affect score and have status 'info' - BUG 2231",
@@ -2128,7 +2134,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "BUG 1125",
@@ -2219,7 +2227,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "BUG 1263",
@@ -2335,7 +2345,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "6096 if SLI does not have objective have a message",
@@ -2530,7 +2542,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "9198 SLO file does not have objectives",
@@ -2588,7 +2602,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 100,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 		},
 	}
 
@@ -2608,7 +2624,7 @@ type calculateScoreTestObject struct {
 	InMaximumScore           float64
 	InEvaluationResult       *keptnv2.EvaluationFinishedEventData
 	InSLOConfig              *apimodelsv2.ServiceLevelObjectives
-	InKeySLIFailed           bool
+	InKeySLIFailed           KeySLI
 	ExpectedEvaluationResult *keptnv2.EvaluationFinishedEventData
 	ExpectedError            error
 }
@@ -2698,7 +2714,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: false,
+			InKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -2806,7 +2824,7 @@ func TestCalculateScore(t *testing.T) {
 									Criteria: "<=+15%",
 								},
 							},
-							KeySLI: false,
+							KeySLI: true,
 							Status: "fail",
 						},
 					},
@@ -2876,7 +2894,11 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: true,
+			InKeySLIFailed: KeySLI{
+				Failed:  true,
+				Name:    "cpu time",
+				Message: "evaluation failed",
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -2935,7 +2957,7 @@ func TestCalculateScore(t *testing.T) {
 									Criteria: "<=+15%",
 								},
 							},
-							KeySLI: false,
+							KeySLI: true,
 							Status: "fail",
 						},
 					},
@@ -2947,7 +2969,7 @@ func TestCalculateScore(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
-					Message: "Evaluation failed since the calculated score of 50 is below the target value of 90",
+					Message: "Evaluation failed due to key_sli objective 'cpu time': evaluation failed",
 				},
 			},
 			ExpectedError: nil,
@@ -3082,7 +3104,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: false,
+			InKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -3288,7 +3312,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: false,
+			InKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -3435,7 +3461,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: true,
+			InKeySLIFailed: KeySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
