@@ -292,6 +292,9 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.DisplayName = objective.DisplayName
 			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
 			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
+			if objective.KeySLI {
+				keySLIFailed = true
+			}
 			continue
 		}
 
