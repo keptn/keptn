@@ -77,3 +77,11 @@ export class AppUtils {
 
 export const POLLING_INTERVAL_MILLIS = new InjectionToken<number>('Polling interval in millis');
 export const RETRY_ON_HTTP_ERROR = new InjectionToken<boolean>('If retry is turned on for interceptor');
+
+// keep in sync with index.html
+export function getBridgeBaseHref(path: string): string | undefined {
+  if (!path.includes('/bridge')) {
+    return undefined;
+  }
+  return [path.substring(0, path.indexOf('/bridge')), '/bridge/'].join('');
+}
