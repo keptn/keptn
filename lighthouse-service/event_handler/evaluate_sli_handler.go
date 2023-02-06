@@ -288,29 +288,8 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			continue
 		}
 
-		if result == nil {
-			// no result available => fail the objective
-			sliEvaluationResult.Value = &keptnv2.SLIResult{
-				Metric:  objective.SLI,
-				Success: false,
-				Message: "no value received from SLI provider",
-			}
-			sliEvaluationResult.Status = "fail"
-			sliEvaluationResult.Score = 0
-			sliEvaluationResult.DisplayName = objective.DisplayName
-			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
-			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
-			if objective.KeySLI {
-				keySLI = KeySLI{
-					Failed:  true,
-					Name:    objective.DisplayName,
-					Message: sliEvaluationResult.Value.Message,
-				}
-			}
-			continue
-		}
-
-		if !result.Success {
+		if result == nil || !result.Success {
+			sliEvaluationResult.Value = getFailedValue(result, objective.SLI)
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
 			sliEvaluationResult.DisplayName = objective.DisplayName
@@ -386,6 +365,18 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 
 	return evaluationResult, maximumAchievableScore, keySLI, nil
+}
+
+func getFailedValue(result *keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
+	if result == nil {
+		// no result available => fail the objective
+		return &keptnv2.SLIResult{
+			Metric:  sli,
+			Success: false,
+			Message: "no value received from SLI provider",
+		}
+	}
+	return result
 }
 
 func getEmptyTargets(sloConfig *keptn.ServiceLevelObjectives, targets []*keptn.SLOCriteria, previousResults []*keptnv2.SLIEvaluationResult) []*keptnv2.SLITarget {
