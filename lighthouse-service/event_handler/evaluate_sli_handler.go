@@ -149,6 +149,13 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 
+	if e.Result == keptnv2.ResultFailed {
+		evalResult.EventData.Result = e.Result
+		evalResult.EventData.Status = keptnv2.StatusSucceeded
+		evalResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
+		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
+	}
+
 	// compare the results based on the evaluation strategy
 	sloConfig, sloFileContent, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 
@@ -208,9 +215,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		e.Result = keptnv2.ResultFailed
 		evaluationResult.EventData.Result = keptnv2.ResultFailed
 		evaluationResult.Message = fmt.Sprintf("lighthouse failed because no SLO objective was provided")
-	} else if e.Result == keptnv2.ResultFailed {
-		evaluationResult.EventData.Result = keptnv2.ResultFailed
-		evaluationResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
 	}
 
 	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
@@ -241,7 +245,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	}
 	for _, objective := range sloConfig.Objectives {
 		// only consider the SLI for the total score if pass criteria have been included
-		if len(objective.Pass) > 0 {
+		if len(objective.Pass) > 0 || len(objective.Warning) > 0 {
 			maximumAchievableScore += float64(objective.Weight)
 		}
 
@@ -263,8 +267,20 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 
 		sliEvaluationResult := &keptnv2.SLIEvaluationResult{}
 		result := getSLIResult(&e.GetSLI.IndicatorValues, objective.SLI)
+		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 
-		if result == nil {
+		sliEvaluationResult.Value = result
+
+		if len(objective.Pass) == 0 && len(objective.Warning) == 0 {
+			sliEvaluationResult.Score = 0
+			sliEvaluationResult.Status = "info"
+			sliEvaluationResult.DisplayName = objective.DisplayName
+			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
+			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
+			continue
+		}
+
+		if result == nil || !result.Success {
 			// no result available => fail the objective
 			sliEvaluationResult.Value = &keptnv2.SLIResult{
 				Metric:  objective.SLI,
@@ -276,11 +292,8 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.DisplayName = objective.DisplayName
 			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
 			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
-			sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 			continue
 		}
-
-		sliEvaluationResult.Value = result
 
 		var passTargets []*keptnv2.SLITarget
 		var warningTargets []*keptnv2.SLITarget
@@ -331,8 +344,6 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.Status = "fail"
 			sliEvaluationResult.Score = 0
 		}
-
-		sliEvaluationResults = append(sliEvaluationResults, sliEvaluationResult)
 	}
 
 	// now we check if any metric from the SLI has not been handled
@@ -404,7 +415,9 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	}
 	totalScore := 0.0
 	for _, result := range evaluationResult.Evaluation.IndicatorResults {
-		totalScore += result.Score
+		if len(result.PassTargets) > 0 || len(result.WarningTargets) > 0 {
+			totalScore += result.Score
+		}
 	}
 	achievedPercentage := 100.0 * (totalScore / maximumAchievableScore)
 	evaluationResult.Evaluation.Score = achievedPercentage

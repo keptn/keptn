@@ -1944,7 +1944,9 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							Status: "info",
+							PassTargets:    []*keptnv2.SLITarget{},
+							WarningTargets: []*keptnv2.SLITarget{},
+							Status:         "info",
 						},
 					},
 				},
@@ -2112,7 +2114,9 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success:       true,
 								Message:       "",
 							},
-							Status: "info",
+							PassTargets:    []*keptnv2.SLITarget{},
+							WarningTargets: []*keptnv2.SLITarget{},
+							Status:         "info",
 						},
 					},
 				},
@@ -2629,10 +2633,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -2696,10 +2714,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -2731,10 +2763,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0,
@@ -2744,10 +2790,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},
@@ -2832,10 +2892,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0,
@@ -2845,10 +2919,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},
@@ -2881,10 +2969,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=13.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.506,
@@ -2894,10 +2996,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=12.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -2982,10 +3098,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=13.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.506,
@@ -2995,10 +3125,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=12.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -3031,10 +3175,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.48,
@@ -3044,10 +3202,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: false,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},
@@ -3132,10 +3304,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.48,
@@ -3145,10 +3331,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: false,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},

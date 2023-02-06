@@ -990,7 +990,7 @@ func Test_NoSLOObjectives(t *testing.T) {
 	require.Equal(t, serviceName, evaluationFinishedPayload.EventData.Service)
 	require.Equal(t, keptnv2.StatusSucceeded, evaluationFinishedPayload.EventData.Status)
 	require.Equal(t, keptnv2.ResultFailed, evaluationFinishedPayload.EventData.Result)
-	require.Equal(t, "lighthouse failed because no SLO objective was provided", evaluationFinishedPayload.EventData.Message)
+	require.Equal(t, "lighthouse failed because SLI failed with message no SLIs were requested", evaluationFinishedPayload.EventData.Message)
 
 	go func() {
 		natsClient.Close()
