@@ -182,7 +182,7 @@ data:
       limit_except GET POST PUT PATCH OPTIONS HEAD {
         deny all;
       }
-      auth_request               /api/v1/auth;
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
       error_page 500 = @error429;
 
