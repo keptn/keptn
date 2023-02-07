@@ -439,8 +439,8 @@ func Test_QualityGates(t *testing.T) {
 			Message:       "",
 		},
 		DisplayName:    "",
-		PassTargets:    nil,
-		WarningTargets: nil,
+		PassTargets:    []*keptnv2.SLITarget{},
+		WarningTargets: []*keptnv2.SLITarget{},
 		Status:         "info",
 		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
@@ -544,8 +544,8 @@ func Test_QualityGates(t *testing.T) {
 			Message:       "",
 		},
 		DisplayName:    "",
-		PassTargets:    nil,
-		WarningTargets: nil,
+		PassTargets:    []*keptnv2.SLITarget{},
+		WarningTargets: []*keptnv2.SLITarget{},
 		Status:         "info",
 		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
@@ -660,8 +660,8 @@ func Test_QualityGates(t *testing.T) {
 			Message:       "",
 		},
 		DisplayName:    "",
-		PassTargets:    nil,
-		WarningTargets: nil,
+		PassTargets:    []*keptnv2.SLITarget{},
+		WarningTargets: []*keptnv2.SLITarget{},
 		Status:         "info",
 		KeySLI:         false,
 	}, evaluationFinishedPayload.Evaluation.IndicatorResults[2])
