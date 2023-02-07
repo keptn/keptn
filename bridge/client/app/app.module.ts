@@ -9,7 +9,7 @@ import { MomentModule } from 'ngx-moment';
 import { environment } from '../environments/environment';
 import { WindowConfig } from '../environments/environment.dynamic';
 
-import { POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
+import { getBridgeBaseHref, POLLING_INTERVAL_MILLIS, RETRY_ON_HTTP_ERROR } from './_utils/app.utils';
 
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
@@ -84,7 +84,7 @@ const ktbModules = [KtbAppHeaderModule, KtbErrorViewModule, KtbLoadingModule, Kt
     PendingChangesGuard,
     {
       provide: APP_BASE_HREF,
-      useValue: environment.baseUrl,
+      useValue: getBridgeBaseHref(window.location.pathname) || environment.baseUrl,
     },
     {
       provide: APP_INITIALIZER,

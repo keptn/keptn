@@ -125,7 +125,7 @@ data:
       limit_except GET HEAD OPTIONS {
         deny all;
       }
-      auth_request               /api/v1/auth;
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
       error_page 500 = @error429;
 
@@ -182,7 +182,7 @@ data:
       limit_except GET POST PUT PATCH OPTIONS HEAD {
         deny all;
       }
-      auth_request               /api/v1/auth;
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
       error_page 500 = @error429;
 
@@ -345,7 +345,7 @@ data:
       # auth via backend (if the subrequest returns a 2xx response code, the access is allowed. If it returns 401 or 403,
       # the access is denied) before we store the file
       # see http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-      auth_request               /api/v1/auth;
+      auth_request               {{ .Values.prefixPath }}/api/v1/auth;
       error_page 401 = @error401;
       error_page 500 = @error429;
 
