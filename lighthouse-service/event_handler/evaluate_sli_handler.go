@@ -253,7 +253,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	}
 	for _, objective := range sloConfig.Objectives {
 		// only consider the SLI for the total score if pass criteria have been included
-		if len(objective.Pass) > 0 || len(objective.Warning) > 0 {
+		if len(objective.Pass) > 0 {
 			maximumAchievableScore += float64(objective.Weight)
 		}
 
@@ -279,7 +279,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 
 		sliEvaluationResult.Value = result
 
-		if len(objective.Pass) == 0 && len(objective.Warning) == 0 {
+		if len(objective.Pass) == 0 {
 			sliEvaluationResult.Score = 0
 			sliEvaluationResult.Status = "info"
 			sliEvaluationResult.DisplayName = objective.DisplayName
@@ -441,7 +441,7 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	}
 	totalScore := 0.0
 	for _, result := range evaluationResult.Evaluation.IndicatorResults {
-		if len(result.PassTargets) > 0 || len(result.WarningTargets) > 0 {
+		if len(result.PassTargets) > 0 {
 			totalScore += result.Score
 		}
 	}
