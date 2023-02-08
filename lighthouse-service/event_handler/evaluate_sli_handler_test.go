@@ -1500,7 +1500,7 @@ type evaluateObjectivesTestObject struct {
 	InPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
 	ExpectedEvaluationResult   *keptnv2.EvaluationFinishedEventData
 	ExpectedMaximumScore       float64
-	ExpectedKeySLIFailed       bool
+	ExpectedKeySLIFailed       keySLI
 }
 
 func TestEvaluateObjectives(t *testing.T) {
@@ -1647,7 +1647,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "Expect Warning",
@@ -1791,7 +1793,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "Logging SLI with no pass criteria should not affect score",
@@ -1944,7 +1948,9 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							Status: "info",
+							PassTargets:    []*keptnv2.SLITarget{},
+							WarningTargets: []*keptnv2.SLITarget{},
+							Status:         "info",
 						},
 					},
 				},
@@ -1956,7 +1962,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "Logging SLI with empty pass criteria array should not affect score and have status 'info' - BUG 2231",
@@ -2112,7 +2120,9 @@ func TestEvaluateObjectives(t *testing.T) {
 								Success:       true,
 								Message:       "",
 							},
-							Status: "info",
+							PassTargets:    []*keptnv2.SLITarget{},
+							WarningTargets: []*keptnv2.SLITarget{},
+							Status:         "info",
 						},
 					},
 				},
@@ -2124,7 +2134,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "BUG 1125",
@@ -2215,7 +2227,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "BUG 1263",
@@ -2331,7 +2345,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "6096 if SLI does not have objective have a message",
@@ -2526,7 +2542,9 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 		{
 			Name: "9198 SLO file does not have objectives",
@@ -2584,7 +2602,301 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 100,
-			ExpectedKeySLIFailed: false,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
+		},
+		{
+			Name: "Fail with result equal to nil",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: keptnv2.GetSLIFinished{
+					Start:           "2019-10-20T07:57:27.152330783Z",
+					End:             "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						// {
+						// 	Metric:  "my-test-metric-1",
+						// 	Value:   10.0,
+						// 	Success: true,
+						// 	Message: "",
+						// },
+					},
+				},
+			},
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &apimodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*apimodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*apimodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*apimodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &apimodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
+				{
+					Evaluation: keptnv2.EvaluationDetails{
+						TimeStart: "",
+						TimeEnd:   "",
+						Result:    "pass",
+						Score:     2,
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "my-test-metric-1",
+									Value:   10.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+						},
+					},
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
+				},
+			},
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // not set by the tested function
+					Score:     0,  // not calculated by tested function
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 0,
+							Value: &keptnv2.SLIResult{
+								Metric:        "my-test-metric-1",
+								Value:         0,
+								ComparedValue: 0,
+								Success:       false,
+								Message:       "no value received from SLI provider",
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=20.0",
+									TargetValue: 20,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+15%",
+									TargetValue: 10,
+									Violated:    true,
+								},
+							},
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=15.0",
+									TargetValue: 15.0,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+10%",
+									TargetValue: 10,
+									Violated:    true,
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+			},
+			ExpectedMaximumScore: 1,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
+		},
+		{
+			Name: "Fail with result success = false",
+			InGetSLIDoneEvent: &keptnv2.GetSLIFinishedEventData{
+				EventData: keptnv2.EventData{
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+				GetSLI: keptnv2.GetSLIFinished{
+					Start: "2019-10-20T07:57:27.152330783Z",
+					End:   "2019-10-22T08:57:27.152330783Z",
+					IndicatorValues: []*keptnv2.SLIResult{
+						{
+							Metric:  "my-test-metric-1",
+							Value:   0,
+							Success: false,
+							Message: "could not get data",
+						},
+					},
+				},
+			},
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &apimodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*apimodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*apimodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*apimodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &apimodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InPreviousEvaluationEvents: []*keptnv2.EvaluationFinishedEventData{
+				{
+					Evaluation: keptnv2.EvaluationDetails{
+						TimeStart: "",
+						TimeEnd:   "",
+						Result:    "pass",
+						Score:     2,
+						IndicatorResults: []*keptnv2.SLIEvaluationResult{
+							{
+								Score: 2,
+								Value: &keptnv2.SLIResult{
+									Metric:  "my-test-metric-1",
+									Value:   10.0,
+									Success: true,
+									Message: "",
+								},
+								PassTargets:    nil,
+								WarningTargets: nil,
+								KeySLI:         false,
+								Status:         "pass",
+							},
+						},
+					},
+					EventData: keptnv2.EventData{
+						Result:  "pass",
+						Project: "sockshop",
+						Service: "carts",
+						Stage:   "dev",
+					},
+				},
+			},
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // not set by the tested function
+					Score:     0,  // not calculated by tested function
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 0,
+							Value: &keptnv2.SLIResult{
+								Metric:        "my-test-metric-1",
+								Value:         0,
+								ComparedValue: 0,
+								Success:       false,
+								Message:       "could not get data",
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=20.0",
+									TargetValue: 20,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+15%",
+									TargetValue: 10,
+									Violated:    true,
+								},
+							},
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria:    "<=15.0",
+									TargetValue: 15.0,
+									Violated:    true,
+								},
+								{
+									Criteria:    "<=+10%",
+									TargetValue: 10,
+									Violated:    true,
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+			},
+			ExpectedMaximumScore: 1,
+			ExpectedKeySLIFailed: keySLI{
+				Failed: false,
+			},
 		},
 	}
 
@@ -2604,7 +2916,7 @@ type calculateScoreTestObject struct {
 	InMaximumScore           float64
 	InEvaluationResult       *keptnv2.EvaluationFinishedEventData
 	InSLOConfig              *apimodelsv2.ServiceLevelObjectives
-	InKeySLIFailed           bool
+	InKeySLIFailed           keySLI
 	ExpectedEvaluationResult *keptnv2.EvaluationFinishedEventData
 	ExpectedError            error
 }
@@ -2629,10 +2941,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -2680,7 +3006,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: false,
+			InKeySLIFailed: keySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -2696,10 +3024,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -2731,10 +3073,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0,
@@ -2744,10 +3100,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: true,
+							Status: "fail",
 						},
 					},
 				},
@@ -2816,7 +3186,11 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: true,
+			InKeySLIFailed: keySLI{
+				Failed:  true,
+				Name:    "cpu time",
+				Message: "evaluation failed",
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -2832,10 +3206,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0,
@@ -2845,10 +3233,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: true,
+							Status: "fail",
 						},
 					},
 				},
@@ -2859,7 +3261,7 @@ func TestCalculateScore(t *testing.T) {
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
-					Message: "Evaluation failed since the calculated score of 50 is below the target value of 90",
+					Message: "Evaluation failed due to key_sli objective 'cpu time': evaluation failed",
 				},
 			},
 			ExpectedError: nil,
@@ -2881,10 +3283,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=13.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.506,
@@ -2894,10 +3310,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=12.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -2966,7 +3396,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: false,
+			InKeySLIFailed: keySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -2982,10 +3414,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=13.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.506,
@@ -2995,10 +3441,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=12.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 					},
 				},
@@ -3031,10 +3491,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.48,
@@ -3044,10 +3518,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: false,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},
@@ -3116,7 +3604,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: false,
+			InKeySLIFailed: keySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -3132,10 +3622,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: true,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "pass",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
 						},
 						{
 							Score: 0.48,
@@ -3145,10 +3649,24 @@ func TestCalculateScore(t *testing.T) {
 								Success: false,
 								Message: "",
 							},
-							PassTargets:    nil,
-							WarningTargets: nil,
-							KeySLI:         false,
-							Status:         "fail",
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=8.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=10.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "fail",
 						},
 					},
 				},
@@ -3235,7 +3753,9 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: true,
+			InKeySLIFailed: keySLI{
+				Failed: false,
+			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
 				Evaluation: keptnv2.EvaluationDetails{
 					TimeStart: "2019-10-20T07:57:27.152330783Z",
@@ -3277,6 +3797,169 @@ func TestCalculateScore(t *testing.T) {
 					Result:  "pass",
 					Status:  "succeeded",
 					Labels:  nil,
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+			},
+			ExpectedError: nil,
+		},
+		{
+			Name:           "Info objectives should not be part of score",
+			InMaximumScore: 1,
+			InEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "", // to be calculated
+					Score:     0,  // to be calculated
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
+						},
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-info-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "",
+					Project: "sockshop",
+					Service: "carts",
+					Stage:   "dev",
+				},
+			},
+			InSLOConfig: &apimodelsv2.ServiceLevelObjectives{
+				SpecVersion: "1.0",
+				Filter:      nil,
+				Comparison: &apimodelsv2.SLOComparison{
+					CompareWith:               "several_results",
+					IncludeResultWithScore:    "pass",
+					NumberOfComparisonResults: 2,
+					AggregateFunction:         "avg",
+				},
+				Objectives: []*apimodelsv2.SLO{
+					{
+						SLI: "my-test-metric-1",
+						Pass: []*apimodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=15.0"},
+							},
+							{
+								Criteria: []string{"<=+10%"},
+							},
+						},
+						Warning: []*apimodelsv2.SLOCriteria{
+							{
+								Criteria: []string{"<=20.0"},
+							},
+							{
+								Criteria: []string{"<=+15%"},
+							},
+						},
+						Weight: 1,
+						KeySLI: false,
+					},
+					{
+						SLI:    "my-info-metric-1",
+						Weight: 1,
+						KeySLI: false,
+					},
+				},
+				TotalScore: &apimodelsv2.SLOScore{
+					Pass:    "90%",
+					Warning: "75%",
+				},
+			},
+			InKeySLIFailed: keySLI{
+				Failed: false,
+			},
+			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
+				Evaluation: keptnv2.EvaluationDetails{
+					TimeStart: "2019-10-20T07:57:27.152330783Z",
+					TimeEnd:   "2019-10-22T08:57:27.152330783Z",
+					Result:    "pass",
+					Score:     100.0,
+					IndicatorResults: []*keptnv2.SLIEvaluationResult{
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-test-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=15.0",
+								},
+								{
+									Criteria: "<=+10%",
+								},
+							},
+							WarningTargets: []*keptnv2.SLITarget{
+								{
+									Criteria: "<=20.0",
+								},
+								{
+									Criteria: "<=+15%",
+								},
+							},
+							KeySLI: false,
+							Status: "pass",
+						},
+						{
+							Score: 1,
+							Value: &keptnv2.SLIResult{
+								Metric:  "my-info-metric-1",
+								Value:   10.0,
+								Success: true,
+								Message: "",
+							},
+							PassTargets:    nil,
+							WarningTargets: nil,
+							KeySLI:         false,
+							Status:         "pass",
+						},
+					},
+				},
+				EventData: keptnv2.EventData{
+					Result:  "pass",
+					Status:  "succeeded",
 					Project: "sockshop",
 					Service: "carts",
 					Stage:   "dev",
