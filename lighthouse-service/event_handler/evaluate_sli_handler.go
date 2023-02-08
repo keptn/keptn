@@ -155,13 +155,6 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
 	}
 
-	if e.Result == keptnv2.ResultFailed {
-		evalResult.EventData.Result = e.Result
-		evalResult.EventData.Status = keptnv2.StatusSucceeded
-		evalResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
-		return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, &evalResult)
-	}
-
 	// compare the results based on the evaluation strategy
 	sloConfig, sloFileContent, err := eh.SLOFileRetriever.GetSLOs(e.Project, e.Stage, e.Service, commitID)
 
@@ -221,6 +214,9 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		e.Result = keptnv2.ResultFailed
 		evaluationResult.EventData.Result = keptnv2.ResultFailed
 		evaluationResult.Message = fmt.Sprintf("lighthouse failed because no SLO objective was provided")
+	} else if e.Result == keptnv2.ResultFailed {
+		evaluationResult.EventData.Result = keptnv2.ResultFailed
+		evaluationResult.Message = fmt.Sprintf("lighthouse failed because SLI failed with message %s", e.Message)
 	}
 
 	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
