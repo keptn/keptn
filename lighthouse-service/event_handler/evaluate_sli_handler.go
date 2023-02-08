@@ -42,7 +42,7 @@ type criteriaObject struct {
 	CheckIncrease   bool
 }
 
-type KeySLI struct {
+type keySLI struct {
 	Failed  bool
 	Message string
 	Name    string
@@ -188,7 +188,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 		filteredPreviousEvaluationEvents = append(filteredPreviousEvaluationEvents, val)
 	}
 
-	evaluationResult, maximumAchievableScore, keySLI, err := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
+	evaluationResult, maximumAchievableScore, keySli, err := evaluateObjectives(e, sloConfig, filteredPreviousEvaluationEvents)
 	evaluationResult.Labels = e.Labels
 	evaluationResult.Evaluation.ComparedEvents = comparisonEventIDs
 	evaluationResult.Evaluation.SLOFileContent = base64.StdEncoding.EncodeToString(sloFileContent)
@@ -203,7 +203,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	}
 
 	// calculate the total score
-	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySLI)
+	err = calculateScore(maximumAchievableScore, evaluationResult, sloConfig, keySli)
 	if err != nil {
 		return sendErroredFinishedEventWithMessage(shkeptncontext, triggeredID, commitID, err.Error(), string(sloFileContent), eh.KeptnHandler, e)
 	}
@@ -222,7 +222,7 @@ func (eh *EvaluateSLIHandler) processGetSliFinishedEvent(ctx context.Context, sh
 	return sendEvent(shkeptncontext, triggeredID, keptnv2.GetFinishedEventType(keptnv2.EvaluationTaskName), commitID, eh.KeptnHandler, evaluationResult)
 }
 
-func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, KeySLI, error) {
+func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, previousEvaluationEvents []*keptnv2.EvaluationFinishedEventData) (*keptnv2.EvaluationFinishedEventData, float64, keySLI, error) {
 	evaluationResult := &keptnv2.EvaluationFinishedEventData{
 		EventData: keptnv2.EventData{
 			Status:  "",
@@ -237,7 +237,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	}
 	var sliEvaluationResults []*keptnv2.SLIEvaluationResult
 	maximumAchievableScore := 0.0
-	keySLI := KeySLI{
+	keySli := keySLI{
 		Failed: false,
 	}
 	// no objectives provided
@@ -245,7 +245,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 		evaluationResult.Evaluation.Result = "fail"
 		evaluationResult.Evaluation.Score = 0
 		evaluationResult.EventData.Result = "fail"
-		return evaluationResult, 100, keySLI, nil
+		return evaluationResult, 100, keySli, nil
 	}
 	for _, objective := range sloConfig.Objectives {
 		// only consider the SLI for the total score if pass criteria have been included
@@ -292,7 +292,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 			sliEvaluationResult.PassTargets = getEmptyTargets(sloConfig, objective.Pass, previousSLIResults)
 			sliEvaluationResult.WarningTargets = getEmptyTargets(sloConfig, objective.Warning, previousSLIResults)
 			if objective.KeySLI {
-				keySLI = KeySLI{
+				keySli = keySLI{
 					Failed:  true,
 					Name:    objective.DisplayName,
 					Message: sliEvaluationResult.Value.Message,
@@ -318,7 +318,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 				} else {
 					errMsg = fmt.Errorf("error with %s: %v", objective.SLI, err)
 				}
-				return evaluationResult, 100, keySLI, errMsg
+				return evaluationResult, 100, keySli, errMsg
 			}
 			if isPassed {
 				sliEvaluationResult.Score = float64(objective.Weight)
@@ -345,7 +345,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 
 		if !isPassed && !isWarning {
 			if objective.KeySLI {
-				keySLI = KeySLI{
+				keySli = keySLI{
 					Failed:  true,
 					Name:    objective.DisplayName,
 					Message: fmt.Sprintf("failed evaluation with score %f", sliEvaluationResult.Score),
@@ -360,7 +360,7 @@ func evaluateObjectives(e *keptnv2.GetSLIFinishedEventData, sloConfig *keptn.Ser
 	checkLeftoverSLI(e.GetSLI.IndicatorValues, evaluationResult)
 	evaluationResult.Evaluation.IndicatorResults = sliEvaluationResults
 
-	return evaluationResult, maximumAchievableScore, keySLI, nil
+	return evaluationResult, maximumAchievableScore, keySli, nil
 }
 
 func getFailedValue(result *keptnv2.SLIResult, sli string) *keptnv2.SLIResult {
@@ -414,7 +414,7 @@ func checkLeftoverSLI(results []*keptnv2.SLIResult, evaluationResult *keptnv2.Ev
 	}
 }
 
-func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.EvaluationFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, keySLI KeySLI) error {
+func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.EvaluationFinishedEventData, sloConfig *keptn.ServiceLevelObjectives, keySli keySLI) error {
 	if sloConfig.TotalScore == nil || sloConfig.TotalScore.Pass == "" {
 		return errors.New("no target score defined")
 	}
@@ -443,11 +443,11 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 	}
 	achievedPercentage := 100.0 * (totalScore / maximumAchievableScore)
 	evaluationResult.Evaluation.Score = achievedPercentage
-	if achievedPercentage >= passTargetPercentage && !keySLI.Failed {
+	if achievedPercentage >= passTargetPercentage && !keySli.Failed {
 		evaluationResult.Evaluation.Result = "pass"
 		evaluationResult.Result = keptnv2.ResultPass
 		evaluationResult.Status = keptnv2.StatusSucceeded
-	} else if sloConfig.TotalScore.Warning != "" && !keySLI.Failed {
+	} else if sloConfig.TotalScore.Warning != "" && !keySli.Failed {
 		warnTargetPercentage, err := strconv.ParseFloat(strings.TrimSuffix(sloConfig.TotalScore.Warning, "%"), 64)
 
 		if err != nil {
@@ -464,11 +464,11 @@ func calculateScore(maximumAchievableScore float64, evaluationResult *keptnv2.Ev
 			evaluationResult.Status = keptnv2.StatusSucceeded
 			evaluationResult.Message = fmt.Sprintf("Evaluation failed since the calculated score of %v is below the warning value of %v", achievedPercentage, warnTargetPercentage)
 		}
-	} else if keySLI.Failed {
+	} else if keySli.Failed {
 		evaluationResult.Evaluation.Result = "fail"
 		evaluationResult.Result = keptnv2.ResultFailed
 		evaluationResult.Status = keptnv2.StatusSucceeded
-		evaluationResult.Message = fmt.Sprintf("Evaluation failed due to key_sli objective '%s': %s", keySLI.Name, keySLI.Message)
+		evaluationResult.Message = fmt.Sprintf("Evaluation failed due to key_sli objective '%s': %s", keySli.Name, keySli.Message)
 	} else {
 		evaluationResult.Evaluation.Result = "fail"
 		evaluationResult.Result = keptnv2.ResultFailed

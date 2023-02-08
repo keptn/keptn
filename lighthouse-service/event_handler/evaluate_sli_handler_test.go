@@ -1500,7 +1500,7 @@ type evaluateObjectivesTestObject struct {
 	InPreviousEvaluationEvents []*keptnv2.EvaluationFinishedEventData
 	ExpectedEvaluationResult   *keptnv2.EvaluationFinishedEventData
 	ExpectedMaximumScore       float64
-	ExpectedKeySLIFailed       KeySLI
+	ExpectedKeySLIFailed       keySLI
 }
 
 func TestEvaluateObjectives(t *testing.T) {
@@ -1647,7 +1647,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -1793,7 +1793,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -1962,7 +1962,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2134,7 +2134,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2227,7 +2227,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2345,7 +2345,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2542,7 +2542,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2602,7 +2602,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 100,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2748,7 +2748,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2894,7 +2894,7 @@ func TestEvaluateObjectives(t *testing.T) {
 				},
 			},
 			ExpectedMaximumScore: 1,
-			ExpectedKeySLIFailed: KeySLI{
+			ExpectedKeySLIFailed: keySLI{
 				Failed: false,
 			},
 		},
@@ -2916,7 +2916,7 @@ type calculateScoreTestObject struct {
 	InMaximumScore           float64
 	InEvaluationResult       *keptnv2.EvaluationFinishedEventData
 	InSLOConfig              *apimodelsv2.ServiceLevelObjectives
-	InKeySLIFailed           KeySLI
+	InKeySLIFailed           keySLI
 	ExpectedEvaluationResult *keptnv2.EvaluationFinishedEventData
 	ExpectedError            error
 }
@@ -3006,7 +3006,7 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: KeySLI{
+			InKeySLIFailed: keySLI{
 				Failed: false,
 			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
@@ -3186,7 +3186,7 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: KeySLI{
+			InKeySLIFailed: keySLI{
 				Failed:  true,
 				Name:    "cpu time",
 				Message: "evaluation failed",
@@ -3396,7 +3396,7 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: KeySLI{
+			InKeySLIFailed: keySLI{
 				Failed: false,
 			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
@@ -3604,7 +3604,7 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: KeySLI{
+			InKeySLIFailed: keySLI{
 				Failed: false,
 			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
@@ -3753,7 +3753,7 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: KeySLI{
+			InKeySLIFailed: keySLI{
 				Failed: false,
 			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
@@ -3905,7 +3905,7 @@ func TestCalculateScore(t *testing.T) {
 					Warning: "75%",
 				},
 			},
-			InKeySLIFailed: KeySLI{
+			InKeySLIFailed: keySLI{
 				Failed: false,
 			},
 			ExpectedEvaluationResult: &keptnv2.EvaluationFinishedEventData{
