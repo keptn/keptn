@@ -139,7 +139,9 @@ for s in "${IMAGES[@]}"; do
   # get all outdated commit hash tags
   outdated_commit_hash_tags=$(get_outdated_commit_hash_tags "$s")
 
-  outdated_datetime_tags=$(get_outdated_datetime_tags "$s" "2021")
+  outdated_datetime_tags_1=$(get_outdated_datetime_tags "$s" "2021")
+  outdated_datetime_tags_2=$(get_outdated_datetime_tags "$s" "2022")
+  outdated_datetime_tags_3=$(get_outdated_datetime_tags "$s" "2023")
 
   # get all outdated tag where tag contains "dev-PR"
    outdated_dev_pr_tags=$(get_outdated_images "$s" "dev-PR")
@@ -154,7 +156,15 @@ for s in "${IMAGES[@]}"; do
     delete_tag "$s" "$tag"
   done
 
-  for tag in ${outdated_datetime_tags}; do
+  for tag in ${outdated_datetime_tags_1}; do
+    delete_tag "$s" "$tag"
+  done
+
+  for tag in ${outdated_datetime_tags_2}; do
+    delete_tag "$s" "$tag"
+  done
+
+  for tag in ${outdated_datetime_tags_3}; do
     delete_tag "$s" "$tag"
   done
 
