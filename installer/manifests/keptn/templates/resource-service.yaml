@@ -39,6 +39,7 @@ spec:
           type: RuntimeDefault
         {{- end }}
       terminationGracePeriodSeconds: {{ .Values.resourceService.gracePeriod | default 60 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       containers:
         - name: resource-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.resourceService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}

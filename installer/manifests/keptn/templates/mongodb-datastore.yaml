@@ -17,6 +17,7 @@ spec:
         app.kubernetes.io/name: mongodb-datastore
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: keptn-default
       terminationGracePeriodSeconds: {{ .Values.mongodbDatastore.gracePeriod | default 60 }}
       initContainers:
