@@ -98,6 +98,7 @@ spec:
         app.kubernetes.io/name: bridge
     spec:
       {{- include "keptn.bridge.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       initContainers:
         {{- include "keptn.initContainers.wait-for-resource-service" . | nindent 8 }}
         {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}

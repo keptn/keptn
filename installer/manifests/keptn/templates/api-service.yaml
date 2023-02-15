@@ -17,6 +17,7 @@ spec:
         app.kubernetes.io/name: api-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 60 }}
       containers:
         - name: api-service

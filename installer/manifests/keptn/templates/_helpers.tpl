@@ -624,3 +624,10 @@ Usage:
       drop: ["ALL"]
 {{- end -}}
 
+{{/*
+Return the proper Docker Image Registry Secret Names
+*/}}
+{{- define "keptn.imagePullSecrets" -}}
+{{- include "keptn.common.images.renderPullSecrets" (dict "images" (list .Values.mongo.image .Values.shipyardController.image .Values.resourceService.image .Values.approvalService.image .Values.lighthouseService.image .Values.mongodbDatastore.image .Values.remediationService.image .Values.secretService.image .Values.statisticsService.image .Values.webhookService.image .Values.apiGatewayNginx.image .Values.apiService.image .Values.bridge.image .Values.distributor.image) "context" $) -}}
+{{- end -}}
+

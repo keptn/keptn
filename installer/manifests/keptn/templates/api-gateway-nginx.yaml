@@ -397,6 +397,7 @@ spec:
         rollme: {{ randAlphaNum 5 | quote }}
     spec:
       {{- include "keptn.apiGatewayNginx.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       terminationGracePeriodSeconds: {{ .Values.apiGatewayNginx.gracePeriod | default 60 }}
       containers:
         - name: api-gateway-nginx

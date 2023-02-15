@@ -21,6 +21,7 @@ spec:
         app.kubernetes.io/name: shipyard-controller
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: keptn-shipyard-controller
       initContainers:
         {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}

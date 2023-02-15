@@ -19,6 +19,7 @@ spec:
         app.kubernetes.io/name: statistics-service
     spec:
       {{- include "keptn.common.pod-security-context" . | nindent 6 }}
+      {{- include "keptn.imagePullSecrets" . | nindent 6 }}
       serviceAccountName: keptn-default
       initContainers:
         {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}

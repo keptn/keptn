@@ -5,6 +5,8 @@ global:
     registry: docker.keptn.sh/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
+  ## @param global.imagePullSecrets Global Docker registry secret names as an array
+  imagePullSecrets: []
   initContainers:
     ## @param global.initContainers.image Init container image to enable staggered rollout of Keptn
     image: "curlimages/curl"
