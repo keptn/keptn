@@ -205,7 +205,7 @@ jobs:
     - name: "Docker Build keptn/${{ inputs.artifact }}"
       id: docker_build_image
       if: inputs.should-push-image == 'true'
-      uses: docker/build-push-action@v3
+      uses: docker/build-push-action@v4
       with:
         context: ${{ inputs.working-dir }}
         tags: ${{ inputs.tags }}
