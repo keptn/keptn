@@ -129,8 +129,9 @@ jobs:
     - name: UI-Test
       if: inputs.docker-test-target == 'builder-test-ui'
       working-directory: bridge
-      run: |
-       ./cypress/run-tests.sh
+      env:
+        NODE_OPTIONS: '--openssl-legacy-provider'
+      run: ./cypress/run-tests.sh
 
     - name: Bridge unit test
       if: inputs.artifact == 'bridge2' && inputs.docker-test-target != 'builder-test-ui'
