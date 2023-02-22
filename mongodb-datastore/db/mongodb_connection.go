@@ -106,7 +106,7 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 }
 
 const mongoUser = "/mongodb-user"
-const mongoPwd = "/mongodb-passwords"
+const mongoPw = "/mongodb-passwords"
 const mongoExtCon = "/external_connection_string"
 
 // mongodb://<MONGODB_USER>:<MONGODB_PASSWORD>@MONGODB_HOST>/<MONGODB_DATABASE>
@@ -122,7 +122,7 @@ func GetMongoConnectionStringFromFile() (string, string, error) {
 	}
 	mongoDBHost := os.Getenv("MONGODB_HOST")
 	mongoDBUser := getFromEnvOrFile("MONGODB_USER", configdir+mongoUser)
-	mongoDBPassword := getFromEnvOrFile("MONGODB_PASSWORD", configdir+mongoPwd)
+	mongoDBPassword := getFromEnvOrFile("MONGODB_PASSWORD", configdir+mongoPw)
 
 	if !strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword) {
 		return "", "", errors.New("could not construct mongodb connection string: env vars 'MONGODB_HOST', 'MONGODB_USER' and 'MONGODB_PASSWORD' have to be set")
