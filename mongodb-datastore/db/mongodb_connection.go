@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -106,9 +105,9 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 	return nil
 }
 
-const mongoUser = "mongodb-user/"
-const mongoPwd = "mongodb-passwords/"
-const mongoExtCon = "external_connection_string/"
+const mongoUser = "/mongodb-user"
+const mongoPwd = "/mongodb-passwords"
+const mongoExtCon = "/external_connection_string"
 
 // mongodb://<MONGODB_USER>:<MONGODB_PASSWORD>@MONGODB_HOST>/<MONGODB_DATABASE>
 func GetMongoConnectionStringFromFile() (string, string, error) {
@@ -118,12 +117,12 @@ func GetMongoConnectionStringFromFile() (string, string, error) {
 	}
 	configdir := os.Getenv("MONGO_CONFIG_DIR")
 
-	if externalConnectionString := readSecret(configdir + mongoExtCon); externalConnectionString != "" {
+	if externalConnectionString := getFromEnvOrFile("MONGODB_EXTERNAL_CONNECTION_STRING", configdir+mongoExtCon); externalConnectionString != "" {
 		return externalConnectionString, mongoDBName, nil
 	}
 	mongoDBHost := os.Getenv("MONGODB_HOST")
-	mongoDBUser := readSecret(configdir + mongoUser)
-	mongoDBPassword := readSecret(configdir + mongoPwd)
+	mongoDBUser := getFromEnvOrFile("MONGODB_USER", configdir+mongoUser)
+	mongoDBPassword := getFromEnvOrFile("MONGODB_PASSWORD", configdir+mongoPwd)
 
 	if !strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword) {
 		return "", "", errors.New("could not construct mongodb connection string: env vars 'MONGODB_HOST', 'MONGODB_USER' and 'MONGODB_PASSWORD' have to be set")
@@ -134,7 +133,14 @@ func GetMongoConnectionStringFromFile() (string, string, error) {
 func readSecret(file string) string {
 	body, err := os.ReadFile(file)
 	if err != nil {
-		log.Fatalf("unable to read secret: %v", err)
+		logger.Fatalf("unable to read secret: %v", err)
 	}
 	return string(body)
+}
+
+func getFromEnvOrFile(env string, path string) string {
+	if _, err := os.Stat(path); err == nil {
+		return readSecret(path)
+	}
+	return os.Getenv(env)
 }

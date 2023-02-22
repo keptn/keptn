@@ -98,9 +98,9 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 	return nil
 }
 
-const mongoUser = "mongodb-user/"
-const mongoPwd = "mongodb-passwords/"
-const mongoExtCon = "external_connection_string/"
+const mongoUser = "/mongodb-user"
+const mongoPwd = "/mongodb-passwords"
+const mongoExtCon = "/external_connection_string"
 
 // mongodb://<MONGODB_USER>:<MONGODB_PASSWORD>@MONGODB_HOST>/<MONGODB_DATABASE>
 func GetMongoConnectionStringFromFile() (string, string, error) {
