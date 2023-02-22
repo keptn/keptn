@@ -63,24 +63,8 @@ spec:
                   fieldPath: metadata.namespace
             - name: MONGODB_HOST
               value: '{{ .Release.Name }}-mongo:{{ .Values.mongo.service.ports.mongodb }}'
-            - name: MONGODB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-user
-            - name: MONGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-passwords
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
-            - name: MONGODB_EXTERNAL_CONNECTION_STRING
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: external_connection_string
-                  optional: true
             - name: KEPTN_SPEC_VERSION
               value: {{ .Values.keptnSpecVersion }}
             - name: TASK_STARTED_WAIT_DURATION
@@ -117,6 +101,7 @@ spec:
           {{- if .Values.shipyardController.extraVolumeMounts }}
           {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
+          {{- include "keptn.mongodb-credentials.volumeMount" . | nindent 12}}
         {{- with .Values.shipyardController.sidecars }}
         {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
@@ -125,6 +110,7 @@ spec:
         - name: keptn-git-config-volume
           configMap:
             name: keptn-git-config
+      {{- include "keptn.mongodb-credentials.secretMount" . | nindent 8 }}
       {{- if .Values.shipyardController.extraVolumes }}
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
       {{- end }}

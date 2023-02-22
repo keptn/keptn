@@ -631,3 +631,22 @@ Return the proper Docker Image Registry Secret Names
 {{- include "keptn.common.images.renderPullSecrets" (dict "images" (list .Values.mongo.image .Values.shipyardController.image .Values.resourceService.image .Values.approvalService.image .Values.lighthouseService.image .Values.mongodbDatastore.image .Values.remediationService.image .Values.secretService.image .Values.statisticsService.image .Values.webhookService.image .Values.apiGatewayNginx.image .Values.apiService.image .Values.bridge.image .Values.distributor.image) "context" $) -}}
 {{- end -}}
 
+{{- define "keptn.mongodb-credentials.secretMount" -}}
+- name: mongodb-credentials
+  secret:
+    secretName: mongodb-credentials
+    defaultMode: 0400
+    items:
+      - key: mongodb-user
+        path: mongodb-user
+      - key: mongodb-passwords
+        path: mongodb-passwords
+      - key: external_connection_string
+        path: external_connection_string
+{{- end -}}
+
+{{- define "keptn.mongodb-credentials.volumeMount" -}}
+- name: mongodb-credentials
+  mountPath: /config/oauth_mongodb
+  readOnly: true
+{{- end -}}
