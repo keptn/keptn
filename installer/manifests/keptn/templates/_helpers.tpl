@@ -647,6 +647,6 @@ Return the proper Docker Image Registry Secret Names
 
 {{- define "keptn.mongodb-credentials.volumeMount" -}}
 - name: mongodb-credentials
-  mountPath: /config/oauth_mongodb
+  mountPath: /config/mongodb_credentials
   readOnly: true
 {{- end -}}

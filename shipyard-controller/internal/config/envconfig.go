@@ -43,4 +43,6 @@ type EnvConfig struct {
 	DebugUIEnabled bool `envconfig:"DEBUG_UI_ENABLED" default:"false"`
 	// HideAutomaticProvisionedURL hides the provisioned url
 	HideAutomaticProvisionedURL bool `envconfig:"HIDE_AUTOMATIC_PROVISIONED_URL" default:"false"`
+	//MongoDir local file configuration path for mognodb
+	MongoDir string `envconfig:"MONGO_CONFIG_DIR" default:"/config/mongodb_credentials"`
 }

@@ -58,6 +58,8 @@ spec:
               value: {{ .Values.logLevel | default "info" }}
             - name: NATS_URL
               value: 'nats://keptn-nats'
+            - name: MONGO_CONFIG_DIR
+              value: "/config/mongodb_credentials"
             {{- include "keptn.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.mongodbDatastore.extraVolumeMounts }}

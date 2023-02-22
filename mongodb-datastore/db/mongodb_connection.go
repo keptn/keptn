@@ -2,12 +2,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"sync"
 	"time"
 
-	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
+	"github.com/keptn/go-utils/pkg/common/strutils"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -73,7 +75,7 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 }
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
-	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
+	connectionString, _, err := GetMongoConnectionStringFromFile()
 	if err != nil {
 		logger.Errorf(clientCreationFailed, err)
 		return fmt.Errorf(clientCreationFailed, err)
@@ -102,4 +104,37 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 
 	logger.Info("Successfully connected to MongoDB")
 	return nil
+}
+
+const mongoUser = "mongodb-user/"
+const mongoPwd = "mongodb-passwords/"
+const mongoExtCon = "external_connection_string/"
+
+// mongodb://<MONGODB_USER>:<MONGODB_PASSWORD>@MONGODB_HOST>/<MONGODB_DATABASE>
+func GetMongoConnectionStringFromFile() (string, string, error) {
+	mongoDBName := os.Getenv("MONGODB_DATABASE")
+	if mongoDBName == "" {
+		return "", "", errors.New("env var 'MONGODB_DATABASE' env var must be set")
+	}
+	configdir := os.Getenv("MONGO_CONFIG_DIR")
+
+	if externalConnectionString := readSecret(configdir + mongoExtCon); externalConnectionString != "" {
+		return externalConnectionString, mongoDBName, nil
+	}
+	mongoDBHost := os.Getenv("MONGODB_HOST")
+	mongoDBUser := readSecret(configdir + mongoUser)
+	mongoDBPassword := readSecret(configdir + mongoPwd)
+
+	if !strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword) {
+		return "", "", errors.New("could not construct mongodb connection string: env vars 'MONGODB_HOST', 'MONGODB_USER' and 'MONGODB_PASSWORD' have to be set")
+	}
+	return fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName), mongoDBName, nil
+}
+
+func readSecret(file string) string {
+	body, err := os.ReadFile(file)
+	if err != nil {
+		log.Fatalf("unable to read secret: %v", err)
+	}
+	return string(body)
 }

@@ -48,26 +48,12 @@ spec:
               value: 'true'
             - name: MONGODB_HOST
               value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
-            - name: MONGODB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-user
-            - name: MONGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-passwords
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
-            - name: MONGODB_EXTERNAL_CONNECTION_STRING
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: external_connection_string
-                  optional: true
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
+            - name: MONGO_CONFIG_DIR
+              value: "/config/mongodb_credentials"
           ports:
             - containerPort: 8080
           resources:
@@ -75,6 +61,7 @@ spec:
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
           {{- if .Values.statisticsService.extraVolumeMounts }}
           volumeMounts:
+          {{- include "keptn.mongodb-credentials.volumeMount" . | nindent 12 }}
           {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.statisticsService.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         - name: distributor
@@ -98,8 +85,9 @@ spec:
         {{- with .Values.statisticsService.sidecars }}
         {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
-      {{- if .Values.statisticsService.extraVolumes }}
       volumes:
+      {{- include "keptn.mongodb-credentials.volume" . | nindent 8}}
+      {{- if .Values.statisticsService.extraVolumes }}
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.statisticsService.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       terminationGracePeriodSeconds: {{ .Values.statisticsService.gracePeriod | default 60 }}
