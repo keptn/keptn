@@ -110,7 +110,7 @@ spec:
         - name: keptn-git-config-volume
           configMap:
             name: keptn-git-config
-      {{- include "keptn.mongodb-credentials.secretMount" . | nindent 8 }}
+      {{- include "keptn.mongodb-credentials.volume" . | nindent 8 }}
       {{- if .Values.shipyardController.extraVolumes }}
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.shipyardController.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
