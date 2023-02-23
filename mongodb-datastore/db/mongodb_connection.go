@@ -2,13 +2,12 @@ package db
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/keptn/go-utils/pkg/common/strutils"
+	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -74,7 +73,7 @@ func (m *MongoDBConnection) EnsureDBConnection() error {
 }
 
 func (m *MongoDBConnection) connectMongoDBClient() error {
-	connectionString, _, err := GetMongoConnectionStringFromFile()
+	connectionString, _, err := keptnmongoutils.GetMongoConnectionStringFromEnv()
 	if err != nil {
 		logger.Errorf(clientCreationFailed, err)
 		return fmt.Errorf(clientCreationFailed, err)
@@ -103,44 +102,4 @@ func (m *MongoDBConnection) connectMongoDBClient() error {
 
 	logger.Info("Successfully connected to MongoDB")
 	return nil
-}
-
-const mongoUser = "/mongodb-user"
-const mongoPw = "/mongodb-passwords"
-const mongoExtCon = "/external_connection_string"
-
-// mongodb://<MONGODB_USER>:<MONGODB_PASSWORD>@MONGODB_HOST>/<MONGODB_DATABASE>
-func GetMongoConnectionStringFromFile() (string, string, error) {
-	mongoDBName := os.Getenv("MONGODB_DATABASE")
-	if mongoDBName == "" {
-		return "", "", errors.New("env var 'MONGODB_DATABASE' env var must be set")
-	}
-	configdir := os.Getenv("MONGO_CONFIG_DIR")
-
-	if externalConnectionString := getFromEnvOrFile("MONGODB_EXTERNAL_CONNECTION_STRING", configdir+mongoExtCon); externalConnectionString != "" {
-		return externalConnectionString, mongoDBName, nil
-	}
-	mongoDBHost := os.Getenv("MONGODB_HOST")
-	mongoDBUser := getFromEnvOrFile("MONGODB_USER", configdir+mongoUser)
-	mongoDBPassword := getFromEnvOrFile("MONGODB_PASSWORD", configdir+mongoPw)
-
-	if !strutils.AllSet(mongoDBHost, mongoDBUser, mongoDBPassword) {
-		return "", "", errors.New("could not construct mongodb connection string: env vars 'MONGODB_HOST', 'MONGODB_USER' and 'MONGODB_PASSWORD' have to be set")
-	}
-	return fmt.Sprintf("mongodb://%s:%s@%s/%s", mongoDBUser, mongoDBPassword, mongoDBHost, mongoDBName), mongoDBName, nil
-}
-
-func readSecret(file string) string {
-	body, err := os.ReadFile(file)
-	if err != nil {
-		logger.Fatalf("unable to read secret: %v", err)
-	}
-	return string(body)
-}
-
-func getFromEnvOrFile(env string, path string) string {
-	if _, err := os.Stat(path); err == nil {
-		return readSecret(path)
-	}
-	return os.Getenv(env)
 }
