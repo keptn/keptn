@@ -62,17 +62,17 @@ spec:
               value: "/config/mongodb_credentials"
             {{- include "keptn.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
-          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
           volumeMounts:
             {{- include "keptn.mongodb-credentials.volumeMount" . | nindent 12 }}
+          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
             {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.mongodbDatastore.sidecars }}
         {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
-      {{- if .Values.mongodbDatastore.extraVolumes }}
       volumes:
       {{- include "keptn.mongodb-credentials.volume" . | nindent 8}}
+      {{- if .Values.mongodbDatastore.extraVolumes }}
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
