@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Readme generator for Keptn Helm Chart
 #
 # This script will install the readme generator if it's not installed already

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	keptnmongoutils "github.com/keptn/go-utils/pkg/common/mongoutils"
-
 	logger "github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"

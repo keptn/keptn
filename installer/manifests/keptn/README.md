@@ -13,7 +13,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `global.initContainers.image` | Init container image to enable staggered rollout of Keptn     | `curlimages/curl`       |
 | `global.initContainers.tag`   | Init container image tag to enable staggered rollout of Keptn | `7.85.0`                |
 
-
 ### MongoDB
 
 | Name                                                | Description                                                                                                                                  | Value                 |
@@ -36,7 +35,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `mongo.serviceAccount.automountServiceAccountToken` | Allows auto mount of ServiceAccountToken on the serviceAccount created                                                                       | `false`               |
 | `mongo.resources`                                   | Define resources for MongoDB                                                                                                                 |                       |
 
-
 ### Keptn Features
 
 | Name                                        | Description                                              | Value    |
@@ -49,7 +47,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `features.oauth.enabled`                    | Enable OAuth for Keptn                                   | `false`  |
 | `features.oauth.prefix`                     | OAuth prefix for Keptn                                   | `keptn:` |
 | `features.git.remoteURLDenyList`            | List of forbidden URLs for creation of projects in Keptn | `""`     |
-
 
 ### NATS
 
@@ -72,7 +69,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `nats.natsbox.enabled`                   | Enable NATS Box utility container                                          | `false`      |
 | `nats.reloader.enabled`                  | Enable NATS Config Reloader sidecar to reload configuration during runtime | `false`      |
 | `nats.exporter.enabled`                  | Enable NATS Prometheus Exporter sidecar to emit prometheus metrics         | `false`      |
-
 
 ### API Gateway Nginx
 
@@ -105,7 +101,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiGatewayNginx.extraVolumes`                             | Add additional volumes to the API Gateway                                                 | `[]`                 |
 | `apiGatewayNginx.resources`                                | Define resources for the API Gateway                                                      |                      |
 
-
 ### Remediation Service
 
 | Name                                                   | Description                                                                               | Value                 |
@@ -128,7 +123,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `remediationService.extraVolumeMounts`                 | Add additional volume mounts to the Remediation Service                                   | `[]`                  |
 | `remediationService.extraVolumes`                      | Add additional volumes to the Remediation Service                                         | `[]`                  |
 | `remediationService.resources`                         | Define resources for the Remediation Service                                              |                       |
-
 
 ### API Service
 
@@ -157,7 +151,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiService.extraVolumeMounts`                 | Add additional volume mounts to the API Service                                                                                              | `[]`    |
 | `apiService.extraVolumes`                      | Add additional volumes to the API Service                                                                                                    | `[]`    |
 | `apiService.resources`                         | Define resources for the API Service                                                                                                         |         |
-
 
 ### Bridge
 
@@ -190,7 +183,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `bridge.extraVolumes`                      | Add additional volumes to the Bridge                                                                                                                                                                                                                                                                     | `[]`                                                      |
 | `bridge.resources`                         | Define resources for the Bridge                                                                                                                                                                                                                                                                          |                                                           |
 
-
 ### Distributor
 
 | Name                                         | Description                               | Value         |
@@ -209,7 +201,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `distributor.config.oauth.tokenURL`          | OAuth tokenURL string                     | `""`          |
 | `distributor.config.oauth.scopes`            | OAuth scopes                              | `""`          |
 | `distributor.resources`                      | Define resources for the Distributor      |               |
-
 
 ### Shipyard Controller
 
@@ -239,7 +230,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `shipyardController.extraVolumes`                         | Add additional volumes to Shipyard Controller                                             | `[]`                  |
 | `shipyardController.resources`                            | Define resources for Shipyard Controller                                                  |                       |
 
-
 ### Secret Service
 
 | Name                                              | Description                                                                               | Value            |
@@ -261,7 +251,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `secretService.extraVolumeMounts`                 | Add additional volume mounts to the Secret Service                                        | `[]`             |
 | `secretService.extraVolumes`                      | Add additional volumes to the Secret Service                                              | `[]`             |
 | `secretService.resources`                         | Define resources for the Secret Service                                                   |                  |
-
 
 ### Resource Service
 
@@ -291,7 +280,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `resourceService.extraVolumes`                      | Add additional volumes to the Resource Service                                            | `[]`               |
 | `resourceService.resources`                         | Define resources for the Resource Service                                                 |                    |
 
-
 ### MongoDB Datastore
 
 | Name                                                 | Description                                                                               | Value               |
@@ -313,7 +301,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `mongodbDatastore.extraVolumeMounts`                 | Add additional volume mounts to the MongoDB Datastore                                     | `[]`                |
 | `mongodbDatastore.extraVolumes`                      | Add additional volumes to the MongoDB Datastore                                           | `[]`                |
 | `mongodbDatastore.resources`                         | Define resources for the MongoDB Datastore                                                |                     |
-
 
 ### Lighthouse Service
 
@@ -338,7 +325,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `lighthouseService.extraVolumes`                      | Add additional volumes to the Lighthouse Service                                          | `[]`                 |
 | `lighthouseService.resources`                         | Define resources for the Lighthouse Service                                               |                      |
 
-
 ### Statistics Service
 
 | Name                                                  | Description                                                                               | Value                |
@@ -361,7 +347,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `statisticsService.extraVolumeMounts`                 | Add additional volume mounts to the Statistics Service                                    | `[]`                 |
 | `statisticsService.extraVolumes`                      | Add additional volumes to the Statistics Service                                          | `[]`                 |
 | `statisticsService.resources`                         | Define resources for the Statistics Service                                               |                      |
-
 
 ### Approval Service
 
@@ -386,7 +371,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `approvalService.extraVolumes`                      | Add additional volumes to the Approval Service                                            | `[]`               |
 | `approvalService.resources`                         | Define resources for the Approval Service                                                 |                    |
 
-
 ### Webhook Service
 
 | Name                                               | Description                                                                               | Value             |
@@ -410,7 +394,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `webhookService.extraVolumes`                      | Add additional volumes to the Webhook Service                                             | `[]`              |
 | `webhookService.resources`                         | Define resources for the Webhook Service                                                  |                   |
 
-
 ### Ingress
 
 | Name                  | Description                            | Value    |
@@ -422,7 +405,6 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `ingress.pathType`    | Keptn Ingress path type                | `Prefix` |
 | `ingress.className`   | Keptn Ingress class name               | `""`     |
 | `ingress.tls`         | Keptn Ingress TLS configuration        | `[]`     |
-
 
 ### Common settings
 

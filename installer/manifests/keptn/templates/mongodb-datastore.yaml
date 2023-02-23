@@ -54,37 +54,25 @@ spec:
               value: '{{ .Release.Name }}-mongo:{{ .Values.mongo.service.ports.mongodb }}'
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.database | default "keptn" }}
-            - name: MONGODB_USER
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-user
-            - name: MONGODB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: mongodb-passwords
-            - name: MONGODB_EXTERNAL_CONNECTION_STRING
-              valueFrom:
-                secretKeyRef:
-                  name: mongodb-credentials
-                  key: external_connection_string
-                  optional: true
             - name: LOG_LEVEL
               value: {{ .Values.logLevel | default "info" }}
             - name: NATS_URL
               value: 'nats://keptn-nats'
+            - name: MONGO_CONFIG_DIR
+              value: "/config/mongodb_credentials"
             {{- include "keptn.common.env.vars" . | nindent 12 }}
           {{- include "keptn.common.container-security-context" . | nindent 10 }}
-          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
           volumeMounts:
+            {{- include "keptn.mongodb-credentials.volumeMount" . | nindent 12 }}
+          {{- if .Values.mongodbDatastore.extraVolumeMounts }}
             {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumeMounts "context" $) | nindent 12 }}
           {{- end }}
         {{- with .Values.mongodbDatastore.sidecars }}
         {{- include "keptn.common.tplvalues.render" ( dict "value" . "context" $ ) | nindent 8 }}
         {{- end }}
-      {{- if .Values.mongodbDatastore.extraVolumes }}
       volumes:
+      {{- include "keptn.mongodb-credentials.volume" . | nindent 8}}
+      {{- if .Values.mongodbDatastore.extraVolumes }}
       {{- include "keptn.common.tplvalues.render" ( dict "value" .Values.mongodbDatastore.extraVolumes "context" $) | nindent 8 }}
       {{- end }}
       {{- include "keptn.nodeSelector" (dict "value" .Values.mongodbDatastore.nodeSelector "default" .Values.nodeSelector "indent" 6 "context" . )}}
