@@ -152,7 +152,17 @@ spec:
             - name: TRUST_PROXY
               value: "{{ .Values.bridge.oauth.trustProxy }}"
             - name: MONGODB_HOST
-              value: '{{ .Release.Name }}-{{ .Values.mongo.service.nameOverride }}:{{ .Values.mongo.service.ports.mongodb }}'
+              value: '{{ .Release.Name }}-mongo:{{ .Values.mongo.service.ports.mongodb }}'
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mongodb-credentials
+                  key: mongodb-passwords
             - name: MONGODB_DATABASE
               value: {{ .Values.mongo.auth.bridgeAuthDatabase | default "openid" }}
             - name: CONFIG_DIR
