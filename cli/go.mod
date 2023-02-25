@@ -98,7 +98,7 @@ require (
 
 // required as per https://github.com/helm/helm/issues/9354
 replace (
-	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
+	github.com/docker/distribution => github.com/docker/distribution e5d5810851d1
 	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
 	golang.org/x/crypto => golang.org/x/crypto v0.4.0
 	golang.org/x/text => golang.org/x/text v0.6.0
