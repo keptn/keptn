@@ -5,7 +5,7 @@ FROM golang:1.19.5-alpine3.17 as builder
 # install additional dependencies
 RUN apk update && \
     apk upgrade && \
-    apk add --no-cache gcc libc-dev git cmake make openssl libgit2-dev=1.5.1-r0
+    apk add --no-cache gcc libc-dev git cmake make openssl libgit2-dev=1.5.2-r0
 
 # Force the go compiler to use modules
 ENV GO111MODULE=on
@@ -60,7 +60,7 @@ ENV env=production
 RUN apk add --no-cache ca-certificates libc6-compat cmake make openssl
 
 # Install git
-RUN apk add --no-cache build-base git pkgconf libgit2-dev=1.5.1-r0
+RUN apk add --no-cache build-base git pkgconf libgit2-dev=1.5.2-r0
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /go/src/github.com/keptn/keptn/resource-service/main /resource-service
