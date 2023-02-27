@@ -47,7 +47,7 @@ defaults:
   run:
     shell: bash
 env:
-  GO_VERSION: "~1.18"
+  GO_VERSION: "~1.19"
 jobs:
   test_and_build:
     name: Test and Build

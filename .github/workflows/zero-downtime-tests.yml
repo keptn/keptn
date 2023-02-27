@@ -50,7 +50,7 @@ jobs:
       PLATFORM_VERSION: ${{ matrix.PLATFORM_VERSION }}
       KUBECONFIG: ${{ matrix.KUBECONFIG }}
       KEPTN_NAMESPACE: "keptn-zd-test-${{ github.run_number }}-${{ github.run_attempt }}"
-      GO_VERSION: "~1.18"
+      GO_VERSION: "~1.19"
       UPGRADE_TO: ${{ inputs.upgradeTo || 'https://charts-dev.keptn.sh/packages/keptn-0.19.0-dev.tgz' }}
     outputs:
       BRANCH: ${{ steps.determine_branch.outputs.BRANCH }}
