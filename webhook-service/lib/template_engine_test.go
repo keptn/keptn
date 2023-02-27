@@ -45,7 +45,7 @@ func TestTemplateEngine_ParseTemplate(t1 *testing.T) {
 			},
 			want:    "",
 			wantErr: true,
-			errMsg:  "unexpected",
+			errMsg:  "template: :1: bad character U+007D '}'",
 		},
 		{
 			name: "non-existing key",
