@@ -21,6 +21,11 @@ spec:
       terminationGracePeriodSeconds: {{ .Values.apiService.gracePeriod | default 60 }}
       initContainers:
         {{- include "keptn.initContainers.wait-for-nats" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-mongodb-datastore" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-keptn-mongo" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-shipyard-controller" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-secret-service" . | nindent 8 }}
+        {{- include "keptn.initContainers.wait-for-resource-service" . | nindent 8 }}
       containers:
         - name: api-service
           image: {{ include "keptn.common.images.image" ( dict "imageRoot" .Values.apiService.image "global" .Values.global.keptn "defaultTag" .Chart.AppVersion) | quote }}
