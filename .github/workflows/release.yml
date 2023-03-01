@@ -8,7 +8,7 @@ on:
 
 env:
   NODE_VERSION: 16
-  GO_VERSION: "~1.18"
+  GO_VERSION: "~1.19"
   KEPTN_BOT_NAME: "Keptn Bot"
   KEPTN_BOT_EMAIL: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
   RELEASE_NOTES_FILE: "RELEASE-BODY.md"
