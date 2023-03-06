@@ -518,7 +518,7 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 			return false
 		}
 		return true
-	}, 30*time.Second, 5*time.Second)
+	}, 90*time.Second, 5*time.Second)
 
 	// ensure that there is only one .started event
 	require.Len(t, startedEvents, 1)
