@@ -240,7 +240,6 @@ jobs:
     - name: Sign container images
       if: inputs.should-push-image == 'true'
       env:
-        COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
       run: |
         for tag in $TAGS
@@ -251,7 +250,6 @@ jobs:
     - name: Verify container images
       if: inputs.should-push-image == 'true'
       env:
-        COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
       run: |
         for tag in $TAGS
