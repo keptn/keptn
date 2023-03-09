@@ -174,7 +174,7 @@ jobs:
           install: true
 
     - name: Set up Cosign
-      uses: sigstore/cosign-installer@v2.8.1
+      uses: sigstore/cosign-installer@v3.0.1
       if: inputs.should-push-image == 'true'
 
     - name: Login to GitHub Container Registry
@@ -240,7 +240,6 @@ jobs:
     - name: Sign container images
       if: inputs.should-push-image == 'true'
       env:
-        COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
       run: |
         for tag in $TAGS
@@ -251,7 +250,6 @@ jobs:
     - name: Verify container images
       if: inputs.should-push-image == 'true'
       env:
-        COSIGN_EXPERIMENTAL: 1
         TAGS: ${{ inputs.tags }}
       run: |
         for tag in $TAGS
