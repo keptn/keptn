@@ -240,10 +240,16 @@ jobs:
     - name: Sign container images
       if: inputs.should-push-image == 'true'
       env:
+        TAGS: ${{ inputs.tags }}
         IMAGE_NAME: ${{ inputs.artifact }}
         IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
       run: |
-        cosign sign $IMAGE_NAME:$IMAGE_DIGEST
+        # cosign sign $IMAGE_NAME:$IMAGE_DIGEST
+        for tag in $TAGS
+        do
+          echo $tag
+          echo $IMAGE_DIGEST
+        done
 
     - name: Verify container images
       if: inputs.should-push-image == 'true'
