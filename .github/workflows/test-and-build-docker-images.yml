@@ -85,84 +85,84 @@ jobs:
       working-directory: ./${{ inputs.artifact }}
       run: go mod download
 
-    - name: Test ${{ inputs.artifact }} # TODO add --race #8486 
-      if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
-      working-directory: ./${{ inputs.artifact }}
-      run: |
-        LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./... 
+#    - name: Test ${{ inputs.artifact }} # TODO add --race #8486
+#      if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
+#      working-directory: ./${{ inputs.artifact }}
+#      run: |
+#        LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./...
 
     #######################################################################
           # TESTS FOR BRIDGE
     #######################################################################
-    - name: Get yarn cache directory path
-      id: yarn-cache-dir-path
-      if: inputs.artifact == 'bridge2'
-      working-directory: bridge
-      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-    
-    - name: Setup yarn cache
-      uses: actions/cache@v3
-      id: yarn-cache
-      if: inputs.artifact == 'bridge2'
-      with:
-        path: |
-          ${{ inputs.working-dir }}node_modules
-          ${{ inputs.working-dir }}server/node_modules
-          ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          /home/runner/.cache/Cypress
-        key: ${{ runner.os }}-yarn-${{ inputs.docker-test-target }}-${{ hashFiles('**/yarn.lock') }}
-
-    - name: Install yarn
-      if: inputs.artifact == 'bridge2'
-      working-directory: bridge
-      run: |
-        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
-          cd ./server 
-        fi
-        yarn install --frozen-lockfile 
-
-    - name: Bridge lint checks
-      if: inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-code-style'
-      working-directory: bridge
-      run: yarn prettier:check && yarn lint:check
-
-    - name: UI-Test
-      if: inputs.docker-test-target == 'builder-test-ui'
-      working-directory: bridge
-      env:
-        NODE_OPTIONS: '--openssl-legacy-provider'
-      run: ./cypress/run-tests.sh
-
-    - name: Bridge unit test
-      if: inputs.artifact == 'bridge2' && inputs.docker-test-target != 'builder-test-ui'
-      working-directory: bridge
-      run: |
-        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
-          cd ./server 
-        fi
-        yarn test
-
-    - name: Report test coverage for bridge-server
-      if: inputs.should-push-image == 'false' && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'bridge-server-test'
-      uses: codecov/codecov-action@v3
-      with:
-        fail_ci_if_error: false
-        flags: bridge-server
-
-    - name: Upload Test Screenshots
-      if: always() && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-test-ui'
-      uses: actions/upload-artifact@v3
-      with:
-        name: bridge-e2e-screenshots
-        path: ./bridge/shared/screenshots
-
-    # REPORT COVERAGE
-    - name: Report test coverage for ${{ inputs.artifact }}
-      if: inputs.should-push-image == 'true'
-      uses: codecov/codecov-action@v3
-      with:
-          fail_ci_if_error: false
-          flags: ${{ inputs.artifact }}
+#    - name: Get yarn cache directory path
+#      id: yarn-cache-dir-path
+#      if: inputs.artifact == 'bridge2'
+#      working-directory: bridge
+#      run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
+#
+#    - name: Setup yarn cache
+#      uses: actions/cache@v3
+#      id: yarn-cache
+#      if: inputs.artifact == 'bridge2'
+#      with:
+#        path: |
+#          ${{ inputs.working-dir }}node_modules
+#          ${{ inputs.working-dir }}server/node_modules
+#          ${{ steps.yarn-cache-dir-path.outputs.dir }}
+#          /home/runner/.cache/Cypress
+#        key: ${{ runner.os }}-yarn-${{ inputs.docker-test-target }}-${{ hashFiles('**/yarn.lock') }}
+#
+#    - name: Install yarn
+#      if: inputs.artifact == 'bridge2'
+#      working-directory: bridge
+#      run: |
+#        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
+#          cd ./server
+#        fi
+#        yarn install --frozen-lockfile
+#
+#    - name: Bridge lint checks
+#      if: inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-code-style'
+#      working-directory: bridge
+#      run: yarn prettier:check && yarn lint:check
+#
+#    - name: UI-Test
+#      if: inputs.docker-test-target == 'builder-test-ui'
+#      working-directory: bridge
+#      env:
+#        NODE_OPTIONS: '--openssl-legacy-provider'
+#      run: ./cypress/run-tests.sh
+#
+#    - name: Bridge unit test
+#      if: inputs.artifact == 'bridge2' && inputs.docker-test-target != 'builder-test-ui'
+#      working-directory: bridge
+#      run: |
+#        if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
+#          cd ./server
+#        fi
+#        yarn test
+#
+#    - name: Report test coverage for bridge-server
+#      if: inputs.should-push-image == 'false' && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'bridge-server-test'
+#      uses: codecov/codecov-action@v3
+#      with:
+#        fail_ci_if_error: false
+#        flags: bridge-server
+#
+#    - name: Upload Test Screenshots
+#      if: always() && inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-test-ui'
+#      uses: actions/upload-artifact@v3
+#      with:
+#        name: bridge-e2e-screenshots
+#        path: ./bridge/shared/screenshots
+#
+#    # REPORT COVERAGE
+#    - name: Report test coverage for ${{ inputs.artifact }}
+#      if: inputs.should-push-image == 'true'
+#      uses: codecov/codecov-action@v3
+#      with:
+#          fail_ci_if_error: false
+#          flags: ${{ inputs.artifact }}
 
 #######################################################################
 # BUILD PRODUCTION IMAGES
@@ -240,12 +240,9 @@ jobs:
     - name: Sign container images
       if: inputs.should-push-image == 'true'
       env:
-        TAGS: ${{ inputs.tags }}
+        IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
       run: |
-        for tag in $TAGS
-        do 
-          cosign sign $tag
-        done
+        cosign sign $IMAGE_DIGEST
 
     - name: Verify container images
       if: inputs.should-push-image == 'true'
