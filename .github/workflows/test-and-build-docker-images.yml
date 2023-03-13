@@ -249,9 +249,9 @@ jobs:
         do
           echo $tag
           echo $IMAGE_DIGEST
-          REMOVE=${tag##*:} 
-          IMAGE_TO_SIGN=${tag%$REMOVE}$IMAGE_DIGEST
-          echo $IMAGE_TO_SIGN
+          REMOVE=:${tag##*:}
+          IMAGE_TO_SIGN=${tag%$REMOVE}@$IMAGE_DIGEST
+          echo "Signing $IMAGE_TO_SIGN"
           cosign sign $IMAGE_TO_SIGN
         done
 
