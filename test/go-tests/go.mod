@@ -3,14 +3,14 @@ module github.com/keptn/keptn/test/go-tests
 go 1.18
 
 require (
-	github.com/cloudevents/sdk-go/v2 v2.13.0
+	github.com/cloudevents/sdk-go/v2 v2.12.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
 	github.com/keptn/go-utils v0.20.1-0.20230223104941-6b8d8f221081
 	github.com/stretchr/testify v1.8.1
-	k8s.io/api v0.25.7
-	k8s.io/apimachinery v0.25.7
-	k8s.io/client-go v0.25.7
+	k8s.io/api v0.25.4
+	k8s.io/apimachinery v0.25.4
+	k8s.io/client-go v0.25.4
 	k8s.io/utils v0.0.0-20220922133306-665eaaec4324
 )
 
@@ -37,19 +37,19 @@ require (
 require (
 	cloud.google.com/go v0.97.0 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
-	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.13.0 // indirect
+	github.com/cloudevents/sdk-go/observability/opentelemetry/v2 v2.12.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
-	golang.org/x/oauth2 v0.4.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/term v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
-	golang.org/x/time v0.3.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/oauth2 v0.0.0-20220722155238-128564f6959c // indirect
+	golang.org/x/sys v0.5.0 // indirect
+	golang.org/x/term v0.5.0 // indirect
+	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/time v0.0.0-20220922220347-f3bd1da661af // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
