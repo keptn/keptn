@@ -245,6 +245,7 @@ jobs:
         IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
       run: |
         # cosign sign $IMAGE_NAME:$IMAGE_DIGEST
+        echo $TAGS
         for tag in $TAGS
         do
           REMOVE=:${tag##*:} # remove everything from the last ":"
@@ -260,5 +261,7 @@ jobs:
       run: |
         for tag in $TAGS
         do
-          cosign verify $tag
+          REMOVE=:${tag##*:} # remove everything from the last ":"
+          IMAGE_SIGNED=${tag%$REMOVE}@$IMAGE_DIGEST
+          cosign verify $IMAGE_SIGNED
         done
