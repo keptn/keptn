@@ -247,12 +247,10 @@ jobs:
         # cosign sign $IMAGE_NAME:$IMAGE_DIGEST
         for tag in $TAGS
         do
-          echo $tag
-          echo $IMAGE_DIGEST
-          REMOVE=:${tag##*:}
+          REMOVE=:${tag##*:} # remove everything from the last ":"
           IMAGE_TO_SIGN=${tag%$REMOVE}@$IMAGE_DIGEST
           echo "Signing $IMAGE_TO_SIGN"
-          cosign sign $IMAGE_TO_SIGN
+          cosign sign --yes $IMAGE_TO_SIGN
         done
 
     - name: Verify container images
