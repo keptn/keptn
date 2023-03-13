@@ -29,7 +29,7 @@ require (
 	k8s.io/api v0.25.6
 	k8s.io/apimachinery v0.25.6
 	k8s.io/client-go v0.25.6
-	k8s.io/utils v0.0.0-20230115233650-391b47cb4029
+	k8s.io/utils v0.0.0-20230313181309-38a27ef9d749
 )
 
 require (
