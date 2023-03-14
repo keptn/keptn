@@ -63,7 +63,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be // indirect
-	golang.org/x/net v0.6.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
@@ -74,7 +74,7 @@ require (
 )
 
 replace (
-	golang.org/x/crypto => golang.org/x/crypto v0.6.0
+	golang.org/x/crypto => golang.org/x/crypto v0.7.0
 	golang.org/x/net => golang.org/x/net v0.8.0
 	golang.org/x/text => golang.org/x/text v0.8.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
