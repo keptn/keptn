@@ -238,7 +238,7 @@ jobs:
         path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
     - name: Sign container images
-      if: inputs.should-push-image == 'true'
+      if: inputs.should-push-image == 'true' && inputs.release-build == 'true'
       env:
         TAGS: ${{ inputs.tags }}
         IMAGE_NAME: ${{ inputs.artifact }}
@@ -253,6 +253,5 @@ jobs:
           echo "Signing $IMAGE_TO_SIGN"
           cosign sign --yes $IMAGE_TO_SIGN
           echo "Verify identity"
-          cosign verify --certificate-identity-regexp="https://github.com/.*" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
+          cosign verify --certificate-identity-regexp="https://github.com/keptn/keptn/.*" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
         done
-
