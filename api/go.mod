@@ -26,9 +26,9 @@ require (
 	golang.org/x/time v0.3.0
 	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.6
-	k8s.io/apimachinery v0.25.6
-	k8s.io/client-go v0.25.6
+	k8s.io/api v0.25.7
+	k8s.io/apimachinery v0.25.7
+	k8s.io/client-go v0.25.7
 	k8s.io/utils v0.0.0-20230115233650-391b47cb4029
 )
 

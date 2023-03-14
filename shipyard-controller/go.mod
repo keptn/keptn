@@ -20,11 +20,11 @@ require (
 	github.com/tryvium-travels/memongo v0.6.1
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/zap v1.19.0 // indirect
-	golang.org/x/net v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.6
-	k8s.io/apimachinery v0.25.6
-	k8s.io/client-go v0.25.6
+	k8s.io/api v0.25.7
+	k8s.io/apimachinery v0.25.7
+	k8s.io/client-go v0.25.7
 )
 
 require github.com/kelseyhightower/envconfig v1.4.0
