@@ -252,6 +252,8 @@ jobs:
           IMAGE_TO_SIGN=${tag%$REMOVE}@$IMAGE_DIGEST
           echo "Signing $IMAGE_TO_SIGN"
           cosign sign --yes $IMAGE_TO_SIGN
+          cosign verify $IMAGE_SIGNED --certificate-identity="Keptn Helm Signing"
+          cosign verify --key ./assets/pubring.gpg $IMAGE_TO_SIGN
         done
 
     - name: Verify container images
@@ -263,5 +265,6 @@ jobs:
         do
           REMOVE=:${tag##*:} # remove everything from the last ":"
           IMAGE_SIGNED=${tag%$REMOVE}@$IMAGE_DIGEST
+          echo "Verifying $IMAGE_TO_SIGN"
           cosign verify $IMAGE_SIGNED
         done
