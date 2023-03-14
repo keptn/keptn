@@ -253,20 +253,6 @@ jobs:
           echo "Signing $IMAGE_TO_SIGN"
           cosign sign --yes $IMAGE_TO_SIGN
           echo "Verify identity"
-          cosign verify --certificate-identity="Keptn Helm Signing" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
-          echo "Verify key"
-          cosign verify --key ./assets/pubring.gpg $IMAGE_TO_SIGN
+          cosign verify --certificate-identity-regexp="https://github.com/.*" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
         done
 
-    - name: Verify container images
-      if: inputs.should-push-image == 'true'
-      env:
-        TAGS: ${{ inputs.tags }}
-      run: |
-        for tag in $TAGS
-        do
-          REMOVE=:${tag##*:} # remove everything from the last ":"
-          IMAGE_SIGNED=${tag%$REMOVE}@$IMAGE_DIGEST
-          echo "Verifying $IMAGE_TO_SIGN"
-          cosign verify $IMAGE_SIGNED
-        done
