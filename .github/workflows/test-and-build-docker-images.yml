@@ -253,7 +253,7 @@ jobs:
           echo "Signing $IMAGE_TO_SIGN"
           cosign sign --yes $IMAGE_TO_SIGN
           echo "Verify identity"
-          #cosign verify --certificate-identity="Keptn Helm Signing" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
+          cosign verify --certificate-identity="Keptn Helm Signing" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
           echo "Verify key"
           cosign verify --key ./assets/pubring.gpg $IMAGE_TO_SIGN
         done
