@@ -85,21 +85,21 @@ jobs:
       working-directory: ./${{ inputs.artifact }}
       run: go mod download
 
-    - name: Test ${{ inputs.artifact }} # TODO add --race #8486 
+    - name: Test ${{ inputs.artifact }} # TODO add --race #8486
       if: inputs.artifact != 'bridge2' && ((inputs.build-everything == 'true') || (inputs.should-run == 'true'))
       working-directory: ./${{ inputs.artifact }}
       run: |
-        LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./... 
+        LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/lib/ gotestsum --no-color=false --format=testname -- -tags=static,system_libgit2 -coverprofile=coverage.txt -covermode=atomic -v ./...
 
     #######################################################################
           # TESTS FOR BRIDGE
-    #######################################################################
+    ######################################################################
     - name: Get yarn cache directory path
       id: yarn-cache-dir-path
       if: inputs.artifact == 'bridge2'
       working-directory: bridge
       run: echo "dir=$(yarn cache dir)" >> $GITHUB_OUTPUT
-    
+
     - name: Setup yarn cache
       uses: actions/cache@v3
       id: yarn-cache
@@ -117,9 +117,9 @@ jobs:
       working-directory: bridge
       run: |
         if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
-          cd ./server 
+          cd ./server
         fi
-        yarn install --frozen-lockfile 
+        yarn install --frozen-lockfile
 
     - name: Bridge lint checks
       if: inputs.artifact == 'bridge2' && inputs.docker-test-target == 'builder-code-style'
@@ -138,7 +138,7 @@ jobs:
       working-directory: bridge
       run: |
         if [[ '${{ inputs.docker-test-target }}' == 'bridge-server-test' ]]; then
-          cd ./server 
+          cd ./server
         fi
         yarn test
 
@@ -237,22 +237,21 @@ jobs:
         name: image-digests
         path: ${{ env.IMAGE_DIGEST_FILENAME }}
 
-    - name: Sign container images
-      if: inputs.should-push-image == 'true'
+    - name: Sign and verify container images
+      if: inputs.should-push-image == 'true' && inputs.release-build == 'true'
       env:
         TAGS: ${{ inputs.tags }}
+        IMAGE_NAME: ${{ inputs.artifact }}
+        IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
       run: |
-        for tag in $TAGS
-        do 
-          cosign sign $tag
-        done
-
-    - name: Verify container images
-      if: inputs.should-push-image == 'true'
-      env:
-        TAGS: ${{ inputs.tags }}
-      run: |
+        # cosign sign $IMAGE_NAME:$IMAGE_DIGEST
+        echo $TAGS
         for tag in $TAGS
         do
-          cosign verify $tag
+          REMOVE=:${tag##*:} # remove everything from the last ":"
+          IMAGE_TO_SIGN=${tag%$REMOVE}@$IMAGE_DIGEST
+          echo "Signing $IMAGE_TO_SIGN"
+          cosign sign --yes $IMAGE_TO_SIGN
+          echo "Verify identity"
+          cosign verify --certificate-identity-regexp="https://github.com/keptn/keptn/.*" --certificate-oidc-issuer="https://token.actions.githubusercontent.com" $IMAGE_TO_SIGN
         done
