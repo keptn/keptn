@@ -95,5 +95,9 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-// required as per https://github.com/helm/helm/issues/9354
-replace github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
+
+replace (
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
+	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
+)
