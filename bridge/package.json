@@ -56,7 +56,7 @@
     "@angular/platform-browser": "12.2.17",
     "@angular/platform-browser-dynamic": "12.2.17",
     "@angular/router": "12.2.17",
-    "@dynatrace/barista-components": "10.10.0",
+    "@dynatrace/barista-components": "10.12.0",
     "@dynatrace/barista-fonts": "1.0.1",
     "@dynatrace/barista-icons": "7.24.1",
     "@storybook/angular": "6.5.15",
