@@ -385,8 +385,8 @@ func (g *Git) Pull(gitContext common_models.GitContext) error {
 		}
 	}
 	if err != nil {
-		// do not return an error if we are alread< up to date or if the repository is empty
-		if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) {
+		// do not return an error if we are already up to date or if the repository is empty
+		if errors.Is(err, git.NoErrAlreadyUpToDate) || errors.Is(err, transport.ErrEmptyRemoteRepository) || errors.Is(err, plumbing.ErrReferenceNotFound) {
 			return nil
 		}
 		logger.Debugf("Pull(): Could not pull for project '%s': %s", gitContext.Project, err.Error())
