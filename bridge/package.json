@@ -59,7 +59,7 @@
     "@dynatrace/barista-components": "10.10.0",
     "@dynatrace/barista-fonts": "1.0.1",
     "@dynatrace/barista-icons": "7.24.1",
-    "@storybook/angular": "6.5.15",
+    "@storybook/angular": "6.5.16",
     "cypress-file-upload": "5.0.8",
     "d3": "7.7.0",
     "d3-scale": "4.0.2",
