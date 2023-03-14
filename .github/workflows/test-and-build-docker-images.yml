@@ -252,7 +252,9 @@ jobs:
           IMAGE_TO_SIGN=${tag%$REMOVE}@$IMAGE_DIGEST
           echo "Signing $IMAGE_TO_SIGN"
           cosign sign --yes $IMAGE_TO_SIGN
+          echo "Verify identity"
           cosign verify $IMAGE_SIGNED --certificate-identity="Keptn Helm Signing"
+          echo "Verify key"
           cosign verify --key ./assets/pubring.gpg $IMAGE_TO_SIGN
         done
 
