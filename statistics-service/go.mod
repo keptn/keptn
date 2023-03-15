@@ -12,7 +12,7 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/swag v1.8.10
-	github.com/tryvium-travels/memongo v0.6.1
+	github.com/tryvium-travels/memongo v0.9.0
 	go.mongodb.org/mongo-driver v1.11.1
 )
 
