@@ -8,10 +8,10 @@ if [[ $# -ne 1 ]]; then
 fi
 
 TARGET_INTERNAL_DOCKER_REGISTRY=${1}
-DOCKER_ORG="keptn"
+CONTAINER_ORG="keptn"
 
 if [[ "$KEPTN_TAG" == *"dev"* ]]; then
-  DOCKER_ORG="keptndev"
+  CONTAINER_ORG="keptndev"
 fi
 
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
@@ -21,18 +21,18 @@ IMAGES_CONTROL_PLANE_THIRD_PARTY=(
   "curlimages/curl:7.85.0"
 )
 IMAGES_CONTROL_PLANE=(
-  "${DOCKER_ORG}/api:${KEPTN_TAG}"
-  "${DOCKER_ORG}/bridge2:${KEPTN_TAG}"
-  "${DOCKER_ORG}/distributor:${KEPTN_TAG}"
-  "${DOCKER_ORG}/secret-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/shipyard-controller:${KEPTN_TAG}"
-  "${DOCKER_ORG}/remediation-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/mongodb-datastore:${KEPTN_TAG}"
-  "${DOCKER_ORG}/statistics-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/lighthouse-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/approval-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/webhook-service:${KEPTN_TAG}"
-  "${DOCKER_ORG}/resource-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/api:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/bridge2:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/distributor:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/secret-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/shipyard-controller:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/remediation-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/mongodb-datastore:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/statistics-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/lighthouse-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/approval-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/webhook-service:${KEPTN_TAG}"
+  "${CONTAINER_ORG}/resource-service:${KEPTN_TAG}"
 )
 
 IMAGES=()

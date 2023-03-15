@@ -317,14 +317,14 @@ jobs:
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
             if [[ "$VERSION" == *"dev"* ]]; then
-              DOCKER_ORG="keptndev"
+              CONTAINER_ORG="keptndev"
             else
-              DOCKER_ORG="keptn"
+              CONTAINER_ORG="keptn"
             fi
           
             installer/airgapped/install_keptn.sh \
               "$AIRGAPPED_REGISTRY_URL/" \
-              "$DOCKER_ORG" \
+              "$CONTAINER_ORG" \
               "$HELM_CHART_NAME"
           else
             if [[ "$CLOUD_PROVIDER" == *"k3s"* ]]; then

@@ -5,7 +5,7 @@
 # Required secrets/params:                                                                          #
 # - REGISTRY_USER: A dockerhub user.                                                                #
 # - REGISTRY_PASSWORD: The corresponding password. CAUTION: Personal access tokens don't work here! #
-# - DOCKER_ORG: The organization on dockerhub where the images are located                          #
+# - CONTAINER_ORG: The organization on dockerhub where the images are located                       #
 #####################################################################################################
 
 #####################################################################################################
@@ -43,8 +43,8 @@ if [ -z "$REGISTRY_PASSWORD" ]; then
   exit 1
 fi
 
-if [ -z "$DOCKER_ORG" ]; then
-  echo "DOCKER_ORG is not set. Please set DOCKER_ORG to the organization that you want to check stale images for."
+if [ -z "$CONTAINER_ORG" ]; then
+  echo "CONTAINER_ORG is not set. Please set CONTAINER_ORG to the organization that you want to check stale images for."
   exit 1
 fi
 
@@ -73,12 +73,12 @@ function get_outdated_commit_hash_tags() {
   REPO=$1
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/?page_size=1" | jq -r '.count')
 # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   >&2 echo "Found $COUNT tags for $REPO without filter"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?ordering=-last_updated&page_size=${COUNT}" | \
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/?ordering=-last_updated&page_size=${COUNT}" | \
      jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("\\b[0-9a-f]{7}\\b"))|.name')
   echo "$response"
 }
@@ -88,12 +88,12 @@ function get_outdated_datetime_tags() {
   TAG_FILTER=$2
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
   # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   >&2 echo "Found $COUNT tags for $REPO (filter $TAG_FILTER)"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | \
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | \
     jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|select(.name | match("^\\b[0-9]{8}\\b"))|.name')
   echo "$response"
 }
@@ -104,12 +104,12 @@ function get_outdated_images() {
   TAG_FILTER=$2
 
   # Count number of tags based on the tag filter
-  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
+  COUNT=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&page_size=1" | jq -r '.count')
   # unfortunately, anything above 100 doesn't work for pagination with docker hub api; leaving it in for debug purposes
   >&2 echo "Found $COUNT tags for $REPO (filter $TAG_FILTER)"
 
   # get all tags, ordered by last_update (get the newest), and filter with jq based on TARGET_DATE
-  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
+  response=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/?name=${TAG_FILTER}&ordering=-last_updated&page_size=${COUNT}" | jq -r --argjson date "$TARGET_DATE" '.results|.[]|select (.last_updated | sub(".[0-9]+Z$"; "Z") | fromdate < $date)|.name')
   echo "$response"
 }
 
@@ -124,7 +124,7 @@ function delete_tag() {
     -w "%{http_code}" \
     -H "Accept: application/json" \
     -H "Authorization: JWT ${DOCKER_API_TOKEN}" \
-    "https://hub.docker.com/v2/repositories/$DOCKER_ORG/$REPO/tags/$TAG/")
+    "https://hub.docker.com/v2/repositories/$CONTAINER_ORG/$REPO/tags/$TAG/")
 
   if [[ "$response" != "204" ]]; then
     echo " - Delete failed with response $response"

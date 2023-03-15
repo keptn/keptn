@@ -5,7 +5,7 @@
 # Required secrets/params:                                       #
 # - REGISTRY_USER                                                #
 # - REGISTRY_PASSWORD                                            #
-# - DOCKER_ORG                                                   #
+# - CONTAINER_ORG                                                #
 ##################################################################
 
 ##################################################################
@@ -26,8 +26,8 @@ if [ -z "$REGISTRY_PASSWORD" ]; then
   exit 1
 fi
 
-if [ -z "$DOCKER_ORG" ]; then
-  echo "DOCKER_ORG is not set. Please set DOCKER_ORG to the organization that you want to check stale images for."
+if [ -z "$CONTAINER_ORG" ]; then
+  echo "CONTAINER_ORG is not set. Please set CONTAINER_ORG to the organization that you want to check stale images for."
   exit 1
 fi
 
@@ -99,7 +99,7 @@ function check_if_stale() {
 
   # for each tag, check if the tag is stale
   for TAG in "${TAGS[@]}"; do
-    HTTP_RESPONSE=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" --write-out "HTTPSTATUS:%{http_code}" "https://hub.docker.com/v2/repositories/${DOCKER_ORG}/${REPO}/tags/${TAG}/")
+    HTTP_RESPONSE=$(curl -s -H "Authorization: JWT ${DOCKER_API_TOKEN}" --write-out "HTTPSTATUS:%{http_code}" "https://hub.docker.com/v2/repositories/${CONTAINER_ORG}/${REPO}/tags/${TAG}/")
 
     # extract body and status
     HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -E 's/HTTPSTATUS\:[0-9]{3}$//')
@@ -124,14 +124,14 @@ RELEASE_TAGS=$(get_releases "keptn/keptn")
 
 
 for IMAGE in "${IMAGES[@]}"; do
-  echo "Detecting stale images for ${DOCKER_ORG}/${IMAGE} for all release tags"
+  echo "Detecting stale images for ${CONTAINER_ORG}/${IMAGE} for all release tags"
   STALE_TAGS=$(check_if_stale "${IMAGE}" "${RELEASE_TAGS}")
 
   # pull each stale tag
   if [[ -n "$STALE_TAGS" ]]; then
     for TAG in "${STALE_TAGS[@]}"; do
-      echo "Pulling ${DOCKER_ORG}/${IMAGE}:${TAG} to ensure images are not stale..."
-      docker pull "${DOCKER_ORG}/${IMAGE}:${TAG}"
+      echo "Pulling ${CONTAINER_ORG}/${IMAGE}:${TAG} to ensure images are not stale..."
+      docker pull "${CONTAINER_ORG}/${IMAGE}:${TAG}"
     done
   else
     echo "All images are fine."
