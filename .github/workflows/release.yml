@@ -174,7 +174,6 @@ jobs:
     with:
       artifact: ${{ matrix.config.artifact }}
       tags: |
-        keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
         quay.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
         ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
       should-run: ${{ matrix.config.should-run }}
@@ -287,7 +286,7 @@ jobs:
           git commit --signoff -m "Keptn Release $RELEASE_TAG"
           git push
 
-      - name: Attach docker image digests to release
+      - name: Attach container image digests to release
         working-directory: keptn
         env:
           GITHUB_TOKEN: ${{ secrets.KEPTN_BOT_TOKEN }}
@@ -315,7 +314,7 @@ jobs:
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.13.4
         with:
-          image: docker.keptn.sh/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
+          image: ghcr.keptn.sh/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
           artifact-name: sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}
           output-file: ./sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}.spdx.json
 
