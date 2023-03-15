@@ -40,7 +40,7 @@ keywords:
 
 dependencies:
   - name: mongodb
-    version: 13.6.3
+    version: 13.6.8
     repository: https://charts.bitnami.com/bitnami
     condition: mongo.enabled
     alias: mongo
