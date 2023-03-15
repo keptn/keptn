@@ -1,7 +1,7 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
 # https://hub.docker.com/_/golang
-FROM golang:1.19.5-alpine3.16 as builder
+FROM golang:1.19.7-alpine3.16 as builder
 
 # Copy local code to the container image.
 WORKDIR /go/src/github.com/keptn/keptn/lighthouse-service
