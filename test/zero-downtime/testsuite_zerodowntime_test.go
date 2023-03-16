@@ -181,7 +181,7 @@ func RollingUpgrade(t *testing.T, env *ZeroDowntimeEnv) {
 		t.Logf("Upgrading Keptn to %s", chartPath)
 		setRegistry := "global.keptn.registry=docker.io/keptn"
 		if strings.Contains(chartPath, "dev") {
-			setRegistry = "global.keptn.registry=docker.io/keptndev"
+			setRegistry = "global.keptn.registry=ghcr.io/keptn"
 		}
 		_, err = testutils.ExecuteCommand(
 			fmt.Sprintf(

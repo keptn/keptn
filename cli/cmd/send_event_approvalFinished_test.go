@@ -20,7 +20,7 @@ const approvalTriggeredMockResponse = `{
 			"deploymentURILocal": "http://carts.sockshop-dev",
 			"deploymentURIPublic": "http://carts.sockshop-dev",
 			"deploymentstrategy": "direct",
-			"image": "docker.io/keptnexamples/carts",
+			"image": "ghcr.io/keptnexamples/carts",
 			"labels": null,
 			"project": "sockshop",
 			"service": "carts",
