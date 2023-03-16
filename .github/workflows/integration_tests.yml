@@ -301,6 +301,7 @@ jobs:
           HELM_CHART_NAME: ${{ steps.extract_helm_chart_name.outputs.HELM_CHART_NAME }}
           RUN_AIRGAPPED_TEST: ${{ env.RUN_AIRGAPPED_TEST }}
           USE_RESOURCE_SERVICE_DIRECTORY: ${{ matrix.USE_RESOURCE_SERVICE_DIRECTORY }}
+          CONTAINER_ORG: ghcr.io/keptn
         run: |
           echo "Installing Keptn on cluster"
           if [[ $PLATFORM == "openshift" ]]; then
@@ -316,12 +317,6 @@ jobs:
           echo "::group::Keptn Installation Log"
           if [[ $RUN_AIRGAPPED_TEST == "true" ]]; then
             # Install Keptn via Helper Script
-            if [[ "$VERSION" == *"dev"* ]]; then
-              CONTAINER_ORG="keptndev"
-            else
-              CONTAINER_ORG="keptn"
-            fi
-          
             installer/airgapped/install_keptn.sh \
               "$AIRGAPPED_REGISTRY_URL/" \
               "$CONTAINER_ORG" \

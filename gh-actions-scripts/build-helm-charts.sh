@@ -54,7 +54,7 @@ find . -name Chart.yaml -exec sed -i -- "s/appVersion: latest/appVersion: ${IMAG
 find . -name Chart.yaml -exec sed -i -- "s/version: latest/version: ${VERSION}/g" {} \;
 # replace "keptnSpecVersion: latest" with "keptnSpecVersion: $KEPTN_SPEC_VERSION" in all values.yaml files
 find . -name values.yaml -exec sed -i -- "s/keptnSpecVersion: latest/keptnSpecVersion: ${KEPTN_SPEC_VERSION}/g" {} \;
-find . -name values.yaml -exec sed -i -- "s/docker.io\/keptn\//docker.io\/${CONTAINER_ORG}\//g" {} \;
+find . -name values.yaml -exec sed -i -- "s/ghcr.io\/keptn\//ghcr.io\/${CONTAINER_ORG}\//g" {} \;
 
 mkdir keptn-charts/
 

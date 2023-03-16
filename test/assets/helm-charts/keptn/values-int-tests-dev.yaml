@@ -1,6 +1,6 @@
 global:
   keptn:
-    registry: "docker.io/keptndev"
+    registry: "ghcr.io/keptn"
 
 shipyardController:
   gracePeriod: 10
