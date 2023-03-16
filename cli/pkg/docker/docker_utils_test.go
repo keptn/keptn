@@ -56,8 +56,8 @@ var imageAvailabilityTests = []struct {
 	tag   string
 	err   error
 }{
-	{"ghcr.io/keptn/installer", "0.6.1", nil},
-	{"ghcr.io/keptn/installer", "-1", errors.New("Provided image not found: Tag not found")},
+	{"docker.io/keptn/installer", "0.6.1", nil},
+	{"docker.io/keptn/installer", "-1", errors.New("Provided image not found: Tag not found")},
 	{"quay.io/keptn/installer", "1", errors.New("Provided image not found: 401 Unauthorized")},
 	{"keptn/installer", "0.6.1", nil},
 }
