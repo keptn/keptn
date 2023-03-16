@@ -170,6 +170,8 @@ spec:
           resources:
             {{- toYaml .Values.bridge.resources | nindent 12 }}
           volumeMounts:
+            - name: cache
+              mountPath: /tmp
             - name: assets
               mountPath: /usr/src/app/dist/assets/branding
             - name: bridge-oauth
@@ -196,8 +198,10 @@ spec:
           {{- end }}
       serviceAccountName: keptn-default
       volumes:
-        - emptyDir: {}
-          name: assets
+        - name: cache
+          emptyDir: {}
+        - name: assets
+          emptyDir: {}
         - name: bridge-oauth
           secret:
             secretName: bridge-oauth
