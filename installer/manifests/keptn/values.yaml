@@ -1,7 +1,7 @@
 ## @section Global values
 global:
   keptn:
-    ## @param global.keptn.registry Global Container image registry
+    ## @param global.keptn.registry Global container image registry
     registry: ghcr.keptn.sh/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
