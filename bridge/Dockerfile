@@ -55,5 +55,8 @@ USER myuser
 ARG version=develop
 LABEL org.opencontainers.image.version="${version}"
 
+# Fix NodeJS caching on root fs. See https://github.com/keptn/keptn/issues/9581
+ENV npm_config_cache /tmp/
+
 EXPOSE 3000
 CMD ["npm", "start", "--prefix", "./server"]
