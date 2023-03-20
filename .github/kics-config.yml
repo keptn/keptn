@@ -14,6 +14,8 @@ exclude-results:
   # Similarity IDs can be found in the JSON result file of kics
   - 0763dc523a2b9f584c3cfedadc59d2b1475fa48cb445232f83e9b2ae6ff741d8 #keptn-get-secrets Read Secrets Permissions
   - f340259cd9b88210d646799fee0df3ce1de656e716adfcbae2ddc1e442207436 #keptn-manage-secret Read Secrets Permissions
+  - 56b8b06d0dc3b7493f067ebfcb674b6433bb596fe156610b688a43f126b9bf95
+  - 7a17b69c7e931f4bb5896750e39e81e170a95ef248b643be7dbfdae63b130d46 #keptn-resource-service Read Secrets Permissions
   - 3035c0adc3554b403ebad6846a6a20f57e82356bea7491e85024e9e67c2a3f13
   - e0b27e0da659f8b4c8235fbd82ee3f332c30b5e533d15cfeea4f52dc36f921ca
   - d2c888850ed588b2a1acc38400317d44f2d37d33984e30a9dac25542ea8c231c
