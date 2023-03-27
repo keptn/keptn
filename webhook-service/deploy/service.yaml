@@ -29,7 +29,7 @@ spec:
       serviceAccountName: keptn-webhook-service
       containers:
         - name: webhook-service
-          image: 'docker.io/keptndev/webhook-service'
+          image: 'ghcr.io/keptn/webhook-service'
           ports:
             - containerPort: 8080
               protocol: TCP

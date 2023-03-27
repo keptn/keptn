@@ -27,7 +27,7 @@ spec:
       serviceAccountName: keptn-default
       containers:
       - name: approval-service
-        image: keptndev/approval-service:0.17.0
+        image: ghcr.io/keptn/approval-service:0.17.0
         livenessProbe:
           httpGet:
             path: /health

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: statistics-service
-          image: keptndev/statistics-service:latest
+          image: ghcr.io/keptn/statistics-service:latest
           ports:
             - containerPort: 8080
           resources:
@@ -46,7 +46,7 @@ spec:
             - name: MONGODB_DATABASE
               value: 'keptn'
         - name: distributor
-          image: docker.io/keptndev/distributor:0.15.1-dev
+          image: ghcr.io/keptn/distributor:0.15.1-dev
           ports:
             - containerPort: 8080
           livenessProbe:
