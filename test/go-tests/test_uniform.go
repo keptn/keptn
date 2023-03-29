@@ -499,8 +499,13 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	_, err = ApiPUTRequest(fmt.Sprintf("/controlPlane/v1/uniform/registration/%s/subscription/%s", fetchedEchoIntegration.ID, fetchedEchoIntegration.Subscriptions[0].ID), fetchedEchoIntegration.Subscriptions[0], 3)
 	require.Nil(t, err)
 
-	// wait some time to make sure the echo service has pulled the updated subscription
-	<-time.After(20 * time.Second) // sorry :(
+	// wait a little bit and restart the echo-service to make sure it has pulled the updated subscription
+	<-time.After(time.Duration(20 * int(time.Second))) // sorry :(
+	err = RestartPod(echoServiceName)
+	require.Nil(t, err)
+
+	err = waitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
+	require.Nil(t, err)
 
 	// now, trigger the sequence that matches the filter - now we should get a response from the echo service again
 	filteredStageName := "filtered-stage"
