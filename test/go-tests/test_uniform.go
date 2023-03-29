@@ -500,12 +500,13 @@ func testUniformIntegration(t *testing.T, configureIntegrationFunc func(), clean
 	require.Nil(t, err)
 
 	// wait a little bit and restart the echo-service to make sure it has pulled the updated subscription
-	<-time.After(time.Duration(20 * int(time.Second))) // sorry :(
 	err = RestartPod(echoServiceName)
 	require.Nil(t, err)
 
 	err = waitForDeploymentToBeRolledOut(false, echoServiceName, GetKeptnNameSpaceFromEnv())
 	require.Nil(t, err)
+
+	<-time.After(time.Duration(20 * int(time.Second))) // sorry :(
 
 	// now, trigger the sequence that matches the filter - now we should get a response from the echo service again
 	filteredStageName := "filtered-stage"
