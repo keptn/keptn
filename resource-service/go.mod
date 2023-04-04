@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/gin-gonic/gin v1.9.0
-	github.com/go-git/go-billy/v5 v5.4.0
+	github.com/go-git/go-billy/v5 v5.4.1
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.4.3-0.20220529141257-bc1f419cebcf // the latest release of this library (5.4.2) has been made over a year ago, but the project is still actively maintained. Using this specific version for now since this includes a fix for the "reference delta not found error" encountered with CodeCommit repos
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -12,13 +12,13 @@ require (
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.9.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.7.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.7
-	k8s.io/apimachinery v0.25.7
-	k8s.io/client-go v0.25.7
+	k8s.io/api v0.25.8
+	k8s.io/apimachinery v0.25.8
+	k8s.io/client-go v0.25.8
 )
 
 require github.com/libgit2/git2go/v34 v34.0.0
@@ -101,7 +101,7 @@ require (
 )
 
 replace (
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.2
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
