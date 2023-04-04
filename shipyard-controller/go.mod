@@ -16,7 +16,7 @@ require (
 	github.com/nats-io/nats.go v1.24.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
-	github.com/swaggo/swag v1.8.10
+	github.com/swaggo/swag v1.8.12
 	github.com/tryvium-travels/memongo v0.6.1
 	go.mongodb.org/mongo-driver v1.11.1
 	go.uber.org/zap v1.19.0 // indirect
@@ -97,7 +97,7 @@ require (
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
