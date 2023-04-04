@@ -9,9 +9,9 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.1
 	github.com/swaggo/swag v1.8.10
-	k8s.io/api v0.25.7
-	k8s.io/apimachinery v0.25.7
-	k8s.io/client-go v0.25.7
+	k8s.io/api v0.25.8
+	k8s.io/apimachinery v0.25.8
+	k8s.io/client-go v0.25.8
 )
 
 require (
