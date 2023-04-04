@@ -15,16 +15,16 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.15
 	github.com/nats-io/nats.go v1.24.0
 	github.com/sirupsen/logrus v1.9.0
-	github.com/stretchr/testify v1.8.1
-	github.com/swaggo/swag v1.8.10
-	github.com/tryvium-travels/memongo v0.6.1
-	go.mongodb.org/mongo-driver v1.11.1
+	github.com/stretchr/testify v1.8.2
+	github.com/swaggo/swag v1.8.12
+	github.com/tryvium-travels/memongo v0.9.0
+	go.mongodb.org/mongo-driver v1.11.3
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/net v0.8.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.7
-	k8s.io/apimachinery v0.25.7
-	k8s.io/client-go v0.25.7
+	k8s.io/api v0.25.8
+	k8s.io/apimachinery v0.25.8
+	k8s.io/client-go v0.25.8
 )
 
 require github.com/kelseyhightower/envconfig v1.4.0
@@ -97,7 +97,7 @@ require (
 	golang.org/x/term v0.6.0 // indirect
 	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
-	golang.org/x/tools v0.6.0 // indirect
+	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
@@ -111,7 +111,7 @@ require (
 )
 
 replace (
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.1
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.2
 	golang.org/x/crypto => golang.org/x/crypto v0.7.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
