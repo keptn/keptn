@@ -82,7 +82,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiGatewayNginx.podSecurityContext.defaultSeccompProfile` | Use the default seccomp profile for the API Gateway                                       | `true`               |
 | `apiGatewayNginx.podSecurityContext.fsGroup`               | Filesystem group to be used by the API Gateway                                            | `101`                |
 | `apiGatewayNginx.containerSecurityContext`                 | Define a container security context for the API Gateway                                   |                      |
-| `apiGatewayNginx.image.registry`                           | API Gateway image registry                                                                | `nginxinc`           |
+| `apiGatewayNginx.image.registry`                           | API Gateway image registry                                                                | `docker.io/nginxinc` |
 | `apiGatewayNginx.image.repository`                         | API Gateway image repository                                                              | `nginx-unprivileged` |
 | `apiGatewayNginx.image.tag`                                | API Gateway image tag                                                                     | `1.23.3-alpine`      |
 | `apiGatewayNginx.nodeSelector`                             | API Gateway node labels for pod assignment                                                | `{}`                 |
