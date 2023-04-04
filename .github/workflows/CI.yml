@@ -244,8 +244,8 @@ jobs:
     with:
       artifact: ${{ matrix.config.artifact }}
       tags: |
-        keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}
-        keptndev/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATETIME }}
+        ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}
+        ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.prepare_ci_run.outputs.VERSION }}.${{ needs.prepare_ci_run.outputs.DATETIME }}
       should-run: ${{ matrix.config.should-run }}
       should-push-image: ${{ matrix.config.should-push-image == 'true' && (( github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository ) || ( github.event_name == 'push' )) && github.actor != 'renovate[bot]' && github.actor != 'dependabot[bot]' }}
       docker-test-target: ${{ matrix.config.docker-test-target }}

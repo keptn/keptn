@@ -164,7 +164,7 @@ spec:
     spec:
       containers:
         - name: distributor
-          image: keptndev/distributor:latest
+          image: ghcr.io/keptn/distributor:latest
           ports:
             - containerPort: 8080
           resources:

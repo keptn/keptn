@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptndev/lighthouse-service
+    - image: ghcr.io/keptn/lighthouse-service
       docker:
         dockerfile: Dockerfile
         target: production

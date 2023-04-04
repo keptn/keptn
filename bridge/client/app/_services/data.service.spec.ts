@@ -48,7 +48,7 @@ describe('DataService', () => {
       service: 'helloservice',
       configurationChange: {
         values: {
-          image: 'docker.io/keptn:v0.1.2',
+          image: 'ghcr.io/keptn:v0.1.2',
         },
       },
     };

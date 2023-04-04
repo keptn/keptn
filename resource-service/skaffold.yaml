@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: docker.io/keptndev/resource-service
+    - image: ghcr.io/keptn/resource-service
       docker:
         dockerfile: Dockerfile
         target: production

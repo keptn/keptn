@@ -30,7 +30,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 	}{
 		{
 			name:       "pass-with-approval-strategy-auto-auto",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalAutomatic, keptnv2.ApprovalAutomatic),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'pass': automatic"),
@@ -41,7 +41,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "pass-with-approval-strategy-auto-manual",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'pass': automatic"),
@@ -52,7 +52,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "pass-with-approval-strategy-manual-auto",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'pass': manual"),
@@ -61,7 +61,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "pass-with-approval-strategy-manual-manual",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultPass, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'pass': manual"),
@@ -71,7 +71,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 
 		{
 			name:       "warning-with-approval-strategy-auto-auto",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalAutomatic, keptnv2.ApprovalAutomatic),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'warning': automatic"),
@@ -82,7 +82,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "warning-with-approval-strategy-auto-manual",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'warning': manual"),
@@ -91,7 +91,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "warning-with-approval-strategy-manual-auto",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'warning': automatic"),
@@ -102,7 +102,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "warning-with-approval-strategy-manual-manual",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultWarning, keptnv2.ApprovalManual, keptnv2.ApprovalManual),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'warning': manual"),
@@ -112,7 +112,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 
 		{
 			name:       "fail-with-approval-strategy-auto-auto",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalAutomatic, keptnv2.ApprovalAutomatic),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'fail': automatic"),
@@ -123,7 +123,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "fail-with-approval-strategy-auto-manual",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalAutomatic, keptnv2.ApprovalManual),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'fail': automatic"),
@@ -134,7 +134,7 @@ func TestHandleApprovalTriggeredEvent(t *testing.T) {
 		},
 		{
 			name:       "fail-with-approval-strategy-manual-auto",
-			image:      "docker.io/keptnexamples/carts:0.11.1",
+			image:      "ghcr.io/keptnexamples/carts:0.11.1",
 			inputEvent: getApprovalTriggeredTestData(keptnv2.ResultFailed, keptnv2.ApprovalManual, keptnv2.ApprovalAutomatic),
 			outputEvent: []cloudevents.Event{
 				*getCloudEvent(getApprovalStartedTestData("succeeded", "Approval strategy for result 'fail': automatic"),

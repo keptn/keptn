@@ -42,7 +42,7 @@ spec:
         #     port: 8080
         #   initialDelaySeconds: 10
         #   periodSeconds: 5
-          image: keptndev/resource-service:latest
+          image: ghcr.io/keptn/resource-service:latest
           env:
             - name: EVENTBROKER
               value: 'http://localhost:8081/event'

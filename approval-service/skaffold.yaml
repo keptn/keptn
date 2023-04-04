@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: keptndev/approval-service
+    - image: ghcr.io/keptn/approval-service
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         target: production

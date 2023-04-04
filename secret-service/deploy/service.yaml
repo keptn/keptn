@@ -43,7 +43,7 @@ spec:
                 port: 8080
               initialDelaySeconds: 10
               periodSeconds: 5
-          image: keptndev/secret-service:0.18.1-dev
+          image: ghcr.io/keptn/secret-service:0.18.1-dev
           ports:
             - containerPort: 8080
           resources:

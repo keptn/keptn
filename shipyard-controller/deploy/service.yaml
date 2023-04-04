@@ -31,7 +31,7 @@ spec:
       serviceAccountName: keptn-shipyard-controller
       containers:
       - name: shipyard-controller
-        image: docker.io/keptndev/shipyard-controller #changed from latest due to skaffold error "keptndev/shipyard-controller:latest can't be pulled"
+        image: ghcr.io/keptn/shipyard-controller #changed from latest due to skaffold error "ghcr.io/keptn/shipyard-controller:latest can't be pulled"
         env:
           - name: DEBUG_UI_ENABLED
             value: 'false'

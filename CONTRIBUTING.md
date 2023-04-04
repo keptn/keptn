@@ -147,13 +147,13 @@ If you are changing behaviour or a large part of the code, please verify Keptn s
 To deploy your local changes to an existing Kubernetes cluster with Keptn running on it, we recommend using [skaffold](https://skaffold.dev). We provide a `skaffold.yaml` file in every repository/directory, which you can be used to automatically deploy the service using:
 
 ```console
-skaffold run --tail --default-repo=your-docker-registry
+skaffold run --tail --default-repo=your-container-registry
 ```
 
-Please replace `your-docker-registry` with your DockerHub username and repository name.
+Please replace `your-container-registry` with your DockerHub username and repository name.
 Skaffold does then:
-* automatically build the docker image for the service,
-* push the docker image to the defined container registry/repository,
+* automatically build the container image for the service,
+* push the container image to the defined container registry/repository,
 * deploy the service to the Kubernetes cluster using the image that was just built, and
 * print log output to your terminal.
 

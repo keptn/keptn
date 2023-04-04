@@ -7,7 +7,7 @@ if [[ $# -ne 3 ]]; then
 fi
 
 TARGET_INTERNAL_DOCKER_REGISTRY=${1}
-DOCKER_ORG=${2}
+CONTAINER_ORG=${2}
 KEPTN_HELM_CHART=${3}
 
 KEPTN_NAMESPACE=${KEPTN_NAMESPACE:-"keptn"}
@@ -19,7 +19,7 @@ echo "-----------------------------------------------------------------------"
 
 helm template keptn "${KEPTN_HELM_CHART}" -n "${KEPTN_NAMESPACE}" \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
-global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
+global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${CONTAINER_ORG},\
 global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}curlimages/curl,\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nats,\
@@ -28,7 +28,7 @@ apiGatewayNginx.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nginxinc/ngin
 
 helm upgrade keptn "${KEPTN_HELM_CHART}" --install -n "${KEPTN_NAMESPACE}" --create-namespace --wait --timeout 12m \
 --set="apiGatewayNginx.type=${KEPTN_SERVICE_TYPE},\
-global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${DOCKER_ORG},\
+global.keptn.registry=${TARGET_INTERNAL_DOCKER_REGISTRY}${CONTAINER_ORG},\
 global.initContainers.image=${TARGET_INTERNAL_DOCKER_REGISTRY}curlimages/curl,\
 mongo.image.registry=${TARGET_INTERNAL_DOCKER_REGISTRY%/},\
 nats.nats.image.repository=${TARGET_INTERNAL_DOCKER_REGISTRY}nats,\

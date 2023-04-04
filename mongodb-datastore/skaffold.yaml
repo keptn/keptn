@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: docker.io/keptndev/mongodb-datastore
+    - image: ghcr.io/keptn/mongodb-datastore
       docker:    # 	beta describes an artifact built from a Dockerfile.
         dockerfile: Dockerfile
         target: production

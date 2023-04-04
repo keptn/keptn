@@ -19,7 +19,7 @@ You can execute unit tests using
 go test ./...
 ```
 
-If you want to make sure tests don't influence your local environment (or vice versa), you can run them in a Docker container:
+If you want to make sure tests don't influence your local environment (or vice versa), you can run them in a container:
 ```console
 docker run --rm -it -v "$PWD":/usr/src/myapp -w /usr/src/myapp golang:1.13 go test -race -v ./...
 ```
@@ -106,5 +106,5 @@ Use the following set of examples to familiarize yourself with running the commo
 
 - Trigger the delivery of a new artifact for the project's new service
   ```console
-  keptn trigger delivery --project=my-first-project --service=my-first-service --image=docker.io/keptnexamples/my-service:0.1.0
+  keptn trigger delivery --project=my-first-project --service=my-first-service --image=ghcr.io/keptnexamples/my-service:0.1.0
   ```

@@ -1,4 +1,4 @@
-name: Build Docker Images
+name: Build Container Images
 on:
   workflow_call:
     inputs:
@@ -179,7 +179,10 @@ jobs:
 
     - name: Login to GitHub Container Registry
       uses: docker/login-action@v2
-      if: inputs.release-build == 'true'
+      # only run docker login on pushes; also for PRs, but only if this is not a fork
+      if: inputs.should-push-image == 'true' || inputs.release-build == 'true'
+      # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
+      # that's fine, but it means we can't push images to ghcr
       with:
         registry: "ghcr.io"
         username: "keptn-bot"
@@ -193,18 +196,8 @@ jobs:
         username: ${{ secrets.QUAY_USER }}
         password: ${{ secrets.QUAY_TOKEN }}
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      # only run docker login on pushes; also for PRs, but only if this is not a fork
-      if: inputs.should-push-image == 'true' || inputs.release-build == 'true'
-      # note: GH does not allow to access secrets for PRs from a forked repositories due to security reasons
-      # that's fine, but it means we can't push images to dockerhub
-      with:
-        username: ${{ secrets.REGISTRY_USER }}
-        password: ${{ secrets.REGISTRY_PASSWORD }}
-
-    - name: "Docker Build keptn/${{ inputs.artifact }}"
-      id: docker_build_image
+    - name: "Build keptn/${{ inputs.artifact }} container image"
+      id: build_container_image
       if: inputs.should-push-image == 'true'
       uses: docker/build-push-action@v4
       with:
@@ -220,10 +213,10 @@ jobs:
         cache-from: type=gha,scope=${{ github.ref_name }}-${{ inputs.artifact }}
         cache-to: type=gha,scope=${{ github.ref_name }}-${{ inputs.artifact }}
 
-    - name: Write docker image digest to file
+    - name: Write container image digest to file
       if: inputs.should-push-image == 'true'
       env:
-        IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
+        IMAGE_DIGEST: ${{ steps.build_container_image.outputs.digest }}
         IMAGE_DIGEST_FILENAME: "./digest-${{ inputs.artifact }}.txt"
       run: |
         echo "${{ inputs.artifact }},$IMAGE_DIGEST" > "$IMAGE_DIGEST_FILENAME"
@@ -242,7 +235,7 @@ jobs:
       env:
         TAGS: ${{ inputs.tags }}
         IMAGE_NAME: ${{ inputs.artifact }}
-        IMAGE_DIGEST: ${{ steps.docker_build_image.outputs.digest }}
+        IMAGE_DIGEST: ${{ steps.build_container_image.outputs.digest }}
       run: |
         # cosign sign $IMAGE_NAME:$IMAGE_DIGEST
         echo $TAGS

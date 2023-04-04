@@ -48,7 +48,7 @@ jobs:
         run: |
           if [[ "$RELEASE_BUILD" == "false" ]] && [[ $DATETIME != "" ]]; then
             # use VERSION.DATETIME for the image tag (e.g., nightly build)
-            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}" "keptndev" "false"
+            ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}.${DATETIME}" "${KEPTN_SPEC_VERSION}" "ghcr.io/keptn" "false"
           else
             # just use VERSION for the image tag
             ./gh-actions-scripts/build-helm-charts.sh "${VERSION}" "${VERSION}" "${KEPTN_SPEC_VERSION}" "keptn" "true"

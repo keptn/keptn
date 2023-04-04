@@ -1,6 +1,5 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-# https://hub.docker.com/_/golang
 FROM golang:1.19.7-alpine3.16 as builder
 
 WORKDIR /go/src/github.com/keptn/keptn/remediation-service
@@ -28,7 +27,7 @@ ARG SKAFFOLD_GO_GCFLAGS
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN GOOS=linux go build -ldflags '-linkmode=external' -gcflags="${SKAFFOLD_GO_GCFLAGS}" -v -o remediation-service
 
-# Use a Docker multi-stage build to create a lean production image.
+# Use a multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM alpine:3.17 as production
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \

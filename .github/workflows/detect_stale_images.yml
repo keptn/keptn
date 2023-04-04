@@ -14,5 +14,5 @@ jobs:
         env:
           REGISTRY_USER: ${{ secrets.REGISTRY_USER }}
           REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
-          DOCKER_ORG: keptn
+          CONTAINER_ORG: keptn
         run: ./gh-actions-scripts/detect_stale_images.sh

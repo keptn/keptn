@@ -14,8 +14,8 @@ var imageSplitTests = []struct {
 	outImage string
 	outTag   string
 }{
-	{"docker.io/keptn/installer:0.6.0.beta", "docker.io/keptn/installer", "0.6.0.beta"},
-	{"docker.io/keptn/installer", "docker.io/keptn/installer", "latest"},
+	{"ghcr.io/keptn/installer:0.6.0.beta", "ghcr.io/keptn/installer", "0.6.0.beta"},
+	{"ghcr.io/keptn/installer", "ghcr.io/keptn/installer", "latest"},
 	{"keptn/installer:0.6.0.beta", "keptn/installer", "0.6.0.beta"},
 	{"keptn/installer", "keptn/installer", "latest"},
 	{"installer:0.6.0.beta", "installer", "0.6.0.beta"},

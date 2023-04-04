@@ -4,7 +4,7 @@ build:
   local:
     useBuildkit: true
   artifacts:
-    - image: docker.io/keptndev/statistics-service
+    - image: ghcr.io/keptn/statistics-service
       docker:
         dockerfile: Dockerfile
         target: production

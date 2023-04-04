@@ -28,7 +28,7 @@ func SplitImageName(imageWithTag string) (string, string) {
 	return imageWithTag, "latest"
 }
 
-// CheckImageAvailability checks the availability of a image which is hosted on Docker or on Quay
+// CheckImageAvailability checks the availability of an image which is hosted on Docker or on Quay
 func CheckImageAvailability(image, tag string, client *http.Client) error {
 
 	if client == nil {

@@ -24,7 +24,7 @@ COPY ./shared /usr/src/app/shared
 RUN yarn build && \
   yarn install --frozen-lockfile --production
 
-# Use a Docker multi-stage build to create a lean production image.
+# Use a multi-stage build to create a lean production image.
 # https://docs.docker.com/develop/develop-images/multistage-build/#use-multi-stage-builds
 FROM node:18-alpine3.17 as production
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \

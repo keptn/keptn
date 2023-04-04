@@ -6,9 +6,9 @@ readarray -t tags <<< "$(gh release list --limit 1000 | awk '{print $1}')"
 for tag in "${tags[@]}"; do
   readarray -t release_assets <<< "$(gh release view "$tag" --json assets --jq ".assets[].name")"
 
-  echo "Checking if release $tag has docker image digests attached..."
+  echo "Checking if release $tag has container image digests attached..."
   if [[ "${release_assets[*]}" =~ $DIGEST_FILE ]]; then
-    echo "Release $tag has docker image digests attached. Downloading digests file..."
+    echo "Release $tag has container image digests attached. Downloading digests file..."
     gh release download "$tag" --pattern="$DIGEST_FILE"
     echo "Digests from release:"
     cat "$DIGEST_FILE"

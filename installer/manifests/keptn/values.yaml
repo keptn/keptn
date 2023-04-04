@@ -1,11 +1,11 @@
 ## @section Global values
 global:
   keptn:
-    ## @param global.keptn.registry Global Docker image registry
-    registry: docker.keptn.sh/keptn
+    ## @param global.keptn.registry Global container image registry
+    registry: ghcr.keptn.sh/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
-  ## @param global.imagePullSecrets Global Docker registry secret names as an array
+  ## @param global.imagePullSecrets Global container registry secret names as an array
   imagePullSecrets: []
   initContainers:
     ## @param global.initContainers.image Init container image to enable staggered rollout of Keptn
@@ -220,7 +220,7 @@ apiGatewayNginx:
         - ALL
   image:
     ## @param apiGatewayNginx.image.registry API Gateway image registry
-    registry: "docker.io/nginxinc"
+    registry: "ghcr.io/nginxinc"
     ## @param apiGatewayNginx.image.repository API Gateway image repository
     repository: "nginx-unprivileged"
     ## @param apiGatewayNginx.image.tag API Gateway image tag

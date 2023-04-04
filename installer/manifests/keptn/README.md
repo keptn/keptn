@@ -5,13 +5,13 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 
 ### Global values
 
-| Name                          | Description                                                   | Value                   |
-| ----------------------------- | ------------------------------------------------------------- | ----------------------- |
-| `global.keptn.registry`       | Global Docker image registry                                  | `docker.keptn.sh/keptn` |
-| `global.keptn.tag`            | The tag of Keptn that should be used for all images           | `""`                    |
-| `global.imagePullSecrets`     | Global Docker registry secret names as an array               | `[]`                    |
-| `global.initContainers.image` | Init container image to enable staggered rollout of Keptn     | `curlimages/curl`       |
-| `global.initContainers.tag`   | Init container image tag to enable staggered rollout of Keptn | `7.85.0`                |
+| Name                          | Description                                                   | Value                 |
+| ----------------------------- | ------------------------------------------------------------- | --------------------- |
+| `global.keptn.registry`       | Global container image registry                               | `ghcr.keptn.sh/keptn` |
+| `global.keptn.tag`            | The tag of Keptn that should be used for all images           | `""`                  |
+| `global.imagePullSecrets`     | Global container registry secret names as an array            | `[]`                  |
+| `global.initContainers.image` | Init container image to enable staggered rollout of Keptn     | `curlimages/curl`     |
+| `global.initContainers.tag`   | Init container image tag to enable staggered rollout of Keptn | `7.85.0`              |
 
 ### MongoDB
 
@@ -82,7 +82,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 | `apiGatewayNginx.podSecurityContext.defaultSeccompProfile` | Use the default seccomp profile for the API Gateway                                       | `true`               |
 | `apiGatewayNginx.podSecurityContext.fsGroup`               | Filesystem group to be used by the API Gateway                                            | `101`                |
 | `apiGatewayNginx.containerSecurityContext`                 | Define a container security context for the API Gateway                                   |                      |
-| `apiGatewayNginx.image.registry`                           | API Gateway image registry                                                                | `docker.io/nginxinc` |
+| `apiGatewayNginx.image.registry`                           | API Gateway image registry                                                                | `ghcr.io/nginxinc`   |
 | `apiGatewayNginx.image.repository`                         | API Gateway image repository                                                              | `nginx-unprivileged` |
 | `apiGatewayNginx.image.tag`                                | API Gateway image tag                                                                     | `1.23.3-alpine`      |
 | `apiGatewayNginx.nodeSelector`                             | API Gateway node labels for pod assignment                                                | `{}`                 |
