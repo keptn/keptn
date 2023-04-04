@@ -112,8 +112,8 @@ github.com/karrick/godirwalk v1.8.0/go.mod h1:H5KPZjojv4lE+QYImBI8xVtrBRgYrIVsaR
 github.com/karrick/godirwalk v1.10.3/go.mod h1:RoGL9dQei4vP9ilrpETWE8CLOZ1kiN0LhBygSwrAsHA=
 github.com/kelseyhightower/envconfig v1.4.0 h1:Im6hONhd3pLkfDFsbRgu68RDNkGF1r3dvMUtDTo2cv8=
 github.com/kelseyhightower/envconfig v1.4.0/go.mod h1:cccZRl6mQpaq41TPp5QxidR+Sa3axMbJDNb//FQX6Gg=
-github.com/keptn/go-utils v0.20.1-0.20230313094600-b61f24991023 h1:WNxFIaFZwsUO2GHQExhoJLXyFUqyfbvJ68maih8ks8A=
-github.com/keptn/go-utils v0.20.1-0.20230313094600-b61f24991023/go.mod h1:uqxYCRk2oMJer8wRjWWtHJIouY9LwJwCnsYwgoqkcuQ=
+github.com/keptn/go-utils v0.20.1 h1:4ZHJ+hAwRLaIf4kA5UKqJ3uPOI41L9QVZX+oVN9jZEw=
+github.com/keptn/go-utils v0.20.1/go.mod h1:uqxYCRk2oMJer8wRjWWtHJIouY9LwJwCnsYwgoqkcuQ=
 github.com/klauspost/compress v1.13.6/go.mod h1:/3/Vjq9QcHkK5uEr5lBEmyoZ1iFhe47etQ6QUkpK6sk=
 github.com/klauspost/compress v1.16.0 h1:iULayQNOReoYUe+1qtKOqw9CwJv3aNQu8ivo7lw1HU4=
 github.com/klauspost/compress v1.16.0/go.mod h1:ntbaceVETuRiXiv4DpjP66DpAtAGkEQskQzEyD//IeE=
