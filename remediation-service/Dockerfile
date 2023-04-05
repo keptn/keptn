@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.19.7-alpine3.16 as builder
+FROM golang:1.19.8-alpine3.16 as builder
 
 WORKDIR /go/src/github.com/keptn/keptn/remediation-service
 
