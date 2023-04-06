@@ -6,7 +6,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 ### Global values
 
 | Name                          | Description                                                   | Value             |
-| ----------------------------- | ------------------------------------------------------------- |-------------------|
+| ----------------------------- | ------------------------------------------------------------- | ----------------- |
 | `global.keptn.registry`       | Global container image registry                               | `ghcr.io/keptn`   |
 | `global.keptn.tag`            | The tag of Keptn that should be used for all images           | `""`              |
 | `global.imagePullSecrets`     | Global container registry secret names as an array            | `[]`              |
