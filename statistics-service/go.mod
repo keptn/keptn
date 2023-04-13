@@ -13,7 +13,7 @@ require (
 	github.com/stretchr/testify v1.8.2
 	github.com/swaggo/swag v1.8.12
 	github.com/tryvium-travels/memongo v0.6.1
-	go.mongodb.org/mongo-driver v1.11.3
+	go.mongodb.org/mongo-driver v1.11.4
 )
 
 require (
@@ -68,10 +68,10 @@ require (
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/arch v0.0.0-20210923205945-b76863e36670 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/net v0.9.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
-	golang.org/x/text v0.8.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
+	golang.org/x/text v0.9.0 // indirect
 	golang.org/x/tools v0.7.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
@@ -79,7 +79,7 @@ require (
 )
 
 replace (
-	golang.org/x/crypto => golang.org/x/crypto v0.7.0
+	golang.org/x/crypto => golang.org/x/crypto v0.8.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
