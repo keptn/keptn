@@ -24,7 +24,7 @@ defaults:
   run:
     shell: bash
 env:
-  GO_VERSION: "~1.19"
+  GO_VERSION: "~1.20"
 jobs:
   helm_charts_build:
     name: Build Helm Charts
