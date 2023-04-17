@@ -1,6 +1,6 @@
 module keptn/approval-service
 
-go 1.19
+go 1.20
 
 require (
 	github.com/cloudevents/sdk-go/v2 v2.13.0
@@ -35,12 +35,12 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.6.0 // indirect
-	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/sys v0.7.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace (
-	golang.org/x/crypto => golang.org/x/crypto v0.7.0
+	golang.org/x/crypto => golang.org/x/crypto v0.8.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )

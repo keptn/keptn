@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.19.8 as builder
+FROM golang:1.20.3-alpine3.16 as builder
 
 WORKDIR /go/src/github.com/keptn/keptn/mongodb-datastore
 
@@ -9,7 +9,7 @@ ENV GO111MODULE=on
 ENV BUILDFLAGS=""
 ENV GOPROXY=https://proxy.golang.org
 
-RUN apt-get install -y gcc libc-dev git
+RUN apk add --no-cache gcc libc-dev git
 
 # Copy `go.mod` for definitions and `go.sum` to invalidate the next layer
 # in case of a change in the dependencies

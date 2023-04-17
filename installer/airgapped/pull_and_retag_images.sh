@@ -11,7 +11,7 @@ TARGET_INTERNAL_DOCKER_REGISTRY=${1}
 CONTAINER_ORG="ghcr.io/keptn"
 
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
-  "bitnami/mongodb:6.0.3-debian-11-r20"
+  "bitnami/mongodb:6.0.5-debian-11-r4"
   "nats:2.9.11-alpine"
   "nginxinc/nginx-unprivileged:1.23.3-alpine"
   "curlimages/curl:7.85.0"
