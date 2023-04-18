@@ -8,9 +8,9 @@ require (
 	github.com/imroc/req v0.3.2
 	github.com/keptn/go-utils v0.20.1
 	github.com/stretchr/testify v1.8.2
-	k8s.io/api v0.25.8
-	k8s.io/apimachinery v0.25.8
-	k8s.io/client-go v0.25.8
+	k8s.io/api v0.25.9
+	k8s.io/apimachinery v0.25.9
+	k8s.io/client-go v0.25.9
 	k8s.io/utils v0.0.0-20220922133306-665eaaec4324
 )
 
