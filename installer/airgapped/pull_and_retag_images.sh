@@ -12,7 +12,7 @@ CONTAINER_ORG="ghcr.io/keptn"
 
 IMAGES_CONTROL_PLANE_THIRD_PARTY=(
   "bitnami/mongodb:6.0.5-debian-11-r4"
-  "nats:2.9.11-alpine"
+  "nats:2.9.15-alpine"
   "nginxinc/nginx-unprivileged:1.23.3-alpine"
   "curlimages/curl:7.85.0"
 )
