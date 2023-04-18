@@ -3,7 +3,7 @@ module github.com/keptn/keptn/shipyard-controller
 go 1.20
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.0
+	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/benbjohnson/clock v1.3.0
 	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/gin-gonic/gin v1.9.0
@@ -20,9 +20,9 @@ require (
 	github.com/tryvium-travels/memongo v0.6.1
 	go.mongodb.org/mongo-driver v1.11.4
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.8
-	k8s.io/apimachinery v0.25.8
-	k8s.io/client-go v0.25.8
+	k8s.io/api v0.25.9
+	k8s.io/apimachinery v0.25.9
+	k8s.io/client-go v0.25.9
 )
 
 require github.com/kelseyhightower/envconfig v1.4.0
