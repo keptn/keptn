@@ -224,7 +224,7 @@ apiGatewayNginx:
     ## @param apiGatewayNginx.image.repository API Gateway image repository
     repository: "nginx-unprivileged"
     ## @param apiGatewayNginx.image.tag API Gateway image tag
-    tag: "1.23.3-alpine"
+    tag: "1.24.0-alpine"
   ## @param apiGatewayNginx.nodeSelector API Gateway node labels for pod assignment
   nodeSelector: {}
   podAffinity:
