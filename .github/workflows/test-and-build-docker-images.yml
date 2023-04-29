@@ -174,7 +174,7 @@ jobs:
           install: true
 
     - name: Set up Cosign
-      uses: sigstore/cosign-installer@v3.0.2
+      uses: sigstore/cosign-installer@v3.0.3
       if: inputs.should-push-image == 'true'
 
     - name: Login to GitHub Container Registry
