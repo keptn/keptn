@@ -15,7 +15,7 @@ Keptn is an event-based control plane for continuous delivery and automated oper
 Please find the documentation on our [website](https://keptn.sh/), and read the motivation about Keptn on our 
 [Why Keptn?](https://keptn.sh/why-keptn/) page.
 
-In addition, you can find the roadmap of the Keptn project [here](https://github.com/orgs/keptn/projects/1). It provides 
+In addition, you can find the roadmap of the Keptn project [here](https://github.com/orgs/keptn/projects/10). It provides 
 an overview of user stories that are currently in the focus of development for the next release.
 
 ## Keptn Today! Keptn Lifecycle Toolkit Tomorrow!
