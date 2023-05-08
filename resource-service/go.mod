@@ -10,7 +10,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/keptn/go-utils v0.20.1
 	github.com/mholt/archiver/v3 v3.5.1
-	github.com/otiai10/copy v1.10.0
+	github.com/otiai10/copy v1.11.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/crypto v0.8.0
