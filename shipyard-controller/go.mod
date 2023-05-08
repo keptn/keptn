@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/benbjohnson/clock v1.3.0
+	github.com/benbjohnson/clock v1.3.3
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/gin-gonic/gin v1.9.0
 	github.com/go-test/deep v1.1.0
