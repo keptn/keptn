@@ -29,7 +29,7 @@ ARG gitSha=unknown
 # (You may fetch or manage dependencies here, either manually or with a tool like "godep".)
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-linkmode=external -X main.gitCommit=$gitSha -X main.buildTime=$buildTime" $BUILDFLAGS -v -o distributor ./cmd/
 
-FROM alpine:3.17 as production
+FROM alpine:3.18 as production
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn Distributor" \

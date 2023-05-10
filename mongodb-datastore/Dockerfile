@@ -32,7 +32,7 @@ RUN cd cmd/mongodb-datastore-server && GOOS=linux go build -ldflags '-linkmode=e
 ARG version=develop
 RUN sed -i "s/version: develop/version: ${version}/g" /go/src/github.com/keptn/keptn/mongodb-datastore/swagger.yaml
 
-FROM alpine:3.17 as production
+FROM alpine:3.18 as production
 LABEL org.opencontainers.image.source="https://github.com/keptn/keptn" \
     org.opencontainers.image.url="https://keptn.sh" \
     org.opencontainers.image.title="Keptn MongoDB Datastore" \
