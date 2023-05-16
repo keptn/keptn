@@ -2,7 +2,7 @@
 global:
   keptn:
     ## @param global.keptn.registry Global container image registry
-    registry: ghcr.keptn.sh/keptn
+    registry: ghcr.io/keptn
     ## @param global.keptn.tag The tag of Keptn that should be used for all images
     tag: ""
   ## @param global.imagePullSecrets Global container registry secret names as an array
