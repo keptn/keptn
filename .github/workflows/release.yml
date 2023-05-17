@@ -314,7 +314,7 @@ jobs:
       - name: Generate SBOM
         uses: anchore/sbom-action@v0.14.2
         with:
-          image: ghcr.keptn.sh/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
+          image: ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
           artifact-name: sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}
           output-file: ./sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}.spdx.json
 
