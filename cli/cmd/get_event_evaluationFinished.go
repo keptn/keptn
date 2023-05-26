@@ -43,10 +43,6 @@ var getEvaluationFinishedCmd = &cobra.Command{
 	Example:      `keptn get event evaluation.finished --keptn-context=1234-5678-90ab-cdef`,
 	SilenceUsage: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		fmt.Println(`NOTE: The "keptn get event evaluation.finished" command is DEPRECATED and will be removed in a future release`)
-		fmt.Println(`Use "keptn get event evaluation.finished" instead`)
-		fmt.Println()
-
 		endPoint, apiToken, err := credentialmanager.NewCredentialManager(assumeYes).GetCreds(namespace)
 		if err != nil {
 			return errors.New(authErrorMsg)
