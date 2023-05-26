@@ -8,9 +8,9 @@ require (
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.9
-	k8s.io/apimachinery v0.25.9
-	k8s.io/client-go v0.25.9
+	k8s.io/api v0.25.10
+	k8s.io/apimachinery v0.25.10
+	k8s.io/client-go v0.25.10
 )
 
 require (
