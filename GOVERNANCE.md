@@ -32,7 +32,7 @@ If all you want to propose is a simple addition to a Keptn-service or the CLI, o
 
 ## Membership
 
-The Keptn community membership is defined in the [Keptn Community Membership document](https://github.com/keptn/community/blob/master/COMMUNITY_MEMBERSHIP.md). 
+The Keptn community membership is defined in the [Keptn Community Membership document](https://github.com/keptn/community/blob/master/community-membership.md). 
 
 The Keptn project maintains three levels of membership with increasing responsibilities. The three levels as well as the requirements are described in more detail in the linked document.
 
