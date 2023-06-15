@@ -11,7 +11,7 @@ require (
 	github.com/keptn/go-utils v0.20.1
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.11.0
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.9.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
