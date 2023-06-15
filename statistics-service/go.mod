@@ -10,7 +10,7 @@ require (
 	github.com/keptn/go-utils v0.20.1
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/sirupsen/logrus v1.9.2
-	github.com/stretchr/testify v1.8.3
+	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.1
 	github.com/tryvium-travels/memongo v0.6.1
 	go.mongodb.org/mongo-driver v1.11.6
