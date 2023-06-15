@@ -7,7 +7,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
 	github.com/keptn/go-utils v0.20.1
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 	k8s.io/api v0.25.10
 	k8s.io/apimachinery v0.25.10
 	k8s.io/client-go v0.25.10

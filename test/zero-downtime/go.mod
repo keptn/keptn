@@ -9,7 +9,7 @@ require (
 	github.com/keptn/keptn/test/go-tests v0.0.0-20220624124934-adc989bafa78
 	github.com/steinfletcher/apitest v1.5.11
 	github.com/steinfletcher/apitest-jsonpath v1.7.1
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.4
 )
 
 require (
