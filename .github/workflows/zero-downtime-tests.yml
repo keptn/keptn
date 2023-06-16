@@ -268,7 +268,7 @@ jobs:
           echo "KEPTN_ENDPOINT=$(echo ${KEPTN_ENDPOINT})" >> $GITHUB_OUTPUT
 
       - name: Set up gotestfmt
-        uses: GoTestTools/gotestfmt@v2.4.1
+        uses: GoTestTools/gotestfmt@v2.5.0
         with:
           # Passing GITHUB_TOKEN to avoid rate limiting.
           token: ${{ secrets.GITHUB_TOKEN }}
