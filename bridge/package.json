@@ -69,7 +69,7 @@
     "ngx-moment": "6.0.2",
     "normalize.css": "8.0.1",
     "rxjs": "7.6.0",
-    "semver": "7.3.8",
+    "semver": "7.5.2",
     "uuid": "9.0.0",
     "yaml": "2.2.2",
     "zone.js": "0.12.0"
