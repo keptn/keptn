@@ -138,7 +138,7 @@ Keptn is an Open Source Project. Please see [LICENSE](LICENSE) for more informat
 
 ## Adopters
 
-For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
+For a list of users, please refer to [ADOPTERS.md](https://github.com/keptn/community/blob/main/ADOPTERS).
 
 ## Further information
 
