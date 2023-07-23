@@ -13,7 +13,7 @@ require (
 	github.com/keptn/go-utils v0.20.1
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/nats-io/nats-server/v2 v2.9.17
-	github.com/nats-io/nats.go v1.25.0
+	github.com/nats-io/nats.go v1.28.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/swaggo/swag v1.16.1
