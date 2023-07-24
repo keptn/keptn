@@ -15,12 +15,12 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.20.1
+	github.com/keptn/go-utils v0.20.2-0.20230724101131-4085f3329695
 	github.com/nats-io/nats-server/v2 v2.9.17
 	github.com/nats-io/nats.go v1.25.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.41.1
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 	golang.org/x/net v0.10.0
 	golang.org/x/time v0.3.0
@@ -46,7 +46,7 @@ require (
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
 	github.com/go-openapi/jsonreference v0.20.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/gnostic v0.5.7-v3refs // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
@@ -65,19 +65,19 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.11.3 // indirect
-	go.opentelemetry.io/otel v1.15.1 // indirect
-	go.opentelemetry.io/otel/metric v0.38.1 // indirect
-	go.opentelemetry.io/otel/trace v1.15.1 // indirect
+	go.opentelemetry.io/otel v1.16.0 // indirect
+	go.opentelemetry.io/otel/metric v1.16.0 // indirect
+	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/crypto v0.8.0 // indirect
-	golang.org/x/oauth2 v0.4.0 // indirect
+	golang.org/x/oauth2 v0.6.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/term v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect

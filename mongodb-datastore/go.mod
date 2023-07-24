@@ -13,7 +13,7 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.20.1
+	github.com/keptn/go-utils v0.20.2-0.20230724101131-4085f3329695
 	github.com/nats-io/nats-server/v2 v2.9.17
 	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
@@ -32,7 +32,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/felixge/httpsnoop v1.0.3 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
+	github.com/go-logr/logr v1.2.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/analysis v0.21.4 // indirect
 	github.com/go-openapi/jsonpointer v0.19.5 // indirect
@@ -60,10 +60,10 @@ require (
 	github.com/xdg-go/scram v1.1.1 // indirect
 	github.com/xdg-go/stringprep v1.0.3 // indirect
 	github.com/youmark/pkcs8 v0.0.0-20181117223130-1be2e3e5546d // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.36.4 // indirect
-	go.opentelemetry.io/otel v1.14.0 // indirect
-	go.opentelemetry.io/otel/metric v0.33.0 // indirect
-	go.opentelemetry.io/otel/trace v1.14.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0 // indirect
+	go.opentelemetry.io/otel v1.16.0 // indirect
+	go.opentelemetry.io/otel/metric v1.16.0 // indirect
+	go.opentelemetry.io/otel/trace v1.16.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.19.0 // indirect
