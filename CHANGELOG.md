@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1](https://github.com/keptn/keptn/compare/1.4.0...1.4.1) (2023-08-01)
+
+
+### Other
+
+* delete duplicated security policy file ([#9712](https://github.com/keptn/keptn/issues/9712)) ([0e8043f](https://github.com/keptn/keptn/commit/0e8043fc63ade69bfc0fb59c1d0fed931ab31aa7))
+* delete governance file ([#9711](https://github.com/keptn/keptn/issues/9711)) ([8e954e2](https://github.com/keptn/keptn/commit/8e954e2bd2c8fad5fc178d86eaaa7d71a83d09e5))
+
+
+### Docs
+
+* fix community membership 404 ([#9685](https://github.com/keptn/keptn/issues/9685)) ([1ea77d9](https://github.com/keptn/keptn/commit/1ea77d960479dda0b24d789da68b9e7ae899262d))
+* update `ADOPTERS` in README.md ([#9718](https://github.com/keptn/keptn/issues/9718)) ([5683547](https://github.com/keptn/keptn/commit/56835477bbd7bc23b20612c3182cd301d718ee05))
+
+
+### Build
+
+* **deps:** Auto-update go-utils to latest version ([#9720](https://github.com/keptn/keptn/issues/9720)) ([0abd757](https://github.com/keptn/keptn/commit/0abd757ff39e7eca0ad5805746f273f4a3c1350b))
+* **deps:** bump semver from 7.3.8 to 7.5.2 in /bridge ([#9709](https://github.com/keptn/keptn/issues/9709)) ([5e120f7](https://github.com/keptn/keptn/commit/5e120f73909dbeb9b523172b091da08dec9a5c21))
+* **deps:** bump semver from 7.3.8 to 7.5.2 in /bridge/server ([#9708](https://github.com/keptn/keptn/issues/9708)) ([222e02b](https://github.com/keptn/keptn/commit/222e02bb4fac13a2e860f6de2269bbe8d9a1acd5))
+* **deps:** bump yaml from 2.1.3 to 2.2.2 in /bridge/server ([#9648](https://github.com/keptn/keptn/issues/9648)) ([54b193b](https://github.com/keptn/keptn/commit/54b193bd23f97aa71cde1dd76a96adce43d7f62d))
+* **deps:** update amannn/action-semantic-pull-request digest to 3bb5af3 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update checkmarx/kics-github-action action to v1.7.0 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update go-openapi packages (patch) ([f359305](https://github.com/keptn/keptn/commit/f3593052b0e7218f2b29a50d076cfd144c66013b))
+* **deps:** update golang docker tag to v1.20.5 ([#9695](https://github.com/keptn/keptn/issues/9695)) ([ddc1ab9](https://github.com/keptn/keptn/commit/ddc1ab9e7804e96023a734db14da6b1fd33bc180))
+* **deps:** update golang.org/x/exp digest to 2e198f4 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update kubernetes packages to v0.25.10 (patch) ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update module github.com/benbjohnson/clock to v1.3.5 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update module github.com/gin-gonic/gin to v1.9.1 [security] ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update module github.com/nats-io/nats-server/v2 to v2.9.17 ([f359305](https://github.com/keptn/keptn/commit/f3593052b0e7218f2b29a50d076cfd144c66013b))
+* **deps:** update module github.com/sirupsen/logrus to v1.9.2 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update module github.com/sirupsen/logrus to v1.9.3 ([f359305](https://github.com/keptn/keptn/commit/f3593052b0e7218f2b29a50d076cfd144c66013b))
+* **deps:** update module github.com/stretchr/testify to v1.8.4 ([f359305](https://github.com/keptn/keptn/commit/f3593052b0e7218f2b29a50d076cfd144c66013b))
+* **deps:** update module golang.org/x/crypto to v0.9.0 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update module golang.org/x/net to v0.10.0 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update module golang.org/x/oauth2 to v0.8.0 ([6b8fb3f](https://github.com/keptn/keptn/commit/6b8fb3f5420fbcf6c88b55380e49ef144e4d46a7))
+* **deps:** update sigstore/cosign-installer action to v3.0.5 ([#9700](https://github.com/keptn/keptn/issues/9700)) ([db7231f](https://github.com/keptn/keptn/commit/db7231f8afc306abd94f99f9620f276e49b6c3e6))
+
 ## [1.4.0](https://github.com/keptn/keptn/compare/1.3.0...1.4.0) (2023-05-26)
 
 
