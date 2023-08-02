@@ -312,7 +312,7 @@ jobs:
       matrix: ${{ fromJson(needs.prepare.outputs.BUILD_MATRIX) }}
     steps:
       - name: Generate SBOM
-        uses: anchore/sbom-action@v0.14.2
+        uses: anchore/sbom-action@v0.14.3
         with:
           image: ghcr.io/keptn/${{ matrix.config.artifact }}:${{ needs.release-please.outputs.tag_name }}
           artifact-name: sbom-${{ matrix.config.artifact }}-${{ needs.release-please.outputs.tag_name }}
