@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.20.5-alpine3.17 as builder
+FROM golang:1.20.7-alpine3.17 as builder
 
 # install additional dependencies
 RUN apk update && \
