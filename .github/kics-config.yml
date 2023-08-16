@@ -12,6 +12,8 @@ exclude-queries:
 exclude-results:
   # Result similarity IDs corresponding to nats-box helm test pod that can't be adjusted
   # Similarity IDs can be found in the JSON result file of kics
+  - cd065511af7c61ea25faf3aff3223fb4d56be7041d8632db3e25e6e8cd24caa1 #nats volume mount pid
+  - c7e18c7e8274d68a274cb52892e1835cc979c6dfabb476c972b2b09d7f5f79e5 #nats volume mount config-volume
   - 0763dc523a2b9f584c3cfedadc59d2b1475fa48cb445232f83e9b2ae6ff741d8 #keptn-get-secrets Read Secrets Permissions
   - f340259cd9b88210d646799fee0df3ce1de656e716adfcbae2ddc1e442207436 #keptn-manage-secret Read Secrets Permissions
   - 56b8b06d0dc3b7493f067ebfcb674b6433bb596fe156610b688a43f126b9bf95
