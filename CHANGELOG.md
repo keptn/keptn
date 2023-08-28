@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2](https://github.com/keptn/keptn/compare/1.4.1...1.4.2) (2023-08-28)
+
+
+### Docs
+
+* fix wrong roadmap link in README ([#9658](https://github.com/keptn/keptn/issues/9658)) ([226c065](https://github.com/keptn/keptn/commit/226c065715d0fbc9ef364d42c436f4d410944786))
+
+
+### Build
+
+* **deps:** update actions/setup-node action to v3.8.1 ([#9726](https://github.com/keptn/keptn/issues/9726)) ([7614c63](https://github.com/keptn/keptn/commit/7614c639ee8cfeed043f8358961c31a5813f66ff))
+* **deps:** update anchore/sbom-action action to v0.14.3 ([#9723](https://github.com/keptn/keptn/issues/9723)) ([db4b206](https://github.com/keptn/keptn/commit/db4b206a5707945aab83ee98c4799542420d2d8c))
+* **deps:** update golang docker tag to v1.20.7 ([#9724](https://github.com/keptn/keptn/issues/9724)) ([5be3b81](https://github.com/keptn/keptn/commit/5be3b816efc0e3e6ecf3de453a1bb5177fdf5362))
+* **deps:** update reviewdog/action-setup action to v1.0.5 ([#9725](https://github.com/keptn/keptn/issues/9725)) ([1e82a51](https://github.com/keptn/keptn/commit/1e82a518fd790d423782a201ad4e3e0b56adbe77))
+
 ## [1.4.1](https://github.com/keptn/keptn/compare/1.4.0...1.4.1) (2023-08-01)
 
 
