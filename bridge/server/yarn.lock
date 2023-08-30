@@ -1505,6 +1505,13 @@
     "@jridgewell/resolve-uri" "^3.0.3"
     "@jridgewell/sourcemap-codec" "^1.4.10"
 
+"@mongodb-js/saslprep@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@mongodb-js/saslprep/-/saslprep-1.1.0.tgz#022fa36620a7287d17acd05c4aae1e5f390d250d"
+  integrity sha512-Xfijy7HvfzzqiOAhAepF4SGN5e9leLkMvg/OPOF97XemjfVCYN/oWa75wnkc6mltMSTwY+XlbhWgUOJmkFspSw==
+  dependencies:
+    sparse-bitfield "^3.0.3"
+
 "@sinclair/typebox@^0.24.1":
   version "0.24.20"
   resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.24.20.tgz#11a657875de6008622d53f56e063a6347c51a6dd"
@@ -2009,10 +2016,10 @@ bser@2.1.1:
   dependencies:
     node-int64 "^0.4.0"
 
-bson@^4.7.0:
-  version "4.7.0"
-  resolved "https://registry.yarnpkg.com/bson/-/bson-4.7.0.tgz#7874a60091ffc7a45c5dd2973b5cad7cded9718a"
-  integrity sha512-VrlEE4vuiO1WTpfof4VmaVolCVYkYTgB9iWgYNOrVlnifpME/06fhFRmONgBhClD5pFC1t9ZWqFUQEQAzY43bA==
+bson@^4.7.2:
+  version "4.7.2"
+  resolved "https://registry.yarnpkg.com/bson/-/bson-4.7.2.tgz#320f4ad0eaf5312dd9b45dc369cc48945e2a5f2e"
+  integrity sha512-Ry9wCtIZ5kGqkJoi6aD8KjxFZEx78guTQDnpXWiNthsxzrxAK/i8E6pCHAIZTbaEFWcOCvbecMukfK7XUvyLpQ==
   dependencies:
     buffer "^5.6.0"
 
@@ -3423,7 +3430,7 @@ minimist@^1.2.5:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.6.tgz#8637a5b759ea0d6e98702cfb3a9283323c93af44"
   integrity sha512-Jsjnk4bw3YJqYzbdyBiNsPWHPfO++UGG749Cxs6peCu5Xg4nrena6OVxOYxrQTqww0Jmwt+Ref8rggumkTLz9Q==
 
-mongodb-connection-string-url@^2.5.4:
+mongodb-connection-string-url@^2.6.0:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/mongodb-connection-string-url/-/mongodb-connection-string-url-2.6.0.tgz#57901bf352372abdde812c81be47b75c6b2ec5cf"
   integrity sha512-WvTZlI9ab0QYtTYnuMLgobULWhokRjtC7db9LtcVfJ+Hsnyr5eo6ZtNAt3Ly24XZScGMelOcGtm7lSn0332tPQ==
@@ -3431,17 +3438,17 @@ mongodb-connection-string-url@^2.5.4:
     "@types/whatwg-url" "^8.2.1"
     whatwg-url "^11.0.0"
 
-mongodb@4.12.1:
-  version "4.12.1"
-  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.12.1.tgz#224eb39b8784af835b515aa687c6010cecaabb1a"
-  integrity sha512-koT87tecZmxPKtxRQD8hCKfn+ockEL2xBiUvx3isQGI6mFmagWt4f4AyCE9J4sKepnLhMacoCTQQA6SLAI2L6w==
+mongodb@4.17.0:
+  version "4.17.0"
+  resolved "https://registry.yarnpkg.com/mongodb/-/mongodb-4.17.0.tgz#10202357c1a5910ce9a4aecb4e5f79df500db31c"
+  integrity sha512-LZGMIPjPfWEfhPJATk1s9IvVTD18tyfKdT/0blCMih5vGagk2SwA9wFAUPMdtJpTrhXmyfGgwAaMkvneX2bn2A==
   dependencies:
-    bson "^4.7.0"
-    mongodb-connection-string-url "^2.5.4"
+    bson "^4.7.2"
+    mongodb-connection-string-url "^2.6.0"
     socks "^2.7.1"
   optionalDependencies:
     "@aws-sdk/credential-providers" "^3.186.0"
-    saslprep "^1.0.3"
+    "@mongodb-js/saslprep" "^1.1.0"
 
 ms@2.0.0:
   version "2.0.0"
@@ -3780,13 +3787,6 @@ safe-buffer@~5.1.1:
   version "2.1.2"
   resolved "https://registry.yarnpkg.com/safer-buffer/-/safer-buffer-2.1.2.tgz#44fa161b0187b9549dd84bb91802f9bd8385cd6a"
   integrity sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==
-
-saslprep@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/saslprep/-/saslprep-1.0.3.tgz#4c02f946b56cf54297e347ba1093e7acac4cf226"
-  integrity sha512-/MY/PEMbk2SuY5sScONwhUDsV2p77Znkb/q3nSVstq/yQzYJOH/Azh29p9oJLsl3LnQwSvZDKagDGBsBwSooag==
-  dependencies:
-    sparse-bitfield "^3.0.3"
 
 semver@7.5.2, semver@7.x, semver@^7.3.5, semver@^7.3.8:
   version "7.5.2"
