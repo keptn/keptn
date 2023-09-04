@@ -79,3 +79,32 @@ func TestLoadCLIConfig(t *testing.T) {
 		t.Errorf("Different config read")
 	}
 }
+
+func TestCLIConfigManager_GetConfigDirectoryPath(t *testing.T) {
+	type fields struct {
+		CLIConfigPath string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   string
+	}{
+		{
+			name: "get config directory",
+			fields: fields{
+				CLIConfigPath: "~/.keptn/config",
+			},
+			want: "~/.keptn/",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &CLIConfigManager{
+				CLIConfigPath: tt.fields.CLIConfigPath,
+			}
+			if got := c.GetConfigDirectoryPath(); got != tt.want {
+				t.Errorf("GetConfigDirectoryPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

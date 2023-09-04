@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/keptn/go-utils/pkg/common/fileutils"
@@ -124,6 +125,11 @@ func (c *CLIConfigManager) StoreCLIConfig(config CLIConfig) error {
 	return nil
 }
 
+func (c *CLIConfigManager) GetConfigDirectoryPath() string {
+	split := strings.Split(c.CLIConfigPath, string(os.PathSeparator))
+	return strings.Join(split[:len(split)-1], string(os.PathSeparator)) + string(os.PathSeparator)
+}
+
 // GetKeptnDefaultConfigPath returns default Keptn Config file path
 func GetKeptnDefaultConfigPath() (string, error) {
 	dir, err := GetKeptnDirectory()
@@ -135,12 +141,16 @@ func GetKeptnDefaultConfigPath() (string, error) {
 
 // GetKeptnDirectory returns a path, which is used to store logs and possibly creds
 func GetKeptnDirectory() (string, error) {
-
 	keptnDir := fileutils.UserHomeDir() + string(os.PathSeparator) + keptnFolderName + string(os.PathSeparator)
 
+	// if the CLI config manager is already initialized, use get the current CLI config from there
+	if mgr != nil && mgr.CLIConfigPath != "" {
+		keptnDir = mgr.GetConfigDirectoryPath()
+	}
+
 	if _, err := os.Stat(keptnDir); os.IsNotExist(err) {
-		err := os.MkdirAll(keptnDir, os.ModePerm)
 		fmt.Println("keptn creates the folder " + keptnDir + " to store logs and possibly creds.")
+		err := os.MkdirAll(keptnDir, os.ModePerm)
 		if err != nil {
 			return "", err
 		}
