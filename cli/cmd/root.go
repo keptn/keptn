@@ -2,12 +2,13 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/keptn/keptn/cli/pkg/config"
 	"github.com/keptn/keptn/cli/pkg/logging"
 	"github.com/keptn/keptn/cli/pkg/version"
 	"github.com/spf13/cobra"
-	"os"
-	"strings"
 )
 
 var cfgFile string
@@ -19,6 +20,7 @@ var assumeYes bool
 var help bool
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
+const EOLMsg = "* Keptn v1 will be 'end-of-life' December 11, 2023. For more information see https://medium.com/keptn/keptn-lifecycle-toolkit-is-now-keptn-e0812217bf46\n\n"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = NewRootCommand(version.NewVersionChecker())
@@ -31,6 +33,7 @@ func NewRootCommand(vChecker *version.VersionChecker) *cobra.Command {
 		Long: `The CLI allows interaction with a Keptn installation to manage Keptn, to trigger workflows, and to get details.
 	`,
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			fmt.Printf(EOLMsg)
 			runVersionCheck(vChecker, os.Args[1:], rootCLIConfig)
 		},
 	}
