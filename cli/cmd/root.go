@@ -20,7 +20,7 @@ var assumeYes bool
 var help bool
 
 const authErrorMsg = "This command requires to be authenticated. See \"keptn auth\" for details"
-const EOLMsg = "* Keptn v1 will be EOL December 11, 2023. For more information see https://medium.com/keptn/keptn-lifecycle-toolkit-is-now-keptn-e0812217bf46\n\n"
+const EOLMsg = "* Keptn v1 will be 'end-of-life' December 11, 2023. For more information see https://medium.com/keptn/keptn-lifecycle-toolkit-is-now-keptn-e0812217bf46\n\n"
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = NewRootCommand(version.NewVersionChecker())
