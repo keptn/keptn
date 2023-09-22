@@ -1,6 +1,17 @@
 @import '../../../variables';
 @import '~@dynatrace/barista-components/core/src/style/variables';
 
+.banner {
+  background-color: var(--dt-theme-main-active-color);
+  color: $white;
+  padding: 10px 0;
+  font-weight: bold;
+
+  a {
+    color: $white;
+  }
+}
+
 dt-top-bar-navigation {
   color: #fff;
   background-color: var(--dt-theme-main-default-color);
