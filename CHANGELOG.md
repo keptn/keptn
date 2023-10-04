@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.3](https://github.com/keptn/keptn/compare/1.4.2...1.4.3) (2023-09-22)
+
+
+### Bug Fixes
+
+* **cli:** consider customized config directory when managing credentials ([#9740](https://github.com/keptn/keptn/issues/9740)) ([c613674](https://github.com/keptn/keptn/commit/c613674221aacc641580d3d59be37e7577d50b9e))
+
+
+### Other
+
+* **bridge:** Introduce EOL message ([#9743](https://github.com/keptn/keptn/issues/9743)) ([3ea53d5](https://github.com/keptn/keptn/commit/3ea53d5d400784acdea3783000daa6ff036d9b7d))
+* **cli:** introduce EOL message ([#9741](https://github.com/keptn/keptn/issues/9741)) ([4eb928e](https://github.com/keptn/keptn/commit/4eb928e1d2c46831ab33ddd814e95a9808fd087a))
+
 ## [1.4.2](https://github.com/keptn/keptn/compare/1.4.1...1.4.2) (2023-08-28)
 
 
