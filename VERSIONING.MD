@@ -1,26 +1,38 @@
 # Keptn Versioning
 
-## Compatibility requirements
+## Compatibility Requirements
 
-This codebase marks all artifacts with a version of the format `MAJOR.MINOR.PATCH` or
-`MAJOR.MINOR.PATCH-next.ID`. For any artifact with a stable release, that is its version does not
-end in `-next.ID`, no backwards-incompatible changes will be made unless incrementing the `MINOR`
-version number. Patch releases with urgent cherry-picked bugfixes will be made by incrementing the
-`PATCH` version.
+A **backward-compatible change** is a modification that does not disrupt or break the functionality of existing applications or systems that rely on a specific public REST API. It allows for the codebase to evolve while ensuring that existing functionality remains intact. Such changes typically involve adding new features or options without affecting existing ones.
 
-A backwards-incompatible change affects the public REST API. The public REST API is any of the following:
+This codebase adheres to strict compatibility requirements, which are crucial for maintaining the stability of its artifacts. These requirements are based on a versioning scheme using the format `MAJOR.MINOR.PATCH` or `MAJOR.MINOR.PATCH-next.ID`. Here are the key principles:
 
-- public reachable endpoints that are **not** marked as `internal`;
-- CloudEvents definition.
+**Backward-Incompatible Change**: A **backward-incompatible change** is a modification that can potentially disrupt or break the functionality of applications or systems relying on a specific public REST API. These changes affect the public-facing components of the codebase and may include actions such as:
 
-We refer to a backwards-incompatible API change, a change that could potentially cause failures in the
-applications that consume that API, e.g., removing an endpoint, changing the response code, requiring
-additional parameters, or changing the entity models.
+- Removing an endpoint
+- Altering the response code
+- Requiring additional parameters
+- Changing the structure of entity models within the API
 
-Such changes will be avoided - if they must be made, the affected endpoint will be marked as `deprecated`
-and supported for one further `MINOR` version. After that, the affected API may be made backwards-incompatible.
+**Compatibility Assurance**: To ensure compatibility and minimize disruptions for users of the codebase, the following rules apply:
 
-Backwards-incompatible changes to `internal` API are to be expected.
+1. For artifacts with stable releases (versions not ending in `-next.ID`), no backward-incompatible changes will be introduced unless there is an increment in the `MINOR` version number.
+
+2. Patch releases, which include urgent cherry-picked bugfixes, are created by incrementing the `PATCH` version.
+
+**Public REST API**: The term **public REST API** encompasses the following:
+
+- Publicly reachable endpoints that are explicitly marked as `internal` are not considered part of the public API.
+- The CloudEvents definition is also included in the public REST API definition.
+
+**Handling Backward-Incompatible Changes**: In the event that a backward-incompatible change becomes necessary, the following steps are taken to mitigate its impact:
+
+1. The affected endpoint is clearly marked as `deprecated`. This serves as a warning to users that the endpoint will undergo significant changes in the future.
+
+2. The deprecated endpoint remains fully supported for one additional `MINOR` version of the codebase.
+
+3. After this transitional period, the affected API component may undergo backward-incompatible modifications, as indicated by the versioning scheme.
+
+**Expectation for Internal API**: It's important to note that **internal APIs**, which are not intended for public use, are inherently subject to backward-incompatible changes as part of the normal development process. Users should anticipate such changes when interacting with internal APIs.
 
 ## Stable vs Next
 
