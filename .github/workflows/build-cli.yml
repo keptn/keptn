@@ -57,7 +57,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
       # cache go modules
-      - uses: actions/cache@v3.3.1
+      - uses: actions/cache@v3.3.2
         with:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-go-cli-${{ hashFiles('cli/go.sum') }}
