@@ -19,7 +19,7 @@ jobs:
       RENDERED_CHART_FILENAME: "scan-tpl.yml"
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'true'
@@ -68,7 +68,7 @@ jobs:
           go-version: ${{ env.GO_VERSION }}
 
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: 'true'
@@ -143,7 +143,7 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
 
     - name: Checkout Code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Install govulncheck
       run: go install golang.org/x/vuln/cmd/govulncheck@latest
