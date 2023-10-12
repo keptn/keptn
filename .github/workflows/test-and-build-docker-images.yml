@@ -200,7 +200,7 @@ jobs:
     - name: "Build keptn/${{ inputs.artifact }} container image"
       id: build_container_image
       if: inputs.should-push-image == 'true'
-      uses: docker/build-push-action@v4
+      uses: docker/build-push-action@v5
       with:
         context: ${{ inputs.working-dir }}
         tags: ${{ inputs.tags }}
