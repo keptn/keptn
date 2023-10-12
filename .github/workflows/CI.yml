@@ -124,7 +124,7 @@ jobs:
       DATETIME: ${{ steps.get_datetime.outputs.DATETIME }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # need to checkout "all commits" for certain features to work (e.g., get all changed files)
           submodules: 'true'
@@ -291,7 +291,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout helm-charts repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: keptn/helm-charts-dev
         path: helm-charts-dev

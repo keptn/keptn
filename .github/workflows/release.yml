@@ -94,7 +94,7 @@ jobs:
       releases_created: ${{ steps.release.outputs.releases_created }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run release please
         uses: google-github-actions/release-please-action@v3
@@ -123,7 +123,7 @@ jobs:
       GO_VERSION: ${{ steps.get_go_version.outputs.GO_VERSION }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
@@ -221,14 +221,14 @@ jobs:
     needs: [release-please, prepare, docker_build, build-helm-charts, build-cli]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           path: keptn
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
 
       - name: Checkout helm-charts repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: keptn/helm-charts
           path: helm-charts

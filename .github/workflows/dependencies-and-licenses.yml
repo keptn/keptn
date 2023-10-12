@@ -9,12 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Core Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: 'keptn'
 
       - name: Checkout go-utils Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.KEPTN_BOT_TOKEN }}
           path: 'go-utils'
