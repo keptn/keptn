@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
-	github.com/keptn/go-utils v0.20.2
+	github.com/keptn/go-utils v0.20.3-0.20231016074224-80f7c4e54441
 	github.com/stretchr/testify v1.8.4
 	k8s.io/api v0.27.4
 	k8s.io/apimachinery v0.27.4
@@ -46,9 +46,9 @@ require (
 	go.uber.org/zap v1.19.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/oauth2 v0.10.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-	golang.org/x/term v0.10.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/sys v0.13.0 // indirect
+	golang.org/x/term v0.13.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
