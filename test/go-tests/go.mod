@@ -6,7 +6,7 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/google/uuid v1.3.0
 	github.com/imroc/req v0.3.2
-	github.com/keptn/go-utils v0.20.2
+	github.com/keptn/go-utils v0.20.3-0.20231016074224-80f7c4e54441
 	github.com/stretchr/testify v1.8.4
 	k8s.io/api v0.27.4
 	k8s.io/apimachinery v0.27.4
