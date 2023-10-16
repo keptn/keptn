@@ -9,7 +9,7 @@ jobs:
   update-spec:
     env:
       SPEC_REF: ${{ github.event.client_payload.ref }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4

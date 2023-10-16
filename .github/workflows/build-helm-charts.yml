@@ -28,7 +28,7 @@ env:
 jobs:
   helm_charts_build:
     name: Build Helm Charts
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       BRANCH: ${{ inputs.branch }}
       VERSION: ${{ inputs.version }}
