@@ -73,7 +73,7 @@ Cloud-native application life-cycle orchestration. Keptn automates your SLO-driv
 ### API Gateway Nginx
 
 | Name                                                       | Description                                                                               | Value                |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- |----------------------|
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------- | -------------------- |
 | `apiGatewayNginx.type`                                     | Kubernetes Service type                                                                   | `ClusterIP`          |
 | `apiGatewayNginx.port`                                     | Nginx service port                                                                        | `80`                 |
 | `apiGatewayNginx.targetPort`                               | Nginx target port                                                                         | `8080`               |
