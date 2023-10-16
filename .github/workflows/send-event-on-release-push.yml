@@ -11,7 +11,7 @@ on:
         default: ''
 jobs:
   send_webhook:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Trigger docs auto update in docs repo
         if: github.event_name == 'push'

@@ -22,7 +22,7 @@ jobs:
 
   integration-test:
     name: "Tests"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     strategy:
       fail-fast: false
       matrix:
@@ -605,7 +605,7 @@ jobs:
     name: Finalize tests and create reports
     needs: integration-test
     if: always() # always run, regardless of the outcome of the last job
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       BRANCH: ${{ needs.integration-test.outputs.BRANCH }}
       TEST_REPORTS_PATH: "./test-reports/"

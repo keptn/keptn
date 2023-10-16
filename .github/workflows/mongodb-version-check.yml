@@ -12,7 +12,7 @@ defaults:
 jobs:
   check-mongodb-versions:
     name: Check MongoDB chart versions
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       CREATE_ISSUE: ${{ steps.compare_mongodb_versions.outputs.CREATE_ISSUE }}
       BITNAMI_VERSION: ${{ steps.get_bitnami_mongodb_version.outputs.MONGODB_VERSION }}
@@ -48,7 +48,7 @@ jobs:
 
   create_issue:
     name: Create GitHub Issue
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: check-mongodb-versions
     steps:
     - name: Formulate bug issue

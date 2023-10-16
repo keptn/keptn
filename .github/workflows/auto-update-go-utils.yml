@@ -10,7 +10,7 @@ jobs:
     env:
       GO_UTILS_TARGET: ${{ github.event.client_payload.go-utils-target }}
       KEPTN_BOT_USER: "keptn-bot <86361500+keptn-bot@users.noreply.github.com>"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Install Go
         uses: actions/setup-go@v4

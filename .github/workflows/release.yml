@@ -106,7 +106,7 @@ jobs:
 
   prepare:
     name: Prepare release run
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     concurrency:
       group: release
     needs: release-please
@@ -217,7 +217,7 @@ jobs:
   ############################################################################
   release:
     name: "Release"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: [release-please, prepare, docker_build, build-helm-charts, build-cli]
     steps:
       - name: Checkout repo

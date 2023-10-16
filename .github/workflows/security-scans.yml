@@ -14,7 +14,7 @@ env:
 jobs:
   prepare-security-scans:
     name: "Prepare Security Scans"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       RENDERED_CHART_FILENAME: "scan-tpl.yml"
     steps:
@@ -44,7 +44,7 @@ jobs:
   security-scans:
     name: "Security Scans"
     needs: prepare-security-scans
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CHART_TO_SCAN: "scans/scan-tpl.yml"
     strategy:

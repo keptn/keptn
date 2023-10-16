@@ -107,7 +107,7 @@ jobs:
     name: Prepare CI Run
     # Prepare CI Run looks at what has been changed in this commit/PR/... and determines which artifacts should be
     # built afterwards (in other jobs that depend on this one).
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs: # declare what this job outputs (so it can be re-used for other jobs)
       # build config
       BUILD_EVERYTHING: ${{ steps.build_everything.outputs.BUILD_EVERYTHING }}
@@ -205,7 +205,7 @@ jobs:
   store-output-in-build-config:
     name: "Store output of last step in build-config.env"
     needs: prepare_ci_run
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - name: Create build config file
         env:
@@ -288,7 +288,7 @@ jobs:
     name: Publish helm charts to dev repo
     needs: [prepare_ci_run, helm_charts_build, unit-tests-and-build]
     if: ((needs.prepare_ci_run.outputs.BUILD_EVERYTHING == 'true') || (needs.prepare_ci_run.outputs.BUILD_INSTALLER == 'true')) && (github.event_name == 'push' || github.event_name == 'workflow_dispatch' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository))
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - name: Checkout helm-charts repo
       uses: actions/checkout@v4
