@@ -8,7 +8,7 @@ require (
 	github.com/go-git/go-git-fixtures/v4 v4.3.1
 	github.com/go-git/go-git/v5 v5.4.3-0.20220529141257-bc1f419cebcf // the latest release of this library (5.4.2) has been made over a year ago, but the project is still actively maintained. Using this specific version for now since this includes a fix for the "reference delta not found error" encountered with CodeCommit repos
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.20.3-0.20231016074224-80f7c4e54441
+	github.com/keptn/go-utils v0.20.3
 	github.com/mholt/archiver/v3 v3.5.1
 	github.com/otiai10/copy v1.11.0
 	github.com/sirupsen/logrus v1.9.3
@@ -58,7 +58,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.16.5 // indirect
+	github.com/klauspost/compress v1.16.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/klauspost/pgzip v1.2.5 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
