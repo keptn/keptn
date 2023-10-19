@@ -35,7 +35,9 @@ minishift config set cpus 2
 minishift addons enable admin-user
 # Allow the containers to be run with uid 0
 minishift addons enable anyuid
-minishift start --vm-driver=generic --remote-ipaddress 127.0.0.1 --remote-ssh-user root --remote-ssh-key "$HOME/.ssh/ci_id_rsa" --network-nameserver 8.8.8.8
+ssh-add "$USSH/ci_id_rsa"
+minishift config view
+minishift start --vm-driver=generic --remote-ipaddress 127.0.0.1 --remote-ssh-user root --remote-ssh-key "$USSH/ci_id_rsa" --network-nameserver 8.8.8.8
 
 # Enable admission controller webhooks
 # The configuration stanzas below look weird and are just to workaround for:
