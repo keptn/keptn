@@ -2,6 +2,58 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.4](https://github.com/keptn/keptn/compare/1.4.3...1.4.4) (2023-11-24)
+
+
+### Docs
+
+* add backwards-compatibility definition in compatibility requirements ([#9744](https://github.com/keptn/keptn/issues/9744)) ([7fa83fe](https://github.com/keptn/keptn/commit/7fa83fed25933ef1722addd61e21bf5f8c5f3130))
+
+
+### Build
+
+* **deps:** Auto-update go-utils to latest version ([#9771](https://github.com/keptn/keptn/issues/9771)) ([f413087](https://github.com/keptn/keptn/commit/f413087f13a31f94e830202e57382fc3663b3826))
+* **deps:** Auto-update go-utils to latest version ([#9791](https://github.com/keptn/keptn/issues/9791)) ([7a9761c](https://github.com/keptn/keptn/commit/7a9761c5d42f8336465f74b5473489ac16991e9a))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /api ([#9787](https://github.com/keptn/keptn/issues/9787)) ([33685d7](https://github.com/keptn/keptn/commit/33685d7f7ce956a7889364c71e82c73a2e672535))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /approval-service ([#9778](https://github.com/keptn/keptn/issues/9778)) ([a0442e5](https://github.com/keptn/keptn/commit/a0442e5f6c7c092bf89a6c1809d1ebae9d1be173))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /cli ([#9781](https://github.com/keptn/keptn/issues/9781)) ([16120c1](https://github.com/keptn/keptn/commit/16120c110144bab0a3ec20be70b8e9c7ef6429b6))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /distributor ([#9784](https://github.com/keptn/keptn/issues/9784)) ([f09d98a](https://github.com/keptn/keptn/commit/f09d98a130c2ea8ffd1b247343e7d7b1f234f4e7))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /lighthouse-service ([#9777](https://github.com/keptn/keptn/issues/9777)) ([99f980d](https://github.com/keptn/keptn/commit/99f980d5dd424e12b8a96690e88c6b73d9fb54c7))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /mongodb-datastore ([#9785](https://github.com/keptn/keptn/issues/9785)) ([b61cec1](https://github.com/keptn/keptn/commit/b61cec1b0de46067138602419d4dad4f55814ae1))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /remediation-service ([#9780](https://github.com/keptn/keptn/issues/9780)) ([1bfb0a4](https://github.com/keptn/keptn/commit/1bfb0a43749c6d2ec6827be759fb50ae5a395645))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /shipyard-controller ([#9788](https://github.com/keptn/keptn/issues/9788)) ([3c7c8c6](https://github.com/keptn/keptn/commit/3c7c8c6f36ec233c6a3be013640b3e1b785df177))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /statistics-service ([#9776](https://github.com/keptn/keptn/issues/9776)) ([95666d6](https://github.com/keptn/keptn/commit/95666d650d5e84685959affb2797f039535bf10d))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /test/go-tests ([#9786](https://github.com/keptn/keptn/issues/9786)) ([e89b937](https://github.com/keptn/keptn/commit/e89b93700bf015b8139df969cfdc4603cd3121ba))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /test/zero-downtime ([#9779](https://github.com/keptn/keptn/issues/9779)) ([d6ef2dd](https://github.com/keptn/keptn/commit/d6ef2dda0b70dfc529196d2ccf574f047feafe74))
+* **deps:** bump go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp from 0.42.0 to 0.44.0 in /webhook-service ([#9782](https://github.com/keptn/keptn/issues/9782)) ([841ecfe](https://github.com/keptn/keptn/commit/841ecfea07f90713260cf885cdeba945be463b6a))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /api ([#9746](https://github.com/keptn/keptn/issues/9746)) ([b9f17ab](https://github.com/keptn/keptn/commit/b9f17abd40f816d41262361fad215ca982c8c4f2))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /cli ([#9748](https://github.com/keptn/keptn/issues/9748)) ([a882606](https://github.com/keptn/keptn/commit/a88260634f041a9d2d564c75ae1567d9bb3c5159))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /distributor ([#9755](https://github.com/keptn/keptn/issues/9755)) ([ca6f1cb](https://github.com/keptn/keptn/commit/ca6f1cbd5e21a31efe949886b8e473c590bafe18))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /lighthouse-service ([#9754](https://github.com/keptn/keptn/issues/9754)) ([eaa3131](https://github.com/keptn/keptn/commit/eaa313192c4491c53bc808cb0fecbe8fe89352e2))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /mongodb-datastore ([#9747](https://github.com/keptn/keptn/issues/9747)) ([a51f244](https://github.com/keptn/keptn/commit/a51f24455ec5d5382cde13a836a28285387ba1d9))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /remediation-service ([#9756](https://github.com/keptn/keptn/issues/9756)) ([ed4faf2](https://github.com/keptn/keptn/commit/ed4faf24dbf1519c266ec07de0f499db43640ac6))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /resource-service ([#9751](https://github.com/keptn/keptn/issues/9751)) ([936cab1](https://github.com/keptn/keptn/commit/936cab1fb2fb0fb3248b71d6c9f6f59fc697edfe))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /secret-service ([#9757](https://github.com/keptn/keptn/issues/9757)) ([5892e02](https://github.com/keptn/keptn/commit/5892e027fb32483726fc18739b1beb7535be94db))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /shipyard-controller ([#9759](https://github.com/keptn/keptn/issues/9759)) ([d7d708f](https://github.com/keptn/keptn/commit/d7d708f911e92c92ab05bc78ec8b29c1cd059df5))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /statistics-service ([#9749](https://github.com/keptn/keptn/issues/9749)) ([3dd52f9](https://github.com/keptn/keptn/commit/3dd52f9431f1c0200db50f01f9d78056f6bd420f))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /test/go-tests ([#9753](https://github.com/keptn/keptn/issues/9753)) ([a748967](https://github.com/keptn/keptn/commit/a748967b28f92bf39d91609c464d368a676a04ee))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /test/zero-downtime ([#9752](https://github.com/keptn/keptn/issues/9752)) ([9fd3722](https://github.com/keptn/keptn/commit/9fd3722c57ccd3ea419ca49685362fd9474e81b8))
+* **deps:** bump golang.org/x/net from 0.12.0 to 0.17.0 in /webhook-service ([#9750](https://github.com/keptn/keptn/issues/9750)) ([bf15af1](https://github.com/keptn/keptn/commit/bf15af19ed591142bec9820bf5fde1af2e2b511f))
+* **deps:** update actions/cache action to v3.3.2 ([#9761](https://github.com/keptn/keptn/issues/9761)) ([4d901b4](https://github.com/keptn/keptn/commit/4d901b4af4288f3e19113ae5487d31fe56b0d239))
+* **deps:** update actions/checkout action to v4 ([#9765](https://github.com/keptn/keptn/issues/9765)) ([1d92d62](https://github.com/keptn/keptn/commit/1d92d62ed976aa10cf59258ed067843be4c78c59))
+* **deps:** update amannn/action-semantic-pull-request digest to 47b15d5 ([#9679](https://github.com/keptn/keptn/issues/9679)) ([3f66fc6](https://github.com/keptn/keptn/commit/3f66fc6704397e20974937cb89f3373c87807fb5))
+* **deps:** update dawidd6/action-download-artifact action to v2.28.0 ([#9763](https://github.com/keptn/keptn/issues/9763)) ([a7ce63a](https://github.com/keptn/keptn/commit/a7ce63acdfd3a25375a5dc3998e5615f5e5c77a1))
+* **deps:** update dependency ubuntu to v22 ([#9772](https://github.com/keptn/keptn/issues/9772)) ([0f2e215](https://github.com/keptn/keptn/commit/0f2e215b796cc5b5abbdd13cfe850752119fcc2f))
+* **deps:** update docker.io/nginxinc/nginx-unprivileged docker tag to v1.25.1 ([#9701](https://github.com/keptn/keptn/issues/9701)) ([b476c84](https://github.com/keptn/keptn/commit/b476c8458a8d7b19884307c2d824097258925a1c))
+* **deps:** update docker/build-push-action action to v5 ([#9766](https://github.com/keptn/keptn/issues/9766)) ([0bc0bf2](https://github.com/keptn/keptn/commit/0bc0bf2c8ad94860d1005c8b2b2df8d7d4f294ba))
+* **deps:** update docker/login-action action to v3 ([#9767](https://github.com/keptn/keptn/issues/9767)) ([cc04a30](https://github.com/keptn/keptn/commit/cc04a3066ebdc8afa5bf29602c45aa1a03516f68))
+* **deps:** update docker/setup-buildx-action action to v3 ([#9768](https://github.com/keptn/keptn/issues/9768)) ([d92ebff](https://github.com/keptn/keptn/commit/d92ebffa80499a7a9e9b0aaddb9c9f1a393607ec))
+* **deps:** Update keptn/go-utils to 80f7c4e544410addd9c61f77d7f159b3d4809c19 ([f413087](https://github.com/keptn/keptn/commit/f413087f13a31f94e830202e57382fc3663b3826))
+* **deps:** update reviewdog/action-setup action to v1.0.6 ([#9762](https://github.com/keptn/keptn/issues/9762)) ([1c9340e](https://github.com/keptn/keptn/commit/1c9340ec2cb4a3cbddd6ada7844e46f2f78ec11c))
+* **deps:** update sigstore/cosign-installer action to v3.1.2 ([#9764](https://github.com/keptn/keptn/issues/9764)) ([c1a5a00](https://github.com/keptn/keptn/commit/c1a5a000ac1950840f5d9a6e9c1cf05cab15b1e5))
+* **deps:** update tj-actions/changed-files action to v38 ([#9769](https://github.com/keptn/keptn/issues/9769)) ([fb2712d](https://github.com/keptn/keptn/commit/fb2712d08b843b3baf6622a45261e58b0908f463))
+* **deps:** update tj-actions/changed-files action to v39 ([#9775](https://github.com/keptn/keptn/issues/9775)) ([d6835b9](https://github.com/keptn/keptn/commit/d6835b9e3e000b9e49939a29f2cca69384273f89))
+
 ## [1.4.3](https://github.com/keptn/keptn/compare/1.4.2...1.4.3) (2023-09-22)
 
 
