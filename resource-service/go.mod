@@ -103,7 +103,7 @@ require (
 )
 
 replace (
-	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.10.2
+	github.com/emicklei/go-restful/v3 => github.com/emicklei/go-restful/v3 v3.11.0
 	gopkg.in/yaml.v2 => gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 => gopkg.in/yaml.v3 v3.0.1
 )
