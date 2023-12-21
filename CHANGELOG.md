@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.5](https://github.com/keptn/keptn/compare/1.4.4...1.4.5) (2023-12-21)
+
+
+### Build
+
+* **deps:** Auto-update go-utils to latest version ([#9825](https://github.com/keptn/keptn/issues/9825)) ([6bb0a29](https://github.com/keptn/keptn/commit/6bb0a29c6c0a86463ecb9007613aeacccf2b1208))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /api ([#9799](https://github.com/keptn/keptn/issues/9799)) ([8c23a34](https://github.com/keptn/keptn/commit/8c23a342e947afbdb19442baeb415b335c26316f))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /approval-service ([#9800](https://github.com/keptn/keptn/issues/9800)) ([a929f58](https://github.com/keptn/keptn/commit/a929f58d814d4e3b8cecd2f4e681cefacb24112d))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /distributor ([#9796](https://github.com/keptn/keptn/issues/9796)) ([4c36c85](https://github.com/keptn/keptn/commit/4c36c85e5b9b194d01bd53e7f3df453e160240e4))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /lighthouse-service ([#9797](https://github.com/keptn/keptn/issues/9797)) ([8eacd72](https://github.com/keptn/keptn/commit/8eacd72ec10a57713ccd63673218f7c5e8daa7d0))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /mongodb-datastore ([#9795](https://github.com/keptn/keptn/issues/9795)) ([319b824](https://github.com/keptn/keptn/commit/319b824ef8b505409c4664d9a18001a7b07f4424))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /remediation-service ([#9801](https://github.com/keptn/keptn/issues/9801)) ([f9e2b82](https://github.com/keptn/keptn/commit/f9e2b82a2617694ffebca15142e79f2b19925b12))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /shipyard-controller ([#9798](https://github.com/keptn/keptn/issues/9798)) ([c08df2d](https://github.com/keptn/keptn/commit/c08df2d636ee07113534f7bdb67a072db9e32501))
+* **deps:** bump github.com/nats-io/nkeys from 0.4.4 to 0.4.6 in /webhook-service ([#9802](https://github.com/keptn/keptn/issues/9802)) ([3b73a1c](https://github.com/keptn/keptn/commit/3b73a1cc5c4921042756ffcfbc34de76812966f2))
+* **deps:** update actions/setup-node action to v3.8.2 ([#9816](https://github.com/keptn/keptn/issues/9816)) ([9cfa974](https://github.com/keptn/keptn/commit/9cfa97409ad225af12954c3a7d87d043e63e6a22))
+* **deps:** update golang.org/x/exp digest to f3f8817 ([#9814](https://github.com/keptn/keptn/issues/9814)) ([5ea80c7](https://github.com/keptn/keptn/commit/5ea80c70b6fdea2ec92b072dc71f0b5056d6f1a3))
+* **deps:** update module github.com/go-git/go-billy/v5 to v5.5.0 ([#9813](https://github.com/keptn/keptn/issues/9813)) ([e7d928b](https://github.com/keptn/keptn/commit/e7d928b1a20f3f1bbe3133aa353ef5599d795c67))
+* **deps:** update module golang.org/x/crypto to v0.15.0 ([#9675](https://github.com/keptn/keptn/issues/9675)) ([0fc60fb](https://github.com/keptn/keptn/commit/0fc60fb518059e39f3e04f717cb2d21e72ce4551))
+* **deps:** update module golang.org/x/crypto to v0.16.0 ([#9809](https://github.com/keptn/keptn/issues/9809)) ([b6d9a34](https://github.com/keptn/keptn/commit/b6d9a340c8a4d9782f1e989a8c9f09b6474c365f))
+* **deps:** update module golang.org/x/crypto to v0.17.0 [security] ([#9821](https://github.com/keptn/keptn/issues/9821)) ([6a65a7e](https://github.com/keptn/keptn/commit/6a65a7effda8a24e0017e81a335ec5619fd98f5d))
+* **deps:** update module golang.org/x/net to v0.19.0 ([#9810](https://github.com/keptn/keptn/issues/9810)) ([c56f712](https://github.com/keptn/keptn/commit/c56f7121f84c933c989cda77ddb2ada0c9ad9fef))
+* **deps:** update module golang.org/x/oauth2 to v0.15.0 ([#9676](https://github.com/keptn/keptn/issues/9676)) ([fb2705c](https://github.com/keptn/keptn/commit/fb2705c0258daa7fa428c7ecc72eddb3c6697827))
+* **deps:** update module golang.org/x/time to v0.5.0 ([#9811](https://github.com/keptn/keptn/issues/9811)) ([0a530e8](https://github.com/keptn/keptn/commit/0a530e81d230e5855a1c79fba24404fe978b795b))
+
 ## [1.4.4](https://github.com/keptn/keptn/compare/1.4.3...1.4.4) (2023-11-24)
 
 
