@@ -1,7 +1,7 @@
 ![keptn](./assets/keptn.png)
 
 # Keptn
-## Keptn V1 has reached end of life on December 22nd, 2023 and has been replaced.
+## Keptn V1 has reached end of life on December 22nd, 2023 and has been [replaced](https://github.com/keptn/lifecycle-toolkit).
 
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/keptn/keptn)
 ![GitHub Downloads](https://img.shields.io/github/downloads/keptn/keptn/total?logo=github&logoColor=white)
