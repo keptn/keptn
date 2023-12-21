@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/ghodss/yaml v1.0.0
-	github.com/keptn/go-utils v0.20.4
+	github.com/keptn/go-utils v0.20.5-0.20231221115054-922a31791f5f
 	github.com/sirupsen/logrus v1.9.3
 )
 

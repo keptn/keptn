@@ -15,7 +15,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/keptn/go-utils v0.20.4
+	github.com/keptn/go-utils v0.20.5-0.20231221115054-922a31791f5f
 	github.com/nats-io/nats-server/v2 v2.10.7
 	github.com/nats-io/nats.go v1.31.0
 	github.com/sirupsen/logrus v1.9.3
